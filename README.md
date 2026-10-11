@@ -1,96 +1,56 @@
 # CRMS — Car Rental Management System
 
-Base nhóm HSF302: Kiệt, Phú, Phúc, Trí.
+Dự án HSF302 của Kiệt, Phú, Phúc, Trí. Java 21, Spring Boot 4.1.1, MVC + Thymeleaf + JPA, PostgreSQL 16, Bootstrap.
 
-Repo nhóm: [kiethk/car-rental-management-system](https://github.com/kiethk/car-rental-management-system).
-UI tham khảo: [car-rental-management-system-ui](https://github.com/kiethk/car-rental-management-system-ui).
+[UI tham khảo](https://github.com/kiethk/car-rental-management-system-ui): dùng bố cục/luồng để viết Thymeleaf.
 
-## Phạm vi bản base
+## Chạy project
 
-- Một ứng dụng Spring MVC + Thymeleaf, theo project PE đã tham khảo.
-- Java 21, Maven, Spring Boot 4.1.1, Spring Data JPA/Hibernate, PostgreSQL 16, Bootstrap từ project PE.
-- 13 entity + repository; schema SQL đề xuất theo **conceptual ERD**.
-- Mẫu hoàn chỉnh: danh sách, tìm kiếm hãng/mẫu, chi tiết xe, trả 404 khi xe không tồn tại.
-- Booking, tài khoản, phân quyền, GPLX, thanh toán, khuyến mãi, đánh giá, sự cố, kiểm định: chưa triển khai nghiệp vụ.
-- React UI là mẫu bố cục và luồng nghiệp vụ; không chạy React trong base này.
-- Các quyết định schema chưa được duyệt nằm trong [ERD review](docs/ERD-REVIEW.md).
+Cài JDK 21, Maven, Docker Desktop; bật Docker trước khi chạy.
 
-## Chạy bằng database mới
-
-Yêu cầu JDK 21+, Maven 3.6.3+, Docker Desktop đang chạy. Wrapper có sẵn nếu chưa cài Maven.
-
-Chạy trong thư mục project:
-
-```powershell
-Copy-Item .env.example .env
+```bash
+git clone https://github.com/kiethk/car-rental-management-system.git
+cd car-rental-management-system
 docker compose up -d
 mvn spring-boot:run
-# Hoặc: .\mvnw.cmd spring-boot:run
 ```
 
-Mở [danh sách xe](http://localhost:8081/vehicles). Có 2 loại xe, 3 xe, 3 biển số, 4 slot mẫu.
+Mở http://localhost:8081/vehicles. Chưa cài Maven thì dùng `./mvnw spring-boot:run` trong Git Bash hoặc `.\mvnw.cmd spring-boot:run` trong PowerShell.
 
-DBeaver: host `localhost`, port `5434`, database `car_rental_management`, user `crms`, password `crms_password` — chỉ là thông tin local mẫu.
+DBeaver: host `localhost`, port `5434`, database `car_rental_management`, user `crms`, password `crms_password` — cấu hình demo local.
 
-Compose mới dùng volume riêng `crms-team_postgres_data`; không tái sử dụng volume cũ. Nếu port 5434 đang dùng, đổi `DB_PORT=5436` trong `.env`, rồi đặt URL Spring tương ứng trong file local bên dưới. Không cần dừng hoặc xóa database cũ.
+- App trùng cổng: đặt `SERVER_PORT` hoặc sửa `server.port` trong file local.
+- DB trùng cổng: copy `.env.example` thành `.env`, chọn `DB_PORT` còn trống; sửa URL Spring tương ứng.
+- Cấu hình riêng: copy [file mẫu](config/application-local.properties.example) thành `src/main/resources/application-local.properties`. File này không đưa lên Git.
+- `.env` chỉ được Docker Compose đọc. Nếu đổi user/password/port DB, cập nhật cấu hình Spring tương ứng.
+- SQL mẫu tự chạy khi tạo volume lần đầu. Không xóa volume để sửa lỗi kết nối vì sẽ mất dữ liệu.
 
-## Dùng PostgreSQL đang có
+## Phân luồng
 
-1. Tạo database mới/empty trong DBeaver, ví dụ `car_rental_management_team`.
-2. Chạy `database/schema.sql`, rồi `database/seed.sql`, trên database mới đó.
-3. Copy `config/application-local.properties.example` tới `src/main/resources/application-local.properties`; sửa URL/user/password.
-4. Chạy `mvn spring-boot:run`.
+| Người | Luồng phụ trách |
+|---|---|
+| Kiệt | Chọn loại xe/slot → đặt xe → cọc → gán xe → nhận/trả xe → thanh toán cuối; hủy/hoàn tiền; ghép các phần |
+| Phú | Đăng ký/đăng nhập → hồ sơ → nộp GPLX → nhân viên duyệt/từ chối; tài khoản khách/nhân viên và phân quyền |
+| Phúc | Quản lý loại xe → xe → biển số → kiểm định/bảo trì; danh sách, tìm kiếm, chi tiết xe |
+| Trí | Quản lý khuyến mãi; khách đánh giá booking đã hoàn thành; ghi nhận và cập nhật sự cố |
 
-Spring đọc biến `DB_URL`, `DB_USER`, `DB_PASSWORD`, `SERVER_PORT` hoặc file local. **Spring không tự đọc `.env` của Compose.** Nếu thay user/password/port Compose, phải sửa cấu hình Spring tương ứng.
+Trí bắt đầu từ khuyến mãi, sau đó đánh giá và sự cố; Kiệt/Phúc hỗ trợ khi cần. Mỗi người làm cả xử lý Java và trang Thymeleaf trong luồng của mình.
 
-SQL init của Docker chỉ chạy khi volume mới được tạo. Đổi biến môi trường không đổi password của database đã tồn tại. Không dùng `docker compose down -v` để xử lý lỗi đăng nhập vì sẽ mất dữ liệu.
+Nhắn nhóm tiến độ/vướng mắc; cần trao đổi thêm thì nói trên lớp. Khi đổi entity/schema hoặc đụng phần người khác, nhắn nhóm trước. Mỗi người làm nhánh riêng, xong push và báo Kiệt ghép.
 
-## Cấu trúc
+## Base hiện có
 
-```text
-src/main/java/com/crms/mvc/
-  CarRentalApplication.java
-  controller/        HTTP, form, Model, tên template
-  service/           Interface nghiệp vụ
-  service/impl/      Xử lý nghiệp vụ, transaction, map DTO
-  repository/        JpaRepository
-  entity/            13 JPA entity dùng chung
-  dto/               Dữ liệu cho view/form
-src/main/resources/
-  application.properties
-  templates/
-    fragments/ vehicles/ auth/ profile/ licenses/
-    bookings/ admin/ promotions/ reviews/
-  static/css/bootstrap.css
-database/            schema.sql, seed.sql
-docs/                Kiểm tra hiện trạng, phân công, ERD, quy trình GitHub
-```
+- 13 entity/repository, kết nối PostgreSQL, SQL tạo bảng và dữ liệu mẫu.
+- Danh sách, tìm kiếm, chi tiết xe và xử lý xe không tồn tại.
+- Các luồng tài khoản, booking, tiền, khuyến mãi, đánh giá, kiểm định, sự cố còn cần triển khai.
 
-## Quy ước
+## Code và database
 
-- Controller gọi service; service gọi repository. Không đặt nghiệp vụ trong HTML.
-- Constructor injection; DTO cho form, không bind request thẳng vào entity.
-- Entity liên quan dùng lazy; map DTO trong transaction vì `open-in-view=false`.
-- Schema database-first; Hibernate `validate`, không tự sửa database.
-- Tiền: `BigDecimal`/`NUMERIC(14,2)`, VND. Thời gian: `OffsetDateTime`; JVM/JDBC dùng UTC, giao diện lịch cần hiển thị `Asia/Ho_Chi_Minh`.
-- Mật khẩu phải hash khi làm auth; chưa có tài khoản admin mặc định. Base không có endpoint quản trị ghi dữ liệu.
-- Mỗi người làm cả Java và Thymeleaf trong module mình phụ trách.
+- Java: `src/main/java/com/crms/mvc/`; theo `controller → service → service/impl → repository → entity`, DTO cho form/view.
+- Giao diện: `src/main/resources/templates/`; CSS trong `static/`.
+- SQL: [schema](database/schema.sql), [seed](database/seed.sql). Nếu dùng DB sẵn, chạy trên database mới/empty rồi chỉnh cấu hình local.
+- ERD: [erd_car.drawio](docs/reference/erd_car.drawio). Conceptual có 13 thực thể; physical trong file còn 8 bảng. `SLOT` là khung giờ thuê theo loại xe.
+- Schema base là đề xuất: biển số–xe hiện hành 1:1, booking được gán xe sau; cần thống nhất capacity slot và chính sách cọc/hoàn/phạt khi làm luồng thuê.
+- Mẫu để làm theo: `VehicleController`, `VehicleService`, `VehicleServiceImpl`, `VehicleDTO`, các trang `templates/vehicles/`.
 
-## Kiểm tra
-
-```powershell
-mvn verify
-```
-
-5 test MVC chạy không cần database, kiểm tra render Thymeleaf, kết quả tìm kiếm, rỗng, escape input, chi tiết và 404. Khi thêm nghiệp vụ, bổ sung kiểm tra đúng phần thay đổi.
-
-Bắt đầu tại [checklist bàn giao](docs/HANDOFF.md).
-
-Xem [kết quả kiểm tra thực tế](docs/VALIDATION.md), [phân công](docs/TEAM-PLAN.md), [đưa lên GitHub](docs/GITHUB.md).
-
-## Nguồn kỹ thuật
-
-- [Spring Boot: Java/Maven requirements](https://docs.spring.io/spring-boot/system-requirements.html).
-- [Spring Boot: database initialization và ddl-auto](https://docs.spring.io/spring-boot/how-to/data-initialization.html).
-
-Version Boot/Java giữ cùng project PE; PostgreSQL giữ lựa chọn đã dùng trước đó. Bootstrap giữ nguyên header MIT của file tham khảo.
+Kiểm tra build/test: `mvn verify`.

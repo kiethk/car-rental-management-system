@@ -2,7 +2,7 @@
 
 -- SLOT = rental time window for a vehicle type (confirmed by user).
 
--- Read docs/ERD-REVIEW.md for mapping decisions awaiting team review.
+-- Read README.md for mapping decisions to agree on during implementation.
 
 -- Apply to a new/empty database. Existing schemas are never dropped.
 
