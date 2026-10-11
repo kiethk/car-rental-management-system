@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DriveNow — Chi tiết xe</title><link rel="stylesheet" th:href="@{/css/bootstrap.css}"></head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="container">
+    <h1 th:text="${vehicle.brand + ' ' + vehicle.model}"></h1>
+    <dl class="row my-4">
+        <dt class="col-sm-3">Biển số</dt><dd class="col-sm-9" th:text="${vehicle.licensePlate}"></dd>
+        <dt class="col-sm-3">Năm sản xuất</dt><dd class="col-sm-9" th:text="${vehicle.year}"></dd>
+        <dt class="col-sm-3">Giá / giờ (VND)</dt><dd class="col-sm-9" th:text="${vehicle.pricePerHour}"></dd>
+        <dt class="col-sm-3">Trạng thái</dt><dd class="col-sm-9" th:text="${vehicle.status}"></dd>
+    </dl>
+    <a class="btn btn-secondary" th:href="@{/vehicles}">Quay lại</a>
+</main>
+</body></html>

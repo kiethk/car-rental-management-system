@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DriveNow — Danh sách xe</title><link rel="stylesheet" th:href="@{/css/bootstrap.css}"></head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="container">
+    <h1>Danh sách xe</h1>
+    <form method="get" th:action="@{/vehicles}" class="form-inline my-4">
+        <label for="keyword" class="mr-2">Hãng / mẫu xe</label>
+        <input id="keyword" name="keyword" th:value="${keyword}" class="form-control mr-2" maxlength="100">
+        <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+    </form>
+    <div class="table-responsive" th:unless="${#lists.isEmpty(vehicles)}">
+    <table class="table table-bordered">
+        <thead class="thead-light"><tr><th>Biển số</th><th>Hãng</th><th>Mẫu</th><th>Năm</th><th>Giá / giờ (VND)</th><th>Trạng thái</th><th></th></tr></thead>
+        <tbody><tr th:each="vehicle : ${vehicles}">
+            <td th:text="${vehicle.licensePlate}"></td><td th:text="${vehicle.brand}"></td>
+            <td th:text="${vehicle.model}"></td><td th:text="${vehicle.year}"></td>
+            <td th:text="${vehicle.pricePerHour}"></td><td th:text="${vehicle.status}"></td>
+            <td><a th:href="@{/vehicles/{id}(id=${vehicle.id})}">Chi tiết</a></td>
+        </tr></tbody>
+    </table></div>
+    <p th:if="${#lists.isEmpty(vehicles)}">Không tìm thấy xe.</p>
+</main>
+</body></html>

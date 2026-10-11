@@ -1,0 +1,15 @@
+target/
+.idea/
+.vscode/
+*.iml
+*.log
+.env
+.env.*
+!.env.example
+src/main/resources/application-local.properties
+.build-cache/
+.DS_Store
+Thumbs.db
+
+# User-uploaded documents stay local.
+uploads/
