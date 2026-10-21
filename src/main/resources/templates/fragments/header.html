@@ -1,14 +1,75 @@
 <!doctype html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <body>
-<nav th:fragment="header" class="navbar navbar-dark bg-dark mb-4">
-    <a class="navbar-brand" th:href="@{/}">DriveNow · CRMS</a>
-    <a class="text-white" th:href="@{/vehicles}">Danh sách xe</a>
-    <span class="text-white" th:if="${session.customerName}">
-        Hello, <span th:text="${session.customerName}"></span> ·
-        <a class="text-white" th:href="@{/logout}">Logout</a>
-    </span>
-    <a class="text-white" th:unless="${session.customerName}" th:href="@{/login}">Login</a>
+<nav th:fragment="header" class="bg-white border-b border-gray-200 sticky-top shadow-sm">
+    <div class="container py-2 d-flex align-items-center justify-content-between">
+        
+        <!-- Logo DriveNow -->
+        <a th:href="@{/}" class="d-flex align-items-center text-decoration-none mr-4">
+            <img th:src="@{/images/car-rental-logo.svg}" alt="DriveNow Logo"
+                 style="width: 40px; height: 40px; border-radius: 10px;" class="mr-2">
+            <div>
+                <span class="font-weight-bold text-navy h5 mb-0 d-block leading-tight">DriveNow</span>
+                <span class="text-amber small font-weight-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">Ho Chi Minh City</span>
+            </div>
+        </a>
+
+        <!-- Main Navigation Links -->
+        <div class="d-none d-md-flex align-items-center mr-auto">
+            <a th:href="@{/}" class="px-3 py-2 text-dark text-decoration-none font-weight-medium rounded hover-surface">Home</a>
+            <a th:href="@{/vehicles}" class="px-3 py-2 text-dark text-decoration-none font-weight-medium rounded hover-surface">Browse Cars</a>
+            <a th:if="${session.customerId != null}" th:href="@{/bookings/my-bookings}" class="px-3 py-2 text-dark text-decoration-none font-weight-medium rounded hover-surface">My Bookings</a>
+        </div>
+
+        <!-- Right Side: License Status & Auth -->
+        <div class="d-flex align-items-center">
+            
+            <!-- Quick Admin Panel Link -->
+            <a th:if="${session.employeeId != null}" th:href="@{/admin/dashboard}" class="btn btn-outline-warning btn-sm mr-3 font-weight-bold">
+                ⚙️ Admin Panel
+            </a>
+
+            <!-- Driving License Status Badge -->
+            <div th:if="${session.customerId != null}" class="mr-3 d-none d-sm-block">
+                <a th:href="@{/licenses/my-license}" class="text-decoration-none">
+                    <span th:if="${session.licenseStatus == 'approved'}" class="badge badge-success px-2 py-1">
+                        ● License Verified
+                    </span>
+                    <span th:if="${session.licenseStatus == 'pending'}" class="badge badge-warning px-2 py-1">
+                        ● License Pending
+                    </span>
+                    <span th:if="${session.licenseStatus == 'rejected'}" class="badge badge-danger px-2 py-1">
+                        ● License Rejected
+                    </span>
+                    <span th:if="${session.licenseStatus == null or session.licenseStatus == 'not_uploaded'}" class="badge badge-secondary px-2 py-1">
+                        ○ Upload License
+                    </span>
+                </a>
+            </div>
+
+            <!-- Profile & Logout (Customer) -->
+            <div th:if="${session.customerName != null}" class="d-flex align-items-center">
+                <span class="text-navy font-weight-bold mr-3 small">
+                    Hi, <span th:text="${session.customerName}">Customer</span>
+                </span>
+                <a th:href="@{/logout}" class="btn btn-sm btn-outline-secondary">Logout</a>
+            </div>
+
+            <!-- Profile & Logout (Employee) -->
+            <div th:if="${session.employeeName != null}" class="d-flex align-items-center">
+                <span class="text-warning font-weight-bold mr-3 small">
+                    Staff: <span th:text="${session.employeeName}">Admin</span> (<span th:text="${session.employeeRole}">Role</span>)
+                </span>
+                <a th:href="@{/logout}" class="btn btn-sm btn-outline-secondary">Logout</a>
+            </div>
+
+            <!-- Guest Login -->
+            <div th:if="${session.customerName == null and session.employeeName == null}">
+                <a th:href="@{/login}" class="btn btn-navy btn-sm px-3">Sign In</a>
+            </div>
+
+        </div>
+    </div>
 </nav>
 </body>
 </html>

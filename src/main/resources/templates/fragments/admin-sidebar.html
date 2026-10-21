@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+    Admin Sidebar Fragment
+    Pass active param: 'dashboard', 'bookings', 'vehicles', 'inspections', 'promotions', 'issues', 'licenses', 'accounts'
+-->
+<div th:fragment="sidebar(active)" class="list-group shadow-sm border-0 rounded-lg overflow-hidden mb-4">
+    <div class="list-group-item bg-navy text-white py-3 border-0">
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="font-weight-bold text-uppercase small" style="letter-spacing: 0.05em;">CRMS Admin</span>
+            <span class="badge badge-warning text-dark font-weight-bold" th:text="${session.employeeRole != null ? session.employeeRole : 'STAFF'}">STAFF</span>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <a th:href="@{/admin/dashboard}"
+       th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'dashboard'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
+        📊 Dashboard
+    </a>
+
+    <!-- Kiet (Issue #2): Booking lifecycle -->
+    <a th:href="@{/admin/bookings}"
+       th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'bookings'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
+        🚗 Rental Management (Assign / Check-in / Check-out)
+    </a>
+
+    <!-- Phuc (Issue #4): Fleet, Vehicle Types, License Plates, Inspections -->
+    <a th:href="@{/admin/vehicles}"
+       th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'vehicles'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
+        🚘 Fleet & License Plates
+    </a>
+    <a th:href="@{/admin/inspections}"
+       th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'inspections'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
+        🔧 Inspection & Maintenance Schedule
+    </a>
+
+    <!-- Tri (Issue #5): Promotions, Reviews, Issues -->
+    <a th:href="@{/admin/promotions}"
+       th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'promotions'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
+        🎟️ Promotions & Vouchers
+    </a>
+    <a th:href="@{/admin/issues}"
+       th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'issues'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
+        ⚠️ Incidents & Fines
+    </a>
+
+    <!-- Phu (Issue #3): License approval, Accounts -->
+    <a th:href="@{/admin/licenses}"
+       th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'licenses'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
+        🪪 Driving License Review
+    </a>
+    <a th:href="@{/admin/accounts}"
+       th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'accounts'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
+        👥 Account Management
+    </a>
+
+    <div class="list-group-item bg-light p-3 text-center border-0">
+        <a th:href="@{/}" class="btn btn-outline-secondary btn-sm btn-block">⬅ Back to Customer View</a>
+    </div>
+</div>
+</body>
+</html>

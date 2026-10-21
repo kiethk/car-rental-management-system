@@ -1,26 +1,96 @@
 <!doctype html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>DriveNow — Danh sách xe</title><link rel="stylesheet" th:href="@{/css/bootstrap.css}"></head>
-<body>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DriveNow — Browse Cars</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface">
+
 <div th:replace="~{fragments/header :: header}"></div>
-<main class="container">
-    <h1>Danh sách xe</h1>
-    <form method="get" th:action="@{/vehicles}" class="form-inline my-4">
-        <label for="keyword" class="mr-2">Hãng / mẫu xe</label>
-        <input id="keyword" name="keyword" th:value="${keyword}" class="form-control mr-2" maxlength="100">
-        <button class="btn btn-primary" type="submit">Tìm kiếm</button>
-    </form>
-    <div class="table-responsive" th:unless="${#lists.isEmpty(vehicles)}">
-    <table class="table table-bordered">
-        <thead class="thead-light"><tr><th>Biển số</th><th>Hãng</th><th>Mẫu</th><th>Năm</th><th>Giá / giờ (VND)</th><th>Trạng thái</th><th></th></tr></thead>
-        <tbody><tr th:each="vehicle : ${vehicles}">
-            <td th:text="${vehicle.licensePlate}"></td><td th:text="${vehicle.brand}"></td>
-            <td th:text="${vehicle.model}"></td><td th:text="${vehicle.year}"></td>
-            <td th:text="${vehicle.pricePerHour}"></td><td th:text="${vehicle.status}"></td>
-            <td><a th:href="@{/vehicles/{id}(id=${vehicle.id})}">Chi tiết</a></td>
-        </tr></tbody>
-    </table></div>
-    <p th:if="${#lists.isEmpty(vehicles)}">Không tìm thấy xe.</p>
+
+<main class="container my-4 flex-grow-1">
+    <!-- Page Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom">
+        <div>
+            <h1 class="h3 font-weight-bold text-navy mb-1">Browse Available Cars</h1>
+            <p class="text-muted small mb-0">Find your perfect ride, check specifications and book a time slot.</p>
+        </div>
+
+        <!-- Search Box -->
+        <form method="get" th:action="@{/vehicles}" class="form-inline mt-3 mt-md-0">
+            <div class="input-group">
+                <input id="keyword" name="keyword" th:value="${keyword}"
+                       class="form-control form-control-sm"
+                       placeholder="Search by brand or model..."
+                       maxlength="100" style="min-width: 260px;">
+                <div class="input-group-append">
+                    <button class="btn btn-navy btn-sm" type="submit">Search</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Vehicles Table -->
+    <div class="card card-drivenow border-0 p-3" th:unless="${#lists.isEmpty(vehicles)}">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="thead-light">
+                    <tr>
+                        <th class="border-top-0">Plate</th>
+                        <th class="border-top-0">Brand / Model</th>
+                        <th class="border-top-0">Year</th>
+                        <th class="border-top-0 text-right">Price / Hour</th>
+                        <th class="border-top-0 text-center">Status</th>
+                        <th class="border-top-0 text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="vehicle : ${vehicles}">
+                        <td class="font-weight-bold text-navy">
+                            <span class="badge badge-light border px-2 py-1" th:text="${vehicle.licensePlate}">51A-123.45</span>
+                        </td>
+                        <td>
+                            <div class="font-weight-bold" th:text="${vehicle.brand + ' ' + vehicle.model}">Toyota Vios</div>
+                        </td>
+                        <td th:text="${vehicle.year}">2023</td>
+                        <td class="text-right font-weight-bold text-amber">
+                            <span th:text="${#numbers.formatDecimal(vehicle.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span> VND
+                        </td>
+                        <td class="text-center">
+                            <span th:if="${vehicle.status == 'available'}" class="badge badge-success px-2 py-1">Available</span>
+                            <span th:if="${vehicle.status == 'rented'}" class="badge badge-warning px-2 py-1">Rented</span>
+                            <span th:if="${vehicle.status == 'maintenance'}" class="badge badge-secondary px-2 py-1">Maintenance</span>
+                        </td>
+                        <td class="text-center">
+                            <a th:href="@{/vehicles/{id}(id=${vehicle.id})}" class="btn btn-sm btn-outline-primary px-3">
+                                View Details
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div th:if="${#lists.isEmpty(vehicles)}" class="card card-drivenow border-0 p-5 text-center my-4">
+        <div class="text-muted h4 mb-2">🚗 No cars found</div>
+        <p class="text-muted small">Try a different keyword or clear your search filter.</p>
+        <div>
+            <a th:href="@{/vehicles}" class="btn btn-navy btn-sm">View All Cars</a>
+        </div>
+    </div>
 </main>
-</body></html>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>
