@@ -26,6 +26,17 @@ public class Customer {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
+    public Customer() {
+    }
+
+    public Customer(String name, String phone, String email, String passwordHash, OffsetDateTime createdAt) {
+        this.name = name;
+        this.phone = phone;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.createdAt = createdAt;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

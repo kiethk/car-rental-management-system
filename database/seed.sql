@@ -1,22 +1,22 @@
 -- Full Seed Data for CRMS (all 13 tables)
--- Password mặc định cho tất cả tài khoản test: 123456 (plain text khớp với AuthServiceImpl hiện tại)
+-- Mật khẩu demo cho tất cả tài khoản seed: 123456
 
 BEGIN;
 
 -- 1. CUSTOMERS
 INSERT INTO customers (customer_id, name, phone, email, password_hash, created_at)
 VALUES 
-    (1, 'Nguyễn Văn Khách', '0901234567', 'customer@gmail.com', '123456', CURRENT_TIMESTAMP - INTERVAL '10 days'),
-    (2, 'Trần Thị Thuê', '0912345678', 'customer2@gmail.com', '123456', CURRENT_TIMESTAMP - INTERVAL '5 days'),
-    (3, 'Lê Văn Lái', '0923456789', 'customer3@gmail.com', '123456', CURRENT_TIMESTAMP - INTERVAL '2 days')
+    (1, 'Nguyễn Văn Khách', '0901234567', 'customer@gmail.com', '$2a$10$f1dC/wkm8nQT1k3YNvBP3e75TsnTOcT4JaMR6LcS.KsJ5nBC0w.nW', CURRENT_TIMESTAMP - INTERVAL '10 days'),
+    (2, 'Trần Thị Thuê', '0912345678', 'customer2@gmail.com', '$2a$10$f1dC/wkm8nQT1k3YNvBP3e75TsnTOcT4JaMR6LcS.KsJ5nBC0w.nW', CURRENT_TIMESTAMP - INTERVAL '5 days'),
+    (3, 'Lê Văn Lái', '0923456789', 'customer3@gmail.com', '$2a$10$f1dC/wkm8nQT1k3YNvBP3e75TsnTOcT4JaMR6LcS.KsJ5nBC0w.nW', CURRENT_TIMESTAMP - INTERVAL '2 days')
 ON CONFLICT (customer_id) DO NOTHING;
 
 -- 2. EMPLOYEES
 -- role: 'admin' | 'staff'
 INSERT INTO employees (employee_id, name, phone, email, password_hash, role)
 VALUES 
-    (1, 'Admin Quản Trị', '0988888888', 'admin@crms.com', '123456', 'admin'),
-    (2, 'Nhân Viên Hỗ Trợ', '0977777777', 'staff@crms.com', '123456', 'staff')
+    (1, 'Admin Quản Trị', '0988888888', 'admin@crms.com', '$2a$10$f1dC/wkm8nQT1k3YNvBP3e75TsnTOcT4JaMR6LcS.KsJ5nBC0w.nW', 'admin'),
+    (2, 'Nhân Viên Hỗ Trợ', '0977777777', 'staff@crms.com', '$2a$10$f1dC/wkm8nQT1k3YNvBP3e75TsnTOcT4JaMR6LcS.KsJ5nBC0w.nW', 'staff')
 ON CONFLICT (employee_id) DO NOTHING;
 
 -- 3. VEHICLE_TYPES

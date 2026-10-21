@@ -52,6 +52,7 @@
                 <span class="text-navy font-weight-bold mr-3 small">
                     Hi, <span th:text="${session.customerName}">Customer</span>
                 </span>
+                <a th:href="@{/profile}" class="btn btn-sm btn-outline-secondary mr-2">Profile</a>
                 <a th:href="@{/logout}" class="btn btn-sm btn-outline-secondary">Logout</a>
             </div>
 
@@ -60,6 +61,9 @@
                 <span class="text-warning font-weight-bold mr-3 small">
                     Staff: <span th:text="${session.employeeName}">Admin</span> (<span th:text="${session.employeeRole}">Role</span>)
                 </span>
+                <a th:href="@{/admin/password}" class="btn btn-sm btn-outline-secondary mr-2">
+                    Change Password
+                </a>
                 <a th:href="@{/logout}" class="btn btn-sm btn-outline-secondary">Logout</a>
             </div>
 
