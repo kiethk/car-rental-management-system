@@ -4,6 +4,11 @@
 <nav th:fragment="header" class="navbar navbar-dark bg-dark mb-4">
     <a class="navbar-brand" th:href="@{/}">DriveNow · CRMS</a>
     <a class="text-white" th:href="@{/vehicles}">Danh sách xe</a>
+    <span class="text-white" th:if="${session.customerName}">
+        Hello, <span th:text="${session.customerName}"></span> ·
+        <a class="text-white" th:href="@{/logout}">Logout</a>
+    </span>
+    <a class="text-white" th:unless="${session.customerName}" th:href="@{/login}">Login</a>
 </nav>
 </body>
 </html>
