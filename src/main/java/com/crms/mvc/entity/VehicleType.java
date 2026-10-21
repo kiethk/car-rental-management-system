@@ -32,9 +32,6 @@ public class VehicleType {
     @Column(name = "price_per_hour", nullable = false, precision = 14, scale = 2)
     private BigDecimal pricePerHour;
 
-    @Column(name = "deposit_amount", nullable = false, precision = 14, scale = 2)
-    private BigDecimal depositAmount;
-
     @Column(name = "description", length = 2000)
     private String description;
 
@@ -64,9 +61,6 @@ public class VehicleType {
 
     public BigDecimal getPricePerHour() { return pricePerHour; }
     public void setPricePerHour(BigDecimal pricePerHour) { this.pricePerHour = pricePerHour; }
-
-    public BigDecimal getDepositAmount() { return depositAmount; }
-    public void setDepositAmount(BigDecimal depositAmount) { this.depositAmount = depositAmount; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

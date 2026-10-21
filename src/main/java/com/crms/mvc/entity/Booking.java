@@ -32,41 +32,14 @@ public class Booking {
     @JoinColumn(name = "promotion_id", nullable = true)
     private Promotion promotion;
 
-    @Column(name = "delivery_time", nullable = false)
-    private OffsetDateTime deliveryTime;
+    @Column(name = "pickup_time", nullable = false)
+    private OffsetDateTime pickupTime;
 
     @Column(name = "scheduled_end_time", nullable = false)
     private OffsetDateTime scheduledEndTime;
 
     @Column(name = "actual_return_time")
     private OffsetDateTime actualReturnTime;
-
-    @Column(name = "pickup_method", nullable = false, length = 30)
-    private String pickupMethod;
-
-    @Column(name = "return_method", nullable = false, length = 30)
-    private String returnMethod;
-
-    @Column(name = "delivery_address", length = 500)
-    private String deliveryAddress;
-
-    @Column(name = "delivery_lat", precision = 10, scale = 7)
-    private BigDecimal deliveryLat;
-
-    @Column(name = "delivery_long", precision = 10, scale = 7)
-    private BigDecimal deliveryLong;
-
-    @Column(name = "return_address", length = 500)
-    private String returnAddress;
-
-    @Column(name = "return_lat", precision = 10, scale = 7)
-    private BigDecimal returnLat;
-
-    @Column(name = "return_long", precision = 10, scale = 7)
-    private BigDecimal returnLong;
-
-    @Column(name = "delivery_fee", nullable = false, precision = 14, scale = 2)
-    private BigDecimal deliveryFee;
 
     @Column(name = "late_fee", nullable = false, precision = 14, scale = 2)
     private BigDecimal lateFee;
@@ -92,9 +65,6 @@ public class Booking {
     @Column(name = "discount_amount", nullable = false, precision = 14, scale = 2)
     private BigDecimal discountAmount;
 
-    @Column(name = "refund_amount", nullable = false, precision = 14, scale = 2)
-    private BigDecimal refundAmount;
-
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -113,41 +83,14 @@ public class Booking {
     public Promotion getPromotion() { return promotion; }
     public void setPromotion(Promotion promotion) { this.promotion = promotion; }
 
-    public OffsetDateTime getDeliveryTime() { return deliveryTime; }
-    public void setDeliveryTime(OffsetDateTime deliveryTime) { this.deliveryTime = deliveryTime; }
+    public OffsetDateTime getPickupTime() { return pickupTime; }
+    public void setPickupTime(OffsetDateTime pickupTime) { this.pickupTime = pickupTime; }
 
     public OffsetDateTime getScheduledEndTime() { return scheduledEndTime; }
     public void setScheduledEndTime(OffsetDateTime scheduledEndTime) { this.scheduledEndTime = scheduledEndTime; }
 
     public OffsetDateTime getActualReturnTime() { return actualReturnTime; }
     public void setActualReturnTime(OffsetDateTime actualReturnTime) { this.actualReturnTime = actualReturnTime; }
-
-    public String getPickupMethod() { return pickupMethod; }
-    public void setPickupMethod(String pickupMethod) { this.pickupMethod = pickupMethod; }
-
-    public String getReturnMethod() { return returnMethod; }
-    public void setReturnMethod(String returnMethod) { this.returnMethod = returnMethod; }
-
-    public String getDeliveryAddress() { return deliveryAddress; }
-    public void setDeliveryAddress(String deliveryAddress) { this.deliveryAddress = deliveryAddress; }
-
-    public BigDecimal getDeliveryLat() { return deliveryLat; }
-    public void setDeliveryLat(BigDecimal deliveryLat) { this.deliveryLat = deliveryLat; }
-
-    public BigDecimal getDeliveryLong() { return deliveryLong; }
-    public void setDeliveryLong(BigDecimal deliveryLong) { this.deliveryLong = deliveryLong; }
-
-    public String getReturnAddress() { return returnAddress; }
-    public void setReturnAddress(String returnAddress) { this.returnAddress = returnAddress; }
-
-    public BigDecimal getReturnLat() { return returnLat; }
-    public void setReturnLat(BigDecimal returnLat) { this.returnLat = returnLat; }
-
-    public BigDecimal getReturnLong() { return returnLong; }
-    public void setReturnLong(BigDecimal returnLong) { this.returnLong = returnLong; }
-
-    public BigDecimal getDeliveryFee() { return deliveryFee; }
-    public void setDeliveryFee(BigDecimal deliveryFee) { this.deliveryFee = deliveryFee; }
 
     public BigDecimal getLateFee() { return lateFee; }
     public void setLateFee(BigDecimal lateFee) { this.lateFee = lateFee; }
@@ -172,7 +115,4 @@ public class Booking {
 
     public BigDecimal getDiscountAmount() { return discountAmount; }
     public void setDiscountAmount(BigDecimal discountAmount) { this.discountAmount = discountAmount; }
-
-    public BigDecimal getRefundAmount() { return refundAmount; }
-    public void setRefundAmount(BigDecimal refundAmount) { this.refundAmount = refundAmount; }
 }
