@@ -24,6 +24,9 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     List<Vehicle> findByStatus(String status);
 
+    @Query("SELECT v FROM Vehicle v JOIN FETCH v.vehicleType vt LEFT JOIN FETCH v.licensePlate lp WHERE v.status = :status")
+    List<Vehicle> findByStatusWithDetails(@Param("status") String status);
+
     @Query("SELECT v FROM Vehicle v JOIN FETCH v.vehicleType vt LEFT JOIN FETCH v.licensePlate lp WHERE v.id = :id")
     Optional<Vehicle> findByIdWithDetails(@Param("id") Long id);
 

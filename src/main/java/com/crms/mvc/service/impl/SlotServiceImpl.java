@@ -41,7 +41,7 @@ public class SlotServiceImpl implements SlotService {
     @Override
     @Transactional(readOnly = true)
     public List<Vehicle> findAvailableVehiclesInTimeRange(Long vehicleTypeId, OffsetDateTime startTime, OffsetDateTime endTime) {
-        List<Vehicle> allVehiclesOfType = vehicleRepository.findByStatus("available").stream()
+        List<Vehicle> allVehiclesOfType = vehicleRepository.findByStatusWithDetails("available").stream()
                 .filter(v -> v.getVehicleType().getId().equals(vehicleTypeId))
                 .toList();
 
