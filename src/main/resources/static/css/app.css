@@ -108,7 +108,7 @@ svg.w-6, .w-6 { width: 24px !important; height: 24px !important; min-width: 24px
   max-width: 250px !important;
   flex-shrink: 0 !important;
   border-left: 1px solid #e2e8f0 !important;
-  padding-left: 2rem !important; /* Dời đường dọc sang trái rộng 32px, chữ và nút không bị dính */
+  padding-left: 2rem !important; /* Dá»i Ä‘Æ°á»ng dá»c sang trÃ¡i rá»™ng 32px, chá»¯ vÃ  nÃºt khÃ´ng bá»‹ dÃ­nh */
   display: flex !important;
   flex-direction: column !important;
   justify-content: space-between !important;
@@ -602,7 +602,7 @@ svg.w-6, .w-6 { width: 24px !important; height: 24px !important; min-width: 24px
   display: block;
 }
 
-/* Seamless Transfer Details Rows (No boxes, no "ô ô") */
+/* Seamless Transfer Details Rows (No boxes, no "Ã´ Ã´") */
 .deposit-info-list {
   display: flex;
   flex-direction: column;
@@ -870,6 +870,7 @@ svg.w-6, .w-6 { width: 24px !important; height: 24px !important; min-width: 24px
 }
 
 
+
 /* Soft buttons for table actions & badges */
 .btn-soft-primary {
   background-color: rgba(30, 41, 59, 0.08);
@@ -922,7 +923,6 @@ svg.w-6, .w-6 { width: 24px !important; height: 24px !important; min-width: 24px
   color: #ffffff;
 }
 
-
 /* --- Global Container & Standard Spacing --- */
 .crms-container {
   max-width: 1280px !important;
@@ -935,25 +935,51 @@ svg.w-6, .w-6 { width: 24px !important; height: 24px !important; min-width: 24px
 }
 
 /* --- Header Navigation & Link Resets --- */
-.crms-nav-link {
+.crms-nav-link,
+.header-nav-link {
   display: inline-flex !important;
   align-items: center !important;
   padding: 0.5rem 1rem !important;
-  border-radius: 0.375rem !important;
+  border-radius: 0.5rem !important;
   font-size: 0.875rem !important;
   font-weight: 500 !important;
   color: #64748b !important;
   text-decoration: none !important;
   transition: all 0.15s ease !important;
 }
-.crms-nav-link:hover {
+.crms-nav-link:hover,
+.header-nav-link:hover {
   color: #0f172a !important;
   background-color: #f1f5f9 !important;
+  text-decoration: none !important;
 }
-.crms-nav-link.active {
+.crms-nav-link.active,
+.header-nav-link.active {
   color: #0f172a !important;
   background-color: #f1f5f9 !important;
   font-weight: 700 !important;
+}
+
+/* Header User Button (Supports both styles) */
+.header-user-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 0.4rem 0.75rem !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid #e2e8f0 !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease-in-out !important;
+}
+.header-user-btn:hover {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
 }
 
 /* --- Universal Hero Title Banner (Unified between Browse & Rent Pages) --- */
@@ -1013,7 +1039,8 @@ svg.w-6, .w-6 { width: 24px !important; height: 24px !important; min-width: 24px
 }
 
 /* --- Dropdown Menus --- */
-.crms-dropdown {
+.crms-dropdown,
+.user-dropdown-container {
   position: relative !important;
   display: inline-block !important;
 }
@@ -1021,20 +1048,24 @@ svg.w-6, .w-6 { width: 24px !important; height: 24px !important; min-width: 24px
   cursor: pointer !important;
   user-select: none !important;
 }
-.crms-dropdown-menu {
+.crms-dropdown-menu,
+.header-dropdown-menu {
   position: absolute !important;
   right: 0 !important;
   top: calc(100% + 8px) !important;
-  width: 230px !important;
+  min-width: 240px !important;
   background: #ffffff !important;
   border: 1px solid #e2e8f0 !important;
   border-radius: 0.75rem !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
   z-index: 1050 !important;
-  display: none;
+  display: none !important;
   overflow: hidden !important;
 }
-.crms-dropdown.open .crms-dropdown-menu {
+.crms-dropdown.open .crms-dropdown-menu,
+.crms-dropdown.open .header-dropdown-menu,
+.user-dropdown-container.open .crms-dropdown-menu,
+.user-dropdown-container.open .header-dropdown-menu {
   display: block !important;
   animation: crmsDropdownAnim 0.15s ease-out !important;
 }
@@ -1042,7 +1073,8 @@ svg.w-6, .w-6 { width: 24px !important; height: 24px !important; min-width: 24px
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.crms-dropdown-item {
+.crms-dropdown-item,
+.header-dropdown-item {
   display: flex !important;
   align-items: center !important;
   gap: 0.625rem !important;
@@ -1053,9 +1085,18 @@ svg.w-6, .w-6 { width: 24px !important; height: 24px !important; min-width: 24px
   text-decoration: none !important;
   transition: background-color 0.15s ease, color 0.15s ease !important;
 }
-.crms-dropdown-item:hover {
+.crms-dropdown-item:hover,
+.header-dropdown-item:hover {
   background-color: #f8fafc !important;
   color: #0f172a !important;
+  text-decoration: none !important;
+}
+
+.dropdown-chevron {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.dropdown-chevron.rotate-180 {
+  transform: rotate(180deg) !important;
 }
 
 /* --- Car Card Buttons (Pixel-Perfect Vertical Centering) --- */
