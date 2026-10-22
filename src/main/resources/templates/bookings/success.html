@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Booking Confirmed — DriveNow</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="bg-surface text-navy min-h-screen flex flex-col items-center justify-center px-4 py-10">
+
+<!-- Success Card matching BookingSuccessPage.tsx -->
+<div class="bg-white rounded-lg border border-border shadow-xs w-full max-w-lg overflow-hidden my-auto">
+    <!-- Green Header -->
+    <div class="bg-green-700 p-8 text-center">
+        <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                <path d="M20 6L9 17l-5-5"/>
+            </svg>
+        </div>
+        <h1 class="font-heading text-2xl text-white mb-1">Booking Confirmed!</h1>
+        <p class="text-green-100 text-xs">Your security deposit has been received</p>
+    </div>
+
+    <!-- Booking Reference Bar -->
+    <div class="bg-surface px-6 py-3 flex items-center justify-between border-b border-border text-xs">
+        <span class="text-muted-foreground font-medium uppercase tracking-wider">Booking Reference</span>
+        <span class="font-mono font-bold text-navy text-sm tracking-wide" th:text="'#' + ${booking.id}">#1</span>
+    </div>
+
+    <!-- Details Body -->
+    <div class="p-6">
+        <!-- Vehicle Thumbnail & Name -->
+        <div class="flex gap-4 mb-5 pb-5 border-b border-border">
+            <img th:src="${booking.imageUrl}" th:alt="${booking.vehicleTypeName}" class="w-20 h-14 rounded-md object-cover bg-surface-2 flex-shrink-0">
+            <div>
+                <div class="font-bold text-navy text-base" th:text="${booking.vehicleTypeName}">Toyota Vios</div>
+                <div class="text-xs text-muted-foreground capitalize" th:text="${booking.vehicleCategory + ' · ' + booking.seats + ' seats'}">sedan · 5 seats</div>
+                <div class="text-xs text-muted-foreground mt-1">
+                    Assigned plate: <span class="font-mono font-bold text-navy" th:text="${booking.licensePlate}">51A-123.45</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 Grid Tiles -->
+        <div class="grid grid-cols-2 gap-3 mb-5">
+            <div class="bg-surface rounded-md p-3">
+                <div class="text-xs text-muted-foreground mb-0.5">Pickup Date</div>
+                <div class="text-sm font-semibold text-navy" th:text="${#temporals.format(booking.pickupTime, 'dd/MM/yyyy')}">Date</div>
+            </div>
+            <div class="bg-surface rounded-md p-3">
+                <div class="text-xs text-muted-foreground mb-0.5">Pickup Time</div>
+                <div class="text-sm font-semibold text-navy" th:text="${#temporals.format(booking.pickupTime, 'HH:mm')}">09:00</div>
+            </div>
+            <div class="bg-surface rounded-md p-3">
+                <div class="text-xs text-muted-foreground mb-0.5">Return Date</div>
+                <div class="text-sm font-semibold text-navy" th:text="${#temporals.format(booking.scheduledEndTime, 'dd/MM/yyyy')}">Date</div>
+            </div>
+            <div class="bg-surface rounded-md p-3">
+                <div class="text-xs text-muted-foreground mb-0.5">Return Time</div>
+                <div class="text-sm font-semibold text-navy" th:text="${#temporals.format(booking.scheduledEndTime, 'HH:mm')}">18:00</div>
+            </div>
+        </div>
+
+        <!-- Payment Summary Box -->
+        <div class="bg-navy/5 rounded-md p-4 mb-5 space-y-2 text-xs">
+            <div class="flex justify-between">
+                <span class="text-muted-foreground">Deposit paid</span>
+                <span class="font-bold text-green-700">✓ <span th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}">5,000,000</span> đ</span>
+            </div>
+            <div class="flex justify-between border-t border-border pt-2 text-sm">
+                <span class="text-muted-foreground">Rental fee due on return</span>
+                <span class="font-bold text-navy"><span th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT')}">1,200,000</span> đ</span>
+            </div>
+        </div>
+
+        <!-- Pickup Instructions Notice -->
+        <div class="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6 text-xs text-amber-800 space-y-1.5">
+            <div class="font-bold text-amber-900 text-sm mb-1">Pickup Instructions</div>
+            <div><strong>Location:</strong> 123 Đường Đinh Bộ Lĩnh, Phường 26, Bình Thạnh, TP.HCM</div>
+            <div><strong>Arrive by:</strong> <span th:text="${#temporals.format(booking.pickupTime, 'HH:mm dd/MM/yyyy')}">09:00</span></div>
+            <div><strong>Bring:</strong> Citizen ID card + Driver license for handover verification</div>
+            <div><strong>Hotline 24/7:</strong> 1800 6868</div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-3">
+            <a th:href="@{/bookings/{id}(id=${booking.id})}" class="flex-1 bg-navy hover:bg-navy-light text-white text-center font-semibold py-2.5 px-4 rounded-md text-xs transition-all text-decoration-none">
+                View Booking Details
+            </a>
+            <a th:href="@{/}" class="flex-1 bg-surface hover:bg-surface-2 border border-border text-navy text-center font-semibold py-2.5 px-4 rounded-md text-xs transition-all text-decoration-none">
+                Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+

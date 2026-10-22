@@ -1,0 +1,990 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <body>
+        <!-- Reusable Rental Schedule Search Component (shadcn/ui Calendar With Presets) -->
+        <div th:fragment="rentalSearchForm(title, buttonText, formId)" class="w-full">
+            <form
+                method="get"
+                th:action="@{/search}"
+                th:id="${formId != null ? formId : 'rental-schedule-form'}"
+                class="card-shadcn overflow-visible"
+            >
+                <!-- Preserved filters on search page -->
+                <input
+                    th:if="${category != null and category != ''}"
+                    type="hidden"
+                    name="category"
+                    th:value="${category}"
+                />
+                <input th:if="${minSeats != null and minSeats > 0}" type="hidden" name="seats" th:value="${minSeats}" />
+
+                <!-- Hidden standard inputs for form submission -->
+                <input
+                    type="hidden"
+                    id="rental-start-date"
+                    name="startDate"
+                    th:value="${selectedStartDate != null ? selectedStartDate : today}"
+                />
+                <input
+                    type="hidden"
+                    id="rental-start-time"
+                    name="startTime"
+                    th:value="${selectedStart != null ? selectedStart : '09:00'}"
+                />
+                <input
+                    type="hidden"
+                    id="rental-end-date"
+                    name="endDate"
+                    th:value="${selectedEndDate != null ? selectedEndDate : today}"
+                />
+                <input
+                    type="hidden"
+                    id="rental-end-time"
+                    name="endTime"
+                    th:value="${selectedEnd != null ? selectedEnd : '18:00'}"
+                />
+
+                <!-- Card Header -->
+                <div class="px-6 py-4 border-b border-border/80 bg-surface/60">
+                    <h2 class="text-base font-bold text-slate-900 tracking-tight" th:text="${title}">
+                        Select Rental Schedule
+                    </h2>
+                </div>
+
+                <!-- Card Content: Two-panel Schedule (Pickup vs Return) -->
+                <div class="p-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- 1. Pickup Card (shadcn clean card) -->
+                        <div class="rounded-xl border border-border/80 bg-surface/50 p-4 space-y-3.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                                    Pickup Schedule
+                                </span>
+                                <span class="text-[11px] font-medium text-muted-foreground">Earliest: 06:00 AM</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <!-- Custom Pickup Date Trigger & Popover -->
+                                <div class="space-y-1 relative" id="pickup-date-wrapper">
+                                    <button
+                                        type="button"
+                                        id="pickup-date-trigger"
+                                        class="w-full h-10 px-3 py-2 bg-white border border-border/90 rounded-lg text-sm text-left flex items-center justify-between shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-colors cursor-pointer"
+                                    >
+                                        <div class="flex items-center gap-2 truncate">
+                                            <svg
+                                                class="w-4 h-4 text-slate-500 flex-shrink-0"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                            >
+                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                                <line x1="16" y1="2" x2="16" y2="6" />
+                                                <line x1="8" y1="2" x2="8" y2="6" />
+                                                <line x1="3" y1="10" x2="21" y2="10" />
+                                            </svg>
+                                            <span id="pickup-date-display" class="font-medium text-slate-800 truncate"
+                                                >Oct 22, 2026</span
+                                            >
+                                        </div>
+                                        <svg
+                                            class="w-4 h-4 text-slate-400 flex-shrink-0 ml-1.5"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                        >
+                                            <path d="m6 9 6 6 6-6" />
+                                        </svg>
+                                    </button>
+
+                                    <!-- Light shadcn Calendar Popover with Embedded Presets -->
+                                    <div
+                                        id="pickup-date-popover"
+                                        class="hidden absolute top-full left-0 mt-2 z-50 calendar-card-light p-3 popover-shadcn select-none max-w-[calc(100vw-2rem)]"
+                                    >
+                                        <!-- Calendar Header -->
+                                        <div class="cal-dark-header">
+                                            <button
+                                                type="button"
+                                                id="pickup-cal-prev"
+                                                class="cal-nav-btn"
+                                                aria-label="Previous month"
+                                            >
+                                                <svg
+                                                    class="w-4 h-4"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2.5"
+                                                >
+                                                    <path d="m15 18-6-6 6-6" />
+                                                </svg>
+                                            </button>
+                                            <span id="pickup-cal-month-year" class="cal-dark-title">October 2026</span>
+                                            <button
+                                                type="button"
+                                                id="pickup-cal-next"
+                                                class="cal-nav-btn"
+                                                aria-label="Next month"
+                                            >
+                                                <svg
+                                                    class="w-4 h-4"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2.5"
+                                                >
+                                                    <path d="m9 18 6-6-6-6" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <!-- Weekday Headers -->
+                                        <div class="cal-dark-weekdays">
+                                            <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span
+                                            ><span>Fr</span><span>Sa</span>
+                                        </div>
+
+                                        <!-- 6-week Days Grid (42 cells) -->
+                                        <div id="pickup-cal-grid" class="cal-dark-grid">
+                                            <!-- Injected via JS -->
+                                        </div>
+
+                                        <!-- Embedded Presets inside the Calendar Popover -->
+                                        <div class="cal-preset-footer">
+                                            <div class="cal-preset-row">
+                                                <button
+                                                    type="button"
+                                                    class="pickup-preset-btn cal-preset-btn"
+                                                    data-days="0"
+                                                >
+                                                    Today
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="pickup-preset-btn cal-preset-btn"
+                                                    data-days="1"
+                                                >
+                                                    Tomorrow
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="pickup-preset-btn cal-preset-btn"
+                                                    data-days="3"
+                                                >
+                                                    In 3 days
+                                                </button>
+                                            </div>
+                                            <div class="cal-preset-row">
+                                                <button
+                                                    type="button"
+                                                    class="pickup-preset-btn cal-preset-btn"
+                                                    data-days="7"
+                                                >
+                                                    In a week
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="pickup-preset-btn cal-preset-btn"
+                                                    data-days="14"
+                                                >
+                                                    In 2 weeks
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Custom Pickup Hour Trigger & Popover -->
+                                <div class="space-y-1 relative" id="pickup-hour-wrapper">
+                                    <button
+                                        type="button"
+                                        id="pickup-hour-trigger"
+                                        class="w-full h-10 px-3 py-2 bg-white border border-border/90 rounded-lg text-sm text-left flex items-center justify-between shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-colors cursor-pointer"
+                                    >
+                                        <div class="flex items-center gap-2 truncate">
+                                            <svg
+                                                class="w-4 h-4 text-emerald-600 flex-shrink-0"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                            >
+                                                <circle cx="12" cy="12" r="10" />
+                                                <polyline points="12 6 12 12 16 14" />
+                                            </svg>
+                                            <span id="pickup-hour-display" class="font-semibold text-slate-800 truncate"
+                                                >09:00 (9:00 AM)</span
+                                            >
+                                        </div>
+                                        <svg
+                                            class="w-4 h-4 text-slate-400 flex-shrink-0 ml-1.5"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                        >
+                                            <path d="m6 9 6 6 6-6" />
+                                        </svg>
+                                    </button>
+
+                                    <!-- Light Hour Options Popover Menu -->
+                                    <div
+                                        id="pickup-hour-popover"
+                                        class="hidden absolute top-full left-0 right-0 mt-2 z-50 hour-card-dark max-h-52 overflow-y-auto popover-shadcn select-none"
+                                    >
+                                        <!-- Injected via JS -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Return Card (shadcn clean card) -->
+                        <div class="rounded-xl border border-border/80 bg-surface/50 p-4 space-y-3.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                                    Return Schedule
+                                </span>
+                                <span class="text-[11px] font-medium text-muted-foreground">Latest: 22:00 PM</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <!-- Custom Return Date Trigger & Popover -->
+                                <div class="space-y-1 relative" id="return-date-wrapper">
+                                    <button
+                                        type="button"
+                                        id="return-date-trigger"
+                                        class="w-full h-10 px-3 py-2 bg-white border border-border/90 rounded-lg text-sm text-left flex items-center justify-between shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-colors cursor-pointer"
+                                    >
+                                        <div class="flex items-center gap-2 truncate">
+                                            <svg
+                                                class="w-4 h-4 text-slate-500 flex-shrink-0"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                            >
+                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                                <line x1="16" y1="2" x2="16" y2="6" />
+                                                <line x1="8" y1="2" x2="8" y2="6" />
+                                                <line x1="3" y1="10" x2="21" y2="10" />
+                                            </svg>
+                                            <span id="return-date-display" class="font-medium text-slate-800 truncate"
+                                                >Oct 22, 2026</span
+                                            >
+                                        </div>
+                                        <svg
+                                            class="w-4 h-4 text-slate-400 flex-shrink-0 ml-1.5"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                        >
+                                            <path d="m6 9 6 6 6-6" />
+                                        </svg>
+                                    </button>
+
+                                    <!-- Light shadcn Calendar Popover with Embedded Presets -->
+                                    <div
+                                        id="return-date-popover"
+                                        class="hidden absolute top-full left-0 mt-2 z-50 calendar-card-light p-3 popover-shadcn select-none max-w-[calc(100vw-2rem)]"
+                                    >
+                                        <!-- Calendar Header -->
+                                        <div class="cal-dark-header">
+                                            <button
+                                                type="button"
+                                                id="return-cal-prev"
+                                                class="cal-nav-btn"
+                                                aria-label="Previous month"
+                                            >
+                                                <svg
+                                                    class="w-4 h-4"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2.5"
+                                                >
+                                                    <path d="m15 18-6-6 6-6" />
+                                                </svg>
+                                            </button>
+                                            <span id="return-cal-month-year" class="cal-dark-title">October 2026</span>
+                                            <button
+                                                type="button"
+                                                id="return-cal-next"
+                                                class="cal-nav-btn"
+                                                aria-label="Next month"
+                                            >
+                                                <svg
+                                                    class="w-4 h-4"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2.5"
+                                                >
+                                                    <path d="m9 18 6-6-6-6" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <!-- Weekday Headers -->
+                                        <div class="cal-dark-weekdays">
+                                            <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span
+                                            ><span>Fr</span><span>Sa</span>
+                                        </div>
+
+                                        <!-- 6-week Days Grid (42 cells) -->
+                                        <div id="return-cal-grid" class="cal-dark-grid">
+                                            <!-- Injected via JS -->
+                                        </div>
+
+                                        <!-- Embedded Presets inside the Return Calendar Popover -->
+                                        <div class="cal-preset-footer">
+                                            <div class="cal-preset-row">
+                                                <button
+                                                    type="button"
+                                                    class="return-preset-btn cal-preset-btn"
+                                                    data-add-days="0"
+                                                >
+                                                    Same day
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="return-preset-btn cal-preset-btn"
+                                                    data-add-days="1"
+                                                >
+                                                    Tomorrow (+1d)
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="return-preset-btn cal-preset-btn"
+                                                    data-add-days="3"
+                                                >
+                                                    In 3 days
+                                                </button>
+                                            </div>
+                                            <div class="cal-preset-row">
+                                                <button
+                                                    type="button"
+                                                    class="return-preset-btn cal-preset-btn"
+                                                    data-add-days="7"
+                                                >
+                                                    In a week
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="return-preset-btn cal-preset-btn"
+                                                    data-add-days="14"
+                                                >
+                                                    In 2 weeks
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Custom Return Hour Trigger & Popover -->
+                                <div class="space-y-1 relative" id="return-hour-wrapper">
+                                    <button
+                                        type="button"
+                                        id="return-hour-trigger"
+                                        class="w-full h-10 px-3 py-2 bg-white border border-border/90 rounded-lg text-sm text-left flex items-center justify-between shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-colors cursor-pointer"
+                                    >
+                                        <div class="flex items-center gap-2 truncate">
+                                            <svg
+                                                class="w-4 h-4 text-amber-600 flex-shrink-0"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                            >
+                                                <circle cx="12" cy="12" r="10" />
+                                                <polyline points="12 6 12 12 16 14" />
+                                            </svg>
+                                            <span id="return-hour-display" class="font-semibold text-slate-800 truncate"
+                                                >18:00 (6:00 PM)</span
+                                            >
+                                        </div>
+                                        <svg
+                                            class="w-4 h-4 text-slate-400 flex-shrink-0 ml-1.5"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                        >
+                                            <path d="m6 9 6 6 6-6" />
+                                        </svg>
+                                    </button>
+
+                                    <!-- Light Hour Options Popover Menu -->
+                                    <div
+                                        id="return-hour-popover"
+                                        class="hidden absolute top-full left-0 right-0 mt-2 z-50 hour-card-dark max-h-52 overflow-y-auto popover-shadcn select-none"
+                                    >
+                                        <!-- Injected via JS -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Footer: Live Summary & Action -->
+                <div
+                    class="px-6 py-4 bg-surface/60 border-t border-border/80 flex flex-col sm:flex-row items-center justify-between gap-4"
+                >
+                    <div class="flex items-center gap-3 text-xs text-muted-foreground w-full sm:w-auto">
+                        <div
+                            class="w-9 h-9 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center flex-shrink-0 border border-slate-200"
+                        >
+                            <svg
+                                class="w-4 h-4 text-slate-700"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                <line x1="16" y1="2" x2="16" y2="6" />
+                                <line x1="8" y1="2" x2="8" y2="6" />
+                                <line x1="3" y1="10" x2="21" y2="10" />
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="font-bold text-slate-900 text-sm block" id="rental-itinerary"
+                                >Thu, 22 Oct 09:00 → Thu, 22 Oct 18:00 (9h)</span
+                            >
+                            <span class="text-muted-foreground flex items-center gap-1 text-[11px] mt-0.5">
+                                <svg
+                                    class="w-3.5 h-3.5 text-emerald-600 inline"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2.5"
+                                >
+                                    <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                                Free cancellation up to 3 days before pickup
+                            </span>
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        id="rental-search-btn"
+                        class="w-full sm:w-auto btn-navy font-semibold px-6 py-2.5 rounded-lg shadow-sm hover:shadow group text-sm flex items-center justify-center gap-2"
+                    >
+                        <span id="rental-search-btn-text" th:text="${buttonText != null ? buttonText : 'Search Cars'}"
+                            >Search Cars</span
+                        >
+                        <svg
+                            class="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </form>
+
+            <script>
+                (function () {
+                    function initRentalSchedule() {
+                        const startDateInput = document.getElementById("rental-start-date");
+                        const startTimeInput = document.getElementById("rental-start-time");
+                        const endDateInput = document.getElementById("rental-end-date");
+                        const endTimeInput = document.getElementById("rental-end-time");
+                        const itineraryText = document.getElementById("rental-itinerary");
+
+                        if (!startDateInput || !startTimeInput || !endDateInput || !endTimeInput) return;
+
+                        const pickupDateTrigger = document.getElementById("pickup-date-trigger");
+                        const pickupDateDisplay = document.getElementById("pickup-date-display");
+                        const pickupDatePopover = document.getElementById("pickup-date-popover");
+                        const pickupCalPrev = document.getElementById("pickup-cal-prev");
+                        const pickupCalNext = document.getElementById("pickup-cal-next");
+                        const pickupCalMonthYear = document.getElementById("pickup-cal-month-year");
+                        const pickupCalGrid = document.getElementById("pickup-cal-grid");
+
+                        const pickupHourTrigger = document.getElementById("pickup-hour-trigger");
+                        const pickupHourDisplay = document.getElementById("pickup-hour-display");
+                        const pickupHourPopover = document.getElementById("pickup-hour-popover");
+
+                        const returnDateTrigger = document.getElementById("return-date-trigger");
+                        const returnDateDisplay = document.getElementById("return-date-display");
+                        const returnDatePopover = document.getElementById("return-date-popover");
+                        const returnCalPrev = document.getElementById("return-cal-prev");
+                        const returnCalNext = document.getElementById("return-cal-next");
+                        const returnCalMonthYear = document.getElementById("return-cal-month-year");
+                        const returnCalGrid = document.getElementById("return-cal-grid");
+
+                        const returnHourTrigger = document.getElementById("return-hour-trigger");
+                        const returnHourDisplay = document.getElementById("return-hour-display");
+                        const returnHourPopover = document.getElementById("return-hour-popover");
+
+                        const monthNames = [
+                            "January",
+                            "February",
+                            "March",
+                            "April",
+                            "May",
+                            "June",
+                            "July",
+                            "August",
+                            "September",
+                            "October",
+                            "November",
+                            "December",
+                        ];
+                        const shortMonthNames = [
+                            "Jan",
+                            "Feb",
+                            "Mar",
+                            "Apr",
+                            "May",
+                            "Jun",
+                            "Jul",
+                            "Aug",
+                            "Sep",
+                            "Oct",
+                            "Nov",
+                            "Dec",
+                        ];
+                        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+                        const hoursList = [
+                            "06:00",
+                            "07:00",
+                            "08:00",
+                            "09:00",
+                            "10:00",
+                            "11:00",
+                            "12:00",
+                            "13:00",
+                            "14:00",
+                            "15:00",
+                            "16:00",
+                            "17:00",
+                            "18:00",
+                            "19:00",
+                            "20:00",
+                            "21:00",
+                            "22:00",
+                        ];
+
+                        function toLocalDateString(d) {
+                            const year = d.getFullYear();
+                            const month = String(d.getMonth() + 1).padStart(2, "0");
+                            const day = String(d.getDate()).padStart(2, "0");
+                            return year + "-" + month + "-" + day;
+                        }
+
+                        function parseDate(str) {
+                            if (!str) return new Date();
+                            const parts = str.split("-");
+                            return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                        }
+
+                        function formatDisplayDate(dateStr) {
+                            if (!dateStr) return "";
+                            const d = parseDate(dateStr);
+                            return (
+                                dayNames[d.getDay()] +
+                                ", " +
+                                d.getDate() +
+                                " " +
+                                shortMonthNames[d.getMonth()] +
+                                " " +
+                                d.getFullYear()
+                            );
+                        }
+
+                        function formatHourDisplay(timeStr) {
+                            if (!timeStr) return "";
+                            const hour = parseInt(timeStr.split(":")[0], 10);
+                            const ampm = hour >= 12 ? "PM" : "AM";
+                            const formattedHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+                            return timeStr + " (" + formattedHour + ":00 " + ampm + ")";
+                        }
+
+                        // Calendar Navigation State
+                        let pickupViewDate = parseDate(startDateInput.value || toLocalDateString(new Date()));
+                        let returnViewDate = parseDate(endDateInput.value || toLocalDateString(new Date()));
+
+                        function closeAllPopovers() {
+                            pickupDatePopover.classList.add("hidden");
+                            pickupHourPopover.classList.add("hidden");
+                            returnDatePopover.classList.add("hidden");
+                            returnHourPopover.classList.add("hidden");
+                        }
+
+                        // Render Hour Popovers (Dark theme)
+                        function renderHourOptions(popoverEl, currentVal, onSelect) {
+                            popoverEl.innerHTML = "";
+                            hoursList.forEach((h) => {
+                                const item = document.createElement("div");
+                                item.className = "hour-option-dark" + (h === currentVal ? " selected" : "");
+                                item.innerHTML =
+                                    "<span>" +
+                                    formatHourDisplay(h) +
+                                    "</span>" +
+                                    (h === currentVal
+                                        ? '<svg class="w-3.5 h-3.5 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>'
+                                        : "");
+                                item.addEventListener("click", (e) => {
+                                    e.stopPropagation();
+                                    onSelect(h);
+                                    closeAllPopovers();
+                                });
+                                popoverEl.appendChild(item);
+                            });
+                        }
+
+                        // Render 6-Week Calendar Grid (42 cells matching shadcn CalendarWithPresets)
+                        function renderCalendar(type) {
+                            const isPickup = type === "pickup";
+                            const viewDate = isPickup ? pickupViewDate : returnViewDate;
+                            const monthYearEl = isPickup ? pickupCalMonthYear : returnCalMonthYear;
+                            const gridEl = isPickup ? pickupCalGrid : returnCalGrid;
+                            const selectedDateStr = isPickup ? startDateInput.value : endDateInput.value;
+                            const todayStr = toLocalDateString(new Date());
+                            const minAllowedStr = isPickup ? todayStr : startDateInput.value || todayStr;
+
+                            const year = viewDate.getFullYear();
+                            const month = viewDate.getMonth();
+
+                            monthYearEl.textContent = monthNames[month] + " " + year;
+                            gridEl.innerHTML = "";
+
+                            // Day 1 of month weekday (0=Sun, 1=Mon, ..., 6=Sat)
+                            const firstDayIndex = new Date(year, month, 1).getDay();
+                            const daysInCurrentMonth = new Date(year, month + 1, 0).getDate();
+                            const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+                            const totalCells = 42; // Exactly 6 weeks, as in shadcn example
+                            const cells = [];
+
+                            // 1. Preceding days from previous month
+                            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                                const dayNum = daysInPrevMonth - i;
+                                const d = new Date(year, month - 1, dayNum);
+                                cells.push({ date: d, isOtherMonth: true });
+                            }
+
+                            // 2. Days of current month
+                            for (let day = 1; day <= daysInCurrentMonth; day++) {
+                                const d = new Date(year, month, day);
+                                cells.push({ date: d, isOtherMonth: false });
+                            }
+
+                            // 3. Trailing days of next month to fill exactly 42 cells (6 rows)
+                            const remaining = totalCells - cells.length;
+                            for (let day = 1; day <= remaining; day++) {
+                                const d = new Date(year, month + 1, day);
+                                cells.push({ date: d, isOtherMonth: true });
+                            }
+
+                            // Render all 42 day cells
+                            cells.forEach((item) => {
+                                const d = item.date;
+                                const dStr = toLocalDateString(d);
+                                const btn = document.createElement("button");
+                                btn.type = "button";
+                                btn.className = "cal-dark-day-btn";
+                                btn.textContent = d.getDate();
+
+                                if (item.isOtherMonth) {
+                                    btn.classList.add("other-month");
+                                }
+
+                                if (dStr === todayStr) {
+                                    btn.classList.add("today");
+                                }
+
+                                if (dStr === selectedDateStr) {
+                                    btn.classList.add("selected");
+                                }
+
+                                if (dStr < minAllowedStr) {
+                                    btn.classList.add("disabled");
+                                    btn.disabled = true;
+                                } else {
+                                    btn.addEventListener("click", (e) => {
+                                        e.stopPropagation();
+                                        if (isPickup) {
+                                            startDateInput.value = dStr;
+                                            if (endDateInput.value < dStr) {
+                                                endDateInput.value = dStr;
+                                            }
+                                        } else {
+                                            endDateInput.value = dStr;
+                                        }
+                                        // Keep view date synced
+                                        if (isPickup) pickupViewDate = parseDate(dStr);
+                                        else returnViewDate = parseDate(dStr);
+
+                                        updateAll();
+                                        closeAllPopovers();
+                                    });
+                                }
+
+                                gridEl.appendChild(btn);
+                            });
+
+                            // Update Preset buttons active state inside this calendar
+                            updatePresetButtonsActiveState(type, selectedDateStr);
+                        }
+
+                        function updatePresetButtonsActiveState(type, selectedDateStr) {
+                            if (type === "pickup") {
+                                document.querySelectorAll(".pickup-preset-btn").forEach((btn) => {
+                                    const addDays = parseInt(btn.getAttribute("data-days"), 10);
+                                    const target = new Date();
+                                    target.setDate(target.getDate() + addDays);
+                                    if (toLocalDateString(target) === selectedDateStr) {
+                                        btn.classList.add("active");
+                                    } else {
+                                        btn.classList.remove("active");
+                                    }
+                                });
+                            } else {
+                                const sDateStr = startDateInput.value || toLocalDateString(new Date());
+                                document.querySelectorAll(".return-preset-btn").forEach((btn) => {
+                                    const addDays = parseInt(btn.getAttribute("data-add-days"), 10);
+                                    const target = parseDate(sDateStr);
+                                    target.setDate(target.getDate() + addDays);
+                                    if (toLocalDateString(target) === selectedDateStr) {
+                                        btn.classList.add("active");
+                                    } else {
+                                        btn.classList.remove("active");
+                                    }
+                                });
+                            }
+                        }
+
+                        function updateAll() {
+                            const sDate = startDateInput.value || toLocalDateString(new Date());
+                            let eDate = endDateInput.value || sDate;
+                            const sTime = startTimeInput.value || "09:00";
+                            let eTime = endTimeInput.value || "18:00";
+
+                            if (eDate < sDate) {
+                                eDate = sDate;
+                                endDateInput.value = eDate;
+                            }
+
+                            if (sDate === eDate) {
+                                const sh = parseInt(sTime.split(":")[0], 10);
+                                let eh = parseInt(eTime.split(":")[0], 10);
+                                if (eh <= sh) {
+                                    eh = Math.min(22, sh + 4);
+                                    eTime = (eh < 10 ? "0" : "") + eh + ":00";
+                                    endTimeInput.value = eTime;
+                                }
+                            }
+
+                            pickupDateDisplay.textContent = formatDisplayDate(sDate);
+                            pickupHourDisplay.textContent = formatHourDisplay(sTime);
+                            returnDateDisplay.textContent = formatDisplayDate(eDate);
+                            returnHourDisplay.textContent = formatHourDisplay(eTime);
+
+                            // Calculate duration
+                            const sP = sDate.split("-");
+                            const eP = eDate.split("-");
+                            const startDt = new Date(
+                                parseInt(sP[0], 10),
+                                parseInt(sP[1], 10) - 1,
+                                parseInt(sP[2], 10),
+                                parseInt(sTime.split(":")[0], 10),
+                                0,
+                            );
+                            const endDt = new Date(
+                                parseInt(eP[0], 10),
+                                parseInt(eP[1], 10) - 1,
+                                parseInt(eP[2], 10),
+                                parseInt(eTime.split(":")[0], 10),
+                                0,
+                            );
+                            let diffMs = endDt - startDt;
+                            if (diffMs <= 0) diffMs = 3600000;
+                            const totalHours = Math.max(1, Math.round(diffMs / (1000 * 60 * 60)));
+
+                            if (itineraryText) {
+                                const sParts = sDate.split("-");
+                                const eParts = eDate.split("-");
+                                const sD = new Date(
+                                    parseInt(sParts[0], 10),
+                                    parseInt(sParts[1], 10) - 1,
+                                    parseInt(sParts[2], 10),
+                                );
+                                const eD = new Date(
+                                    parseInt(eParts[0], 10),
+                                    parseInt(eParts[1], 10) - 1,
+                                    parseInt(eParts[2], 10),
+                                );
+                                const sTxt =
+                                    dayNames[sD.getDay()] +
+                                    ", " +
+                                    sD.getDate() +
+                                    " " +
+                                    shortMonthNames[sD.getMonth()] +
+                                    " " +
+                                    sTime;
+                                const eTxt =
+                                    dayNames[eD.getDay()] +
+                                    ", " +
+                                    eD.getDate() +
+                                    " " +
+                                    shortMonthNames[eD.getMonth()] +
+                                    " " +
+                                    eTime;
+                                itineraryText.textContent = sTxt + " → " + eTxt + " (" + totalHours + "h)";
+                            }
+
+                            // Update preset buttons state in both calendars
+                            updatePresetButtonsActiveState("pickup", sDate);
+                            updatePresetButtonsActiveState("return", eDate);
+                        }
+
+                        // Pickup Date Trigger
+                        pickupDateTrigger.addEventListener("click", function (e) {
+                            e.stopPropagation();
+                            const isOpen = !pickupDatePopover.classList.contains("hidden");
+                            closeAllPopovers();
+                            if (!isOpen) {
+                                pickupViewDate = parseDate(startDateInput.value || toLocalDateString(new Date()));
+                                renderCalendar("pickup");
+                                pickupDatePopover.classList.remove("hidden");
+                            }
+                        });
+
+                        pickupCalPrev.addEventListener("click", function (e) {
+                            e.stopPropagation();
+                            pickupViewDate.setMonth(pickupViewDate.getMonth() - 1);
+                            renderCalendar("pickup");
+                        });
+
+                        pickupCalNext.addEventListener("click", function (e) {
+                            e.stopPropagation();
+                            pickupViewDate.setMonth(pickupViewDate.getMonth() + 1);
+                            renderCalendar("pickup");
+                        });
+
+                        // Pickup Hour Trigger
+                        pickupHourTrigger.addEventListener("click", function (e) {
+                            e.stopPropagation();
+                            const isOpen = !pickupHourPopover.classList.contains("hidden");
+                            closeAllPopovers();
+                            if (!isOpen) {
+                                renderHourOptions(pickupHourPopover, startTimeInput.value, (newHour) => {
+                                    startTimeInput.value = newHour;
+                                    updateAll();
+                                });
+                                pickupHourPopover.classList.remove("hidden");
+                            }
+                        });
+
+                        // Return Date Trigger
+                        returnDateTrigger.addEventListener("click", function (e) {
+                            e.stopPropagation();
+                            const isOpen = !returnDatePopover.classList.contains("hidden");
+                            closeAllPopovers();
+                            if (!isOpen) {
+                                returnViewDate = parseDate(endDateInput.value || toLocalDateString(new Date()));
+                                renderCalendar("return");
+                                returnDatePopover.classList.remove("hidden");
+                            }
+                        });
+
+                        returnCalPrev.addEventListener("click", function (e) {
+                            e.stopPropagation();
+                            returnViewDate.setMonth(returnViewDate.getMonth() - 1);
+                            renderCalendar("return");
+                        });
+
+                        returnCalNext.addEventListener("click", function (e) {
+                            e.stopPropagation();
+                            returnViewDate.setMonth(returnViewDate.getMonth() + 1);
+                            renderCalendar("return");
+                        });
+
+                        // Return Hour Trigger
+                        returnHourTrigger.addEventListener("click", function (e) {
+                            e.stopPropagation();
+                            const isOpen = !returnHourPopover.classList.contains("hidden");
+                            closeAllPopovers();
+                            if (!isOpen) {
+                                renderHourOptions(returnHourPopover, endTimeInput.value, (newHour) => {
+                                    endTimeInput.value = newHour;
+                                    updateAll();
+                                });
+                                returnHourPopover.classList.remove("hidden");
+                            }
+                        });
+
+                        // Preset Buttons inside Pickup Calendar Popover
+                        document.querySelectorAll(".pickup-preset-btn").forEach((btn) => {
+                            btn.addEventListener("click", function (e) {
+                                e.stopPropagation();
+                                const addDays = parseInt(this.getAttribute("data-days"), 10);
+                                const d = new Date();
+                                d.setDate(d.getDate() + addDays);
+                                const dStr = toLocalDateString(d);
+                                startDateInput.value = dStr;
+                                pickupViewDate = d;
+                                if (endDateInput.value < dStr) {
+                                    endDateInput.value = dStr;
+                                    returnViewDate = d;
+                                }
+                                updateAll();
+                                renderCalendar("pickup");
+                                closeAllPopovers();
+                            });
+                        });
+
+                        // Preset Buttons inside Return Calendar Popover
+                        document.querySelectorAll(".return-preset-btn").forEach((btn) => {
+                            btn.addEventListener("click", function (e) {
+                                e.stopPropagation();
+                                const addDays = parseInt(this.getAttribute("data-add-days"), 10);
+                                const sD = parseDate(startDateInput.value || toLocalDateString(new Date()));
+                                sD.setDate(sD.getDate() + addDays);
+                                const dStr = toLocalDateString(sD);
+                                endDateInput.value = dStr;
+                                returnViewDate = sD;
+                                updateAll();
+                                renderCalendar("return");
+                                closeAllPopovers();
+                            });
+                        });
+
+                        // Close popovers on click outside
+                        document.addEventListener("click", function (e) {
+                            if (
+                                !e.target.closest("#pickup-date-wrapper") &&
+                                !e.target.closest("#pickup-hour-wrapper") &&
+                                !e.target.closest("#return-date-wrapper") &&
+                                !e.target.closest("#return-hour-wrapper")
+                            ) {
+                                closeAllPopovers();
+                            }
+                        });
+
+                        // Initialize on start
+                        updateAll();
+                    }
+
+                    if (document.readyState === "loading") {
+                        document.addEventListener("DOMContentLoaded", initRentalSchedule);
+                    } else {
+                        initRentalSchedule();
+                    }
+                })();
+            </script>
+        </div>
+    </body>
+</html>

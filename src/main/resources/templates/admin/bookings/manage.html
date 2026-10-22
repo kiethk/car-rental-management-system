@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage Booking Dispatch — DriveNow</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container-fluid px-lg-5 my-4 flex-grow-1">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2">
+            <div th:replace="~{fragments/admin-sidebar :: sidebar(active='bookings')}"></div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <a th:href="@{/admin/bookings}" class="text-muted small">← Back to Bookings List</a>
+                    <h1 class="h4 font-weight-bold text-navy mt-1">Booking Operations #<span th:text="${booking.id}">101</span></h1>
+                </div>
+                <div>
+                    <span th:if="${booking.status == 'pending_payment'}" class="badge badge-warning p-2">Pending Deposit</span>
+                    <span th:if="${booking.status == 'confirmed'}" class="badge badge-info p-2">Confirmed</span>
+                    <span th:if="${booking.status == 'active'}" class="badge badge-primary p-2">Active Trip</span>
+                    <span th:if="${booking.status == 'completed'}" class="badge badge-success p-2">Completed</span>
+                    <span th:if="${booking.status == 'cancelled'}" class="badge badge-secondary p-2">Cancelled</span>
+                </div>
+            </div>
+
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+            <div class="row">
+                <!-- Customer & Schedule Info -->
+                <div class="col-lg-7 mb-4">
+                    <div class="card card-drivenow border-0 p-4 mb-4">
+                        <h2 class="h5 font-weight-bold text-navy mb-3">Customer Information</h2>
+                        <div class="row">
+                            <div class="col-sm-6 mb-2">
+                                <span class="small text-muted d-block">Full Name</span>
+                                <strong th:text="${booking.customerName}">Nguyễn Văn Khách</strong>
+                            </div>
+                            <div class="col-sm-6 mb-2">
+                                <span class="small text-muted d-block">Phone Number</span>
+                                <span th:text="${booking.customerPhone}">0901234567</span>
+                            </div>
+                            <div class="col-sm-12 mt-2">
+                                <span class="small text-muted d-block">Email Address</span>
+                                <span th:text="${booking.customerEmail}">customer@gmail.com</span>
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <h2 class="h5 font-weight-bold text-navy mb-3">Schedule & Assignment</h2>
+                        <div class="row">
+                            <div class="col-sm-6 mb-2">
+                                <span class="small text-muted d-block">Requested Vehicle Type</span>
+                                <strong class="text-navy" th:text="${booking.vehicleTypeName}">Toyota Vios</strong>
+                            </div>
+                            <div class="col-sm-6 mb-2">
+                                <span class="small text-muted d-block">Assigned Vehicle</span>
+                                <span class="badge badge-primary font-weight-bold px-2 py-1" th:text="${booking.licensePlate}">51A-123.45</span>
+                            </div>
+                            <div class="col-sm-6 mt-2">
+                                <span class="small text-muted d-block">Pickup Schedule</span>
+                                <span class="small font-weight-medium" th:text="${#temporals.format(booking.pickupTime, 'dd/MM/yyyy HH:mm')}">Time</span>
+                            </div>
+                            <div class="col-sm-6 mt-2">
+                                <span class="small text-muted d-block">Scheduled Return</span>
+                                <span class="small font-weight-medium" th:text="${#temporals.format(booking.scheduledEndTime, 'dd/MM/yyyy HH:mm')}">Time</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dispatch Actions -->
+                <div class="col-lg-5 mb-4">
+                    <!-- Action Step 1: Assign Physical Car (If confirmed and not assigned yet) -->
+                    <div class="card card-drivenow border-0 p-4 mb-4" th:if="${booking.status == 'confirmed' and booking.vehicleId == null}">
+                        <h2 class="h5 font-weight-bold text-navy mb-2">Step 1: Assign Vehicle</h2>
+                        <p class="text-muted small">Select an available physical car of matching type <strong th:text="${booking.vehicleTypeName}"></strong>.</p>
+
+                        <div th:if="${#lists.isEmpty(availableVehicles)}" class="alert alert-warning small">
+                            No matching available vehicles in fleet right now.
+                        </div>
+
+                        <form th:action="@{/admin/bookings/{id}/assign(id=${booking.id})}" method="post" th:unless="${#lists.isEmpty(availableVehicles)}">
+                            <div class="form-group">
+                                <select name="vehicleId" class="form-control form-control-sm" required>
+                                    <option value="" disabled selected>-- Select physical car --</option>
+                                    <option th:each="v : ${availableVehicles}" th:value="${v.id}"
+                                            th:text="${v.licensePlate != null ? v.licensePlate.plate : 'Plate N/A'} + ' (' + ${v.color} + ', ' + ${v.year} + ')'">
+                                    </option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-navy btn-sm btn-block">Confirm Vehicle Assignment</button>
+                        </form>
+                    </div>
+
+                    <!-- Action Step 2: Check-in Handover -->
+                    <div class="card card-drivenow border-0 p-4 mb-4" th:if="${booking.status == 'confirmed' and booking.vehicleId != null}">
+                        <h2 class="h5 font-weight-bold text-navy mb-2">Step 2: Check-In Handover</h2>
+                        <p class="text-muted small">Customer has arrived at central station. Hand over keys and verify physical car.</p>
+                        <form th:action="@{/admin/bookings/{id}/check-in(id=${booking.id})}" method="post">
+                            <button type="submit" class="btn btn-success btn-block py-2 font-weight-bold" onclick="return confirm('Complete Check-In handover?');">
+                                ✓ Complete Check-In Handover
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Action Step 3: Check-out Return & Settlement -->
+                    <div class="card card-drivenow border-0 p-4 mb-4" th:if="${booking.status == 'active'}">
+                        <h2 class="h5 font-weight-bold text-navy mb-2">Step 3: Check-Out & Settlement</h2>
+                        <p class="text-muted small">Customer is returning the vehicle. Inspect car condition and record settlement.</p>
+                        <form th:action="@{/admin/bookings/{id}/check-out(id=${booking.id})}" th:object="${checkOutForm}" method="post">
+                            <div class="form-group mb-2">
+                                <label class="small text-muted">Additional Fine / Incident Fee (VND)</label>
+                                <input type="number" th:field="*{additionalFine}" class="form-control form-control-sm" value="0" min="0" step="10000">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="small text-muted">Inspection Notes</label>
+                                <textarea th:field="*{returnNotes}" class="form-control form-control-sm" rows="2" placeholder="e.g. Returned clean, fuel full."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-amber btn-block py-2 font-weight-bold" onclick="return confirm('Confirm Check-Out and release deposit refund?');">
+                                Process Return & Settlement
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Completed Note -->
+                    <div class="card card-drivenow border-0 p-4 text-center" th:if="${booking.status == 'completed'}">
+                        <div class="h5 font-weight-bold text-success mb-1">Rental Trip Completed</div>
+                        <p class="text-muted small mb-0">Vehicle returned to available fleet. Payments and deposit settlements finalized.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>
+

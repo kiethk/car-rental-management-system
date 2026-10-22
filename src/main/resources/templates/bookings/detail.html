@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Booking Detail — DriveNow</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="bg-surface text-navy min-h-screen flex flex-col">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="flex-1">
+
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+
+        <!-- Back Link & Header -->
+        <div class="mb-4">
+            <a th:href="@{/bookings/my-bookings}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-navy mb-2 text-decoration-none">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+                Back to My Bookings
+            </a>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h1 class="font-heading text-2xl text-navy">Booking <span class="font-mono" th:text="'#' + ${booking.id}">#1</span></h1>
+                    <p class="text-xs text-muted-foreground">Booked on <span th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}">Date</span></p>
+                </div>
+
+                <!-- Status Badge -->
+                <div>
+                    <span th:if="${booking.status == 'pending_payment'}" class="text-xs font-semibold px-3 py-1 rounded-full border bg-amber-50 text-amber-700 border-amber-200">
+                        ● Awaiting Deposit Payment
+                    </span>
+                    <span th:if="${booking.status == 'confirmed'}" class="text-xs font-semibold px-3 py-1 rounded-full border bg-blue-50 text-blue-700 border-blue-200">
+                        ● Confirmed & Reserved
+                    </span>
+                    <span th:if="${booking.status == 'active'}" class="text-xs font-semibold px-3 py-1 rounded-full border bg-green-50 text-green-700 border-green-200">
+                        ● Active (Vehicle Handed Over)
+                    </span>
+                    <span th:if="${booking.status == 'completed'}" class="text-xs font-semibold px-3 py-1 rounded-full border bg-surface text-muted-foreground border-border">
+                        ● Completed & Settled
+                    </span>
+                    <span th:if="${booking.status == 'cancelled'}" class="text-xs font-semibold px-3 py-1 rounded-full border bg-red-50 text-red-600 border-red-200">
+                        ● Cancelled
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${success}" class="mb-4 bg-green-50 border border-green-200 text-green-700 p-4 rounded-md text-sm" th:text="${success}"></div>
+        <div th:if="${error}" class="mb-4 bg-red-50 border border-red-200 text-red-700 p-4 rounded-md text-sm" th:text="${error}"></div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+            <!-- Left Main Column (lg:col-span-3) -->
+            <div class="lg:col-span-3 space-y-5">
+
+                <!-- Vehicle & Schedule Card -->
+                <div class="bg-white rounded-lg border border-border p-5">
+                    <h3 class="font-semibold text-navy mb-4 text-base">Vehicle & Schedule</h3>
+                    <div class="flex gap-4 mb-5">
+                        <img th:src="${booking.imageUrl}" th:alt="${booking.vehicleTypeName}" class="w-24 h-16 rounded-md object-cover bg-surface-2 flex-shrink-0">
+                        <div>
+                            <div class="font-bold text-navy text-base" th:text="${booking.vehicleTypeName}">Toyota Vios</div>
+                            <div class="text-xs text-muted-foreground capitalize" th:text="${booking.vehicleCategory + ' · ' + booking.seats + ' seats'}">sedan · 5 seats</div>
+                            <div class="text-xs mt-1">
+                                License Plate: <span class="font-mono font-bold text-navy bg-surface px-2 py-0.5 rounded border border-border" th:text="${booking.licensePlate}">51A-123.45</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface rounded-md p-4 grid grid-cols-2 gap-y-3 text-sm">
+                        <div>
+                            <div class="text-xs text-muted-foreground">Pickup Schedule</div>
+                            <div class="font-medium text-navy" th:text="${#temporals.format(booking.pickupTime, 'dd/MM/yyyy HH:mm')}">Date</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-muted-foreground">Scheduled Return</div>
+                            <div class="font-medium text-navy" th:text="${#temporals.format(booking.scheduledEndTime, 'dd/MM/yyyy HH:mm')}">Date</div>
+                        </div>
+                        <div class="col-span-2 pt-2 border-t border-border">
+                            <div class="text-xs text-muted-foreground">Warehouse Location</div>
+                            <div class="font-medium text-navy">123 Đường Đinh Bộ Lĩnh, Phường 26, Bình Thạnh, TP.HCM</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment History / Ledger Card -->
+                <div class="bg-white rounded-lg border border-border p-5">
+                    <h3 class="font-semibold text-navy mb-3 text-base">Payment Ledger</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left">
+                            <thead class="bg-surface text-muted-foreground uppercase border-b border-border">
+                                <tr>
+                                    <th class="p-2.5">Transaction</th>
+                                    <th class="p-2.5">Amount</th>
+                                    <th class="p-2.5">Status</th>
+                                    <th class="p-2.5">Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border">
+                                <tr th:each="p : ${booking.payments}">
+                                    <td class="p-2.5 font-bold text-navy" th:text="${p.paymentType}">DEPOSIT</td>
+                                    <td class="p-2.5 font-semibold text-navy"><span th:text="${#numbers.formatDecimal(p.amount, 0, 'COMMA', 0, 'POINT')}">5,000,000</span> đ</td>
+                                    <td class="p-2.5">
+                                        <span th:if="${p.status == 'paid'}" class="bg-green-50 text-green-700 px-2 py-0.5 rounded font-medium border border-green-200">Paid ✓</span>
+                                        <span th:if="${p.status != 'paid'}" class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded font-medium border border-amber-200" th:text="${p.status}">Pending</span>
+                                    </td>
+                                    <td class="p-2.5 text-muted-foreground" th:text="${#temporals.format(p.paidAt, 'dd/MM/yyyy HH:mm')}">Time</td>
+                                </tr>
+                                <tr th:if="${booking.payments == null or booking.payments.isEmpty()}">
+                                    <td colspan="4" class="p-4 text-center text-muted-foreground">No payment records yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Sidebar: Price & Actions (lg:col-span-2) -->
+            <div class="lg:col-span-2 space-y-5">
+
+                <!-- Cost Breakdown Card -->
+                <div class="bg-white rounded-lg border border-border p-5 sticky top-20 shadow-xs">
+                    <h3 class="font-semibold text-navy mb-4 text-base">Cost Summary</h3>
+
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-muted-foreground">Hourly rate</span>
+                            <span class="text-navy font-medium"><span th:text="${#numbers.formatDecimal(booking.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span> đ/h</span>
+                        </div>
+                        <div class="flex justify-between pt-2 border-t border-border">
+                            <span class="font-semibold text-navy">Total Rental Fee</span>
+                            <span class="font-bold text-navy"><span th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT')}">1,200,000</span> đ</span>
+                        </div>
+
+                        <div class="bg-surface rounded-md p-3.5 my-3">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="text-xs text-muted-foreground">Security Deposit</div>
+                                    <div class="text-xs text-amber-800 font-medium">Refundable on return</div>
+                                </div>
+                                <div class="text-base font-bold text-amber">
+                                    <span th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}">5,000,000</span> đ
+                                </div>
+                            </div>
+                        </div>
+
+                        <div th:if="${booking.lateFee != null and booking.lateFee > 0}" class="flex justify-between text-red-600 font-semibold pt-1">
+                            <span>Late Return Fee</span>
+                            <span>+ <span th:text="${#numbers.formatDecimal(booking.lateFee, 0, 'COMMA', 0, 'POINT')}">300,000</span> đ</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="mt-5 pt-4 border-t border-border space-y-2">
+                        <a th:if="${booking.status == 'pending_payment'}" th:href="@{/bookings/{id}/pay-deposit(id=${booking.id})}"
+                           class="w-full bg-amber hover:bg-amber-dark text-white font-semibold py-2.5 px-4 rounded-md transition-all text-center text-sm inline-block text-decoration-none shadow-xs">
+                            Pay Deposit Now →
+                        </a>
+
+                        <form th:if="${booking.status == 'pending_payment' or booking.status == 'confirmed'}"
+                              th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post"
+                              onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                            <button type="submit" class="w-full border border-red-200 text-red-600 hover:bg-red-50 font-semibold py-2 px-4 rounded-md text-xs transition-all">
+                                Cancel Booking
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

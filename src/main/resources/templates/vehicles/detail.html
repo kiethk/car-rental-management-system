@@ -1,17 +1,138 @@
 <!doctype html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>DriveNow — Chi tiết xe</title><link rel="stylesheet" th:href="@{/css/bootstrap.css}"></head>
-<body>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${vehicle.brand + ' ' + vehicle.model + ' — DriveNow'}">Vehicle Details</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="bg-surface text-navy min-h-screen flex flex-col">
+
 <div th:replace="~{fragments/header :: header}"></div>
-<main class="container">
-    <h1 th:text="${vehicle.brand + ' ' + vehicle.model}"></h1>
-    <dl class="row my-4">
-        <dt class="col-sm-3">Biển số</dt><dd class="col-sm-9" th:text="${vehicle.licensePlate}"></dd>
-        <dt class="col-sm-3">Năm sản xuất</dt><dd class="col-sm-9" th:text="${vehicle.year}"></dd>
-        <dt class="col-sm-3">Giá / giờ (VND)</dt><dd class="col-sm-9" th:text="${vehicle.pricePerHour}"></dd>
-        <dt class="col-sm-3">Trạng thái</dt><dd class="col-sm-9" th:text="${vehicle.status}"></dd>
-    </dl>
-    <a class="btn btn-secondary" th:href="@{/vehicles}">Quay lại</a>
+
+<main class="flex-1">
+
+    <!-- Breadcrumb matching VehicleDetailPage.tsx -->
+    <div class="bg-white border-b border-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+            <nav class="flex items-center gap-2 text-xs text-muted-foreground">
+                <a th:href="@{/}" class="hover:text-navy text-decoration-none text-muted-foreground">Home</a>
+                <span>/</span>
+                <a th:href="@{/search}" class="hover:text-navy text-decoration-none text-muted-foreground">Search Cars</a>
+                <span>/</span>
+                <span class="text-navy font-semibold" th:text="${vehicle.brand + ' ' + vehicle.model}">Toyota Vios</span>
+            </nav>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Left: Images + Details Tabs (lg:col-span-2) -->
+            <div class="lg:col-span-2 space-y-5">
+                <!-- Image Gallery -->
+                <div class="bg-white rounded-lg overflow-hidden border border-border">
+                    <div class="relative h-64 sm:h-80 bg-surface-2 overflow-hidden">
+                        <img th:if="${vehicle.model.contains('CR-V')}" src="https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=500&fit=crop&auto=format" class="w-full h-full object-cover">
+                        <img th:if="${vehicle.model.contains('VF8')}" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=500&fit=crop&auto=format" class="w-full h-full object-cover">
+                        <img th:if="${!vehicle.model.contains('CR-V') and !vehicle.model.contains('VF8')}" src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&h=500&fit=crop&auto=format" class="w-full h-full object-cover">
+                    </div>
+                </div>
+
+                <!-- Info Tabs -->
+                <div class="bg-white rounded-lg border border-border p-6">
+                    <h2 class="text-lg font-bold text-navy mb-3">Vehicle Overview</h2>
+                    <p class="text-sm text-muted-foreground leading-relaxed mb-6">
+                        Comfortable, fuel-efficient, and meticulously maintained vehicle perfect for city driving and weekend trips in Ho Chi Minh City. Handover and inspection done directly at our central warehouse.
+                    </p>
+
+                    <h3 class="text-sm font-bold text-navy mb-3 uppercase tracking-wider">Features & Amenities</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs text-muted-foreground">
+                        <div class="flex items-center gap-2 p-2.5 rounded bg-surface border border-border">
+                            <span>❄️ Air conditioning</span>
+                        </div>
+                        <div class="flex items-center gap-2 p-2.5 rounded bg-surface border border-border">
+                            <span>📻 Bluetooth audio</span>
+                        </div>
+                        <div class="flex items-center gap-2 p-2.5 rounded bg-surface border border-border">
+                            <span>📷 Backup camera</span>
+                        </div>
+                        <div class="flex items-center gap-2 p-2.5 rounded bg-surface border border-border">
+                            <span>🔋 USB Charging</span>
+                        </div>
+                        <div class="flex items-center gap-2 p-2.5 rounded bg-surface border border-border">
+                            <span>🔑 Keyless entry</span>
+                        </div>
+                        <div class="flex items-center gap-2 p-2.5 rounded bg-surface border border-border">
+                            <span>🛡️ Dual airbags</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Sticky Booking Card (lg:col-span-1) -->
+            <div class="space-y-4">
+                <div class="bg-white rounded-lg border border-border p-5 sticky top-20 shadow-xs">
+                    <div class="mb-4">
+                        <h1 class="font-heading text-2xl text-navy" th:text="${vehicle.brand + ' ' + vehicle.model}">Toyota Vios</h1>
+                        <div class="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                            <span class="font-mono bg-surface px-2 py-0.5 rounded border border-border" th:text="${vehicle.licensePlate}">51A-123.45</span>
+                            <span>·</span>
+                            <span th:text="${vehicle.year}">2023</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface rounded-md p-3.5 mb-4 flex items-center justify-between">
+                        <div>
+                            <div class="text-2xl font-bold text-amber">
+                                <span th:text="${#numbers.formatDecimal(vehicle.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span> đ
+                            </div>
+                            <div class="text-xs text-muted-foreground">per hour</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs text-muted-foreground">Deposit</div>
+                            <div class="text-sm font-semibold text-navy">50% rental fee</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 mb-5 text-xs text-muted-foreground">
+                        <div class="p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-800">
+                            📍 <strong>Warehouse Pickup:</strong> 123 Đường Đinh Bộ Lĩnh, Bình Thạnh, TP.HCM.
+                        </div>
+                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-md text-blue-800">
+                            ⏱️ <strong>Operating Hours:</strong> 06:00 – 22:00 daily.
+                        </div>
+                    </div>
+
+                    <a th:href="@{/search}" class="w-full bg-amber hover:bg-amber-dark text-white font-semibold py-3 px-4 rounded-md transition-all shadow-xs text-sm block text-center text-decoration-none">
+                        Check Availability & Book →
+                    </a>
+
+                    <div class="mt-4 space-y-2 text-xs text-muted-foreground">
+                        <div class="flex items-center gap-2">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                            <span>100% deposit refund upon checkout</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                            <span>Standard insurance included</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
 </main>
-</body></html>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>
