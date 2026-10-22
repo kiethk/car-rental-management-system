@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fleet Management — DriveNow Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container-fluid px-lg-5 my-4 flex-grow-1">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2">
+            <div th:replace="~{fragments/admin-sidebar :: sidebar(active='vehicles')}"></div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10">
+            <!-- Flash Messages -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show border-0 rounded-lg shadow-sm" role="alert">
+                <span th:text="${success}"></span>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show border-0 rounded-lg shadow-sm" role="alert">
+                <span th:text="${error}"></span>
+            </div>
+
+            <!-- Sub Nav Tabs -->
+            <ul class="nav nav-pills mb-4 bg-white p-2 rounded-xl border">
+                <li class="nav-item">
+                    <a class="nav-link active font-weight-bold bg-navy text-white" th:href="@{/admin/vehicles}">Fleet Vehicles</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link font-weight-bold text-navy" th:href="@{/admin/vehicle-types}">Vehicle Models</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link font-weight-bold text-navy" th:href="@{/admin/license-plates}">License Plates & Registration</a>
+                </li>
+            </ul>
+
+            <!-- Page Header -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+                <div>
+                    <h1 class="h3 font-weight-bold text-navy mb-1">Fleet Management</h1>
+                    <p class="text-muted small mb-0">Track all physical vehicles in warehouse, assigned license plates, odometer, and operational status.</p>
+                </div>
+                <div class="mt-3 mt-md-0 d-flex gap-2">
+                    <a th:href="@{/admin/vehicles/new}" class="btn btn-navy font-weight-bold btn-sm px-3 py-2 rounded-lg shadow-sm">
+                        + Add New Vehicle
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filter Status Pills -->
+            <div class="mb-3 d-flex gap-2 align-items-center">
+                <span class="small font-weight-bold text-muted mr-2">Status:</span>
+                <a th:href="@{/admin/vehicles(status='all')}"
+                   th:class="'btn btn-sm rounded-pill font-weight-bold ' + (${selectedStatus == 'all'} ? 'btn-navy text-white' : 'btn-light text-navy')">
+                    All (<span th:text="${vehicles.size()}">0</span>)
+                </a>
+                <a th:href="@{/admin/vehicles(status='available')}"
+                   th:class="'btn btn-sm rounded-pill font-weight-bold ' + (${selectedStatus == 'available'} ? 'btn-success text-white' : 'btn-light text-navy')">
+                    Available
+                </a>
+                <a th:href="@{/admin/vehicles(status='rented')}"
+                   th:class="'btn btn-sm rounded-pill font-weight-bold ' + (${selectedStatus == 'rented'} ? 'btn-warning text-dark' : 'btn-light text-navy')">
+                    Rented
+                </a>
+                <a th:href="@{/admin/vehicles(status='maintenance')}"
+                   th:class="'btn btn-sm rounded-pill font-weight-bold ' + (${selectedStatus == 'maintenance'} ? 'btn-secondary text-white' : 'btn-light text-navy')">
+                    Maintenance
+                </a>
+            </div>
+
+            <!-- Vehicles Table Card -->
+            <div class="card border-0 shadow-sm rounded-xl overflow-hidden bg-white">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-surface-2 text-navy small font-weight-bold">
+                            <tr>
+                                <th class="border-top-0 py-3">ID</th>
+                                <th class="border-top-0 py-3">License Plate</th>
+                                <th class="border-top-0 py-3">Model & Color</th>
+                                <th class="border-top-0 py-3">Year</th>
+                                <th class="border-top-0 py-3">Odometer (km)</th>
+                                <th class="border-top-0 py-3 text-center">Status</th>
+                                <th class="border-top-0 py-3 text-center">Quick Switch</th>
+                                <th class="border-top-0 py-3 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small text-navy">
+                            <tr th:if="${#lists.isEmpty(vehicles)}">
+                                <td colspan="8" class="text-center py-4 text-muted">No vehicles found.</td>
+                            </tr>
+                            <tr th:each="v : ${vehicles}">
+                                <td class="font-weight-bold text-muted" th:text="'#' + ${v.id}">#1</td>
+                                <td>
+                                    <span class="badge badge-light border border-secondary px-2 py-1 font-weight-bold text-navy"
+                                          th:text="${v.licensePlate != null ? v.licensePlate.plate : 'Unassigned'}">51A-123.45</span>
+                                    <small class="d-block text-muted" style="font-size: 11px;"
+                                           th:text="${v.licensePlate != null ? v.licensePlate.province : ''}">Ho Chi Minh City</small>
+                                </td>
+                                <td>
+                                    <div class="font-weight-bold text-navy"
+                                         th:text="${v.vehicleType != null ? v.vehicleType.displayName : 'Unknown'}">
+                                        Toyota Vios
+                                    </div>
+                                    <small class="text-muted" th:text="'Color: ' + ${v.color}">Color: White</small>
+                                </td>
+                                <td th:text="${v.year}">2023</td>
+                                <td>
+                                    <form method="post" th:action="@{/admin/vehicles/{id}/odometer(id=${v.id})}" class="form-inline">
+                                        <div class="input-group input-group-sm" style="max-width: 140px;">
+                                            <input type="number" name="odometer" th:value="${v.odometer}"
+                                                   class="form-control form-control-sm text-right" min="0" required>
+                                            <div class="input-group-append">
+                                                <button type="submit" class="btn btn-outline-secondary btn-sm" title="Save new odometer">✓</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </td>
+                                <td class="text-center">
+                                    <span th:if="${v.status == 'available'}" class="badge badge-success px-2 py-1 font-weight-bold">Available</span>
+                                    <span th:if="${v.status == 'rented'}" class="badge badge-warning text-dark px-2 py-1 font-weight-bold">Rented</span>
+                                    <span th:if="${v.status == 'maintenance'}" class="badge badge-secondary px-2 py-1 font-weight-bold">Maintenance</span>
+                                </td>
+                                <td class="text-center">
+                                    <!-- Toggle status form (available <-> maintenance, blocked if rented) -->
+                                    <div th:if="${v.status == 'available'}">
+                                        <form method="post" th:action="@{/admin/vehicles/{id}/status(id=${v.id})}">
+                                            <input type="hidden" name="status" value="maintenance" />
+                                            <button type="submit" class="btn btn-outline-warning btn-sm py-0 px-2 font-weight-semibold" style="font-size: 11px;">
+                                                Set Maintenance
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <div th:if="${v.status == 'maintenance'}">
+                                        <form method="post" th:action="@{/admin/vehicles/{id}/status(id=${v.id})}">
+                                            <input type="hidden" name="status" value="available" />
+                                            <button type="submit" class="btn btn-outline-success btn-sm py-0 px-2 font-weight-semibold" style="font-size: 11px;">
+                                                Set Available
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <span th:if="${v.status == 'rented'}" class="text-muted small" style="font-size: 11px;">
+                                        On Trip
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-inline-flex gap-1">
+                                        <a th:href="@{/admin/inspections/new(vehicleId=${v.id})}"
+                                           class="btn btn-outline-secondary btn-sm px-2 py-1" title="Schedule Inspection">
+                                            Schedule
+                                        </a>
+                                        <a th:href="@{/admin/vehicles/{id}/edit(id=${v.id})}"
+                                           class="btn btn-outline-primary btn-sm px-2 py-1">Edit</a>
+                                        <form method="post" th:action="@{/admin/vehicles/{id}/delete(id=${v.id})}"
+                                              onsubmit="return confirm('Are you sure you want to delete this vehicle? (Blocked if active bookings or maintenance logs exist)');">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm px-2 py-1">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

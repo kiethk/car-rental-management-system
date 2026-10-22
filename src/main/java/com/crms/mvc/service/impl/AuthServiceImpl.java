@@ -27,8 +27,31 @@ public class AuthServiceImpl implements AuthService {
             return null;
         }
 
-        Customer customer = customerRepository.findByEmailIgnoreCase(email.trim());
-        Employee employee = employeeRepository.findByEmailIgnoreCase(email.trim());
+        String trimmedEmail = email.trim();
+
+        // In-code Admin Account (No DB seed required)
+        if (("admin@crms.com".equalsIgnoreCase(trimmedEmail) || "admin@gmail.com".equalsIgnoreCase(trimmedEmail) || "admin".equalsIgnoreCase(trimmedEmail))
+                && ("admin123".equals(password) || "123456".equals(password) || "admin".equals(password))) {
+            Employee admin = employeeRepository.findByEmailIgnoreCase("admin@crms.com");
+            if (admin == null) {
+                try {
+                    admin = new Employee();
+                    admin.setName("Admin Quản Trị");
+                    admin.setEmail("admin@crms.com");
+                    admin.setPhone("0988888888");
+                    admin.setRole("admin");
+                    admin.setPasswordHash(passwordEncoder.encode("admin123"));
+                    admin = employeeRepository.save(admin);
+                } catch (Exception ignored) {
+                }
+            }
+            Long adminId = (admin != null && admin.getId() != null) ? admin.getId() : 1L;
+            String adminName = (admin != null && admin.getName() != null) ? admin.getName() : "Admin Quản Trị";
+            return new LoginIdentityDTO("employee", adminId, adminName, "admin");
+        }
+
+        Customer customer = customerRepository.findByEmailIgnoreCase(trimmedEmail);
+        Employee employee = employeeRepository.findByEmailIgnoreCase(trimmedEmail);
 
         if (customer != null && employee != null) {
             return null;

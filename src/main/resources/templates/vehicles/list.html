@@ -1,91 +1,262 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>DriveNow — Browse Cars</title>
+    <title>DriveNow — Khám phá & Tìm kiếm Đội xe</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
     <link rel="stylesheet" th:href="@{/css/drivenow.css}">
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .car-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: all 0.25s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .car-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.12);
+            border-color: #cbd5e1;
+        }
+        .car-img-wrapper {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            aspect-ratio: 16 / 10;
+            background-color: #f1f5f9;
+            overflow: hidden;
+            border-top-left-radius: 1rem;
+            border-top-right-radius: 1rem;
+        }
+        .car-img-wrapper img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            object-position: center;
+            border-top-left-radius: 1rem;
+            border-top-right-radius: 1rem;
+            transition: transform 0.4s ease;
+        }
+        .car-card:hover .car-img-wrapper img {
+            transform: scale(1.05);
+        }
+        .spec-badge {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+    </style>
 </head>
 <body class="d-flex flex-column min-vh-100 bg-surface">
 
 <div th:replace="~{fragments/header :: header}"></div>
 
-<main class="container my-4 flex-grow-1">
-    <!-- Page Header -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom">
-        <div>
-            <h1 class="h3 font-weight-bold text-navy mb-1">Browse Available Cars</h1>
-            <p class="text-muted small mb-0">Find your perfect ride, check specifications and book a time slot.</p>
+<main class="container-fluid px-lg-5 my-4 flex-grow-1">
+
+    <!-- Top Banner -->
+    <div class="bg-navy text-white rounded-2xl p-4 p-md-5 mb-4 shadow-sm">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <span class="badge badge-warning text-dark font-weight-bold text-uppercase px-2 py-1 mb-2">Đội xe chất lượng cao</span>
+                <h1 class="h2 font-weight-bold mb-2">Khám Phá Dàn Xe Thuê Tự Lái</h1>
+                <p class="text-white-50 mb-0">Hơn 20+ dòng xe đa dạng phân khúc từ Sedan, SUV, MPV đến Xe điện thông minh. Kiểm định an toàn nghiêm ngặt trước mỗi chuyến đi.</p>
+            </div>
+            <div class="col-md-4 text-md-right mt-3 mt-md-0">
+                <a th:href="@{/search}" class="btn btn-warning font-weight-bold px-4 py-2">
+                    📅 Đặt Theo Khung Giờ (Slot)
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content: Sidebar + Grid -->
+    <div class="row">
+        <!-- Sidebar Filter (Left) -->
+        <div class="col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm rounded-xl p-4 sticky-top" style="top: 20px; z-index: 10;">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <h5 class="font-weight-bold text-navy mb-0">Bộ lọc tìm kiếm</h5>
+                    <a th:href="@{/vehicles}" class="text-muted small text-decoration-none">Đặt lại</a>
+                </div>
+
+                <form method="get" th:action="@{/vehicles}">
+                    <!-- Keyword search -->
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted mb-1">Từ khóa tìm kiếm</label>
+                        <input type="text" name="keyword" th:value="${filter.keyword}"
+                               class="form-control form-control-sm rounded-lg"
+                               placeholder="Tìm tên xe, dòng xe...">
+                    </div>
+
+                    <!-- Brand filter -->
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted mb-1">Hãng sản xuất</label>
+                        <select name="brand" class="form-control form-control-sm rounded-lg">
+                            <option value="all" th:selected="${filter.brand == null or filter.brand == 'all'}">Tất cả hãng xe</option>
+                            <option th:each="b : ${brands}" th:value="${b}" th:text="${b}"
+                                    th:selected="${filter.brand != null and filter.brand.equalsIgnoreCase(b)}"></option>
+                        </select>
+                    </div>
+
+                    <!-- Category filter -->
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted mb-1">Phân khúc (Category)</label>
+                        <select name="category" class="form-control form-control-sm rounded-lg">
+                            <option value="all" th:selected="${filter.category == null or filter.category == 'all'}">Tất cả phân khúc</option>
+                            <option th:each="c : ${categories}" th:value="${c}" th:text="${#strings.capitalize(c)}"
+                                    th:selected="${filter.category != null and filter.category.equalsIgnoreCase(c)}"></option>
+                        </select>
+                    </div>
+
+                    <!-- Seats filter -->
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted mb-1">Số chỗ ngồi</label>
+                        <select name="seats" class="form-control form-control-sm rounded-lg">
+                            <option value="0" th:selected="${filter.seats == null or filter.seats == 0}">Mọi số chỗ</option>
+                            <option value="4" th:selected="${filter.seats == 4}">4 chỗ</option>
+                            <option value="5" th:selected="${filter.seats == 5}">5 chỗ</option>
+                            <option value="7" th:selected="${filter.seats == 7}">7 chỗ trở lên</option>
+                        </select>
+                    </div>
+
+                    <!-- Transmission filter -->
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted mb-1">Hộp số</label>
+                        <select name="transmission" class="form-control form-control-sm rounded-lg">
+                            <option value="all" th:selected="${filter.transmission == null or filter.transmission == 'all'}">Tất cả hộp số</option>
+                            <option value="automatic" th:selected="${filter.transmission == 'automatic'}">Tự động (Automatic)</option>
+                            <option value="manual" th:selected="${filter.transmission == 'manual'}">Số sàn (Manual)</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort By -->
+                    <div class="form-group mb-4">
+                        <label class="small font-weight-bold text-muted mb-1">Sắp xếp theo</label>
+                        <select name="sortBy" class="form-control form-control-sm rounded-lg">
+                            <option value="price_asc" th:selected="${filter.sortBy == 'price_asc'}">Giá thuê: Thấp đến Cao</option>
+                            <option value="price_desc" th:selected="${filter.sortBy == 'price_desc'}">Giá thuê: Cao đến Thấp</option>
+                            <option value="year_desc" th:selected="${filter.sortBy == 'year_desc'}">Năm sản xuất: Mới nhất</option>
+                            <option value="name_asc" th:selected="${filter.sortBy == 'name_asc'}">Tên xe: A - Z</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-navy btn-sm btn-block py-2 font-weight-bold shadow-sm rounded-lg">
+                        Áp Dụng Bộ Lọc
+                    </button>
+                </form>
+            </div>
         </div>
 
-        <!-- Search Box -->
-        <form method="get" th:action="@{/vehicles}" class="form-inline mt-3 mt-md-0">
-            <div class="input-group">
-                <input id="keyword" name="keyword" th:value="${keyword}"
-                       class="form-control form-control-sm"
-                       placeholder="Search by brand or model..."
-                       maxlength="100" style="min-width: 260px;">
-                <div class="input-group-append">
-                    <button class="btn btn-navy btn-sm" type="submit">Search</button>
+        <!-- Vehicle Grid (Right) -->
+        <div class="col-lg-9">
+            <!-- Results Bar -->
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                <div>
+                    <h2 class="h5 font-weight-bold text-navy mb-0">Danh Sách Xe Khả Dụng</h2>
+                    <span class="small text-muted">Tìm thấy <strong class="text-navy" th:text="${totalCount}">0</strong> chiếc xe khả dụng</span>
+                </div>
+                <div class="d-none d-sm-block">
+                    <span class="badge badge-light border text-muted px-2.5 py-1 text-xs">Nhận và trả xe tại bãi xe trung tâm</span>
                 </div>
             </div>
-        </form>
-    </div>
 
-    <!-- Vehicles Table -->
-    <div class="card card-drivenow border-0 p-3" th:unless="${#lists.isEmpty(vehicles)}">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0 align-middle">
-                <thead class="thead-light">
-                    <tr>
-                        <th class="border-top-0">Plate</th>
-                        <th class="border-top-0">Brand / Model</th>
-                        <th class="border-top-0">Year</th>
-                        <th class="border-top-0 text-right">Price / Hour</th>
-                        <th class="border-top-0 text-center">Status</th>
-                        <th class="border-top-0 text-center">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="vehicle : ${vehicles}">
-                        <td class="font-weight-bold text-navy">
-                            <span class="badge badge-light border px-2 py-1" th:text="${vehicle.licensePlate}">51A-123.45</span>
-                        </td>
-                        <td>
-                            <div class="font-weight-bold" th:text="${vehicle.brand + ' ' + vehicle.model}">Toyota Vios</div>
-                        </td>
-                        <td th:text="${vehicle.year}">2023</td>
-                        <td class="text-right font-weight-bold text-amber">
-                            <span th:text="${#numbers.formatDecimal(vehicle.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span> VND
-                        </td>
-                        <td class="text-center">
-                            <span th:if="${vehicle.status == 'available'}" class="badge badge-success px-2 py-1">Available</span>
-                            <span th:if="${vehicle.status == 'rented'}" class="badge badge-warning px-2 py-1">Rented</span>
-                            <span th:if="${vehicle.status == 'maintenance'}" class="badge badge-secondary px-2 py-1">Maintenance</span>
-                        </td>
-                        <td class="text-center">
-                            <a th:href="@{/vehicles/{id}(id=${vehicle.id})}" class="btn btn-sm btn-outline-primary px-3">
-                                View Details
-                            </a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+            <!-- Empty State -->
+            <div th:if="${#lists.isEmpty(vehicles)}" class="card border-0 shadow-sm rounded-xl p-5 text-center my-4 bg-white">
+                <div class="mb-3 text-muted">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto text-muted"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 11l2-6h10l2 6"/></svg>
+                </div>
+                <h4 class="font-weight-bold text-navy mb-2">Không tìm thấy xe phù hợp</h4>
+                <p class="text-muted small max-w-md mx-auto mb-4">Hiện tại không có xe khả dụng nào khớp với điều kiện tìm kiếm. Vui lòng thử nới lỏng bộ lọc hoặc xóa điều kiện tìm kiếm.</p>
+                <div>
+                    <a th:href="@{/vehicles}" class="btn btn-navy btn-sm px-4 py-2 font-weight-bold rounded-lg">
+                        Xem Toàn Bộ Đội Xe
+                    </a>
+                </div>
+            </div>
 
-    <!-- Empty State -->
-    <div th:if="${#lists.isEmpty(vehicles)}" class="card card-drivenow border-0 p-5 text-center my-4">
-        <div class="text-muted h4 mb-2">🚗 Không tìm thấy xe.</div>
-        <p class="text-muted small">Try a different keyword or clear your search filter.</p>
-        <div>
-            <a th:href="@{/vehicles}" class="btn btn-navy btn-sm">View All Cars</a>
+            <!-- Vehicle Cards Grid -->
+            <div th:unless="${#lists.isEmpty(vehicles)}" class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+                <div class="col mb-4" th:each="v : ${vehicles}">
+                    <div class="car-card shadow-sm">
+                        <!-- Car Image -->
+                        <div class="car-img-wrapper">
+                            <img th:src="${v.imageUrl != null and !v.imageUrl.isBlank() ? v.imageUrl : '/images/car-rental-logo.svg'}"
+                                 th:alt="${v.displayName}"
+                                 onerror="this.onerror=null; this.src='/images/car-rental-logo.svg';">
+                            <div class="position-absolute" style="top: 10px; left: 10px;">
+                                <span class="badge text-uppercase px-2.5 py-1 font-weight-bold shadow-xs"
+                                      style="background-color: rgba(30, 41, 59, 0.85); color: #ffffff; font-size: 0.7rem; letter-spacing: 0.05em;"
+                                      th:text="${v.category}">Sedan</span>
+                                <span th:if="${v.fuelType == 'electric'}" class="badge badge-success px-2 py-1 shadow-xs font-weight-bold" style="font-size: 0.7rem;">EV</span>
+                                <span th:if="${v.fuelType == 'hybrid'}" class="badge badge-info px-2 py-1 shadow-xs font-weight-bold" style="font-size: 0.7rem;">Hybrid</span>
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <!-- Title & Plate -->
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <div>
+                                    <h3 class="h6 font-weight-bold text-navy mb-1"
+                                        th:text="${v.displayName}">Toyota Vios 2023</h3>
+                                    <span class="small text-muted" th:text="${v.year + ' · ' + v.color}">2023 · Trắng</span>
+                                </div>
+                                <span class="badge badge-light border text-navy font-weight-bold px-2 py-1" style="font-size: 0.75rem;" th:text="${v.licensePlate}">51A-123.45</span>
+                            </div>
+
+                            <!-- Specs: Professional minimal dot-separated layout, NO emojis, NO colored tags -->
+                            <div class="text-secondary small mb-3 py-1" style="font-size: 0.8125rem;">
+                                <span th:text="${v.seats + ' chỗ'}">5 chỗ</span>
+                                <span class="text-muted mx-1">·</span>
+                                <span th:text="${v.transmission == 'automatic' ? 'Tự động' : (v.transmission == 'manual' ? 'Số sàn' : v.transmission)}">Tự động</span>
+                                <span class="text-muted mx-1">·</span>
+                                <span th:text="${v.fuelType == 'gasoline' ? 'Xăng' : (v.fuelType == 'diesel' ? 'Dầu diesel' : (v.fuelType == 'electric' ? 'Điện' : (v.fuelType == 'hybrid' ? 'Hybrid' : v.fuelType)))}">Xăng</span>
+                                <span class="text-muted mx-1">·</span>
+                                <span th:text="${#numbers.formatDecimal(v.odometer, 0, 'COMMA', 0, 'POINT') + ' km'}">12,000 km</span>
+                            </div>
+
+                            <!-- Price & Action (Bottom) -->
+                            <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="small text-muted d-block" style="font-size: 0.75rem;">Đơn giá thuê</span>
+                                    <div class="font-weight-bold text-navy" style="font-size: 1.15rem;">
+                                        <span th:text="${#numbers.formatDecimal(v.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span>
+                                        <span class="small font-weight-normal text-muted">đ/h</span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <a th:href="@{/vehicles/{id}(id=${v.id})}"
+                                       class="btn btn-outline-secondary btn-sm px-3 font-weight-semibold rounded-lg"
+                                       title="Xem chi tiết kỹ thuật">
+                                        Chi tiết
+                                    </a>
+                                    <a th:href="@{/search(category=${v.category})}"
+                                       class="btn btn-navy btn-sm px-3 font-weight-semibold rounded-lg shadow-sm">
+                                        Thuê ngay
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </main>

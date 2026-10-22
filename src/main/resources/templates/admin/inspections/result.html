@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Record Inspection Result — DriveNow Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container-fluid px-lg-5 my-4 flex-grow-1">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2">
+            <div th:replace="~{fragments/admin-sidebar :: sidebar(active='inspections')}"></div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10">
+            <!-- Flash Error -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show border-0 rounded-lg shadow-sm" role="alert">
+                <span th:text="${error}"></span>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-xl p-4 p-md-5 bg-white max-w-4xl">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                    <div>
+                        <h1 class="h4 font-weight-bold text-navy mb-1" th:text="'Record Result — Inspection #' + ${inspection.id}">
+                            Record Inspection Result
+                        </h1>
+                        <p class="text-muted small mb-0">Record official test results after the vehicle completes the registry station inspection.</p>
+                    </div>
+                    <a th:href="@{/admin/inspections}" class="btn btn-outline-secondary btn-sm rounded-lg">
+                        Back to Inspections
+                    </a>
+                </div>
+
+                <!-- Vehicle Information -->
+                <div class="p-3 bg-surface rounded-xl border mb-4">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <span class="small text-muted d-block">Vehicle:</span>
+                            <span class="font-weight-bold text-navy"
+                                  th:text="${inspection.vehicle.vehicleType.displayName}">Toyota Vios</span>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="small text-muted d-block">License Plate:</span>
+                            <span class="badge badge-light border font-weight-bold text-navy"
+                                  th:text="${inspection.vehicle.licensePlate != null ? inspection.vehicle.licensePlate.plate : 'Unassigned'}">51A-123.45</span>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="small text-muted d-block">Scheduled At:</span>
+                            <span class="font-weight-bold text-navy"
+                                  th:text="${#temporals.format(inspection.scheduledAt, 'yyyy-MM-dd HH:mm')}">2026-10-25 09:00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post" th:action="@{/admin/inspections/{id}/result(id=${inspection.id})}">
+                    <div class="row g-3">
+                        <!-- Select Result -->
+                        <div class="col-12 form-group mb-4">
+                            <label class="font-weight-bold small text-navy mb-2 d-block">Official Inspection Result <span class="text-danger">*</span></label>
+                            <div class="d-flex gap-4">
+                                <div class="custom-control custom-radio custom-control-inline">
+                                    <input type="radio" id="statusPassed" name="status" value="passed" class="custom-control-input" checked onchange="togglePassedFields(true)">
+                                    <label class="custom-control-label font-weight-bold text-success" for="statusPassed">
+                                        PASSED — New registration sticker issued
+                                    </label>
+                                </div>
+                                <div class="custom-control custom-radio custom-control-inline">
+                                    <input type="radio" id="statusFailed" name="status" value="failed" class="custom-control-input" onchange="togglePassedFields(false)">
+                                    <label class="custom-control-label font-weight-bold text-danger" for="statusFailed">
+                                        FAILED — Failed inspection, repair required
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Passed Section: Renew registration expiry -->
+                        <div id="passedSection" class="col-12 form-group mb-3 p-3 bg-light rounded-xl border border-success">
+                            <label class="font-weight-bold small text-success mb-1">
+                                New Registration Expiry Date <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" id="expiryInput" name="newRegistrationExpiry"
+                                   th:value="${resultForm.newRegistrationExpiry}"
+                                   class="form-control rounded-lg col-md-6">
+                            <small class="form-text text-muted mt-2">
+                                <strong>Automation:</strong> Saving will update the vehicle's license plate expiration date (`license_plates.registration_expiry`) and return the vehicle status to <strong>Available</strong>.
+                            </small>
+                        </div>
+
+                        <!-- Failed Notice -->
+                        <div id="failedNotice" class="col-12 alert alert-warning rounded-xl border-0 mb-3" style="display: none;">
+                            <strong>Notice:</strong> The vehicle will remain in <strong>Maintenance</strong> status until mechanical defects are rectified.
+                        </div>
+
+                        <!-- Inspection Notes -->
+                        <div class="col-12 form-group mb-4">
+                            <label class="font-weight-bold small text-navy mb-1">Inspection Notes & Certificate Details</label>
+                            <textarea name="notes" rows="3" class="form-control rounded-lg"
+                                      placeholder="e.g. Passed all safety and emissions checks. Or if failed: Rear brake pads worn out, headlamp alignment required..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a th:href="@{/admin/inspections}" class="btn btn-light px-4 rounded-lg">Cancel</a>
+                        <button type="submit" class="btn btn-navy font-weight-bold px-4 rounded-lg shadow-sm">
+                            Save Inspection Result
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    function togglePassedFields(isPassed) {
+        document.getElementById('passedSection').style.display = isPassed ? 'block' : 'none';
+        document.getElementById('failedNotice').style.display = isPassed ? 'none' : 'block';
+    }
+</script>
+
+</body>
+</html>

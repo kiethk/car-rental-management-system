@@ -1,135 +1,170 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${vehicle.brand + ' ' + vehicle.model + ' — DriveNow'}">Vehicle Details</title>
+    <title th:text="${vehicle.displayName + ' — DriveNow'}">Chi tiết xe — DriveNow</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
     <link rel="stylesheet" th:href="@{/css/drivenow.css}">
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
-<body class="bg-surface text-navy min-h-screen flex flex-col">
+<body class="d-flex flex-column min-vh-100 bg-surface">
 
 <div th:replace="~{fragments/header :: header}"></div>
 
-<main class="flex-1">
+<main class="container my-5 flex-grow-1">
 
-    <!-- Breadcrumb matching VehicleDetailPage.tsx -->
-    <div class="bg-white border-b border-border">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
-            <nav class="flex items-center gap-2 text-xs text-muted-foreground">
-                <a th:href="@{/}" class="hover:text-navy text-decoration-none text-muted-foreground">Home</a>
-                <span>/</span>
-                <a th:href="@{/search}" class="hover:text-navy text-decoration-none text-muted-foreground">Search Cars</a>
-                <span>/</span>
-                <span class="text-navy font-semibold" th:text="${vehicle.brand + ' ' + vehicle.model}">Toyota Vios</span>
-            </nav>
-        </div>
-    </div>
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0 mb-0">
+            <li class="breadcrumb-item"><a th:href="@{/}" class="text-muted text-decoration-none">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/vehicles}" class="text-muted text-decoration-none">Đội xe</a></li>
+            <li class="breadcrumb-item active text-navy font-weight-bold" th:text="${vehicle.displayName}">Toyota Vios</li>
+        </ol>
+    </nav>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            <!-- Left: Images + Details Tabs (lg:col-span-2) -->
-            <div class="lg:col-span-2 space-y-5">
-                <!-- Image Gallery -->
-                <div class="bg-white rounded-lg overflow-hidden border border-border">
-                    <div class="relative h-64 sm:h-80 bg-surface-2 overflow-hidden">
-                        <img th:if="${vehicle.model.contains('CR-V')}" src="https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=500&fit=crop&auto=format" class="w-full h-full object-cover">
-                        <img th:if="${vehicle.model.contains('VF8')}" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=500&fit=crop&auto=format" class="w-full h-full object-cover">
-                        <img th:if="${!vehicle.model.contains('CR-V') and !vehicle.model.contains('VF8')}" src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&h=500&fit=crop&auto=format" class="w-full h-full object-cover">
+    <div class="row g-4">
+        <!-- Left: Image & Description -->
+        <div class="col-lg-7 mb-4">
+            <div class="card border-0 shadow-sm rounded-2xl overflow-hidden bg-white mb-4">
+                <div style="height: 380px; background-color: #f1f5f9; position: relative;">
+                    <img th:src="${vehicle.imageUrl != null and !vehicle.imageUrl.isBlank() ? vehicle.imageUrl : '/images/car-rental-logo.svg'}"
+                         th:alt="${vehicle.displayName}"
+                         class="w-100 h-100 object-cover"
+                         onerror="this.onerror=null; this.src='/images/car-rental-logo.svg';">
+                    <div class="position-absolute" style="top: 15px; left: 15px;">
+                        <span class="badge badge-dark text-uppercase px-3 py-2 shadow-sm font-weight-bold"
+                              style="background-color: rgba(32, 42, 53, 0.9);"
+                              th:text="${vehicle.category}">Sedan</span>
+                    </div>
+                    <div class="position-absolute" style="top: 15px; right: 15px;">
+                        <span th:if="${vehicle.status == 'available'}" class="badge badge-success px-3 py-2 shadow-sm font-weight-bold">Sẵn sàng cho thuê</span>
+                        <span th:if="${vehicle.status == 'rented'}" class="badge badge-warning text-dark px-3 py-2 shadow-sm font-weight-bold">Đang phục vụ</span>
+                        <span th:if="${vehicle.status == 'maintenance'}" class="badge badge-secondary px-3 py-2 shadow-sm font-weight-bold">Đang bảo dưỡng</span>
                     </div>
                 </div>
 
-                <!-- Info Tabs -->
-                <div class="bg-white rounded-lg border border-border p-6">
-                    <h2 class="text-lg font-bold text-navy mb-3">Vehicle Overview</h2>
-                    <p class="text-sm text-muted-foreground leading-relaxed mb-6">
-                        Comfortable, fuel-efficient, and meticulously maintained vehicle perfect for city driving and weekend trips in Ho Chi Minh City. Handover and inspection done directly at our central warehouse.
+                <div class="p-4">
+                    <h3 class="h5 font-weight-bold text-navy mb-2">Giới thiệu dòng xe</h3>
+                    <p class="text-muted mb-0 leading-relaxed"
+                       th:text="${vehicle.description != null and !vehicle.description.isBlank() ? vehicle.description : 'Dòng xe hiện đại, đầy đủ tiện nghi, vận hành êm ái, được bảo trì và vệ sinh sạch sẽ sau mỗi hành trình.'}">
+                        Mô tả dòng xe...
                     </p>
-
-                    <h3 class="text-sm font-bold text-navy mb-3 uppercase tracking-wider">Features & Amenities</h3>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs text-muted-foreground">
-                        <div class="flex items-center gap-2 p-2.5 rounded bg-surface border border-border">
-                            <span>❄️ Air conditioning</span>
-                        </div>
-                        <div class="flex items-center gap-2 p-2.5 rounded bg-surface border border-border">
-                            <span>📻 Bluetooth audio</span>
-                        </div>
-                        <div class="flex items-center gap-2 p-2.5 rounded bg-surface border border-border">
-                            <span>📷 Backup camera</span>
-                        </div>
-                        <div class="flex items-center gap-2 p-2.5 rounded bg-surface border border-border">
-                            <span>🔋 USB Charging</span>
-                        </div>
-                        <div class="flex items-center gap-2 p-2.5 rounded bg-surface border border-border">
-                            <span>🔑 Keyless entry</span>
-                        </div>
-                        <div class="flex items-center gap-2 p-2.5 rounded bg-surface border border-border">
-                            <span>🛡️ Dual airbags</span>
-                        </div>
-                    </div>
                 </div>
             </div>
 
-            <!-- Right: Sticky Booking Card (lg:col-span-1) -->
-            <div class="space-y-4">
-                <div class="bg-white rounded-lg border border-border p-5 sticky top-20 shadow-xs">
-                    <div class="mb-4">
-                        <h1 class="font-heading text-2xl text-navy" th:text="${vehicle.brand + ' ' + vehicle.model}">Toyota Vios</h1>
-                        <div class="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                            <span class="font-mono bg-surface px-2 py-0.5 rounded border border-border" th:text="${vehicle.licensePlate}">51A-123.45</span>
-                            <span>·</span>
-                            <span th:text="${vehicle.year}">2023</span>
-                        </div>
+            <!-- Features & Safety Commitments -->
+            <div class="card border-0 shadow-sm rounded-2xl p-4 bg-white">
+                <h4 class="h6 font-weight-bold text-navy mb-3">Cam kết dịch vụ & Tiện ích đi kèm</h4>
+                <div class="row g-3">
+                    <div class="col-sm-6 d-flex align-items-center gap-2 text-muted small">
+                        <span class="badge badge-success-light text-success p-1 rounded">✓</span> Giao nhận trực tiếp tại bãi xe trung tâm
                     </div>
+                    <div class="col-sm-6 d-flex align-items-center gap-2 text-muted small">
+                        <span class="badge badge-success-light text-success p-1 rounded">✓</span> Kiểm định an toàn kỹ thuật định kỳ
+                    </div>
+                    <div class="col-sm-6 d-flex align-items-center gap-2 text-muted small">
+                        <span class="badge badge-success-light text-success p-1 rounded">✓</span> Điều hòa làm lạnh sâu & Kết nối Bluetooth
+                    </div>
+                    <div class="col-sm-6 d-flex align-items-center gap-2 text-muted small">
+                        <span class="badge badge-success-light text-success p-1 rounded">✓</span> Camera lùi & Cảm biến hỗ trợ đỗ xe
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                    <div class="bg-surface rounded-md p-3.5 mb-4 flex items-center justify-between">
+        <!-- Right: Specifications & Booking Box -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-2xl p-4 bg-white mb-4">
+                <div class="d-flex justify-content-between align-items-start mb-3 pb-3 border-bottom">
+                    <div>
+                        <h1 class="h3 font-weight-bold text-navy mb-1" th:text="${vehicle.displayName}">Toyota Vios 2023</h1>
+                        <span class="text-muted small">Năm sản xuất: <strong class="text-navy" th:text="${vehicle.year}">2023</strong> · Màu: <strong class="text-navy" th:text="${vehicle.color}">Trắng</strong></span>
+                    </div>
+                    <span class="badge badge-light border border-secondary text-navy px-2.5 py-1.5 font-weight-bold" th:text="${vehicle.licensePlate}">51A-123.45</span>
+                </div>
+
+                <!-- Price Box -->
+                <div class="bg-surface rounded-xl p-3 mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <div class="text-2xl font-bold text-amber">
-                                <span th:text="${#numbers.formatDecimal(vehicle.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span> đ
+                            <span class="small text-muted d-block">Đơn giá thuê mỗi giờ</span>
+                            <div class="h3 font-weight-bold text-navy mb-0">
+                                <span th:text="${#numbers.formatDecimal(vehicle.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span>
+                                <span class="small text-muted font-weight-normal">VND / giờ</span>
                             </div>
-                            <div class="text-xs text-muted-foreground">per hour</div>
                         </div>
                         <div class="text-right">
-                            <div class="text-xs text-muted-foreground">Deposit</div>
-                            <div class="text-sm font-semibold text-navy">50% rental fee</div>
+                            <span class="badge badge-light border text-navy font-weight-bold px-2 py-1">Cọc 50%</span>
                         </div>
                     </div>
+                </div>
 
-                    <div class="space-y-3 mb-5 text-xs text-muted-foreground">
-                        <div class="p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-800">
-                            📍 <strong>Warehouse Pickup:</strong> 123 Đường Đinh Bộ Lĩnh, Bình Thạnh, TP.HCM.
-                        </div>
-                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-md text-blue-800">
-                            ⏱️ <strong>Operating Hours:</strong> 06:00 – 22:00 daily.
-                        </div>
-                    </div>
+                <!-- Technical Specs Table -->
+                <h4 class="h6 font-weight-bold text-navy mb-3">Thông số kỹ thuật</h4>
+                <div class="table-responsive mb-4">
+                    <table class="table table-sm table-borderless mb-0">
+                        <tbody>
+                            <tr class="border-bottom">
+                                <td class="text-muted py-2">Số chỗ ngồi</td>
+                                <td class="font-weight-bold text-navy text-right py-2" th:text="${vehicle.seats + ' chỗ'}">5 chỗ</td>
+                            </tr>
+                            <tr class="border-bottom">
+                                <td class="text-muted py-2">Hộp số</td>
+                                <td class="font-weight-bold text-navy text-right py-2 text-capitalize" th:text="${vehicle.transmission == 'automatic' ? 'Tự động' : (vehicle.transmission == 'manual' ? 'Số sàn' : vehicle.transmission)}">Tự động</td>
+                            </tr>
+                            <tr class="border-bottom">
+                                <td class="text-muted py-2">Nhiên liệu</td>
+                                <td class="font-weight-bold text-navy text-right py-2 text-capitalize" th:text="${vehicle.fuelType == 'gasoline' ? 'Xăng' : (vehicle.fuelType == 'diesel' ? 'Dầu diesel' : (vehicle.fuelType == 'electric' ? 'Điện' : (vehicle.fuelType == 'hybrid' ? 'Hybrid' : vehicle.fuelType)))}">Xăng</td>
+                            </tr>
+                            <tr class="border-bottom">
+                                <td class="text-muted py-2">Số km đã đi (Odometer)</td>
+                                <td class="font-weight-bold text-navy text-right py-2" th:text="${#numbers.formatDecimal(vehicle.odometer, 0, 'COMMA', 0, 'POINT') + ' km'}">12,000 km</td>
+                            </tr>
+                            <tr class="border-bottom">
+                                <td class="text-muted py-2">Nơi đăng ký xe</td>
+                                <td class="font-weight-bold text-navy text-right py-2" th:text="${vehicle.province != null ? vehicle.province : 'TP. Hồ Chí Minh'}">TP. Hồ Chí Minh</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted py-2">Hạn đăng kiểm</td>
+                                <td class="font-weight-bold text-navy text-right py-2"
+                                    th:text="${vehicle.registrationExpiry != null ? #temporals.format(vehicle.registrationExpiry, 'dd/MM/yyyy') : 'Còn hạn'}">10/10/2026</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                    <a th:href="@{/search}" class="w-full bg-amber hover:bg-amber-dark text-white font-semibold py-3 px-4 rounded-md transition-all shadow-xs text-sm block text-center text-decoration-none">
-                        Check Availability & Book →
+                <!-- Deposit & Policy Alert -->
+                <div class="alert alert-light border rounded-xl small mb-4">
+                    <div class="font-weight-bold text-navy mb-1">Chính sách tiền cọc & Hủy đặt xe:</div>
+                    <ul class="mb-0 pl-3 text-muted">
+                        <li>Tiền cọc bằng <strong>50% giá trị dự tính</strong> của chuyến đi, cấn trừ thẳng vào quyết toán cuối cùng khi trả xe.</li>
+                        <li>Hủy trước 3 ngày (72 giờ) trước giờ nhận xe: <strong>Hoàn 100% tiền cọc</strong>.</li>
+                    </ul>
+                </div>
+
+                <!-- Action Button -->
+                <div class="space-y-2">
+                    <a th:if="${vehicle.status == 'available'}"
+                       th:href="@{/search(category=${vehicle.category})}"
+                       class="btn btn-navy btn-block py-2 font-weight-bold rounded-lg shadow-sm">
+                        Đặt Xe Này Ngay (Chọn Khung Giờ)
                     </a>
-
-                    <div class="mt-4 space-y-2 text-xs text-muted-foreground">
-                        <div class="flex items-center gap-2">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-                            <span>100% deposit refund upon checkout</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-                            <span>Standard insurance included</span>
-                        </div>
-                    </div>
-
+                    <button th:if="${vehicle.status != 'available'}"
+                            class="btn btn-secondary btn-block py-2 font-weight-bold rounded-lg" disabled>
+                        Xe Hiện Đang Bận / Đang Bảo Dưỡng
+                    </button>
+                    <a th:href="@{/vehicles}" class="btn btn-outline-secondary btn-block py-2 rounded-lg">
+                        Xem Danh Sách Xe Khác
+                    </a>
                 </div>
             </div>
-
         </div>
     </div>
-
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>

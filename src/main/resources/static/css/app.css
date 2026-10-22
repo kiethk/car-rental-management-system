@@ -440,3 +440,40 @@ svg.w-6, .w-6 { width: 24px !important; height: 24px !important; min-width: 24px
 }
 
 
+
+/* Fleet Grid Card & Fixed Image Sizing */
+.fleet-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.875rem;
+  overflow: hidden;
+  transition: all 0.2s ease-in-out;
+}
+.fleet-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+}
+.fleet-card-img-wrap {
+  width: 100%;
+  height: 200px;
+  min-height: 200px;
+  max-height: 200px;
+  position: relative;
+  overflow: hidden;
+  background-color: #f1f5f9;
+}
+.fleet-card-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 0.3s ease;
+}
+.fleet-card:hover .fleet-card-img-wrap img {
+  transform: scale(1.04);
+}

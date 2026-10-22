@@ -7,4 +7,9 @@ public interface FileUploadService {
     String saveLicenseImage(MultipartFile image);
 
     Resource loadLicenseImage(String fileName);
+
+    String saveVehicleImage(MultipartFile image);
+
+    Resource loadVehicleImage(String fileName);
 }
+

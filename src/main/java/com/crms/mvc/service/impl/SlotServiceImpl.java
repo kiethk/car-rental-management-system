@@ -83,22 +83,12 @@ public class SlotServiceImpl implements SlotService {
             dto.setDepositAmount(estimatedTotal.multiply(BigDecimal.valueOf(0.5)).setScale(0, RoundingMode.HALF_UP));
 
             String img = vt.getImageUrl();
-            if (img == null || img.isBlank() || img.startsWith("/images/")) {
-                if (vt.getName() != null && vt.getName().toLowerCase().contains("cr-v")) {
-                    img = "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=500&fit=crop&auto=format";
-                    dto.setRating(4.8);
-                    dto.setReviewCount(89);
-                } else if (vt.getName() != null && vt.getName().toLowerCase().contains("vf8")) {
-                    img = "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=500&fit=crop&auto=format";
-                    dto.setRating(4.6);
-                    dto.setReviewCount(64);
-                } else {
-                    img = "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&h=500&fit=crop&auto=format";
-                    dto.setRating(4.7);
-                    dto.setReviewCount(142);
-                }
+            if (img == null || img.isBlank()) {
+                img = "https://images.unsplash.com/photo-1619682817481-e994891cd1f5?auto=format&fit=crop&w=800&q=80";
             }
             dto.setImageUrl(img);
+            dto.setRating(4.8);
+            dto.setReviewCount(120);
             dto.setAvailableCount(availableCars.size());
 
             results.add(dto);
