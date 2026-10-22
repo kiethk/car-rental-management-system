@@ -82,6 +82,84 @@ svg.w-6, .w-6 { width: 24px !important; height: 24px !important; min-width: 24px
   border-color: #cbd5e1;
   box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.08);
 }
+
+/* Card inner layout: Info on left, Pricing on right */
+.car-card-details-wrap {
+  display: flex !important;
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+  padding: 1.25rem 1.5rem !important;
+  gap: 1.5rem !important;
+  justify-content: space-between !important;
+  align-items: stretch !important;
+}
+
+.car-card-info-col {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+
+.car-card-pricing-col {
+  width: 250px !important;
+  min-width: 250px !important;
+  max-width: 250px !important;
+  flex-shrink: 0 !important;
+  border-left: 1px solid #e2e8f0 !important;
+  padding-left: 2rem !important; /* Dời đường dọc sang trái rộng 32px, chữ và nút không bị dính */
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  align-items: flex-end !important;
+  text-align: right !important;
+  box-sizing: border-box !important;
+}
+
+.car-card-pricing-col .price-box {
+  width: 100% !important;
+  text-align: right !important;
+}
+
+.car-card-available-text {
+  margin-top: 0.625rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+  text-align: right !important;
+}
+
+.car-card-pricing-col .action-box {
+  width: 100% !important;
+  margin-top: 1rem !important;
+}
+
+@media (max-width: 768px) {
+  .car-card-details-wrap {
+    flex-direction: column !important;
+    gap: 1.25rem !important;
+    padding: 1rem !important;
+  }
+  .car-card-pricing-col {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    border-left: none !important;
+    border-top: 1px solid #e2e8f0 !important;
+    padding-left: 0 !important;
+    padding-top: 1rem !important;
+    align-items: stretch !important;
+    text-align: left !important;
+  }
+  .car-card-pricing-col .price-box {
+    text-align: left !important;
+  }
+  .car-card-available-text {
+    text-align: left !important;
+  }
+}
 .car-card-img-wrap {
   width: 270px;
   min-width: 270px;
@@ -789,4 +867,382 @@ svg.w-6, .w-6 { width: 24px !important; height: 24px !important; min-width: 24px
 }
 .fleet-card:hover .fleet-card-img-wrap img {
   transform: scale(1.04);
+}
+
+
+/* Soft buttons for table actions & badges */
+.btn-soft-primary {
+  background-color: rgba(30, 41, 59, 0.08);
+  color: var(--color-navy);
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+.btn-soft-primary:hover {
+  background-color: var(--color-navy);
+  color: #ffffff;
+}
+.btn-soft-danger {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+.btn-soft-danger:hover {
+  background-color: #dc2626;
+  color: #ffffff;
+}
+.btn-soft-secondary {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+.btn-soft-secondary:hover {
+  background-color: #e2e8f0;
+  color: #1e293b;
+}
+.btn-soft-warning {
+  background-color: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+.btn-soft-warning:hover {
+  background-color: #f59e0b;
+  color: #ffffff;
+}
+.btn-soft-success {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+.btn-soft-success:hover {
+  background-color: #10b981;
+  color: #ffffff;
+}
+
+
+/* --- Global Container & Standard Spacing --- */
+.crms-container {
+  max-width: 1280px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* --- Header Navigation & Link Resets --- */
+.crms-nav-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 0.375rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: #64748b !important;
+  text-decoration: none !important;
+  transition: all 0.15s ease !important;
+}
+.crms-nav-link:hover {
+  color: #0f172a !important;
+  background-color: #f1f5f9 !important;
+}
+.crms-nav-link.active {
+  color: #0f172a !important;
+  background-color: #f1f5f9 !important;
+  font-weight: 700 !important;
+}
+
+/* --- Universal Hero Title Banner (Unified between Browse & Rent Pages) --- */
+.crms-hero-banner {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-radius: 1.25rem !important;
+  padding: 1.75rem 2rem !important;
+  margin-bottom: 1.5rem !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08) !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+.crms-hero-banner h1 {
+  font-size: 1.625rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.025em !important;
+  margin: 0 0 0.5rem 0 !important;
+  color: #ffffff !important;
+  line-height: 1.25 !important;
+}
+.crms-hero-banner p {
+  font-size: 0.875rem !important;
+  color: rgba(255, 255, 255, 0.72) !important;
+  margin: 0 !important;
+  max-width: 44rem !important;
+  line-height: 1.5 !important;
+}
+
+/* --- Universal Two-Column Layout (Sidebar + Content) --- */
+.crms-layout-sidebar {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.5rem !important;
+  width: 100% !important;
+}
+@media (min-width: 992px) {
+  .crms-layout-sidebar {
+    flex-direction: row !important;
+    align-items: flex-start !important;
+  }
+  .crms-sidebar {
+    width: 280px !important;
+    min-width: 280px !important;
+    max-width: 280px !important;
+    flex-shrink: 0 !important;
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: 5rem !important; /* 80px, clears the 64px sticky navbar */
+    align-self: flex-start !important;
+    z-index: 20 !important;
+  }
+  .crms-content {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+  }
+}
+
+/* --- Dropdown Menus --- */
+.crms-dropdown {
+  position: relative !important;
+  display: inline-block !important;
+}
+.crms-dropdown-toggle {
+  cursor: pointer !important;
+  user-select: none !important;
+}
+.crms-dropdown-menu {
+  position: absolute !important;
+  right: 0 !important;
+  top: calc(100% + 8px) !important;
+  width: 230px !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  z-index: 1050 !important;
+  display: none;
+  overflow: hidden !important;
+}
+.crms-dropdown.open .crms-dropdown-menu {
+  display: block !important;
+  animation: crmsDropdownAnim 0.15s ease-out !important;
+}
+@keyframes crmsDropdownAnim {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.crms-dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.625rem !important;
+  padding: 0.625rem 1rem !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
+  color: #334155 !important;
+  text-decoration: none !important;
+  transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+.crms-dropdown-item:hover {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* --- Car Card Buttons (Pixel-Perfect Vertical Centering) --- */
+.car-action-btn-secondary {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 36px !important;
+  padding: 0 16px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  color: #334155 !important;
+  text-decoration: none !important;
+  transition: all 0.15s ease !important;
+  box-sizing: border-box !important;
+}
+.car-action-btn-secondary:hover {
+  background-color: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+}
+.car-action-btn-primary {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 36px !important;
+  padding: 0 16px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid transparent !important;
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.15s ease !important;
+  box-sizing: border-box !important;
+}
+.car-action-btn-primary:hover {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+
+/* --- Admin Table Alignment & Uniform Interactive Elements --- */
+.admin-table {
+  width: 100% !important;
+}
+
+.admin-table th,
+.admin-table td {
+  vertical-align: middle !important;
+  padding: 12px 14px !important;
+  line-height: 1.4 !important;
+}
+
+.admin-table form {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  vertical-align: middle !important;
+}
+
+/* Force exact uniform height (28px) on all admin buttons */
+.admin-btn,
+button.admin-btn,
+a.admin-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  padding: 0 12px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  border-radius: 6px !important;
+  white-space: nowrap !important;
+  text-decoration: none !important;
+  border: 1px solid transparent !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  margin: 0 !important;
+  vertical-align: middle !important;
+  transition: all 0.15s ease !important;
+}
+
+/* Uniform Status Badges (28px height) */
+.admin-status-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  padding: 0 12px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  border-radius: 6px !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+}
+
+/* Compact License Plate Badge */
+.admin-plate-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  max-height: 24px !important;
+  padding: 0 8px !important;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  border-radius: 4px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  box-sizing: border-box !important;
+}
+
+/* Odometer wrap (28px height) */
+.admin-odometer-wrap {
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  background: #ffffff !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+}
+
+.admin-odometer-wrap input {
+  height: 26px !important;
+  min-height: 26px !important;
+  max-height: 26px !important;
+  width: 80px !important;
+  border: none !important;
+  background: transparent !important;
+  text-align: right !important;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 0 6px !important;
+  outline: none !important;
+  color: #0f172a !important;
+  box-sizing: border-box !important;
+  line-height: 26px !important;
+}
+
+.admin-odometer-wrap button {
+  height: 26px !important;
+  min-height: 26px !important;
+  max-height: 26px !important;
+  padding: 0 8px !important;
+  border: none !important;
+  background: #f1f5f9 !important;
+  color: #1e293b !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background 0.15s ease !important;
+  box-sizing: border-box !important;
+  line-height: 1 !important;
+}
+
+.admin-odometer-wrap button:hover {
+  background: #e2e8f0 !important;
 }

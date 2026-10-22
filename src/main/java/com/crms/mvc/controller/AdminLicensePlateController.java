@@ -46,7 +46,7 @@ public class AdminLicensePlateController {
                               RedirectAttributes ra) {
         try {
             licensePlateService.update(id, province, registrationExpiry);
-            ra.addFlashAttribute("success", "Cập nhật thông tin biển số thành công!");
+            ra.addFlashAttribute("success", "License plate updated successfully!");
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
         }

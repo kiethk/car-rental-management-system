@@ -35,7 +35,7 @@ public class LicensePlateServiceImpl implements LicensePlateService {
             Long vehicleId = vOpt.map(Vehicle::getId).orElse(null);
             String vehicleName = vOpt.map(v -> v.getVehicleType() != null 
                     ? v.getVehicleType().getBrand() + " " + v.getVehicleType().getName()
-                    : "Chưa rõ dòng xe").orElse("Chưa gán xe");
+                    : "Unknown Model").orElse("Unassigned");
             String vehicleStatus = vOpt.map(Vehicle::getStatus).orElse("unassigned");
 
             return new LicensePlateOverviewDTO(
@@ -59,7 +59,7 @@ public class LicensePlateServiceImpl implements LicensePlateService {
     @Override
     public LicensePlate update(Long id, String province, LocalDate registrationExpiry) {
         LicensePlate lp = licensePlateRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy biển số ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("License plate not found for ID: " + id));
         if (province != null) {
             lp.setProvince(province.trim());
         }

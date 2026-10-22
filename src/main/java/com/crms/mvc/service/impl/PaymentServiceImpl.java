@@ -4,9 +4,12 @@ import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.PaymentRepository;
+import com.crms.mvc.service.BookingFeeService;
+import com.crms.mvc.service.ContractService;
 import com.crms.mvc.service.PaymentService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -17,10 +20,17 @@ import java.util.NoSuchElementException;
 public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final BookingRepository bookingRepository;
+    private final BookingFeeService bookingFeeService;
+    private final ContractService contractService;
 
-    public PaymentServiceImpl(PaymentRepository paymentRepository, BookingRepository bookingRepository) {
+    public PaymentServiceImpl(PaymentRepository paymentRepository,
+                              BookingRepository bookingRepository,
+                              BookingFeeService bookingFeeService,
+                              ContractService contractService) {
         this.paymentRepository = paymentRepository;
         this.bookingRepository = bookingRepository;
+        this.bookingFeeService = bookingFeeService;
+        this.contractService = contractService;
     }
 
     @Override
@@ -41,12 +51,17 @@ public class PaymentServiceImpl implements PaymentService {
                     return p;
                 });
 
+        payment.setTransactionCode("TXN-DEP-" + bookingId + "-" + System.currentTimeMillis());
+        payment.setPaymentMethod("VIETQR");
         payment.setStatus("paid");
         payment.setPaidAt(OffsetDateTime.now());
         Payment saved = paymentRepository.save(payment);
 
         booking.setStatus("confirmed");
         bookingRepository.save(booking);
+
+        // Sign contract digitally when deposit is paid
+        contractService.signContract(bookingId, "DIGITAL_CHECK");
 
         return saved;
     }
@@ -59,9 +74,15 @@ public class PaymentServiceImpl implements PaymentService {
         if (lateFee != null && lateFee.compareTo(BigDecimal.ZERO) > 0) {
             booking.setLateFee(lateFee);
             booking.setTotalPrice(booking.getTotalPrice().add(lateFee));
+            bookingFeeService.recordFee(bookingId, "LATE_FEE", lateFee, "Late return fee beyond agreed schedule", null);
         }
 
-        BigDecimal extra = (additionalFine != null) ? additionalFine : BigDecimal.ZERO;
+        BigDecimal extra = BigDecimal.ZERO;
+        if (additionalFine != null && additionalFine.compareTo(BigDecimal.ZERO) > 0) {
+            extra = additionalFine;
+            bookingFeeService.recordFee(bookingId, "DAMAGE_COMPENSATION", additionalFine, "Incidental damage / compensation fee", null);
+        }
+
         BigDecimal remaining = booking.getTotalPrice().subtract(booking.getDepositAmount());
         if (remaining.compareTo(BigDecimal.ZERO) < 0) remaining = BigDecimal.ZERO;
         BigDecimal finalPaymentAmount = remaining.add(extra);
@@ -69,6 +90,8 @@ public class PaymentServiceImpl implements PaymentService {
         Payment finalPayment = new Payment();
         finalPayment.setBooking(booking);
         finalPayment.setPaymentType("FINAL");
+        finalPayment.setTransactionCode("TXN-FIN-" + bookingId + "-" + System.currentTimeMillis());
+        finalPayment.setPaymentMethod("VIETQR");
         finalPayment.setAmount(finalPaymentAmount);
         finalPayment.setStatus("paid");
         finalPayment.setPaidAt(OffsetDateTime.now());
@@ -76,6 +99,9 @@ public class PaymentServiceImpl implements PaymentService {
 
         booking.setStatus("completed");
         bookingRepository.save(booking);
+
+        // Update contract status to completed
+        contractService.updateContractStatus(bookingId, "COMPLETED");
 
         return finalPayment;
     }
@@ -86,4 +112,3 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentRepository.findByBookingIdOrderByPaidAtAsc(bookingId);
     }
 }
-

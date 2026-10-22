@@ -161,26 +161,50 @@ VALUES
     )
 ON CONFLICT (booking_id) DO NOTHING;
 
--- 10. PAYMENTS
+-- 10. POLICIES
+INSERT INTO policies (policy_id, policy_code, title, content, updated_at)
+VALUES
+    (1, 'DEPOSIT_PERCENT', '50% Reservation Deposit', 'Customers are required to pay a 50% reservation deposit of the total rental value to confirm vehicle reservation prior to pickup.', CURRENT_TIMESTAMP),
+    (2, 'CANCELLATION_POLICY', 'Cancellation Policy', 'Customers receive a 100% deposit refund if the reservation is cancelled at least 72 hours prior to scheduled pickup. Cancellations within 72 hours are non-refundable.', CURRENT_TIMESTAMP),
+    (3, 'LATE_RETURN_PENALTY', 'Late Return Penalty', 'Each hour delayed beyond the agreed contractual return time will be charged a penalty equal to 200% of the standard hourly rental rate.', CURRENT_TIMESTAMP),
+    (4, 'OPERATING_HOURS', 'Operating & Handover Hours', 'Vehicle handover and return depot operates daily from 06:00 to 22:00 across all station locations.', CURRENT_TIMESTAMP)
+ON CONFLICT (policy_id) DO NOTHING;
+
+-- 11. CONTRACTS
+-- contract_status: 'DRAFT' | 'SIGNED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
+INSERT INTO contracts (contract_id, contract_number, booking_id, signed_at, signature_type, terms_snapshot, contract_status, file_pdf_url, created_at)
+VALUES
+    (1, 'CTR-20261018-0001', 1, CURRENT_TIMESTAMP - INTERVAL '4 days', 'DIGITAL_CHECK', 
+     'DRIVENOW SELF-DRIVE CAR RENTAL TERMS: 1. 50% reservation deposit. 2. Free cancellation up to 72 hours prior to pickup. 3. Late return penalty at 200% hourly rate. 4. Return car in original condition.', 
+     'COMPLETED', '/uploads/contracts/contract_1.pdf', CURRENT_TIMESTAMP - INTERVAL '4 days'),
+    (2, 'CTR-20261021-0002', 2, CURRENT_TIMESTAMP - INTERVAL '1 day', 'DIGITAL_CHECK', 
+     'DRIVENOW SELF-DRIVE CAR RENTAL TERMS: 1. 50% reservation deposit. 2. Free cancellation up to 72 hours prior to pickup. 3. Late return penalty at 200% hourly rate. 4. Return car in original condition.', 
+     'ACTIVE', '/uploads/contracts/contract_2.pdf', CURRENT_TIMESTAMP - INTERVAL '1 day'),
+    (3, 'CTR-20261022-0003', 3, CURRENT_TIMESTAMP - INTERVAL '1 hour', 'DIGITAL_CHECK', 
+     'DRIVENOW SELF-DRIVE CAR RENTAL TERMS: 1. 50% reservation deposit. 2. Free cancellation up to 72 hours prior to pickup. 3. Late return penalty at 200% hourly rate. 4. Return car in original condition.', 
+     'SIGNED', NULL, CURRENT_TIMESTAMP - INTERVAL '1 hour')
+ON CONFLICT (contract_id) DO NOTHING;
+
+-- 12. PAYMENTS
 -- payment_type: 'DEPOSIT' | 'FINAL' | 'REFUND'
 -- status: 'pending' | 'paid' | 'failed'
-INSERT INTO payments (payment_id, booking_id, payment_type, amount, status, paid_at)
+INSERT INTO payments (payment_id, booking_id, transaction_code, payment_type, amount, payment_method, status, paid_at)
 VALUES 
-    (1, 1, 'DEPOSIT', 5000000.00, 'paid', CURRENT_TIMESTAMP - INTERVAL '4 days'),
-    (2, 1, 'FINAL', 1350000.00, 'paid', CURRENT_TIMESTAMP - INTERVAL '2 days'),
-    (3, 1, 'REFUND', 5000000.00, 'paid', CURRENT_TIMESTAMP - INTERVAL '2 days'),
-    (4, 2, 'DEPOSIT', 5000000.00, 'paid', CURRENT_TIMESTAMP - INTERVAL '1 day'),
-    (5, 3, 'DEPOSIT', 8000000.00, 'paid', CURRENT_TIMESTAMP - INTERVAL '1 hour')
+    (1, 1, 'TXN-DEP-1001', 'DEPOSIT', 5000000.00, 'VIETQR', 'paid', CURRENT_TIMESTAMP - INTERVAL '4 days'),
+    (2, 1, 'TXN-FIN-1002', 'FINAL', 1350000.00, 'VIETQR', 'paid', CURRENT_TIMESTAMP - INTERVAL '2 days'),
+    (3, 1, 'TXN-REF-1003', 'REFUND', 5000000.00, 'BANK_TRANSFER', 'paid', CURRENT_TIMESTAMP - INTERVAL '2 days'),
+    (4, 2, 'TXN-DEP-2001', 'DEPOSIT', 5000000.00, 'VIETQR', 'paid', CURRENT_TIMESTAMP - INTERVAL '1 day'),
+    (5, 3, 'TXN-DEP-3001', 'DEPOSIT', 8000000.00, 'VIETQR', 'paid', CURRENT_TIMESTAMP - INTERVAL '1 hour')
 ON CONFLICT (payment_id) DO NOTHING;
 
--- 11. REVIEWS
+-- 13. REVIEWS
 -- rating: 1..5
 INSERT INTO reviews (review_id, booking_id, rating, comment, created_at)
 VALUES 
     (1, 1, 5, 'Clean car, smooth handover, very satisfied!', CURRENT_TIMESTAMP - INTERVAL '2 days')
 ON CONFLICT (review_id) DO NOTHING;
 
--- 12. VEHICLE_INSPECTIONS
+-- 14. VEHICLE_INSPECTIONS
 -- status: 'scheduled' | 'passed' | 'failed'
 INSERT INTO vehicle_inspections (vehicle_inspection_id, vehicle_id, scheduled_at, completed_at, status, notes)
 VALUES 
@@ -188,12 +212,19 @@ VALUES
     (2, 4, CURRENT_TIMESTAMP - INTERVAL '1 day', NULL, 'scheduled', 'Scheduled EV battery and ADAS sensor system diagnostic.')
 ON CONFLICT (vehicle_inspection_id) DO NOTHING;
 
--- 13. ISSUES
+-- 15. ISSUES
 -- issue_type, status: 'open' | 'in_progress' | 'resolved'
-INSERT INTO issues (issue_id, booking_id, slot_id, vehicle_id, employee_id, issue_type, subject, status, fine_amount, evidence_url, reported_at)
+INSERT INTO issues (issue_id, booking_id, slot_id, vehicle_id, employee_id, issue_type, subject, status, evidence_url, reported_at)
 VALUES 
-    (1, 1, 1, 1, 2, 'SCRATCH', 'Minor scratch on front bumper', 'resolved', 200000.00, '/uploads/issues/issue_1.jpg', CURRENT_TIMESTAMP - INTERVAL '2 days')
+    (1, 1, 1, 1, 2, 'SCRATCH', 'Minor scratch on front bumper', 'resolved', '/uploads/issues/issue_1.jpg', CURRENT_TIMESTAMP - INTERVAL '2 days')
 ON CONFLICT (issue_id) DO NOTHING;
+
+-- 16. BOOKING_FEES
+-- fee_type: 'RENTAL' | 'LATE_FEE' | 'DAMAGE_COMPENSATION' | 'CLEANING_FEE' | 'TOLL_FEE'
+INSERT INTO booking_fees (booking_fee_id, booking_id, fee_type, amount, description, issue_id, created_at)
+VALUES
+    (1, 1, 'DAMAGE_COMPENSATION', 200000.00, 'Compensation for front bumper scratch per incident #1', 1, CURRENT_TIMESTAMP - INTERVAL '2 days')
+ON CONFLICT (booking_fee_id) DO NOTHING;
 
 -- Sequence updates
 SELECT setval(pg_get_serial_sequence('customers', 'customer_id'), COALESCE(MAX(customer_id), 1)) FROM customers;
@@ -205,10 +236,152 @@ SELECT setval(pg_get_serial_sequence('promotions', 'promotion_id'), COALESCE(MAX
 SELECT setval(pg_get_serial_sequence('license_documents', 'license_document_id'), COALESCE(MAX(license_document_id), 1)) FROM license_documents;
 SELECT setval(pg_get_serial_sequence('slots', 'slot_id'), COALESCE(MAX(slot_id), 1)) FROM slots;
 SELECT setval(pg_get_serial_sequence('bookings', 'booking_id'), COALESCE(MAX(booking_id), 1)) FROM bookings;
+SELECT setval(pg_get_serial_sequence('policies', 'policy_id'), COALESCE(MAX(policy_id), 1)) FROM policies;
+SELECT setval(pg_get_serial_sequence('contracts', 'contract_id'), COALESCE(MAX(contract_id), 1)) FROM contracts;
 SELECT setval(pg_get_serial_sequence('payments', 'payment_id'), COALESCE(MAX(payment_id), 1)) FROM payments;
 SELECT setval(pg_get_serial_sequence('reviews', 'review_id'), COALESCE(MAX(review_id), 1)) FROM reviews;
 SELECT setval(pg_get_serial_sequence('vehicle_inspections', 'vehicle_inspection_id'), COALESCE(MAX(vehicle_inspection_id), 1)) FROM vehicle_inspections;
 SELECT setval(pg_get_serial_sequence('issues', 'issue_id'), COALESCE(MAX(issue_id), 1)) FROM issues;
+SELECT setval(pg_get_serial_sequence('booking_fees', 'booking_fee_id'), COALESCE(MAX(booking_fee_id), 1)) FROM booking_fees;
+
+COMMIT;
+
+
+-- Additional physical vehicles per model for rich inventory
+
+BEGIN;
+
+INSERT INTO license_plates (license_plate_id, plate, province, registration_expiry)
+VALUES
+(21, '51L-125.45', 'Can Tho', CURRENT_DATE + INTERVAL '13 months'),
+(22, '51L-704.64', 'Can Tho', CURRENT_DATE + INTERVAL '7 months'),
+(23, '51K-674.35', 'Binh Duong', CURRENT_DATE + INTERVAL '23 months'),
+(24, '51K-877.30', 'Da Nang', CURRENT_DATE + INTERVAL '19 months'),
+(25, '43A-204.21', 'Hai Phong', CURRENT_DATE + INTERVAL '18 months'),
+(26, '51K-847.68', 'Da Nang', CURRENT_DATE + INTERVAL '23 months'),
+(27, '43A-691.34', 'Da Nang', CURRENT_DATE + INTERVAL '8 months'),
+(28, '30K-987.22', 'Hai Phong', CURRENT_DATE + INTERVAL '18 months'),
+(29, '43A-463.36', 'Hanoi', CURRENT_DATE + INTERVAL '14 months'),
+(30, '51H-573.58', 'Hanoi', CURRENT_DATE + INTERVAL '14 months'),
+(31, '51K-924.50', 'Hai Phong', CURRENT_DATE + INTERVAL '18 months'),
+(32, '43A-317.93', 'Can Tho', CURRENT_DATE + INTERVAL '21 months'),
+(33, '30K-862.81', 'Hanoi', CURRENT_DATE + INTERVAL '23 months'),
+(34, '30K-241.75', 'Da Nang', CURRENT_DATE + INTERVAL '21 months'),
+(35, '51H-911.97', 'Can Tho', CURRENT_DATE + INTERVAL '19 months'),
+(36, '30L-666.11', 'Dong Nai', CURRENT_DATE + INTERVAL '9 months'),
+(37, '51H-564.10', 'Dong Nai', CURRENT_DATE + INTERVAL '14 months'),
+(38, '30K-256.57', 'Hai Phong', CURRENT_DATE + INTERVAL '11 months'),
+(39, '43A-999.49', 'Ho Chi Minh City', CURRENT_DATE + INTERVAL '13 months'),
+(40, '61B-935.18', 'Ho Chi Minh City', CURRENT_DATE + INTERVAL '23 months'),
+(41, '30L-640.87', 'Hanoi', CURRENT_DATE + INTERVAL '19 months'),
+(42, '43A-548.76', 'Can Tho', CURRENT_DATE + INTERVAL '20 months'),
+(43, '51K-702.80', 'Da Nang', CURRENT_DATE + INTERVAL '13 months'),
+(44, '51K-334.18', 'Can Tho', CURRENT_DATE + INTERVAL '7 months'),
+(45, '61B-319.79', 'Da Nang', CURRENT_DATE + INTERVAL '10 months'),
+(46, '51L-199.94', 'Hanoi', CURRENT_DATE + INTERVAL '19 months'),
+(47, '51K-789.93', 'Hai Phong', CURRENT_DATE + INTERVAL '9 months'),
+(48, '30K-294.78', 'Hanoi', CURRENT_DATE + INTERVAL '20 months'),
+(49, '30K-995.19', 'Dong Nai', CURRENT_DATE + INTERVAL '20 months'),
+(50, '30K-270.62', 'Ho Chi Minh City', CURRENT_DATE + INTERVAL '21 months'),
+(51, '60A-102.59', 'Hanoi', CURRENT_DATE + INTERVAL '14 months'),
+(52, '61B-258.34', 'Can Tho', CURRENT_DATE + INTERVAL '15 months'),
+(53, '51K-865.50', 'Binh Duong', CURRENT_DATE + INTERVAL '7 months'),
+(54, '51K-620.20', 'Hanoi', CURRENT_DATE + INTERVAL '11 months'),
+(55, '30K-692.86', 'Ho Chi Minh City', CURRENT_DATE + INTERVAL '7 months'),
+(56, '43A-367.36', 'Binh Duong', CURRENT_DATE + INTERVAL '16 months'),
+(57, '30L-568.50', 'Can Tho', CURRENT_DATE + INTERVAL '8 months'),
+(58, '51L-650.37', 'Ho Chi Minh City', CURRENT_DATE + INTERVAL '22 months'),
+(59, '43A-391.30', 'Hanoi', CURRENT_DATE + INTERVAL '20 months'),
+(60, '51L-999.27', 'Can Tho', CURRENT_DATE + INTERVAL '14 months'),
+(61, '30L-719.36', 'Da Nang', CURRENT_DATE + INTERVAL '16 months'),
+(62, '51K-194.91', 'Da Nang', CURRENT_DATE + INTERVAL '19 months'),
+(63, '51H-752.43', 'Hai Phong', CURRENT_DATE + INTERVAL '11 months'),
+(64, '51L-807.29', 'Ho Chi Minh City', CURRENT_DATE + INTERVAL '23 months'),
+(65, '60A-230.15', 'Hanoi', CURRENT_DATE + INTERVAL '15 months'),
+(66, '30K-782.23', 'Can Tho', CURRENT_DATE + INTERVAL '17 months'),
+(67, '51H-522.13', 'Hai Phong', CURRENT_DATE + INTERVAL '11 months'),
+(68, '51L-491.14', 'Hanoi', CURRENT_DATE + INTERVAL '21 months'),
+(69, '30K-328.13', 'Da Nang', CURRENT_DATE + INTERVAL '12 months'),
+(70, '30L-459.92', 'Hai Phong', CURRENT_DATE + INTERVAL '22 months'),
+(71, '51H-694.43', 'Da Nang', CURRENT_DATE + INTERVAL '7 months'),
+(72, '43A-546.87', 'Hai Phong', CURRENT_DATE + INTERVAL '22 months'),
+(73, '51K-825.65', 'Da Nang', CURRENT_DATE + INTERVAL '6 months'),
+(74, '43A-738.50', 'Can Tho', CURRENT_DATE + INTERVAL '9 months'),
+(75, '30L-667.26', 'Dong Nai', CURRENT_DATE + INTERVAL '12 months'),
+(76, '30L-515.80', 'Binh Duong', CURRENT_DATE + INTERVAL '6 months'),
+(77, '43A-576.66', 'Hai Phong', CURRENT_DATE + INTERVAL '20 months'),
+(78, '30L-627.94', 'Ho Chi Minh City', CURRENT_DATE + INTERVAL '16 months'),
+(79, '30K-250.13', 'Hai Phong', CURRENT_DATE + INTERVAL '7 months'),
+(80, '60A-744.83', 'Dong Nai', CURRENT_DATE + INTERVAL '12 months')
+ON CONFLICT (license_plate_id) DO NOTHING;
+
+INSERT INTO vehicles (vehicle_id, vehicle_type_id, license_plate_id, color, year, odometer, status)
+VALUES
+(21, 1, 21, 'Deep Blue', 2023, 9717, 'maintenance'),
+(22, 1, 22, 'Pearl White', 2022, 17328, 'available'),
+(23, 1, 23, 'Champagne Gold', 2023, 32439, 'available'),
+(24, 2, 24, 'Ruby Red', 2024, 13189, 'available'),
+(25, 2, 25, 'Metallic Black', 2024, 25541, 'available'),
+(26, 2, 26, 'Metallic Black', 2025, 8164, 'available'),
+(27, 3, 27, 'Pearl White', 2023, 21965, 'available'),
+(28, 3, 28, 'Lunar Gray', 2025, 44660, 'available'),
+(29, 3, 29, 'Metallic Black', 2023, 38005, 'maintenance'),
+(30, 4, 30, 'Deep Blue', 2024, 6665, 'available'),
+(31, 4, 31, 'Lunar Gray', 2022, 16826, 'available'),
+(32, 4, 32, 'Champagne Gold', 2025, 12363, 'available'),
+(33, 5, 33, 'Lunar Gray', 2025, 41242, 'rented'),
+(34, 5, 34, 'Metallic Black', 2022, 10185, 'available'),
+(35, 5, 35, 'Metallic Black', 2025, 28009, 'available'),
+(36, 6, 36, 'Lunar Gray', 2024, 10310, 'available'),
+(37, 6, 37, 'Silver Frost', 2022, 43979, 'available'),
+(38, 6, 38, 'Pearl White', 2024, 35021, 'available'),
+(39, 7, 39, 'Pearl White', 2023, 40182, 'available'),
+(40, 7, 40, 'Silver Frost', 2023, 34148, 'available'),
+(41, 7, 41, 'Deep Blue', 2023, 23428, 'rented'),
+(42, 8, 42, 'Metallic Black', 2023, 17725, 'available'),
+(43, 8, 43, 'Deep Blue', 2022, 7652, 'maintenance'),
+(44, 8, 44, 'Ruby Red', 2022, 36695, 'available'),
+(45, 9, 45, 'Midnight Black', 2023, 33996, 'rented'),
+(46, 9, 46, 'Ruby Red', 2025, 29941, 'rented'),
+(47, 9, 47, 'Pearl White', 2025, 25236, 'available'),
+(48, 10, 48, 'Silver Frost', 2025, 15025, 'available'),
+(49, 10, 49, 'Metallic Black', 2022, 38427, 'available'),
+(50, 10, 50, 'Midnight Black', 2023, 29282, 'available'),
+(51, 11, 51, 'Midnight Black', 2024, 30722, 'maintenance'),
+(52, 11, 52, 'Deep Blue', 2022, 40957, 'maintenance'),
+(53, 11, 53, 'Pearl White', 2025, 35954, 'available'),
+(54, 12, 54, 'Metallic Black', 2022, 18414, 'rented'),
+(55, 12, 55, 'Metallic Black', 2025, 41251, 'available'),
+(56, 12, 56, 'Deep Blue', 2024, 28938, 'available'),
+(57, 13, 57, 'Pearl White', 2025, 43708, 'available'),
+(58, 13, 58, 'Lunar Gray', 2023, 25872, 'available'),
+(59, 13, 59, 'Lunar Gray', 2022, 39346, 'available'),
+(60, 14, 60, 'Metallic Black', 2022, 39256, 'available'),
+(61, 14, 61, 'Deep Blue', 2024, 36122, 'rented'),
+(62, 14, 62, 'Lunar Gray', 2022, 3232, 'available'),
+(63, 15, 63, 'Midnight Black', 2025, 39759, 'available'),
+(64, 15, 64, 'Pearl White', 2024, 41175, 'available'),
+(65, 15, 65, 'Ruby Red', 2022, 26449, 'available'),
+(66, 16, 66, 'Champagne Gold', 2023, 18514, 'available'),
+(67, 16, 67, 'Ruby Red', 2025, 19263, 'available'),
+(68, 16, 68, 'Deep Blue', 2023, 33166, 'available'),
+(69, 17, 69, 'Champagne Gold', 2024, 21258, 'available'),
+(70, 17, 70, 'Champagne Gold', 2024, 4808, 'available'),
+(71, 17, 71, 'Metallic Black', 2025, 25654, 'maintenance'),
+(72, 18, 72, 'Metallic Black', 2025, 40787, 'available'),
+(73, 18, 73, 'Deep Blue', 2024, 31265, 'available'),
+(74, 18, 74, 'Lunar Gray', 2024, 29764, 'available'),
+(75, 19, 75, 'Champagne Gold', 2025, 14405, 'available'),
+(76, 19, 76, 'Lunar Gray', 2024, 16774, 'rented'),
+(77, 19, 77, 'Deep Blue', 2025, 14120, 'maintenance'),
+(78, 20, 78, 'Metallic Black', 2023, 23343, 'available'),
+(79, 20, 79, 'Deep Blue', 2025, 43060, 'available'),
+(80, 20, 80, 'Champagne Gold', 2025, 29191, 'available')
+ON CONFLICT (vehicle_id) DO NOTHING;
+
+-- Update sequences
+SELECT setval('license_plates_license_plate_id_seq', (SELECT MAX(license_plate_id) FROM license_plates));
+SELECT setval('vehicles_vehicle_id_seq', (SELECT MAX(vehicle_id) FROM vehicles));
 
 COMMIT;
 

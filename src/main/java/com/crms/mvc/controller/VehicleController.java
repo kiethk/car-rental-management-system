@@ -1,7 +1,10 @@
 package com.crms.mvc.controller;
 
 import com.crms.mvc.dto.VehicleDTO;
+import com.crms.mvc.dto.PhysicalCarItemDTO;
 import com.crms.mvc.dto.VehicleSearchFilterDTO;
+import com.crms.mvc.entity.Vehicle;
+import com.crms.mvc.repository.VehicleRepository;
 import com.crms.mvc.service.VehicleService;
 import com.crms.mvc.service.VehicleTypeService;
 import org.springframework.http.HttpStatus;
@@ -19,10 +22,14 @@ public class VehicleController {
 
     private final VehicleService vehicleService;
     private final VehicleTypeService vehicleTypeService;
+    private final VehicleRepository vehicleRepository;
 
-    public VehicleController(VehicleService vehicleService, VehicleTypeService vehicleTypeService) {
+    public VehicleController(VehicleService vehicleService,
+                             VehicleTypeService vehicleTypeService,
+                             VehicleRepository vehicleRepository) {
         this.vehicleService = vehicleService;
         this.vehicleTypeService = vehicleTypeService;
+        this.vehicleRepository = vehicleRepository;
     }
 
     @GetMapping("/vehicles")
@@ -36,10 +43,24 @@ public class VehicleController {
     }
 
     @GetMapping("/vehicles/{id}")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public String detail(@PathVariable Long id, Model model) {
         VehicleDTO vehicle = vehicleService.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy xe!"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found!"));
         model.addAttribute("vehicle", vehicle);
+
+        if (vehicle.getVehicleTypeId() != null) {
+            List<Vehicle> cars = vehicleRepository.findByVehicleTypeIdWithDetails(vehicle.getVehicleTypeId());
+            List<PhysicalCarItemDTO> physicalCars = cars.stream().map(v -> new PhysicalCarItemDTO(
+                    v.getId(),
+                    v.getLicensePlate() != null ? v.getLicensePlate().getPlate() : "Unassigned",
+                    v.getColor(),
+                    v.getYear(),
+                    v.getStatus()
+            )).toList();
+            model.addAttribute("physicalCars", physicalCars);
+        }
+
         return "vehicles/detail";
     }
 }
