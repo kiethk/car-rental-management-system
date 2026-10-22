@@ -1,288 +1,809 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Review & Checkout — DriveNow</title>
-    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
-    <link rel="stylesheet" th:href="@{/css/app.css}">
-</head>
-<body class="bg-surface text-navy min-h-screen flex flex-col">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Review & Checkout — DriveNow</title>
+        <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" th:href="@{/css/drivenow.css}" />
+        <link rel="stylesheet" th:href="@{/css/app.css}" />
+    </head>
+    <body class="bg-surface text-navy min-h-screen flex flex-col">
+        <div th:replace="~{fragments/header :: header}"></div>
 
-<div th:replace="~{fragments/header :: header}"></div>
-
-<main class="flex-1">
-
-    <!-- Header bar matching shadcn style -->
-    <div class="bg-white border-b border-border/80">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 py-4">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                    <a th:href="@{/search}" class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 mb-1.5 text-decoration-none transition-colors">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-                        Back to Search
-                    </a>
-                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Review & Checkout</h1>
-                </div>
-
-                <!-- Step Tracker (shadcn style) -->
-                <div class="flex items-center gap-2 text-xs">
-                    <span class="inline-flex items-center gap-1 text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        1. Schedule
-                    </span>
-                    <span class="text-slate-300">→</span>
-                    <span class="inline-flex items-center gap-1 text-slate-900 font-bold bg-slate-100 px-2.5 py-1 rounded-full border border-slate-300">
-                        2. Review
-                    </span>
-                    <span class="text-slate-300">→</span>
-                    <span class="text-slate-400 font-medium px-2 py-1">
-                        3. Deposit
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        <div th:if="${error}" class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
-            <svg class="w-4 h-4 text-red-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span th:text="${error}">Error message</span>
-        </div>
-
-        <form th:action="@{/bookings}" th:object="${bookingForm}" method="post">
-            <input type="hidden" th:field="*{vehicleTypeId}">
-            <input type="hidden" th:field="*{startTime}">
-            <input type="hidden" th:field="*{endTime}">
-
-            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-
-                <!-- Left Column (lg:col-span-3) -->
-                <div class="lg:col-span-3 space-y-6">
-
-                    <!-- Rental Details Card -->
-                    <div class="card-shadcn p-6">
-                        <div class="flex items-center justify-between pb-4 mb-4 border-b border-border">
-                            <h2 class="text-base font-bold text-navy">Rental Vehicle Details</h2>
-                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-surface border border-border text-navy" th:text="${vehicleType.category}">Sedan</span>
+        <main class="flex-1">
+            <!-- Top Navigation Header -->
+            <div class="bg-white border-b border-border">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <a
+                                th:href="@{/search}"
+                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 text-decoration-none transition-colors"
+                            >
+                                <svg
+                                    class="w-3.5 h-3.5"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <path d="M19 12H5M12 5l-7 7 7 7" />
+                                </svg>
+                                Back
+                            </a>
+                            <span class="text-slate-300">/</span>
+                            <h1 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900">
+                                Review & Confirm Booking
+                            </h1>
                         </div>
 
-                        <div class="flex gap-4 mb-5 items-center">
-                            <img th:src="${vehicleImage}" th:alt="${vehicleType.name}" class="w-28 h-20 rounded-xl object-cover bg-surface flex-shrink-0 border border-border shadow-2xs">
-                            <div class="space-y-1">
-                                <div class="font-bold text-navy text-lg leading-tight"
-                                     th:text="${vehicleType.brand != null and vehicleType.name.toLowerCase().startsWith(vehicleType.brand.toLowerCase()) ? vehicleType.name : (vehicleType.brand + ' ' + vehicleType.name)}">Toyota Vios 2023</div>
-                                <div class="text-xs text-muted-foreground flex items-center gap-2 capitalize">
-                                    <span th:text="${vehicleType.category}">Sedan</span>
-                                    <span>·</span>
-                                    <span th:text="${vehicleType.seats + ' seats'}">5 seats</span>
-                                    <span>·</span>
-                                    <span th:text="${vehicleType.transmission}">automatic</span>
-                                </div>
-                                <div class="text-xs text-muted-foreground flex items-center gap-1.5 pt-0.5">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 22V4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v18"/><path d="M14 13h4a2 2 0 0 1 2 2v7"/><circle cx="8" cy="8" r="2"/></svg>
-                                    <span class="capitalize" th:text="${vehicleType.fuelType}">gasoline</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-surface rounded-xl p-4.5 border border-border grid grid-cols-2 gap-4 text-sm">
-                            <div class="space-y-1">
-                                <div class="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                    Pickup Time
-                                </div>
-                                <div class="font-bold text-navy" th:text="${#temporals.format(bookingForm.startTime, 'dd/MM/yyyy HH:mm')}">22/10/2026 09:00</div>
-                            </div>
-                            <div class="space-y-1">
-                                <div class="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                    Return Time
-                                </div>
-                                <div class="font-bold text-navy" th:text="${#temporals.format(bookingForm.endTime, 'dd/MM/yyyy HH:mm')}">22/10/2026 18:00</div>
-                            </div>
-                            <div class="space-y-1">
-                                <div class="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                    Rental Duration
-                                </div>
-                                <div class="font-bold text-navy"><span th:text="${rentalHours}">9</span> hours <span class="text-xs text-muted-foreground font-normal" th:if="${durationDisplay != null}">([(${durationDisplay})])</span></div>
-                            </div>
-                            <div class="space-y-1">
-                                <div class="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                                    Pickup Location
-                                </div>
-                                <div class="font-bold text-navy text-xs sm:text-sm">Bình Thạnh Warehouse</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Preferred License Plate Card -->
-                    <div class="card-shadcn p-6">
-                        <div class="flex items-center justify-between mb-1">
-                            <h2 class="text-base font-bold text-slate-900">Preferred License Plate</h2>
-                            <span class="text-[11px] font-medium text-muted-foreground">Auto or Specific</span>
-                        </div>
-                        <p class="text-xs text-muted-foreground mb-4">You can select a preferred vehicle plate or let us auto-assign the best available car right upon booking.</p>
-
-                        <div class="space-y-3">
-                            <!-- Option 1: Auto Assign -->
-                            <label class="w-full text-left p-4 rounded-xl border border-border/80 hover:border-slate-400 transition-all cursor-pointer flex items-center gap-3.5 bg-white shadow-2xs">
-                                <input type="radio" th:field="*{vehicleId}" value="" class="accent-slate-900 w-4 h-4 cursor-pointer" checked>
-                                <div class="flex-1">
-                                    <div class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                                        <span>No preference — Assign automatically</span>
-                                        <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">Recommended</span>
-                                    </div>
-                                    <div class="text-xs text-muted-foreground mt-0.5">Best available car will be assigned immediately upon booking confirmation</div>
-                                </div>
-                            </label>
-
-                            <!-- Option 2: Specific Available Plates -->
-                            <label th:each="car : ${availableCars}" class="w-full text-left p-4 rounded-xl border border-border/80 hover:border-slate-400 transition-all cursor-pointer flex items-center justify-between bg-white shadow-2xs">
-                                <div class="flex items-center gap-3.5">
-                                    <input type="radio" th:field="*{vehicleId}" th:value="${car.id}" class="accent-slate-900 w-4 h-4 cursor-pointer">
-                                    <div class="flex items-center gap-3">
-                                        <span class="plate-badge"
-                                              th:text="${car.licensePlate != null ? car.licensePlate.plate : ('Vehicle #' + car.id)}">51A-123.45</span>
-                                        <span class="text-xs text-muted-foreground" th:text="'Color: ' + ${car.color} + ', ' + ${car.year}">White, 2023</span>
-                                    </div>
-                                </div>
-                                <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                    Available
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Driving License Card -->
-                    <div class="card-shadcn p-6">
-                        <h2 class="text-base font-bold text-navy mb-3">Driving License Verification</h2>
-                        <div class="flex items-center gap-3.5 p-4 bg-green-50 border border-green-200 rounded-xl">
-                            <div class="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 text-green-700">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-                            </div>
-                            <div>
-                                <div class="text-sm font-bold text-green-900">Driving License Verified ✓</div>
-                                <div class="text-xs text-green-700 mt-0.5">Valid government-issued driver license on file. You're clear to rent!</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Promo Code Card -->
-                    <div class="card-shadcn p-6 space-y-3">
-                        <h2 class="text-base font-bold text-slate-900">Promotion Code</h2>
-                        <div class="flex gap-2.5">
-                            <input type="text" th:field="*{promotionCode}" placeholder="ENTER PROMO CODE (E.G. FIRST10, WELCOME50)"
-                                   class="input-shadcn flex-1 uppercase tracking-wider font-semibold">
-                        </div>
-                        <p class="text-xs text-muted-foreground">Available demo codes: <span class="font-mono font-medium text-slate-700">FIRST10</span>, <span class="font-mono font-medium text-slate-700">WELCOME50</span>, <span class="font-mono font-medium text-slate-700">HCMC20</span></p>
-                    </div>
-
-                    <!-- Special Notes Card -->
-                    <div class="card-shadcn p-6 space-y-3">
-                        <h2 class="text-base font-bold text-slate-900">Special Notes <span class="text-muted-foreground font-normal text-xs">(optional)</span></h2>
-                        <textarea name="notes" placeholder="Any special requests or instructions for our warehouse staff..." rows="2"
-                                  class="input-shadcn w-full resize-none placeholder:text-muted-foreground/60"></textarea>
-                    </div>
-
-                    <!-- Agreement Checkbox -->
-                    <div class="card-shadcn p-4 bg-surface/50">
-                        <label class="flex gap-3 cursor-pointer items-start">
-                            <input type="checkbox" required class="w-4 h-4 mt-0.5 accent-slate-900 cursor-pointer">
-                            <span class="text-xs text-slate-600 leading-relaxed">
-                                I agree to the <span class="text-slate-900 font-semibold underline">rental terms and conditions</span>, warehouse pickup & return policy, and understand that preferred license plate is subject to final preparation.
+                        <!-- Stepper -->
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="inline-flex items-center gap-1 text-slate-500 font-medium">
+                                <svg
+                                    class="w-3.5 h-3.5 text-emerald-600"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2.5"
+                                >
+                                    <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                                Schedule
                             </span>
-                        </label>
-                    </div>
-
-                </div>
-
-                <!-- Right Column: Sticky Price Breakdown (lg:col-span-2) -->
-                <div class="lg:col-span-2">
-                    <div class="card-shadcn p-6 sticky top-20 shadow-sm space-y-5">
-                        <h2 class="text-base font-bold text-slate-900 pb-3 border-b border-border/80">Price Breakdown</h2>
-
-                        <div class="space-y-3 text-sm">
-                            <div class="flex justify-between items-center text-xs">
-                                <span class="text-muted-foreground">Hourly rate</span>
-                                <span class="text-slate-900 font-semibold"><span th:text="${#numbers.formatDecimal(vehicleType.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span> đ / hour</span>
-                            </div>
-                            <div class="flex justify-between items-center text-xs">
-                                <span class="text-muted-foreground">Rental duration</span>
-                                <span class="text-slate-900 font-semibold"><span th:text="${rentalHours}">8</span> hours</span>
-                            </div>
-                            <div class="flex justify-between items-center pt-2 border-t border-border/80">
-                                <span class="font-bold text-slate-900 text-sm">Total Rental Fee</span>
-                                <span class="font-extrabold text-slate-900 text-base"><span th:text="${#numbers.formatDecimal(estimatedTotal, 0, 'COMMA', 0, 'POINT')}">1,200,000</span> đ</span>
-                            </div>
-
-                            <!-- Modern Deposit Due Card (shadcn style) -->
-                            <div class="bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-amber-500/5 border border-amber-500/25 rounded-xl p-4 my-3 space-y-3">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <div class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
-                                            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                                            Deposit Due Now (50%)
-                                        </div>
-                                        <div class="text-[11px] text-amber-700/90 mt-0.5">Pay 50% now to confirm reservation</div>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="text-xl font-extrabold text-slate-900 tracking-tight">
-                                            <span th:text="${#numbers.formatDecimal(depositAmount, 0, 'COMMA', 0, 'POINT')}">600,000</span> <span class="text-xs font-bold text-slate-500">đ</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="border-t border-amber-500/20 pt-2 flex justify-between text-xs text-muted-foreground">
-                                    <span>Remaining balance on return (50%)</span>
-                                    <span class="font-bold text-slate-900"><span th:text="${#numbers.formatDecimal(remainingAmount, 0, 'COMMA', 0, 'POINT')}">600,000</span> đ</span>
-                                </div>
-                            </div>
+                            <span class="text-slate-300">→</span>
+                            <span
+                                class="inline-flex items-center gap-1.5 font-bold text-slate-900 bg-slate-100 px-3 py-1 rounded-full border border-slate-300"
+                            >
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                Review & Confirm
+                            </span>
+                            <span class="text-slate-300">→</span>
+                            <span class="text-slate-400 font-medium">Deposit</span>
                         </div>
-
-                        <!-- Policy Card -->
-                        <div class="rounded-xl border border-blue-200 bg-blue-50 p-3.5 text-xs text-blue-900 flex items-start gap-2.5">
-                            <svg width="16" height="16" class="text-blue-700 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                            <div class="leading-relaxed">
-                                <strong class="font-semibold text-blue-950">Deposit Policy:</strong> You only pay 50% deposit now to reserve the car. The remaining 50% will be settled when you return the vehicle.
-                            </div>
-                        </div>
-
-                        <!-- CTA Button -->
-                        <button type="submit" class="btn-amber w-full py-3.5 text-sm font-bold shadow-sm hover:shadow-md transition-all justify-center">
-                            <span>Confirm Booking & Pay Deposit</span>
-                            <span>(<span th:text="${#numbers.formatDecimal(depositAmount, 0, 'COMMA', 0, 'POINT')}">600,000</span> đ)</span>
-                            <svg width="16" height="16" class="ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                        </button>
-
-                        <!-- Trust Perks -->
-                        <div class="pt-2 space-y-2 text-xs text-muted-foreground border-t border-border">
-                            <div class="flex items-center gap-2">
-                                <svg width="16" height="16" class="text-green-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                <span>Free cancellation up to 3 days before pickup</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <svg width="16" height="16" class="text-green-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                <span>24/7 Roadside breakdown assistance</span>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
-
             </div>
-        </form>
-    </div>
 
-</main>
+            <!-- Main Container (Expanded to max-w-7xl matching Home & Search) -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+                <div
+                    th:if="${error}"
+                    class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center gap-2"
+                >
+                    <svg
+                        class="w-4 h-4 text-red-600 flex-shrink-0"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <span th:text="${error}">Error message</span>
+                </div>
 
-<div th:replace="~{fragments/footer :: footer}"></div>
+                <form th:action="@{/bookings}" th:object="${bookingForm}" method="post">
+                    <input type="hidden" th:field="*{vehicleTypeId}" />
+                    <input type="hidden" th:field="*{startTime}" />
+                    <input type="hidden" th:field="*{endTime}" />
 
-</body>
+                    <div class="checkout-grid">
+                        <!-- Left Column (lg:col-span-3): 2 Clean Groups -->
+                        <div class="lg:col-span-3 space-y-6">
+                            <!-- CARD 1: Vehicle & Schedule -->
+                            <div class="checkout-section space-y-5">
+                                <!-- Vehicle Summary Row -->
+                                <div class="flex items-center gap-4 pb-4 border-b border-slate-100">
+                                    <img
+                                        th:src="${vehicleImage}"
+                                        th:alt="${vehicleType.name}"
+                                        class="w-28 h-20 rounded-xl object-cover bg-slate-100 flex-shrink-0 border border-slate-200 shadow-2xs"
+                                    />
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span
+                                                class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200"
+                                                th:text="${vehicleType.category}"
+                                                >Sedan</span
+                                            >
+                                            <span
+                                                class="text-xs text-slate-500 capitalize"
+                                                th:text="${vehicleType.brand}"
+                                                >Toyota</span
+                                            >
+                                        </div>
+                                        <h2
+                                            class="font-bold text-slate-900 text-lg leading-tight truncate"
+                                            th:text="${vehicleType.brand != null and vehicleType.name.toLowerCase().startsWith(vehicleType.brand.toLowerCase()) ? vehicleType.name : (vehicleType.brand + ' ' + vehicleType.name)}"
+                                        >
+                                            Toyota Vios 2023
+                                        </h2>
+                                        <div class="text-xs text-slate-500 flex items-center gap-2 mt-1 capitalize">
+                                            <span th:text="${vehicleType.seats + ' Seats'}">5 Seats</span>
+                                            <span>·</span>
+                                            <span th:text="${vehicleType.transmission}">Automatic</span>
+                                            <span>·</span>
+                                            <span th:text="${vehicleType.fuelType}">Gasoline</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Schedule Itinerary Card (Clean Timeline, NO giant square box!) -->
+                                <div class="checkout-schedule-card">
+                                    <!-- Pickup -->
+                                    <div class="checkout-schedule-item">
+                                        <span class="checkout-schedule-label">Pickup</span>
+                                        <span
+                                            class="checkout-schedule-val"
+                                            th:text="${#temporals.format(bookingForm.startTime, 'dd/MM/yyyy, HH:mm')}"
+                                            >23/10/2026, 09:00</span
+                                        >
+                                    </div>
+
+                                    <!-- Duration / Direction indicator -->
+                                    <div class="checkout-timeline-mid">
+                                        <span class="checkout-duration-pill" th:text="${rentalHours + ' Hours'}"
+                                            >9 Hours</span
+                                        >
+                                    </div>
+
+                                    <!-- Return -->
+                                    <div class="checkout-schedule-item sm:text-right">
+                                        <span class="checkout-schedule-label">Return</span>
+                                        <span
+                                            class="checkout-schedule-val"
+                                            th:text="${#temporals.format(bookingForm.endTime, 'dd/MM/yyyy, HH:mm')}"
+                                            >23/10/2026, 18:00</span
+                                        >
+                                    </div>
+                                </div>
+
+                                <!-- Vehicle Unit Assignment (Collapsible / Dropdown with Notice) -->
+                                <div class="pt-2 border-t border-slate-100 space-y-2.5">
+                                    <div class="flex items-center justify-between">
+                                        <label class="block text-xs font-bold text-slate-800 uppercase tracking-wide"
+                                            >Vehicle Assignment</label
+                                        >
+                                    </div>
+
+                                    <!-- Default Auto-assign Option -->
+                                    <label class="checkout-plate-option">
+                                        <div class="flex items-center gap-2.5">
+                                            <input
+                                                type="radio"
+                                                name="vehicleId"
+                                                value=""
+                                                id="autoAssignRadio"
+                                                class="sr-only"
+                                                th:checked="${bookingForm.vehicleId == null or bookingForm.vehicleId == ''}"
+                                            />
+                                            <span class="text-xs font-bold text-slate-900"
+                                                >Auto-assign best available car</span
+                                            >
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <div class="plate-selected-check text-slate-900">
+                                                <svg
+                                                    class="w-4 h-4"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2.5"
+                                                >
+                                                    <polyline points="20 6 9 17 4 12" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </label>
+
+                                    <!-- Dropdown Toggle for Specific License Plates -->
+                                    <div th:if="${availableCars != null and !availableCars.isEmpty()}">
+                                        <button
+                                            type="button"
+                                            onclick="togglePlatePicker()"
+                                            class="w-full flex items-center justify-between py-2 px-3 rounded-lg border border-dashed border-slate-300 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-50 text-xs text-slate-700 font-semibold transition-all"
+                                        >
+                                            <span class="flex items-center gap-2">
+                                                <svg
+                                                    class="w-3.5 h-3.5 text-slate-500"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <rect x="3" y="4" width="18" height="16" rx="2" />
+                                                    <circle cx="9" cy="10" r="2" />
+                                                    <line x1="15" y1="8" x2="17" y2="8" />
+                                                    <line x1="15" y1="12" x2="17" y2="12" />
+                                                </svg>
+                                                <span>Select specific license plate (optional)</span>
+                                            </span>
+                                            <svg
+                                                id="plateChevron"
+                                                th:classappend="${bookingForm.vehicleId != null and bookingForm.vehicleId != '' ? 'rotate-180' : ''}"
+                                                class="w-4 h-4 text-slate-400 transition-transform duration-200"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                            >
+                                                <polyline points="6 9 12 15 18 9" />
+                                            </svg>
+                                        </button>
+
+                                        <!-- Collapsible Drawer -->
+                                        <div
+                                            id="specificPlateDrawer"
+                                            th:classappend="${bookingForm.vehicleId != null and bookingForm.vehicleId != '' ? '' : 'hidden'}"
+                                            class="space-y-2 pt-2"
+                                        >
+                                            <!-- Concise English Notice -->
+                                            <div
+                                                class="p-2.5 rounded-lg bg-amber-50/80 border border-amber-200 text-xs text-amber-900 flex items-start gap-2"
+                                            >
+                                                <svg
+                                                    class="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                                </svg>
+                                                <div class="leading-relaxed text-[11px]">
+                                                    <strong class="font-semibold text-amber-950">Note:</strong> Plate
+                                                    selection is prioritized by request. An equivalent vehicle will be
+                                                    provided if unavailable at pickup.
+                                                </div>
+                                            </div>
+
+                                            <!-- Specific Car Radio Options -->
+                                            <div class="space-y-1.5">
+                                                <label th:each="car : ${availableCars}" class="checkout-plate-option">
+                                                    <div class="flex items-center gap-2.5">
+                                                        <input
+                                                            type="radio"
+                                                            name="vehicleId"
+                                                            th:value="${car.id}"
+                                                            class="sr-only"
+                                                            th:checked="${bookingForm.vehicleId != null and bookingForm.vehicleId == car.id}"
+                                                        />
+                                                        <span
+                                                            class="plate-badge text-xs"
+                                                            th:text="${car.licensePlate != null ? car.licensePlate.plate : ('Unit #' + car.id)}"
+                                                            >51A-123.45</span
+                                                        >
+                                                        <span
+                                                            class="text-xs text-slate-600 font-medium"
+                                                            th:text="${car.color + ' · ' + car.year}"
+                                                            >White · 2023</span
+                                                        >
+                                                    </div>
+                                                    <div class="plate-selected-check text-slate-900">
+                                                        <svg
+                                                            class="w-4 h-4"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            stroke-width="2.5"
+                                                        >
+                                                            <polyline points="20 6 9 17 4 12" />
+                                                        </svg>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- CARD 2: Driver Verification -->
+                            <div class="checkout-section">
+                                <label class="block text-xs font-bold text-slate-800 uppercase tracking-wide mb-2.5"
+                                    >Driver Verification</label
+                                >
+
+                                    <!-- State 1: Verified License -->
+                                    <div
+                                        th:if="${isLicenseVerified}"
+                                        class="license-alert-verified flex items-center justify-between gap-3 text-xs"
+                                    >
+                                        <div class="flex items-center gap-2.5">
+                                            <div
+                                                class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0"
+                                            >
+                                                <svg
+                                                    class="w-4 h-4"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2.5"
+                                                >
+                                                    <polyline points="20 6 9 17 4 12" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <span class="font-bold text-emerald-950">Driving License Verified</span>
+                                                <span
+                                                    class="text-emerald-800 font-mono ml-1"
+                                                    th:if="${customerLicense != null}"
+                                                    th:text="'(' + ${customerLicense.licenseNumber} + ')'"
+                                                    >(52A-123456)</span
+                                                >
+                                            </div>
+                                        </div>
+                                        <a
+                                            th:href="@{/licenses/my-license}"
+                                            class="text-xs font-bold text-emerald-800 hover:underline"
+                                            >View</a
+                                        >
+                                    </div>
+
+                                    <!-- State 2: License Pending Review -->
+                                    <div
+                                        th:if="${!isLicenseVerified and licenseStatus == 'pending'}"
+                                        class="license-alert-pending flex items-center justify-between gap-3 text-xs"
+                                    >
+                                        <div class="flex items-center gap-2.5">
+                                            <div
+                                                class="w-7 h-7 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center flex-shrink-0"
+                                            >
+                                                <svg
+                                                    class="w-4 h-4 animate-spin"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                                                </svg>
+                                            </div>
+                                            <span class="font-bold text-amber-950"
+                                                >License Under Review (15–30 mins)</span
+                                            >
+                                        </div>
+                                        <a
+                                            th:href="@{/licenses/my-license}"
+                                            class="text-xs font-bold text-amber-900 hover:underline"
+                                            >Track Status</a
+                                        >
+                                    </div>
+
+                                    <!-- State 3: License Not Uploaded (No redundant explanatory subtitle) -->
+                                    <div
+                                        th:if="${!isLicenseVerified and licenseStatus == 'not_uploaded'}"
+                                        class="license-alert-required flex items-center justify-between gap-3 text-xs"
+                                    >
+                                        <div class="flex items-center gap-2.5">
+                                            <div
+                                                class="w-7 h-7 rounded-lg bg-slate-200/80 text-slate-700 flex items-center justify-center flex-shrink-0"
+                                            >
+                                                <svg
+                                                    class="w-4 h-4"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <rect x="3" y="4" width="18" height="16" rx="3" />
+                                                    <circle cx="9" cy="10" r="2" />
+                                                    <line x1="15" y1="8" x2="17" y2="8" />
+                                                </svg>
+                                            </div>
+                                            <span class="font-bold text-slate-900">Driving License Required</span>
+                                        </div>
+                                        <a
+                                            th:href="@{/licenses/my-license}"
+                                            class="btn-outline-shadcn inline-flex items-center justify-center gap-1.5 py-1 px-3 text-xs font-semibold whitespace-nowrap text-decoration-none"
+                                        >
+                                            <span>Upload License</span>
+                                            <svg
+                                                class="w-3.5 h-3.5"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                            >
+                                                <path d="M5 12h14M12 5l7 7-7 7" />
+                                            </svg>
+                                        </a>
+                                    </div>
+
+                                    <!-- State 4: License Rejected -->
+                                    <div
+                                        th:if="${!isLicenseVerified and licenseStatus == 'rejected'}"
+                                        class="license-alert-required flex items-center justify-between gap-3 text-xs border-red-200 bg-red-50/50"
+                                    >
+                                        <div class="flex items-center gap-2.5">
+                                            <div
+                                                class="w-7 h-7 rounded-lg bg-red-100 text-red-700 flex items-center justify-center flex-shrink-0"
+                                            >
+                                                <svg
+                                                    class="w-4 h-4"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <line x1="15" y1="9" x2="9" y2="15" />
+                                                    <line x1="9" y1="9" x2="15" y2="15" />
+                                                </svg>
+                                            </div>
+                                            <span class="font-bold text-red-950">License Not Approved</span>
+                                        </div>
+                                        <a
+                                            th:href="@{/licenses/my-license}"
+                                            class="btn-outline-shadcn inline-flex items-center justify-center gap-1.5 py-1 px-3 text-xs font-semibold whitespace-nowrap text-decoration-none"
+                                        >
+                                            <span>Re-upload</span>
+                                            <svg
+                                                class="w-3.5 h-3.5"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                            >
+                                                <path d="M5 12h14M12 5l7 7-7 7" />
+                                            </svg>
+                                        </a>
+                                    </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column (lg:col-span-2): Sticky Summary -->
+                        <div class="lg:col-span-2">
+                            <div class="checkout-summary-box space-y-5 sticky top-20">
+                                <h2
+                                    class="text-sm font-bold text-slate-900 pb-3 border-b border-slate-100 uppercase tracking-wide"
+                                >
+                                    Order Summary
+                                </h2>
+
+                                <!-- Line Items -->
+                                <div class="space-y-3 text-xs">
+                                    <div class="flex justify-between items-center text-slate-600">
+                                        <span>Hourly Rate</span>
+                                        <span class="font-bold text-slate-900"
+                                            ><span
+                                                th:text="${#numbers.formatDecimal(vehicleType.pricePerHour, 0, 'COMMA', 0, 'POINT')}"
+                                                >150,000</span
+                                            >
+                                            đ / hour</span
+                                        >
+                                    </div>
+                                    <div class="flex justify-between items-center text-slate-600">
+                                        <span>Rental Duration</span>
+                                        <span class="font-bold text-slate-900"
+                                            ><span th:text="${rentalHours}">9</span> hours</span
+                                        >
+                                    </div>
+                                    <div
+                                        class="flex justify-between items-center pt-2.5 border-t border-slate-100 text-slate-600"
+                                    >
+                                        <span>Rental Subtotal</span>
+                                        <span class="font-bold text-slate-900"
+                                            ><span
+                                                id="rentalSubtotalDisplay"
+                                                th:text="${#numbers.formatDecimal(estimatedTotal, 0, 'COMMA', 0, 'POINT')}"
+                                                >1,350,000</span
+                                            >
+                                            đ</span
+                                        >
+                                    </div>
+
+                                    <!-- Applied Discount Row (WELCOME10 (-10%) and amount both in emerald green) -->
+                                    <div
+                                        id="discountRow"
+                                        class="hidden justify-between items-center text-emerald-600 text-xs"
+                                    >
+                                        <span id="discountLabel" class="text-emerald-600 font-medium">Promotion Discount</span>
+                                        <span class="font-bold text-emerald-600"
+                                            >-<span id="discountAmountDisplay">0</span> đ</span
+                                        >
+                                    </div>
+
+                                    <!-- Net Total Fee -->
+                                    <div class="flex justify-between items-center pt-2.5 border-t border-slate-100">
+                                        <span class="font-bold text-slate-900 text-sm">Total Rental Fee</span>
+                                        <span class="font-extrabold text-slate-900 text-base"
+                                            ><span
+                                                id="totalRentalFeeDisplay"
+                                                th:text="${#numbers.formatDecimal(estimatedTotal, 0, 'COMMA', 0, 'POINT')}"
+                                                >1,350,000</span
+                                            >
+                                            đ</span
+                                        >
+                                    </div>
+                                </div>
+
+                                <!-- Promotion Code Input in Order Summary -->
+                                <div class="pt-3 border-t border-slate-100 space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <label for="promoInput" class="block text-xs font-bold text-slate-700">
+                                            Promotion Code <span class="text-slate-400 font-normal">(optional)</span>
+                                        </label>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <input
+                                            id="promoInput"
+                                            type="text"
+                                            th:field="*{promotionCode}"
+                                            placeholder="WELCOME10, GIAM100K..."
+                                            class="input-shadcn flex-1 text-xs uppercase font-semibold tracking-wider placeholder:normal-case placeholder:font-normal placeholder:tracking-normal"
+                                            onkeydown="
+                                                if (event.key === 'Enter') {
+                                                    event.preventDefault();
+                                                    applyPromoCode();
+                                                }
+                                            "
+                                        />
+                                        <button
+                                            type="button"
+                                            onclick="applyPromoCode()"
+                                            class="px-3.5 py-2 rounded-lg border border-slate-300 hover:border-slate-900 bg-white hover:bg-slate-50 text-xs font-bold text-slate-800 transition-colors shadow-2xs whitespace-nowrap cursor-pointer active:scale-95"
+                                        >
+                                            Apply
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Deposit Due Card (Zero line-wrap on đ currency) -->
+                                <div class="checkout-deposit-card">
+                                    <div class="checkout-deposit-top">
+                                        <div>
+                                            <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                                                <span>Deposit Due Now</span>
+                                                <span
+                                                    class="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded"
+                                                    >50%</span
+                                                >
+                                            </div>
+                                        </div>
+                                        <div class="checkout-deposit-val">
+                                            <span
+                                                id="depositDueDisplay"
+                                                th:text="${#numbers.formatDecimal(depositAmount, 0, 'COMMA', 0, 'POINT')}"
+                                                >675,000</span
+                                            >
+                                            <span class="text-xs font-bold text-slate-500">đ</span>
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="pt-2.5 border-t border-slate-200/80 flex justify-between items-center text-xs text-slate-600"
+                                    >
+                                        <span>Remaining balance on return</span>
+                                        <span class="font-bold text-slate-900 whitespace-nowrap"
+                                            ><span
+                                                id="remainingBalanceDisplay"
+                                                th:text="${#numbers.formatDecimal(remainingAmount, 0, 'COMMA', 0, 'POINT')}"
+                                                >675,000</span
+                                            >
+                                            đ</span
+                                        >
+                                    </div>
+                                </div>
+
+                                <!-- Agreement Checkbox -->
+                                <label class="flex items-start gap-2.5 cursor-pointer pt-1">
+                                    <input
+                                        type="checkbox"
+                                        required
+                                        class="w-4 h-4 mt-0.5 accent-slate-900 cursor-pointer flex-shrink-0"
+                                    />
+                                    <span class="text-xs text-slate-600 leading-relaxed">
+                                        I agree to the
+                                        <a href="#" class="text-slate-900 font-semibold underline">rental terms</a> and
+                                        warehouse pickup & return policy.
+                                    </span>
+                                </label>
+
+                                <!-- CTA Action Button (Feedback 3: Dimmed/Disabled with changed text when no license) -->
+                                <div class="space-y-2">
+                                    <!-- State 1: Verified License -> Active submit button -->
+                                    <div th:if="${isLicenseVerified}">
+                                        <button
+                                            type="submit"
+                                            class="btn-amber w-full py-3.5 text-sm font-bold shadow-sm hover:shadow-md transition-all justify-center"
+                                        >
+                                            <span>Confirm & Pay Deposit</span>
+                                            <svg
+                                                class="w-4 h-4 ml-1"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2.5"
+                                            >
+                                                <path d="M5 12h14M12 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <!-- State 2: License Pending Review -> Dimmed disabled button + track link -->
+                                    <div th:if="${!isLicenseVerified and licenseStatus == 'pending'}" class="space-y-2">
+                                        <button
+                                            type="button"
+                                            disabled
+                                            class="w-full py-3.5 px-4 rounded-xl text-sm font-bold bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed flex items-center justify-center gap-2 opacity-60"
+                                        >
+                                            <svg
+                                                class="w-4 h-4 animate-spin text-slate-400"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                            >
+                                                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                                            </svg>
+                                            <span>Confirm & Pay Deposit</span>
+                                        </button>
+                                        <div class="text-center">
+                                            <a
+                                                th:href="@{/licenses/my-license}"
+                                                class="inline-flex items-center gap-1 text-xs font-bold text-amber-800 hover:underline"
+                                            >
+                                                <span>License pending review — Track status →</span>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <!-- State 3: License Not Uploaded or Rejected -> Dimmed disabled button + upload prompt -->
+                                    <div
+                                        th:if="${!isLicenseVerified and (licenseStatus == 'not_uploaded' or licenseStatus == 'rejected')}"
+                                        class="space-y-2"
+                                    >
+                                        <button
+                                            type="button"
+                                            disabled
+                                            class="w-full py-3.5 px-4 rounded-xl text-sm font-bold bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed flex items-center justify-center gap-1.5 opacity-60"
+                                        >
+                                            <span>Confirm & Pay Deposit</span>
+                                        </button>
+                                        <div class="text-center">
+                                            <a
+                                                th:href="@{/licenses/my-license}"
+                                                class="inline-flex items-center gap-1 text-xs font-bold text-amber-700 hover:text-amber-800 hover:underline"
+                                            >
+                                                <span>Upload driver license to unlock booking →</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Trust signals -->
+                                <div class="pt-3 border-t border-slate-100 space-y-2 text-xs text-slate-500">
+                                    <div class="flex items-center gap-2">
+                                        <svg
+                                            class="w-4 h-4 text-emerald-600 flex-shrink-0"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2.5"
+                                        >
+                                            <polyline points="20 6 9 17 4 12" />
+                                        </svg>
+                                        <span>Free cancellation up to 3 days before pickup</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <svg
+                                            class="w-4 h-4 text-emerald-600 flex-shrink-0"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2.5"
+                                        >
+                                            <polyline points="20 6 9 17 4 12" />
+                                        </svg>
+                                        <span>24/7 Roadside breakdown assistance</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+        <div th:replace="~{fragments/footer :: footer}"></div>
+
+        <script th:inline="javascript">
+            function togglePlatePicker() {
+                const drawer = document.getElementById("specificPlateDrawer");
+                const chevron = document.getElementById("plateChevron");
+                if (!drawer) return;
+                const isHidden = drawer.classList.contains("hidden");
+                if (isHidden) {
+                    drawer.classList.remove("hidden");
+                    if (chevron) chevron.classList.add("rotate-180");
+                } else {
+                    drawer.classList.add("hidden");
+                    if (chevron) chevron.classList.remove("rotate-180");
+                }
+            }
+
+            const baseRentalTotal = /*[[${estimatedTotal}]]*/ 1350000;
+
+            function formatVND(num) {
+                return Math.round(num).toLocaleString("en-US");
+            }
+
+            function applyPromoCode() {
+                const input = document.getElementById("promoInput");
+                const discountRow = document.getElementById("discountRow");
+                const discountLabel = document.getElementById("discountLabel");
+                const discountAmountDisplay = document.getElementById("discountAmountDisplay");
+                const totalRentalFeeDisplay = document.getElementById("totalRentalFeeDisplay");
+                const depositDueDisplay = document.getElementById("depositDueDisplay");
+                const remainingBalanceDisplay = document.getElementById("remainingBalanceDisplay");
+
+                if (!input) return;
+                const code = input.value.trim().toUpperCase();
+
+                if (!code) {
+                    discountRow.classList.add("hidden");
+                    discountRow.classList.remove("flex");
+                    totalRentalFeeDisplay.textContent = formatVND(baseRentalTotal);
+                    const dep = Math.round(baseRentalTotal * 0.5);
+                    depositDueDisplay.textContent = formatVND(dep);
+                    remainingBalanceDisplay.textContent = formatVND(baseRentalTotal - dep);
+                    return;
+                }
+
+                let discount = 0;
+                let label = "Promo (" + code + ")";
+                let isValid = false;
+
+                if (code === "WELCOME10" || code === "FIRST10") {
+                    discount = Math.round(baseRentalTotal * 0.1);
+                    label = code + " (-10%)";
+                    isValid = true;
+                } else if (code === "GIAM100K") {
+                    discount = Math.min(100000, baseRentalTotal);
+                    label = code + " (-100,000 đ)";
+                    isValid = true;
+                }
+
+                if (isValid && discount > 0) {
+                    const newTotal = Math.max(0, baseRentalTotal - discount);
+                    const newDeposit = Math.round(newTotal * 0.5);
+                    const newRemaining = newTotal - newDeposit;
+
+                    discountLabel.textContent = label;
+                    discountAmountDisplay.textContent = formatVND(discount);
+                    discountRow.classList.remove("hidden");
+                    discountRow.classList.add("flex");
+
+                    totalRentalFeeDisplay.textContent = formatVND(newTotal);
+                    depositDueDisplay.textContent = formatVND(newDeposit);
+                    remainingBalanceDisplay.textContent = formatVND(newRemaining);
+                } else {
+                    discountRow.classList.add("hidden");
+                    discountRow.classList.remove("flex");
+                    totalRentalFeeDisplay.textContent = formatVND(baseRentalTotal);
+                    const dep = Math.round(baseRentalTotal * 0.5);
+                    depositDueDisplay.textContent = formatVND(dep);
+                    remainingBalanceDisplay.textContent = formatVND(baseRentalTotal - dep);
+                }
+            }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                const input = document.getElementById("promoInput");
+                if (input && input.value.trim()) {
+                    applyPromoCode();
+                }
+            });
+        </script>
+    </body>
 </html>
