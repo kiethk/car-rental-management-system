@@ -15,6 +15,7 @@
             <!-- Desktop Nav -->
             <nav class="hidden lg:flex items-center gap-1">
                 <a th:href="@{/}" class="px-4 py-2 rounded-md text-sm font-medium transition-all text-muted-foreground hover:text-navy hover:bg-surface text-decoration-none">Home</a>
+                <a th:href="@{/vehicles}" class="px-4 py-2 rounded-md text-sm font-medium transition-all text-muted-foreground hover:text-navy hover:bg-surface text-decoration-none">Browse Fleet</a>
                 <a th:href="@{/search}" class="px-4 py-2 rounded-md text-sm font-medium transition-all text-muted-foreground hover:text-navy hover:bg-surface text-decoration-none">Search Cars</a>
                 <a th:if="${session.customerId != null}" th:href="@{/bookings/my-bookings}" class="px-4 py-2 rounded-md text-sm font-medium transition-all text-muted-foreground hover:text-navy hover:bg-surface text-decoration-none">My Bookings</a>
             </nav>

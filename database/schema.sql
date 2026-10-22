@@ -1,3 +1,4 @@
+
 -- Proposed physical schema for all 13 conceptual entities.
 
 -- SLOT = rental time window for a vehicle type (confirmed by user).

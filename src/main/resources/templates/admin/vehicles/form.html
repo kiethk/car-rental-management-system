@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${vehicleForm.id != null ? 'Edit Vehicle #' + vehicleForm.id : 'Add New Vehicle'} + ' — DriveNow Admin'">Vehicle Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container-fluid px-lg-5 my-4 flex-grow-1">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2">
+            <div th:replace="~{fragments/admin-sidebar :: sidebar(active='vehicles')}"></div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10">
+            <!-- Flash Error -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show border-0 rounded-lg shadow-sm" role="alert">
+                <span th:text="${error}"></span>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-xl p-4 p-md-5 bg-white max-w-4xl">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                    <div>
+                        <h1 class="h4 font-weight-bold text-navy mb-1"
+                            th:text="${vehicleForm.id != null ? 'Edit Vehicle #' + vehicleForm.id : 'Add New Vehicle to Fleet'}">
+                            Add New Vehicle
+                        </h1>
+                        <p class="text-muted small mb-0">Configure physical car specifications and assigned legal license plate (Strict 1:1 relationship).</p>
+                    </div>
+                    <a th:href="@{/admin/vehicles}" class="btn btn-outline-secondary btn-sm rounded-lg">
+                        Back to Fleet
+                    </a>
+                </div>
+
+                <form method="post"
+                      th:action="${vehicleForm.id != null ? '/admin/vehicles/' + vehicleForm.id : '/admin/vehicles'}"
+                      th:object="${vehicleForm}">
+
+                    <input type="hidden" th:field="*{id}" />
+
+                    <!-- SECTION 1: PHYSICAL VEHICLE SPECS -->
+                    <h5 class="h6 font-weight-bold text-navy text-uppercase mb-3" style="letter-spacing: 0.05em;">
+                        1. Physical Vehicle Details
+                    </h5>
+
+                    <div class="row g-3 mb-4">
+                        <!-- Vehicle Model -->
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold small text-navy mb-1">Vehicle Model <span class="text-danger">*</span></label>
+                            <select th:field="*{vehicleTypeId}" class="form-control rounded-lg" required>
+                                <option value="" disabled selected>-- Select vehicle model from catalog --</option>
+                                <option th:each="vt : ${vehicleTypes}" th:value="${vt.id}"
+                                        th:text="${vt.displayName + ' (' + vt.seats + ' seats, ' + #numbers.formatDecimal(vt.pricePerHour, 0, 'COMMA', 0, 'POINT') + ' đ/h)'}"></option>
+                            </select>
+                            <small class="text-danger" th:if="${#fields.hasErrors('vehicleTypeId')}" th:errors="*{vehicleTypeId}"></small>
+                        </div>
+
+                        <!-- Color -->
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold small text-navy mb-1">Color <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{color}" class="form-control rounded-lg"
+                                   placeholder="e.g. White, Black, Silver, Pearl White..." required>
+                            <small class="text-danger" th:if="${#fields.hasErrors('color')}" th:errors="*{color}"></small>
+                        </div>
+
+                        <!-- Manufacturing Year -->
+                        <div class="col-md-4 form-group mb-3">
+                            <label class="font-weight-bold small text-navy mb-1">Manufacturing Year <span class="text-danger">*</span></label>
+                            <input type="number" th:field="*{year}" class="form-control rounded-lg" min="1990" max="2100" required>
+                            <small class="text-danger" th:if="${#fields.hasErrors('year')}" th:errors="*{year}"></small>
+                        </div>
+
+                        <!-- Current Odometer -->
+                        <div class="col-md-4 form-group mb-3">
+                            <label class="font-weight-bold small text-navy mb-1">Current Odometer (km) <span class="text-danger">*</span></label>
+                            <input type="number" th:field="*{odometer}" class="form-control rounded-lg" min="0" placeholder="0" required>
+                            <small class="text-danger" th:if="${#fields.hasErrors('odometer')}" th:errors="*{odometer}"></small>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="col-md-4 form-group mb-3">
+                            <label class="font-weight-bold small text-navy mb-1">Initial Status <span class="text-danger">*</span></label>
+                            <select th:field="*{status}" class="form-control rounded-lg" required>
+                                <option value="available">Available for rent</option>
+                                <option value="maintenance">In maintenance / Inspection</option>
+                                <option th:if="${vehicleForm.status == 'rented'}" value="rented" disabled>Rented (Managed by booking lifecycle)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2: LICENSE PLATE & REGISTRATION (1:1) -->
+                    <div class="p-3 bg-surface rounded-xl border mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="h6 font-weight-bold text-navy text-uppercase mb-0" style="letter-spacing: 0.05em;">
+                                2. License Plate & Registration
+                            </h5>
+                            <span class="badge badge-light border text-muted">1:1 Vehicle Attachment</span>
+                        </div>
+
+
+                        <div class="row g-3">
+                            <!-- Plate number -->
+                            <div class="col-md-4 form-group mb-3">
+                                <label class="font-weight-bold small text-navy mb-1">Plate Number <span class="text-danger">*</span></label>
+                                <input type="text" id="plateInput" th:field="*{plate}" class="form-control rounded-lg font-weight-bold text-uppercase"
+                                       placeholder="e.g. 51K-987.65" required>
+                                <small class="text-danger" th:if="${#fields.hasErrors('plate')}" th:errors="*{plate}"></small>
+                            </div>
+
+                            <!-- Province -->
+                            <div class="col-md-4 form-group mb-3">
+                                <label class="font-weight-bold small text-navy mb-1">Registration City / Province</label>
+                                <input type="text" id="provinceInput" th:field="*{province}" class="form-control rounded-lg"
+                                       placeholder="e.g. Ho Chi Minh City, Hanoi...">
+                            </div>
+
+                            <!-- Expiry date -->
+                            <div class="col-md-4 form-group mb-3">
+                                <label class="font-weight-bold small text-navy mb-1">Registration Expiry Date</label>
+                                <input type="date" id="expiryInput" th:field="*{registrationExpiry}" class="form-control rounded-lg">
+                                <small class="text-muted" style="font-size: 11px;">As indicated on vehicle inspection windshield sticker</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a th:href="@{/admin/vehicles}" class="btn btn-light px-4 rounded-lg">Cancel</a>
+                        <button type="submit" class="btn btn-navy font-weight-bold px-4 rounded-lg shadow-sm">
+                            Save Vehicle & License Plate
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+
+
+</body>
+</html>

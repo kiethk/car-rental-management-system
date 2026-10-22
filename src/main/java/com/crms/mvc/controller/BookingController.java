@@ -356,17 +356,9 @@ public class BookingController {
     }
 
     private String resolveVehicleImage(VehicleType vt) {
-        if (vt == null) return "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&h=500&fit=crop&auto=format";
-        String img = vt.getImageUrl();
-        if (img == null || img.isBlank() || img.startsWith("/images/")) {
-            if (vt.getName() != null && vt.getName().toLowerCase().contains("cr-v")) {
-                return "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=500&fit=crop&auto=format";
-            } else if (vt.getName() != null && vt.getName().toLowerCase().contains("vf8")) {
-                return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=500&fit=crop&auto=format";
-            } else {
-                return "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&h=500&fit=crop&auto=format";
-            }
+        if (vt == null || vt.getImageUrl() == null || vt.getImageUrl().isBlank()) {
+            return "https://images.unsplash.com/photo-1619682817481-e994891cd1f5?auto=format&fit=crop&w=800&q=80";
         }
-        return img;
+        return vt.getImageUrl();
     }
 }

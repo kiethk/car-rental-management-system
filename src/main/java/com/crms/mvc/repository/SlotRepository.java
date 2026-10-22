@@ -10,6 +10,8 @@ import java.util.List;
 public interface SlotRepository extends JpaRepository<Slot, Long> {
     List<Slot> findByVehicleTypeIdAndStatus(Long vehicleTypeId, String status);
 
+    long countByVehicleTypeId(Long vehicleTypeId);
+
     @Query("SELECT s FROM Slot s WHERE s.vehicleType.id = :vehicleTypeId AND s.status = 'open' AND s.startTime >= :now ORDER BY s.startTime ASC")
     List<Slot> findAvailableSlotsForType(@Param("vehicleTypeId") Long vehicleTypeId, @Param("now") OffsetDateTime now);
 }

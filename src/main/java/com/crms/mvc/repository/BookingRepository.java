@@ -22,6 +22,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.licensePlate", "customer"})
     List<Booking> findByStatusOrderByCreatedAtDesc(String status);
 
+    long countByVehicleId(Long vehicleId);
+
     @Query("SELECT b.vehicle.id FROM Booking b WHERE b.vehicle IS NOT NULL " +
            "AND b.status IN ('confirmed', 'active') " +
            "AND b.pickupTime < :endTime AND b.scheduledEndTime > :startTime")

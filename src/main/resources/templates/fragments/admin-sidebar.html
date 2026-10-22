@@ -16,47 +16,47 @@
     <!-- Dashboard -->
     <a th:href="@{/admin/dashboard}"
        th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'dashboard'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
-        📊 Dashboard
+        Dashboard
     </a>
 
-    <!-- Kiet (Issue #2): Booking lifecycle -->
+    <!-- Rental Management -->
     <a th:href="@{/admin/bookings}"
        th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'bookings'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
-        🚗 Rental Management (Assign / Check-in / Check-out)
+        Rental Management
     </a>
 
-    <!-- Phuc (Issue #4): Fleet, Vehicle Types, License Plates, Inspections -->
+    <!-- Fleet & License Plates -->
     <a th:href="@{/admin/vehicles}"
        th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'vehicles'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
-        🚘 Fleet & License Plates
+        Fleet Management
     </a>
     <a th:href="@{/admin/inspections}"
        th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'inspections'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
-        🔧 Inspection & Maintenance Schedule
+        Inspections & Maintenance
     </a>
 
-    <!-- Tri (Issue #5): Promotions, Reviews, Issues -->
+    <!-- Promotions -->
     <a th:href="@{/admin/promotions}"
        th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'promotions'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
-        🎟️ Promotions & Vouchers
+        Promotions & Vouchers
     </a>
     <a th:href="@{/admin/issues}"
        th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'issues'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
-        ⚠️ Incidents & Fines
+        Incidents & Fines
     </a>
 
-    <!-- Phu (Issue #3): License approval, Accounts -->
+    <!-- Driving License Review -->
     <a th:href="@{/admin/licenses}"
        th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'licenses'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
-        🪪 Driving License Review
+        Driving License Review
     </a>
     <a th:href="@{/admin/accounts}"
        th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'accounts'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
-        👥 Account Management
+        Account Management
     </a>
 
     <div class="list-group-item bg-light p-3 text-center border-0">
-        <a th:href="@{/}" class="btn btn-outline-secondary btn-sm btn-block">⬅ Back to Customer View</a>
+        <a th:href="@{/}" class="btn btn-outline-secondary btn-sm btn-block">Back to Customer View</a>
     </div>
 </div>
 </body>

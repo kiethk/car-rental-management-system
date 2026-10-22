@@ -67,4 +67,17 @@ public class VehicleType {
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public String getDisplayName() {
+        if (name == null || name.isBlank()) return brand != null ? brand : "";
+        if (brand != null && !brand.isBlank()) {
+            String trimmedBrand = brand.trim().toLowerCase();
+            String trimmedName = name.trim().toLowerCase();
+            if (trimmedName.startsWith(trimmedBrand)) {
+                return name;
+            }
+            return brand + " " + name;
+        }
+        return name;
+    }
 }

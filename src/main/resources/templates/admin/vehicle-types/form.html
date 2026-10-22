@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${typeForm.id != null ? 'Edit Vehicle Model' : 'New Vehicle Model'} + ' — DriveNow Admin'">Vehicle Model</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container-fluid px-lg-5 my-4 flex-grow-1">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2">
+            <div th:replace="~{fragments/admin-sidebar :: sidebar(active='vehicles')}"></div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10">
+            <!-- Flash Error -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show border-0 rounded-lg shadow-sm" role="alert">
+                <span th:text="${error}"></span>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-xl p-4 p-md-5 bg-white max-w-4xl">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                    <div>
+                        <h1 class="h4 font-weight-bold text-navy mb-1"
+                            th:text="${typeForm.id != null ? 'Update Vehicle Model #' + typeForm.id : 'Add New Vehicle Model'}">
+                            Add New Vehicle Model
+                        </h1>
+                        <p class="text-muted small mb-0">Configure technical specifications, pricing, and photo for this vehicle model.</p>
+                    </div>
+                    <a th:href="@{/admin/vehicle-types}" class="btn btn-outline-secondary btn-sm rounded-lg">
+                        Back to Models
+                    </a>
+                </div>
+
+                <form method="post"
+                      th:action="${typeForm.id != null ? '/admin/vehicle-types/' + typeForm.id : '/admin/vehicle-types'}"
+                      th:object="${typeForm}"
+                      enctype="multipart/form-data">
+
+                    <input type="hidden" th:field="*{id}" />
+
+                    <div class="row g-3">
+                        <!-- Model Name -->
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold small text-navy mb-1">Model Name <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{name}" class="form-control rounded-lg"
+                                   placeholder="e.g. Vios 2023, CR-V 2024, VF8..." required>
+                            <small class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></small>
+                        </div>
+
+                        <!-- Brand -->
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold small text-navy mb-1">Brand <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{brand}" class="form-control rounded-lg"
+                                   placeholder="e.g. Toyota, Honda, VinFast, Hyundai..." required>
+                            <small class="text-danger" th:if="${#fields.hasErrors('brand')}" th:errors="*{brand}"></small>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="col-md-4 form-group mb-3">
+                            <label class="font-weight-bold small text-navy mb-1">Category <span class="text-danger">*</span></label>
+                            <select th:field="*{category}" class="form-control rounded-lg" required>
+                                <option value="sedan">Sedan</option>
+                                <option value="suv">SUV / Crossover</option>
+                                <option value="hatchback">Hatchback</option>
+                                <option value="minivan">Minivan / MPV</option>
+                                <option value="pickup">Pickup Truck</option>
+                            </select>
+                            <small class="text-danger" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></small>
+                        </div>
+
+                        <!-- Seats -->
+                        <div class="col-md-4 form-group mb-3">
+                            <label class="font-weight-bold small text-navy mb-1">Seats <span class="text-danger">*</span></label>
+                            <input type="number" th:field="*{seats}" class="form-control rounded-lg" min="1" max="50" required>
+                            <small class="text-danger" th:if="${#fields.hasErrors('seats')}" th:errors="*{seats}"></small>
+                        </div>
+
+                        <!-- Price Per Hour -->
+                        <div class="col-md-4 form-group mb-3">
+                            <label class="font-weight-bold small text-navy mb-1">Hourly Rate (VND) <span class="text-danger">*</span></label>
+                            <input type="number" step="1000" th:field="*{pricePerHour}" class="form-control rounded-lg" min="0" placeholder="e.g. 150000" required>
+                            <small class="text-danger" th:if="${#fields.hasErrors('pricePerHour')}" th:errors="*{pricePerHour}"></small>
+                        </div>
+
+                        <!-- Transmission -->
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold small text-navy mb-1">Transmission <span class="text-danger">*</span></label>
+                            <select th:field="*{transmission}" class="form-control rounded-lg" required>
+                                <option value="automatic">Automatic</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                            <small class="text-danger" th:if="${#fields.hasErrors('transmission')}" th:errors="*{transmission}"></small>
+                        </div>
+
+                        <!-- Fuel Type -->
+                        <div class="col-md-6 form-group mb-3">
+                            <label class="font-weight-bold small text-navy mb-1">Fuel Type <span class="text-danger">*</span></label>
+                            <select th:field="*{fuelType}" class="form-control rounded-lg" required>
+                                <option value="gasoline">Gasoline</option>
+                                <option value="diesel">Diesel</option>
+                                <option value="electric">Electric (EV)</option>
+                                <option value="hybrid">Hybrid</option>
+                            </select>
+                            <small class="text-danger" th:if="${#fields.hasErrors('fuelType')}" th:errors="*{fuelType}"></small>
+                        </div>
+
+                        <!-- Photo: Upload file or Online URL -->
+                        <div class="col-12 form-group mb-3 p-3 bg-surface rounded-xl border">
+                            <label class="font-weight-bold small text-navy mb-2 d-block">
+                                Vehicle Model Image:
+                            </label>
+
+                            <div class="row align-items-center">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label class="small font-weight-bold text-navy mb-1 d-block">Option 1: Upload Image File</label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <label for="imageFileInput" class="btn btn-outline-navy btn-sm mb-0 px-3 py-1 font-weight-bold" style="cursor: pointer;">
+                                            Choose File
+                                        </label>
+                                        <input type="file" id="imageFileInput" name="imageFile" accept="image/png, image/jpeg, image/webp" style="display: none;" onchange="handleImageFileChange(this)">
+                                        <span id="chosenFileName" class="small text-muted text-truncate" style="max-width: 200px;">No file chosen</span>
+                                        <button type="button" id="clearFileBtn" class="btn btn-sm btn-link text-danger p-0" style="display: none; text-decoration: none;" onclick="clearImageFile()" title="Clear file">✕</button>
+                                    </div>
+                                    <small class="form-text text-muted mt-1">Formats: JPG, PNG, WebP (Saved to uploads/)</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="small font-weight-bold text-navy mb-1 d-block">Option 2: Direct Image URL</label>
+                                    <input type="url" id="imageUrlInput" th:field="*{imageUrl}" class="form-control form-control-sm rounded-lg"
+                                           placeholder="https://images.unsplash.com/...">
+                                    <small id="imageUrlHelp" class="form-text text-muted">Paste an online image link if not uploading a file.</small>
+                                </div>
+                            </div>
+
+                            <!-- Image Preview if available -->
+                            <div th:if="${typeForm.imageUrl != null and !typeForm.imageUrl.isBlank()}" class="mt-3 pt-2 border-top">
+                                <span class="small text-muted mr-2">Current image:</span>
+                                <img th:src="${typeForm.imageUrl}" class="rounded border mt-1" style="max-height: 80px;"
+                                     onerror="this.onerror=null; this.src='/images/car-rental-logo.svg';">
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="col-12 form-group mb-4">
+                            <label class="font-weight-bold small text-navy mb-1">Description & Details</label>
+                            <textarea th:field="*{description}" rows="3" class="form-control rounded-lg"
+                                      placeholder="Key features, specifications, and comfort highlights..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a th:href="@{/admin/vehicle-types}" class="btn btn-light px-4 rounded-lg">Cancel</a>
+                        <button type="submit" class="btn btn-navy font-weight-bold px-4 rounded-lg shadow-sm">
+                            Save Vehicle Model
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    function handleImageFileChange(input) {
+        var fileNameSpan = document.getElementById('chosenFileName');
+        var clearBtn = document.getElementById('clearFileBtn');
+        var urlInput = document.getElementById('imageUrlInput');
+        var helpText = document.getElementById('imageUrlHelp');
+
+        if (input.files && input.files.length > 0) {
+            var file = input.files[0];
+            fileNameSpan.textContent = file.name;
+            fileNameSpan.classList.remove('text-muted');
+            fileNameSpan.classList.add('text-navy', 'font-weight-bold');
+            clearBtn.style.display = 'inline-block';
+
+            // Dim and lock URL input
+            urlInput.readOnly = true;
+            urlInput.classList.add('bg-light');
+            urlInput.style.opacity = '0.45';
+            urlInput.style.pointerEvents = 'none';
+            helpText.textContent = 'Direct URL input is locked because a local file has been selected.';
+            helpText.classList.add('text-warning');
+        } else {
+            clearImageFile();
+        }
+    }
+
+    function clearImageFile() {
+        var fileInput = document.getElementById('imageFileInput');
+        var fileNameSpan = document.getElementById('chosenFileName');
+        var clearBtn = document.getElementById('clearFileBtn');
+        var urlInput = document.getElementById('imageUrlInput');
+        var helpText = document.getElementById('imageUrlHelp');
+
+        fileInput.value = '';
+        fileNameSpan.textContent = 'No file chosen';
+        fileNameSpan.classList.add('text-muted');
+        fileNameSpan.classList.remove('text-navy', 'font-weight-bold');
+        clearBtn.style.display = 'none';
+
+        // Unlock URL input
+        urlInput.readOnly = false;
+        urlInput.classList.remove('bg-light');
+        urlInput.style.opacity = '1';
+        urlInput.style.pointerEvents = 'auto';
+        helpText.textContent = 'Paste an online image link if not uploading a file.';
+        helpText.classList.remove('text-warning');
+    }
+</script>
+
+</body>
+</html>

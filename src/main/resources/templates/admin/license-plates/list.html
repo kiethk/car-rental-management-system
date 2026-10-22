@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>License Plates & Registration — DriveNow Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container-fluid px-lg-5 my-4 flex-grow-1">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2">
+            <div th:replace="~{fragments/admin-sidebar :: sidebar(active='vehicles')}"></div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10">
+            <!-- Flash Messages -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show border-0 rounded-lg shadow-sm" role="alert">
+                <span th:text="${success}"></span>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show border-0 rounded-lg shadow-sm" role="alert">
+                <span th:text="${error}"></span>
+            </div>
+
+            <!-- Sub Nav Tabs -->
+            <ul class="nav nav-pills mb-4 bg-white p-2 rounded-xl border">
+                <li class="nav-item">
+                    <a class="nav-link font-weight-bold text-navy" th:href="@{/admin/vehicles}">Physical Fleet</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link font-weight-bold text-navy" th:href="@{/admin/vehicle-types}">Vehicle Models</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active font-weight-bold bg-navy text-white" th:href="@{/admin/license-plates}">License Plates & Registration</a>
+                </li>
+            </ul>
+
+            <!-- Page Header -->
+            <div class="mb-4">
+                <h1 class="h3 font-weight-bold text-navy mb-1">License Plates & Registration Expiry</h1>
+                <p class="text-muted small mb-0">Monitor safety inspection expiration dates for every vehicle to proactively schedule re-inspections before expiry.</p>
+            </div>
+
+            <!-- Stats KPI Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card border-0 shadow-sm rounded-xl p-3 bg-white">
+                        <span class="small font-weight-bold text-muted text-uppercase">Total Plates</span>
+                        <div class="h3 font-weight-bold text-navy mb-0 mt-1" th:text="${totalPlates}">0</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card border-0 shadow-sm rounded-xl p-3 bg-white border-left border-success" style="border-left-width: 4px !important;">
+                        <span class="small font-weight-bold text-success text-uppercase">Valid Registration</span>
+                        <div class="h3 font-weight-bold text-navy mb-0 mt-1" th:text="${validCount}">0</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card border-0 shadow-sm rounded-xl p-3 bg-white border-left border-warning" style="border-left-width: 4px !important;">
+                        <span class="small font-weight-bold text-warning text-uppercase">Expiring Soon (&le; 30 days)</span>
+                        <div class="h3 font-weight-bold text-navy mb-0 mt-1" th:text="${expiringSoonCount}">0</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card border-0 shadow-sm rounded-xl p-3 bg-white border-left border-danger" style="border-left-width: 4px !important;">
+                        <span class="small font-weight-bold text-danger text-uppercase">Expired Registration</span>
+                        <div class="h3 font-weight-bold text-navy mb-0 mt-1" th:text="${expiredCount}">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="card border-0 shadow-sm rounded-xl overflow-hidden bg-white">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-surface-2 text-navy small font-weight-bold">
+                            <tr>
+                                <th class="border-top-0 py-3">License Plate</th>
+                                <th class="border-top-0 py-3">Province</th>
+                                <th class="border-top-0 py-3">Assigned Vehicle</th>
+                                <th class="border-top-0 py-3">Vehicle Status</th>
+                                <th class="border-top-0 py-3">Registration Expiry</th>
+                                <th class="border-top-0 py-3 text-center">Status</th>
+                                <th class="border-top-0 py-3 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="p : ${plates}">
+                                <td>
+                                    <span class="badge badge-light border border-secondary px-2 py-1 font-weight-bold text-navy"
+                                          style="font-size: 0.95rem;"
+                                          th:text="${p.plate}">51A-123.45</span>
+                                </td>
+                                <td th:text="${p.province != null ? p.province : 'Not updated'}">Ho Chi Minh City</td>
+                                <td>
+                                    <span th:if="${p.vehicleId != null}" class="font-weight-bold text-navy">
+                                        <a th:href="@{/admin/vehicles/{id}/edit(id=${p.vehicleId})}" class="text-navy text-decoration-none"
+                                           th:text="'Vehicle #' + ${p.vehicleId} + ' (' + ${p.vehicleName} + ')'">
+                                            Vehicle #1 (Toyota Vios)
+                                        </a>
+                                    </span>
+                                    <span th:if="${p.vehicleId == null}" class="badge badge-secondary">Unassigned Pool</span>
+                                </td>
+                                <td>
+                                    <span th:if="${p.vehicleStatus == 'available'}" class="badge badge-success">Available</span>
+                                    <span th:if="${p.vehicleStatus == 'rented'}" class="badge badge-warning text-dark">Rented</span>
+                                    <span th:if="${p.vehicleStatus == 'maintenance'}" class="badge badge-secondary">Maintenance</span>
+                                    <span th:if="${p.vehicleStatus == 'unassigned'}" class="text-muted small">—</span>
+                                </td>
+                                <td>
+                                    <span class="font-weight-bold"
+                                          th:text="${p.registrationExpiry != null ? #temporals.format(p.registrationExpiry, 'yyyy-MM-dd') : 'No data'}">
+                                        2026-10-15
+                                    </span>
+                                    <small th:if="${p.daysRemaining != null and p.daysRemaining >= 0}" class="d-block text-muted"
+                                           th:text="${p.daysRemaining} + ' days left'">45 days left</small>
+                                    <small th:if="${p.daysRemaining != null and p.daysRemaining < 0}" class="d-block text-danger font-weight-bold"
+                                           th:text="'Expired ' + ${-p.daysRemaining} + ' days ago'">Expired 5 days ago</small>
+                                </td>
+                                <td class="text-center">
+                                    <span th:if="${p.expiryStatus == 'VALID'}" class="badge badge-success px-2 py-1">
+                                        Valid
+                                    </span>
+                                    <span th:if="${p.expiryStatus == 'EXPIRING_SOON'}" class="badge badge-warning text-dark px-2 py-1 font-weight-bold">
+                                        Expiring Soon
+                                    </span>
+                                    <span th:if="${p.expiryStatus == 'EXPIRED'}" class="badge badge-danger px-2 py-1 font-weight-bold">
+                                        Expired
+                                    </span>
+                                    <span th:if="${p.expiryStatus == 'UNKNOWN'}" class="badge badge-light border text-muted px-2 py-1">
+                                        Unknown
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-inline-flex gap-1">
+                                        <a th:if="${p.vehicleId != null}"
+                                           th:href="@{/admin/inspections/new(vehicleId=${p.vehicleId})}"
+                                           class="btn btn-outline-info btn-sm px-2 py-1" title="Schedule state registry inspection">
+                                            Inspection
+                                        </a>
+                                        <button type="button" class="btn btn-outline-primary btn-sm px-2 py-1"
+                                                th:attr="data-id=${p.id},data-plate=${p.plate},data-province=${p.province},data-expiry=${p.registrationExpiry}"
+                                                onclick="openQuickEdit(this)">
+                                            Edit Date
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Quick Edit Modal -->
+<div class="modal fade" id="quickEditModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg rounded-2xl">
+            <form id="quickEditForm" method="post" action="">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title font-weight-bold text-navy" id="modalTitle">Update Registration Expiry</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeModal()">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted mb-1">Registration Province / City</label>
+                        <input type="text" id="modalProvince" name="province" class="form-control rounded-lg">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold text-muted mb-1">New Registration Expiry Date</label>
+                        <input type="date" id="modalExpiry" name="registrationExpiry" class="form-control rounded-lg" required>
+                        <small class="form-text text-muted">Update according to the official registry sticker on the windshield.</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-lg" onclick="closeModal()">Close</button>
+                    <button type="submit" class="btn btn-navy font-weight-bold rounded-lg px-4 shadow-sm">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    function openQuickEdit(btn) {
+        var id = btn.getAttribute('data-id');
+        var plate = btn.getAttribute('data-plate');
+        var province = btn.getAttribute('data-province');
+        var expiry = btn.getAttribute('data-expiry');
+        document.getElementById('quickEditForm').action = '/admin/license-plates/' + id + '/quick-update';
+        document.getElementById('modalTitle').innerText = 'Update Plate: ' + plate;
+        document.getElementById('modalProvince').value = (province && province !== 'null') ? province : '';
+        document.getElementById('modalExpiry').value = (expiry && expiry !== 'null') ? expiry : '';
+        
+        var modal = document.getElementById('quickEditModal');
+        modal.classList.add('show');
+        modal.style.display = 'block';
+        document.body.classList.add('modal-open');
+    }
+
+    function closeModal() {
+        var modal = document.getElementById('quickEditModal');
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        document.body.classList.remove('modal-open');
+    }
+</script>
+
+</body>
+</html>
