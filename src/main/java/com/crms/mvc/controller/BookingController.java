@@ -28,6 +28,8 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
+import com.crms.mvc.entity.LicenseDocument;
+import com.crms.mvc.service.LicenseDocumentService;
 
 @Controller
 public class BookingController {
@@ -35,16 +37,19 @@ public class BookingController {
     private final SlotService slotService;
     private final PaymentService paymentService;
     private final VehicleTypeRepository vehicleTypeRepository;
+    private final LicenseDocumentService licenseDocumentService;
 
     public BookingController(
             BookingService bookingService,
             SlotService slotService,
             PaymentService paymentService,
-            VehicleTypeRepository vehicleTypeRepository) {
+            VehicleTypeRepository vehicleTypeRepository,
+            LicenseDocumentService licenseDocumentService) {
         this.bookingService = bookingService;
         this.slotService = slotService;
         this.paymentService = paymentService;
         this.vehicleTypeRepository = vehicleTypeRepository;
+        this.licenseDocumentService = licenseDocumentService;
     }
 
     // BƯỚC 1 & 2: Khách chọn ngày giờ nhận/trả -> Xem danh sách dòng xe khả dụng
@@ -221,9 +226,17 @@ public class BookingController {
         form.setStartTime(startTime);
         form.setEndTime(endTime);
 
+        LicenseDocument license = licenseDocumentService.getCustomerLicense(customerId);
+        boolean isLicenseVerified = licenseDocumentService.isCustomerVerified(customerId);
+        String licenseStatus = (license != null) ? license.getStatus() : "not_uploaded";
+        session.setAttribute("licenseStatus", licenseStatus);
+
         model.addAttribute("vehicleType", vt);
         model.addAttribute("bookingForm", form);
         model.addAttribute("availableCars", availableCars);
+        model.addAttribute("customerLicense", license);
+        model.addAttribute("isLicenseVerified", isLicenseVerified);
+        model.addAttribute("licenseStatus", licenseStatus);
         model.addAttribute("rentalHours", rentalHours);
         model.addAttribute("rentalDays", rentalDays);
         model.addAttribute("remainingHours", remainingHours);
@@ -241,6 +254,11 @@ public class BookingController {
                                 BindingResult result, HttpSession session, Model model, RedirectAttributes ra) {
         Long customerId = (Long) session.getAttribute("customerId");
         if (customerId == null) return "redirect:/login";
+
+        if (!licenseDocumentService.isCustomerVerified(customerId)) {
+            ra.addFlashAttribute("error", "You must have an approved driving license before completing a reservation. Please upload your driving license for verification.");
+            return "redirect:/licenses/my-license";
+        }
 
         if (result.hasErrors()) {
             ra.addFlashAttribute("error", "Invalid booking parameters.");

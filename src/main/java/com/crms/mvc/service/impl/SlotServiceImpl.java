@@ -45,7 +45,8 @@ public class SlotServiceImpl implements SlotService {
                 .filter(v -> v.getVehicleType().getId().equals(vehicleTypeId))
                 .toList();
 
-        List<Long> bookedVehicleIds = bookingRepository.findBookedVehicleIdsInTimeRange(startTime, endTime);
+        OffsetDateTime cutoffTime = OffsetDateTime.now().minusMinutes(15);
+        List<Long> bookedVehicleIds = bookingRepository.findBookedVehicleIdsInTimeRange(startTime, endTime, cutoffTime);
 
         return allVehiclesOfType.stream()
                 .filter(v -> !bookedVehicleIds.contains(v.getId()))

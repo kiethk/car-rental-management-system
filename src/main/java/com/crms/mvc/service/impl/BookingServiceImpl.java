@@ -64,6 +64,18 @@ public class BookingServiceImpl implements BookingService {
         VehicleType type = vehicleTypeRepository.findById(dto.getVehicleTypeId())
                 .orElseThrow(() -> new NoSuchElementException("VehicleType not found: " + dto.getVehicleTypeId()));
 
+        // 0. Tự động hủy các đơn pending quá hạn (15 phút) của toàn hệ thống
+        bookingRepository.cancelExpiredPendingBookings(OffsetDateTime.now().minusMinutes(15));
+
+        // 0.1 Nếu khách hàng này đã có đơn 'pending_payment' trong cùng khung giờ,
+        // tự động hủy đơn cũ để nhả xe cho đơn mới:
+        List<Booking> myOldPendingBookings = bookingRepository.findPendingBookingsByCustomerAndTimeRange(customerId, start, end);
+        for (Booking oldPending : myOldPendingBookings) {
+            oldPending.setStatus("cancelled");
+            oldPending.setCancelledAt(OffsetDateTime.now());
+            bookingRepository.save(oldPending);
+        }
+
         // 1. Kiểm tra xem có xe khả dụng trong khung giờ này không
         List<Vehicle> availableCars = slotService.findAvailableVehiclesInTimeRange(type.getId(), start, end);
         if (availableCars.isEmpty()) {
@@ -130,8 +142,9 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<BookingSummaryDTO> getMyBookings(Long customerId) {
+        bookingRepository.cancelExpiredPendingBookings(OffsetDateTime.now().minusMinutes(15));
         return bookingRepository.findByCustomerIdOrderByCreatedAtDesc(customerId).stream().map(b -> {
             BookingSummaryDTO s = new BookingSummaryDTO();
             s.setId(b.getId());
