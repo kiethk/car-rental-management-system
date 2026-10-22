@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Driving License</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container py-4">
+    <h1 class="mb-4">Driving License</h1>
+
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+    <div th:if="${param.submitted}" class="alert alert-success">Your license was submitted for review.</div>
+
+    <section th:if="${currentLicense != null}" class="card mb-4">
+        <div class="card-body">
+            <h2 class="h5">Current application</h2>
+            <p><strong>Status:</strong> <span th:text="${currentLicense.status}"></span></p>
+            <p><strong>License number:</strong> <span th:text="${currentLicense.licenseNumber}"></span></p>
+            <p><strong>License class:</strong> <span th:text="${currentLicense.licenseClass}"></span></p>
+            <p><strong>Expiry date:</strong> <span th:text="${currentLicense.licenseExpiry}"></span></p>
+            <p th:if="${currentLicense.rejectionReason != null}">
+                <strong>Rejection reason:</strong>
+                <span th:text="${currentLicense.rejectionReason}"></span>
+            </p>
+            <img th:src="@{/licenses/{id}/image(id=${currentLicense.id})}"
+                 alt="Uploaded driving license" class="img-fluid border rounded" style="max-height: 420px">
+        </div>
+    </section>
+
+    <section th:if="${currentLicense == null or currentLicense.status == 'rejected'}" class="card">
+        <div class="card-body">
+            <h2 class="h5" th:text="${currentLicense == null ? 'Submit your license' : 'Submit again'}"></h2>
+            <form th:action="@{/licenses}" th:object="${licenseForm}"
+                  method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="licenseNumber" class="form-label">License number</label>
+                    <input id="licenseNumber" type="text" th:field="*{licenseNumber}"
+                           class="form-control" required maxlength="50">
+                </div>
+                <div class="mb-3">
+                    <label for="licenseClass" class="form-label">License class</label>
+                    <input id="licenseClass" type="text" th:field="*{licenseClass}"
+                           class="form-control" required maxlength="20" placeholder="B1, B2, C...">
+                </div>
+                <div class="mb-3">
+                    <label for="licenseExpiry" class="form-label">Expiry date</label>
+                    <input id="licenseExpiry" type="date" th:field="*{licenseExpiry}"
+                           class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="licenseImage" class="form-label">Front image</label>
+                    <input id="licenseImage" type="file" th:field="*{licenseImage}"
+                           class="form-control" accept="image/jpeg,image/png,image/webp" required>
+                    <div class="form-text">JPEG, PNG, or WebP. Maximum size: 5 MB.</div>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit for review</button>
+            </form>
+        </div>
+    </section>
+</main>
+</body>
+</html>

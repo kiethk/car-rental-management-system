@@ -6,17 +6,10 @@
     <div class="max-w-7xl mx-auto px-5 sm:px-8">
         <div class="flex items-center justify-between h-18">
             
-            <!-- Logo matching car-rental-ui -->
+            <!-- Logo matching favicon -->
             <a th:href="@{/}" class="flex items-center gap-2.5 hover:opacity-90 transition-opacity text-decoration-none">
-                <div class="w-8 h-8 bg-navy rounded-md flex items-center justify-center flex-shrink-0">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-                        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-                    </svg>
-                </div>
-                <div>
-                    <div class="font-bold text-base leading-tight tracking-wide text-navy">DriveNow</div>
-                    <div class="text-xs text-amber font-medium tracking-wider uppercase leading-tight">Ho Chi Minh City</div>
-                </div>
+                <img th:src="@{/images/car-rental-logo.svg}" alt="DriveNow Logo" class="w-8 h-8 rounded-lg object-contain flex-shrink-0" width="32" height="32">
+                <span class="font-bold text-lg leading-none tracking-tight text-navy">DriveNow</span>
             </a>
 
             <!-- Desktop Nav -->
@@ -33,7 +26,7 @@
                     Admin Panel
                 </a>
 
-                <!-- License badge -->
+                <!-- License badge & Customer Profile/Logout -->
                 <th:block th:if="${session.customerId != null}">
                     <a th:if="${session.licenseStatus == 'approved'}" th:href="@{/licenses/my-license}" class="hidden sm:flex items-center gap-1.5 border rounded px-3 py-1 bg-emerald-50 border-emerald-200 text-emerald-700 text-xs font-medium text-decoration-none">
                         <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
@@ -48,9 +41,10 @@
                         <span>Upload License</span>
                     </a>
 
-                    <!-- User Name & Logout -->
+                    <!-- User Name, Profile & Logout -->
                     <div class="flex items-center gap-2">
                         <span class="text-sm font-medium text-navy hidden sm:inline" th:text="${session.customerName != null ? session.customerName : 'Account'}">User</span>
+                        <a th:href="@{/profile}" class="border border-border text-xs px-2.5 py-1.5 rounded text-muted-foreground hover:text-navy hover:bg-surface text-decoration-none">Profile</a>
                         <a th:href="@{/logout}" class="border border-border text-xs px-2.5 py-1.5 rounded text-muted-foreground hover:text-navy hover:bg-surface text-decoration-none">Logout</a>
                     </div>
                 </th:block>
@@ -60,6 +54,7 @@
                     <div class="flex items-center gap-2">
                         <span class="bg-amber-50 text-amber-800 text-xs px-2 py-0.5 rounded font-medium" th:text="${session.employeeRole}">Staff</span>
                         <span class="text-sm font-medium text-navy hidden sm:inline" th:text="${session.employeeName}">Staff</span>
+                        <a th:href="@{/admin/password}" class="border border-border text-xs px-2.5 py-1.5 rounded text-muted-foreground hover:text-navy hover:bg-surface text-decoration-none">Change Password</a>
                         <a th:href="@{/logout}" class="border border-border text-xs px-2.5 py-1.5 rounded text-muted-foreground hover:text-navy hover:bg-surface text-decoration-none">Logout</a>
                     </div>
                 </th:block>

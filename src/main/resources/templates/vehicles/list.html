@@ -82,7 +82,7 @@
 
     <!-- Empty State -->
     <div th:if="${#lists.isEmpty(vehicles)}" class="card card-drivenow border-0 p-5 text-center my-4">
-        <div class="text-muted h4 mb-2">🚗 No cars found</div>
+        <div class="text-muted h4 mb-2">🚗 Không tìm thấy xe.</div>
         <p class="text-muted small">Try a different keyword or clear your search filter.</p>
         <div>
             <a th:href="@{/vehicles}" class="btn btn-navy btn-sm">View All Cars</a>

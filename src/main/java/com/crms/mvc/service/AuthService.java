@@ -1,6 +1,7 @@
 package com.crms.mvc.service;
-import com.crms.mvc.entity.Customer;
-import java.util.Optional;
+
+import com.crms.mvc.dto.LoginIdentityDTO;
+
 public interface AuthService {
-    Optional<Customer> login(String email, String password);
+    LoginIdentityDTO login(String email, String password);
 }
