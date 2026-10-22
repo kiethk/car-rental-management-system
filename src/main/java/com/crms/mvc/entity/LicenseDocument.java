@@ -12,7 +12,7 @@ public class LicenseDocument {
     @Column(name = "license_document_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
@@ -43,6 +43,25 @@ public class LicenseDocument {
 
     @Column(name = "reviewed_at")
     private OffsetDateTime reviewedAt;
+
+    public LicenseDocument() {
+    }
+
+    public LicenseDocument(Customer customer,
+                           String licenseNumber,
+                           String licenseClass,
+                           LocalDate licenseExpiry,
+                           String licenseImageUrl,
+                           String status,
+                           OffsetDateTime submittedAt) {
+        this.customer = customer;
+        this.licenseNumber = licenseNumber;
+        this.licenseClass = licenseClass;
+        this.licenseExpiry = licenseExpiry;
+        this.licenseImageUrl = licenseImageUrl;
+        this.status = status;
+        this.submittedAt = submittedAt;
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

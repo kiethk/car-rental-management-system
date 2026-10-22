@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Profile</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container py-4">
+    <h1 class="h3 mb-4">My Profile</h1>
+
+    <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Account Information</h2>
+                    <form method="post" th:action="@{/profile}" th:object="${profileForm}">
+                        <div class="form-group">
+                            <label for="name">Full name</label>
+                            <input id="name" type="text" th:field="*{name}" class="form-control" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input id="email" type="email" th:field="*{email}" class="form-control" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone number</label>
+                            <input id="phone" type="tel" th:field="*{phone}" class="form-control"
+                                   th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'"
+                                   pattern="(0[0-9]{9}|\+84[0-9]{9})" maxlength="13" required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('phone')}"
+                                 th:errors="*{phone}"></div>
+                        </div>
+
+                        <button class="btn btn-primary" type="submit">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Change Password</h2>
+                    <div class="alert alert-danger" th:if="${passwordError}" th:text="${passwordError}"></div>
+
+                    <form method="post" th:action="@{/profile/password}" th:object="${passwordForm}">
+                        <div class="form-group">
+                            <label for="currentPassword">Current password</label>
+                            <input id="currentPassword" type="password" th:field="*{currentPassword}"
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('currentPassword')} ? 'is-invalid'"
+                                   maxlength="255" required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('currentPassword')}"
+                                 th:errors="*{currentPassword}"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newPassword">New password</label>
+                            <input id="newPassword" type="password" th:field="*{newPassword}"
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('newPassword')} ? 'is-invalid'"
+                                   maxlength="255" required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('newPassword')}"
+                                 th:errors="*{newPassword}"></div>
+                        </div>
+
+                        <button class="btn btn-primary" type="submit">Change Password</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

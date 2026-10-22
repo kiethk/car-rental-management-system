@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Review Driving License</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container py-4">
+    <a th:href="@{/admin/licenses}" class="btn btn-outline-secondary btn-sm mb-3">Back to list</a>
+    <h1 class="h3 mb-4">Review Driving License</h1>
+
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <div class="row">
+        <div class="col-lg-5 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h5">Customer and license details</h2>
+                    <p><strong>Customer:</strong> <span th:text="${license.customer.name}"></span></p>
+                    <p><strong>Email:</strong> <span th:text="${license.customer.email}"></span></p>
+                    <p><strong>Phone:</strong> <span th:text="${license.customer.phone}"></span></p>
+                    <p><strong>License number:</strong> <span th:text="${license.licenseNumber}"></span></p>
+                    <p><strong>Class:</strong> <span th:text="${license.licenseClass}"></span></p>
+                    <p><strong>Expiry date:</strong> <span th:text="${license.licenseExpiry}"></span></p>
+                    <p><strong>Submitted:</strong> <span th:text="${license.submittedAt}"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7 mb-3">
+            <img th:src="@{/licenses/{id}/image(id=${license.id})}"
+                 alt="Customer driving license" class="img-fluid border rounded">
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <h2 class="h5">Review decision</h2>
+            <form method="post" th:action="@{/admin/licenses/{id}/review(id=${license.id})}"
+                  th:object="${approvalForm}">
+                <div class="mb-3">
+                    <label for="rejectionReason" class="form-label">Rejection reason (required when rejecting)</label>
+                    <textarea id="rejectionReason" th:field="*{rejectionReason}"
+                              class="form-control" rows="3" maxlength="500"></textarea>
+                    <div class="text-danger" th:if="${#fields.hasErrors('rejectionReason')}"
+                         th:errors="*{rejectionReason}"></div>
+                </div>
+                <div class="mb-2">
+                    <button type="submit" name="decision" value="approved" class="btn btn-success mr-2">
+                        Approve
+                    </button>
+                    <button type="submit" name="decision" value="rejected" class="btn btn-danger">
+                        Reject
+                    </button>
+                </div>
+                <div class="text-danger mt-2" th:if="${#fields.hasErrors('decision')}"
+                     th:errors="*{decision}"></div>
+            </form>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>
