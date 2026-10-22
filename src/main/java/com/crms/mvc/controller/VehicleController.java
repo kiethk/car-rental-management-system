@@ -12,7 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class VehicleController {
     private final VehicleService vehicleService;
     public VehicleController(VehicleService vehicleService) { this.vehicleService = vehicleService; }
-    @GetMapping({"/", "/vehicles"})
+    @GetMapping("/vehicles")
     public String list(@RequestParam(defaultValue = "") String keyword, Model model) {
         model.addAttribute("vehicles", vehicleService.search(keyword));
         model.addAttribute("keyword", keyword);

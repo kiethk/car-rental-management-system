@@ -1,23 +1,41 @@
 /* Custom extension styles for CRMS Thymeleaf */
 :root {
-  --color-navy: #202a35;
-  --color-navy-dark: #151c24;
-  --color-navy-light: #344150;
-  --color-amber: #b45309;
-  --color-amber-light: #fbd8a2;
-  --color-amber-dark: #92400e;
-  --color-surface: #f6f7f8;
-  --color-surface-2: #eef0f2;
-  --color-border: #dce1e5;
-  --color-muted-foreground: #5f6b7a;
+  --color-navy: #1e293b;
+  --color-navy-dark: #0f172a;
+  --color-navy-light: #334155;
+  --color-amber: #ea580c;
+  --color-amber-light: #ffedd5;
+  --color-amber-dark: #c2410c;
+  --color-surface: #f8fafc;
+  --color-surface-2: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-muted-foreground: #64748b;
+  --radius-card: 0.875rem;
+}
+
+html, body {
+  height: 100%;
 }
 
 body {
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--color-surface);
   color: var(--color-navy);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
+main {
+  flex: 1 0 auto;
+}
+
+footer {
+  margin-top: auto !important;
+}
+
+/* Color overrides */
 .bg-navy { background-color: var(--color-navy) !important; }
 .bg-navy-dark { background-color: var(--color-navy-dark) !important; }
 .text-navy { color: var(--color-navy) !important; }
@@ -25,40 +43,400 @@ body {
 .text-amber { color: var(--color-amber) !important; }
 .border-amber { border-color: var(--color-amber) !important; }
 
+/* Slate fallbacks for Tailwind classes */
+.bg-slate-900 { background-color: #0f172a !important; }
+.bg-slate-800 { background-color: #1e293b !important; }
+.bg-slate-100 { background-color: #f1f5f9 !important; }
+.bg-slate-50 { background-color: #f8fafc !important; }
+.text-slate-900 { color: #0f172a !important; }
+.text-slate-800 { color: #1e293b !important; }
+.text-slate-700 { color: #334155 !important; }
+.text-slate-600 { color: #475569 !important; }
+.text-slate-500 { color: #64748b !important; }
+.text-slate-400 { color: #94a3b8 !important; }
+.border-slate-200 { border-color: #e2e8f0 !important; }
+.border-slate-300 { border-color: #cbd5e1 !important; }
+.border-slate-400 { border-color: #94a3b8 !important; }
+.border-slate-900 { border-color: #0f172a !important; }
+
+/* Strict SVG sizing guards to avoid oversized SVG icons */
+svg.w-3, .w-3 { width: 12px !important; height: 12px !important; min-width: 12px; }
+svg.w-3\.5, .w-3\.5 { width: 14px !important; height: 14px !important; min-width: 14px; }
+svg.w-4, .w-4 { width: 16px !important; height: 16px !important; min-width: 16px; }
+svg.w-5, .w-5 { width: 20px !important; height: 20px !important; min-width: 20px; }
+svg.w-6, .w-6 { width: 24px !important; height: 24px !important; min-width: 24px; }
+
+/* Dedicated Car Card Row layout */
+.car-card-row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+.car-card-row:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.08);
+}
+.car-card-img-wrap {
+  width: 270px;
+  min-width: 270px;
+  max-width: 270px;
+  height: 190px;
+  position: relative;
+  overflow: hidden;
+  background: #f1f5f9;
+  flex-shrink: 0;
+}
+.car-card-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+@media (max-width: 640px) {
+  .car-card-row {
+    flex-direction: column;
+  }
+  .car-card-img-wrap {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    height: 180px;
+  }
+}
+
+/* shadcn-inspired button styles */
 .btn-navy {
-  background-color: var(--color-navy);
+  background-color: #0f172a;
   color: #ffffff;
-  border: 1px solid var(--color-navy);
+  border: 1px solid #0f172a;
   font-weight: 500;
-  border-radius: 0.375rem;
-  transition: all 0.2s ease-in-out;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 .btn-navy:hover {
-  background-color: var(--color-navy-dark);
+  background-color: #1e293b;
+  border-color: #1e293b;
   color: #ffffff;
 }
 
 .btn-amber {
-  background-color: var(--color-amber);
+  background-color: #ea580c;
   color: #ffffff;
-  border: 1px solid var(--color-amber);
-  font-weight: 500;
-  border-radius: 0.375rem;
-  transition: all 0.2s ease-in-out;
+  border: 1px solid #ea580c;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(234, 88, 12, 0.2);
 }
 .btn-amber:hover {
-  background-color: var(--color-amber-dark);
+  background-color: #c2410c;
+  border-color: #c2410c;
   color: #ffffff;
 }
 
-.card-drivenow {
-  background: #ffffff;
-  border: 1px solid var(--color-border);
+.btn-outline-shadcn {
+  background-color: #ffffff;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+  font-weight: 500;
   border-radius: 0.5rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  transition: all 0.15s ease;
+  cursor: pointer;
 }
-.card-drivenow:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+.btn-outline-shadcn:hover {
+  background-color: #f8fafc;
+  border-color: #0f172a;
+  color: #0f172a;
 }
+.btn-outline-shadcn.active {
+  background-color: #0f172a;
+  border-color: #0f172a;
+  color: #ffffff;
+}
+
+/* shadcn Card */
+.card-shadcn {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-card);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.card-shadcn:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.06), 0 2px 6px -2px rgba(0, 0, 0, 0.04);
+}
+
+/* shadcn Input */
+.input-shadcn {
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #0f172a;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.input-shadcn:focus {
+  outline: none;
+  border-color: #0f172a;
+  box-shadow: 0 0 0 1px #0f172a;
+}
+
+/* Monospace Plate Badge */
+.plate-badge {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.05em;
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.375rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.plate-badge-light {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.05em;
+  background: #f1f5f9;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.375rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.h-18 {
+  height: 4.5rem;
+}
+
+.shadow-xs {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.font-heading {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.font-mono-data {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   shadcn/ui Custom Date & Time Picker Popovers (Dark theme matching screenshot)
+   ========================================================================== */
+.popover-shadcn {
+  animation: popoverFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top;
+}
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.calendar-card-light {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.875rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 4px 10px -6px rgba(0, 0, 0, 0.08);
+  color: #0f172a;
+  width: 272px;
+}
+
+.cal-dark-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.625rem;
+}
+
+.cal-dark-title {
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: -0.01em;
+}
+
+.cal-nav-btn {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  color: #64748b;
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cal-nav-btn:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.cal-dark-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 0.375rem;
+}
+
+.cal-dark-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 2px;
+  column-gap: 1px;
+}
+
+.cal-dark-day-btn {
+  height: 30px;
+  width: 30px;
+  margin: 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+.cal-dark-day-btn:hover:not(:disabled):not(.selected) {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+.cal-dark-day-btn.other-month {
+  color: #cbd5e1 !important;
+}
+.cal-dark-day-btn.other-month:hover:not(:disabled):not(.selected) {
+  background-color: #f8fafc;
+  color: #94a3b8 !important;
+}
+.cal-dark-day-btn.selected {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  font-weight: 600;
+}
+.cal-dark-day-btn.today:not(.selected) {
+  border-color: #94a3b8;
+  font-weight: 700;
+  color: #0f172a;
+}
+.cal-dark-day-btn:disabled, .cal-dark-day-btn.disabled {
+  color: #cbd5e1 !important;
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Preset buttons at the bottom of the calendar card */
+.cal-preset-footer {
+  margin-top: 0.625rem;
+  padding-top: 0.625rem;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+.cal-preset-row {
+  display: flex;
+  gap: 0.375rem;
+  width: 100%;
+}
+.cal-preset-btn {
+  flex: 1;
+  padding: 0.35rem 0.375rem;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  color: #475569;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cal-preset-btn:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+.cal-preset-btn.active {
+  background-color: #0f172a;
+  border-color: #0f172a;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Light Hour Picker Popover */
+.hour-card-dark {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 4px 10px -6px rgba(0, 0, 0, 0.08);
+  padding: 0.25rem;
+}
+.hour-option-dark {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.625rem;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+.hour-option-dark:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+.hour-option-dark.selected {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  font-weight: 600;
+}
+
 

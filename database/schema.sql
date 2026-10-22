@@ -102,12 +102,7 @@ CREATE TABLE slots (
     status VARCHAR(30) NOT NULL,
     CHECK (start_time < end_time),
     CHECK (capacity > 0),
-    CHECK (status IN ('open','closed')),
-    UNIQUE (vehicle_type_id, start_time, end_time),
-    EXCLUDE USING gist (
-        vehicle_type_id WITH =,
-        tstzrange(start_time, end_time) WITH &&
-    )
+    CHECK (status IN ('open','closed'))
 );
 
 CREATE TABLE bookings (

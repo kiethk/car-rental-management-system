@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DriveNow — Self-Drive Car Rental in Ho Chi Minh City</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="bg-surface text-navy min-h-screen flex flex-col">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="flex-1 bg-white">
+
+    <!-- Hero Section -->
+    <section class="border-b border-border">
+        <div class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:py-14">
+            <div class="grid items-center gap-8 lg:grid-cols-2 lg:gap-16">
+                <div>
+                    <p class="mb-5 text-xs font-semibold uppercase tracking-widest text-amber">
+                        Car rental / Ho Chi Minh City
+                    </p>
+                    <h1 class="font-heading text-4xl leading-[1.12] text-navy sm:text-5xl lg:text-[56px]">
+                        Your next journey.
+                        <br />
+                        <span class="text-muted-foreground">On your terms.</span>
+                    </h1>
+                    <p class="mt-6 max-w-md text-base leading-7 text-muted-foreground">
+                        A car for your plans, for as long as you need. Choose your
+                        hours, pick up at our warehouse, and make the city yours.
+                    </p>
+                    <div class="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm text-navy">
+                        <span class="inline-flex items-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m5 12 4 4L19 6"/></svg>
+                            Hourly rentals
+                        </span>
+                        <span class="inline-flex items-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m5 12 4 4L19 6"/></svg>
+                            Clear pricing
+                        </span>
+                        <span class="inline-flex items-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m5 12 4 4L19 6"/></svg>
+                            Local pickup
+                        </span>
+                    </div>
+                </div>
+
+                <figure class="overflow-hidden rounded-lg border border-border bg-surface">
+                    <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1100&h=700&fit=crop&auto=format"
+                         alt="Car ready for a city journey" class="aspect-[11/7] w-full object-cover">
+                    <figcaption class="flex items-center justify-between gap-3 border-t border-border bg-surface px-4 py-3 text-xs text-muted-foreground">
+                        <span>Self-drive. Your own pace.</span>
+                        <span>DriveNow / HCMC</span>
+                    </figcaption>
+                </figure>
+            </div>
+
+            <!-- Modern Rental Schedule Component (shadcn/ui style Custom Date & Hour Picker) -->
+            <div class="mt-10">
+                <div th:replace="~{fragments/rental-search-form :: rentalSearchForm(
+                    title='Select Rental Schedule',
+                    buttonText='Search Cars',
+                    formId='home-rental-schedule-form'
+                )}"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="border-b border-border py-12 sm:py-16">
+        <div class="mx-auto max-w-7xl px-5 sm:px-8">
+            <h2 class="font-heading text-2xl text-navy sm:text-3xl mb-8">How it works</h2>
+            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="rounded-lg border border-border bg-white p-6">
+                    <span class="font-mono text-2xl font-bold text-amber">01</span>
+                    <h3 class="mt-3 text-base font-semibold text-navy">Find your car</h3>
+                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Choose a vehicle and the rental hours that suit your travel plans.</p>
+                </div>
+                <div class="rounded-lg border border-border bg-white p-6">
+                    <span class="font-mono text-2xl font-bold text-amber">02</span>
+                    <h3 class="mt-3 text-base font-semibold text-navy">Confirm booking</h3>
+                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Pick preferred plate, verify license, and pay the security deposit.</p>
+                </div>
+                <div class="rounded-lg border border-border bg-white p-6">
+                    <span class="font-mono text-2xl font-bold text-amber">03</span>
+                    <h3 class="mt-3 text-base font-semibold text-navy">Pick up & go</h3>
+                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Collect your sanitized car at our central Bình Thạnh warehouse.</p>
+                </div>
+                <div class="rounded-lg border border-border bg-white p-6">
+                    <span class="font-mono text-2xl font-bold text-amber">04</span>
+                    <h3 class="mt-3 text-base font-semibold text-navy">Return with ease</h3>
+                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Return on time, complete quick checkout, and receive your deposit refund.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Fleet Section -->
+    <section class="py-12 sm:py-16 bg-surface">
+        <div class="mx-auto max-w-7xl px-5 sm:px-8">
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h2 class="font-heading text-2xl text-navy sm:text-3xl">Featured Fleet</h2>
+                    <p class="text-sm text-muted-foreground mt-1">Explore popular vehicle models available in Ho Chi Minh City</p>
+                </div>
+                <a th:href="@{/search}" class="text-sm font-semibold text-amber hover:underline">View all fleet →</a>
+            </div>
+
+            <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div th:each="vt : ${featuredVehicles}" class="rounded-lg border border-border bg-white overflow-hidden hover:border-amber/40 transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="h-48 bg-surface-2 overflow-hidden">
+                            <img th:if="${vt.name.contains('CR-V')}" src="https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&h=500&fit=crop&auto=format" class="w-full h-full object-cover" th:alt="${vt.name}">
+                            <img th:if="${vt.name.contains('VF8')}" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=500&fit=crop&auto=format" class="w-full h-full object-cover" th:alt="${vt.name}">
+                            <img th:if="${!vt.name.contains('CR-V') and !vt.name.contains('VF8')}" src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&h=500&fit=crop&auto=format" class="w-full h-full object-cover" th:alt="${vt.name}">
+                        </div>
+                        <div class="p-5">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs uppercase font-medium bg-surface px-2 py-0.5 rounded text-muted-foreground" th:text="${vt.category}">Sedan</span>
+                                <span class="text-xs text-muted-foreground" th:text="${vt.seats + ' seats · ' + vt.transmission}">5 seats</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-navy" th:text="${vt.brand + ' ' + vt.name}">Toyota Vios</h3>
+                            <p class="text-xs text-muted-foreground mt-1 line-clamp-2" th:text="${vt.description}">Reliable performance</p>
+                        </div>
+                    </div>
+                    <div class="p-5 pt-0 border-t border-border mt-3 flex justify-between items-center">
+                        <div>
+                            <div class="text-lg font-bold text-amber">
+                                <span th:text="${#numbers.formatDecimal(vt.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span> đ
+                            </div>
+                            <div class="text-xs text-muted-foreground">per hour</div>
+                        </div>
+                        <a th:href="@{/search}" class="bg-navy hover:bg-navy-light text-white text-xs font-semibold px-4 py-2 rounded-md transition-all text-decoration-none">
+                            Rent Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

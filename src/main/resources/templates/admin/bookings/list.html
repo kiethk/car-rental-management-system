@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Bookings — DriveNow</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container-fluid px-lg-5 my-4 flex-grow-1">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2">
+            <div th:replace="~{fragments/admin-sidebar :: sidebar(active='bookings')}"></div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10">
+            <div class="card card-drivenow border-0 p-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
+                    <div>
+                        <h1 class="h4 font-weight-bold text-navy mb-1">Rental Bookings Dispatcher</h1>
+                        <p class="text-muted small mb-0">Oversee customer reservations, assign physical fleet, process branch handovers.</p>
+                    </div>
+
+                    <!-- Status Filter Tabs -->
+                    <div class="btn-group btn-group-sm mt-3 mt-md-0">
+                        <a th:href="@{/admin/bookings(status='all')}" th:class="'btn ' + (${currentStatus == 'all' or currentStatus == null} ? 'btn-navy' : 'btn-outline-secondary')">All</a>
+                        <a th:href="@{/admin/bookings(status='pending_payment')}" th:class="'btn ' + (${currentStatus == 'pending_payment'} ? 'btn-navy' : 'btn-outline-secondary')">Pending Deposit</a>
+                        <a th:href="@{/admin/bookings(status='confirmed')}" th:class="'btn ' + (${currentStatus == 'confirmed'} ? 'btn-navy' : 'btn-outline-secondary')">Confirmed</a>
+                        <a th:href="@{/admin/bookings(status='active')}" th:class="'btn ' + (${currentStatus == 'active'} ? 'btn-navy' : 'btn-outline-secondary')">Active Trips</a>
+                        <a th:href="@{/admin/bookings(status='completed')}" th:class="'btn ' + (${currentStatus == 'completed'} ? 'btn-navy' : 'btn-outline-secondary')">Completed</a>
+                    </div>
+                </div>
+
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                <div class="table-responsive" th:unless="${#lists.isEmpty(bookings)}">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>#ID</th>
+                                <th>Customer</th>
+                                <th>Vehicle Type</th>
+                                <th>Assigned Plate</th>
+                                <th>Pickup Schedule</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="b : ${bookings}">
+                                <td class="font-weight-bold text-navy">#<span th:text="${b.id}">1</span></td>
+                                <td>
+                                    <strong class="d-block" th:text="${b.customerName}">Nguyễn Văn Khách</strong>
+                                </td>
+                                <td th:text="${b.vehicleTypeName}">Toyota Vios</td>
+                                <td>
+                                    <span class="badge badge-light border" th:text="${b.licensePlate}">51A-123.45</span>
+                                </td>
+                                <td class="small" th:text="${#temporals.format(b.pickupTime, 'dd/MM/yyyy HH:mm')}">Date</td>
+                                <td class="text-center">
+                                    <span th:if="${b.status == 'pending_payment'}" class="badge badge-warning px-2 py-1">Pending Deposit</span>
+                                    <span th:if="${b.status == 'confirmed'}" class="badge badge-info px-2 py-1">Confirmed</span>
+                                    <span th:if="${b.status == 'active'}" class="badge badge-primary px-2 py-1">Active</span>
+                                    <span th:if="${b.status == 'completed'}" class="badge badge-success px-2 py-1">Completed</span>
+                                    <span th:if="${b.status == 'cancelled'}" class="badge badge-secondary px-2 py-1">Cancelled</span>
+                                </td>
+                                <td class="text-center">
+                                    <a th:href="@{/admin/bookings/{id}(id=${b.id})}" class="btn btn-sm btn-navy px-3">
+                                        Manage
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${#lists.isEmpty(bookings)}" class="text-center py-5 text-muted">
+                    No bookings found matching current filter.
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>
+
