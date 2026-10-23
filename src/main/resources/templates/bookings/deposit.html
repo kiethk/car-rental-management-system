@@ -8,13 +8,51 @@
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
             rel="stylesheet"
         />
         <link rel="stylesheet" th:href="@{/css/drivenow.css}" />
         <link rel="stylesheet" th:href="@{/css/app.css}" />
+        <style>
+            .btn-vnpay-primary {
+                background-color: #ea580c !important;
+                color: #ffffff !important;
+                border: 1px solid #ea580c !important;
+                border-radius: 12px !important;
+                font-weight: 700 !important;
+                transition: all 0.15s ease !important;
+                cursor: pointer !important;
+            }
+            .btn-vnpay-primary:hover {
+                background-color: #c2410c !important;
+                border-color: #c2410c !important;
+                box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25) !important;
+            }
+            .sandbox-card {
+                background: linear-gradient(135deg, #090d16 0%, #172136 100%);
+                border: 1px solid #27354f;
+                border-radius: 14px;
+                padding: 18px 20px;
+                color: #ffffff;
+                box-shadow: 0 4px 16px rgba(9, 13, 22, 0.2);
+            }
+            .copy-pill {
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                color: #cbd5e1;
+                border-radius: 6px;
+                padding: 3px 8px;
+                font-size: 11px;
+                cursor: pointer;
+                transition: all 0.15s ease;
+            }
+            .copy-pill:hover {
+                background: rgba(255, 255, 255, 0.18);
+                color: #ffffff;
+            }
+        </style>
     </head>
-    <body class="bg-surface text-navy min-h-screen flex flex-col">
+    <body class="bg-surface text-navy min-h-screen flex flex-col font-sans">
         <div th:replace="~{fragments/header :: header}"></div>
 
         <main class="flex-1">
@@ -42,7 +80,7 @@
                             <h1 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900">Deposit Payment</h1>
                         </div>
 
-                        <!-- Stepper -->
+                        <!-- 3-Step Breadcrumb Progress -->
                         <div class="flex items-center gap-2 text-xs">
                             <span class="inline-flex items-center gap-1 text-slate-500 font-medium">
                                 <svg
@@ -73,7 +111,7 @@
                             <span
                                 class="inline-flex items-center gap-1.5 font-bold text-slate-900 bg-slate-100 px-3 py-1 rounded-full border border-slate-300"
                             >
-                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                                 Deposit
                             </span>
                         </div>
@@ -83,8 +121,9 @@
 
             <!-- Main Content Container -->
             <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+                <!-- Alert Banner -->
                 <div
-                    th:if="${error}"
+                    th:if="${error != null or param.error != null}"
                     class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center gap-2"
                 >
                     <svg
@@ -98,27 +137,32 @@
                         <line x1="12" y1="8" x2="12" y2="12" />
                         <line x1="12" y1="16" x2="12.01" y2="16" />
                     </svg>
-                    <span th:text="${error}">Error message</span>
+                    <span th:text="${error != null ? error : param.error}">Error message</span>
                 </div>
 
                 <div class="checkout-grid">
-                    <!-- Left Column (3 cols): Balanced & Refined VietQR Payment Interface -->
+                    <!-- Left Column (3 cols): Dedicated VNPay Payment Terminal -->
                     <div class="lg:col-span-3 space-y-6">
-                        <div class="checkout-section space-y-5">
-                            <!-- Header -->
+                        <div class="checkout-section space-y-6">
+                            <!-- Card Header & Reservation Holding Countdown -->
                             <div
                                 class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-slate-100"
                             >
-                                <div>
-                                    <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                                        <span>Bank Transfer</span>
-                                    </h2>
+                                <div class="flex items-center gap-3">
+                                    <span
+                                        class="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-xs font-black tracking-tight inline-flex items-center"
+                                    >
+                                        <span style="color: #005baa">VN</span><span style="color: #ed1c24">PAY</span>
+                                    </span>
+                                    <div>
+                                        <h2 class="text-base font-bold text-slate-900 leading-tight">
+                                            VNPay Payment Gateway
+                                        </h2>
+                                    </div>
                                 </div>
-                                <!-- Countdown Hold Reservation Timer -->
                                 <div
-                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-200/80 shadow-2xs self-start sm:self-auto"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-200/80 shadow-2xs self-start sm:self-auto"
                                 >
-                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                                     <span
                                         >Holding vehicle:
                                         <strong id="depositTimer" class="font-mono text-amber-950 font-bold"
@@ -128,178 +172,146 @@
                                 </div>
                             </div>
 
-                            <!-- Balanced 2-Column Split: QR Frame on Left, Clean Seamless Details on Right -->
-                            <div class="deposit-payment-body">
-                                <!-- Left: QR Card (Fixed 230px, Scannable & Centered) -->
-                                <div class="deposit-qr-col">
-                                    <div class="deposit-qr-card">
-                                        <div class="deposit-qr-frame">
-                                            <img
-                                                th:src="@{'https://img.vietqr.io/image/VCB-9327019694-compact2.png?amount=' + ${booking.depositAmount.longValue()} + '&addInfo=DRIVENOW%20' + ${booking.id} + '&accountName=HUYNH%20KHAC%20KIET'}"
-                                                alt="VietQR Deposit Code"
-                                                class="deposit-qr-img"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Right: Seamless Beneficiary Details (No boxes, no "ô ô") -->
-                                <div class="deposit-info-col">
-                                    <div class="deposit-info-list">
-                                        <!-- Bank -->
-                                        <div class="deposit-info-row">
-                                            <span class="text-slate-500 font-medium">Bank</span>
-                                            <span class="font-bold text-slate-900">Vietcombank (VCB)</span>
-                                        </div>
-
-                                        <!-- Account Holder -->
-                                        <div class="deposit-info-row">
-                                            <span class="text-slate-500 font-medium">Account Name</span>
-                                            <span class="font-bold text-slate-900">HUYNH KHAC KIET</span>
-                                        </div>
-
-                                        <!-- Account Number with Clean Copy Icon -->
-                                        <div class="deposit-info-row">
-                                            <span class="text-slate-500 font-medium">Account Number</span>
-                                            <div class="flex items-center gap-1.5">
-                                                <span class="font-mono font-bold text-slate-900 text-sm tracking-wide"
-                                                    >9327019694</span
-                                                >
-                                                <button
-                                                    type="button"
-                                                    title="Copy account number"
-                                                    onclick="copyToClipboard('9327019694', this)"
-                                                    class="deposit-copy-btn"
-                                                >
-                                                    <svg
-                                                        class="w-3.5 h-3.5"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        stroke-width="2"
-                                                    >
-                                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                                                        <path
-                                                            d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Deposit Due with Clean Copy Icon -->
-                                        <div class="deposit-info-row">
-                                            <span class="text-slate-500 font-medium">Deposit Due (50%)</span>
-                                            <div class="flex items-center gap-1.5">
-                                                <span class="font-extrabold text-slate-900 text-sm">
-                                                    <span
-                                                        th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}"
-                                                        >675,000</span
-                                                    >
-                                                    đ
-                                                </span>
-                                                <button
-                                                    type="button"
-                                                    title="Copy amount"
-                                                    th:data-amount="${booking.depositAmount.longValue()}"
-                                                    onclick="copyToClipboard(this.getAttribute('data-amount'), this)"
-                                                    class="deposit-copy-btn"
-                                                >
-                                                    <svg
-                                                        class="w-3.5 h-3.5"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        stroke-width="2"
-                                                    >
-                                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                                                        <path
-                                                            d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Transfer Memo with Clean Copy Icon -->
-                                        <div class="deposit-info-row">
-                                            <span class="text-slate-500 font-medium">Transfer Memo</span>
-                                            <div class="flex items-center gap-1.5">
-                                                <span
-                                                    class="font-mono font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60 text-xs"
-                                                    th:text="'DRIVENOW ' + ${booking.id}"
-                                                    >DRIVENOW 7</span
-                                                >
-                                                <button
-                                                    type="button"
-                                                    title="Copy transfer memo"
-                                                    th:data-memo="'DRIVENOW ' + ${booking.id}"
-                                                    onclick="copyToClipboard(this.getAttribute('data-memo'), this)"
-                                                    class="deposit-copy-btn text-amber-700 hover:bg-amber-50"
-                                                >
-                                                    <svg
-                                                        class="w-3.5 h-3.5"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        stroke-width="2"
-                                                    >
-                                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                                                        <path
-                                                            d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Concise 1-Line 3-Step Guide (No border, seamless text strip) -->
+                            <!-- Deposit Due Callout Strip -->
                             <div
-                                class="flex flex-wrap items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-100"
+                                class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3 pb-4 border-b border-slate-100"
                             >
-                                <span class="inline-flex items-center gap-1.5 font-medium">
-                                    <span
-                                        class="w-4 h-4 rounded-full bg-slate-100 text-slate-600 font-bold text-[10px] flex items-center justify-center"
-                                        >1</span
+                                <div>
+                                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400"
+                                        >Security Deposit Required (50%)</span
                                     >
-                                    Open banking app
+                                    <div class="text-3xl font-extrabold text-slate-900 tracking-tight mt-0.5 font-mono">
+                                        <span
+                                            th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}"
+                                            >675,000</span
+                                        >
+                                        <span class="text-lg font-bold text-slate-400">đ</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Accepted Payment Channels Strip -->
+                            <div class="flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                                <span class="text-slate-400 text-[11px] font-medium mr-1">Accepted channels:</span>
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-700 bg-slate-50 border border-slate-200"
+                                >
+                                    <span class="font-bold text-[10px]" style="color: #005baa">VNPAY-QR</span>
+                                    <span>Mobile Banking</span>
                                 </span>
-                                <span class="text-slate-300 hidden sm:inline">→</span>
-                                <span class="inline-flex items-center gap-1.5 font-medium">
-                                    <span
-                                        class="w-4 h-4 rounded-full bg-slate-100 text-slate-600 font-bold text-[10px] flex items-center justify-center"
-                                        >2</span
-                                    >
-                                    Scan VietQR code
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-700 bg-slate-50 border border-slate-200"
+                                >
+                                    <span>40+ Domestic ATM Cards</span>
                                 </span>
-                                <span class="text-slate-300 hidden sm:inline">→</span>
-                                <span class="inline-flex items-center gap-1.5 font-medium">
-                                    <span
-                                        class="w-4 h-4 rounded-full bg-slate-100 text-slate-600 font-bold text-[10px] flex items-center justify-center"
-                                        >3</span
-                                    >
-                                    Confirm transfer below
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-700 bg-slate-50 border border-slate-200"
+                                >
+                                    <span>Visa · Mastercard · JCB</span>
                                 </span>
                             </div>
 
-                            <!-- Action Button & Secondary Link -->
-                            <div class="pt-1 space-y-2">
-                                <form th:action="@{/bookings/{id}/pay-deposit(id=${booking.id})}" method="post">
+                            <!-- Precision Sandbox Virtual Test Card -->
+                            <div class="sandbox-card relative overflow-hidden">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-2">
+                                        <div
+                                            style="
+                                                background-color: rgba(255, 255, 255, 0.1);
+                                                border: 1px solid rgba(255, 255, 255, 0.15);
+                                                border-radius: 6px;
+                                                padding: 3px 8px;
+                                            "
+                                            class="flex items-center gap-1.5"
+                                        >
+                                            <span
+                                                class="w-1.5 h-1.5 rounded-full"
+                                                style="background-color: #38bdf8"
+                                            ></span>
+                                            <span class="text-[10px] font-bold tracking-wider uppercase text-slate-200"
+                                                >Sandbox Test Card</span
+                                            >
+                                        </div>
+                                        <span class="text-xs font-semibold text-slate-300">NCB Bank</span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        title="Copy card number"
+                                        onclick="copyToClipboard('9704198526191432198', this)"
+                                        class="copy-pill flex items-center gap-1"
+                                    >
+                                        <svg
+                                            class="w-3.5 h-3.5"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                        >
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                                        </svg>
+                                        <span>Copy Card No.</span>
+                                    </button>
+                                </div>
+
+                                <!-- Card Number Display -->
+                                <div class="mb-4">
+                                    <div class="text-[10px] uppercase tracking-wider text-slate-400 font-medium mb-1">
+                                        Card Number
+                                    </div>
+                                    <div
+                                        class="font-mono text-lg sm:text-xl font-bold tracking-widest text-white flex items-center gap-2"
+                                    >
+                                        <span>9704</span>
+                                        <span>1985</span>
+                                        <span>2619</span>
+                                        <span>1432</span>
+                                        <span>198</span>
+                                    </div>
+                                </div>
+
+                                <!-- Card Footer Details -->
+                                <div class="grid grid-cols-3 gap-3 pt-3 border-t border-slate-700/60 text-xs">
+                                    <div>
+                                        <span
+                                            class="text-[10px] uppercase tracking-wider text-slate-400 block font-medium"
+                                            >Cardholder</span
+                                        >
+                                        <span class="font-mono font-bold text-slate-200 text-xs">NGUYEN VAN A</span>
+                                    </div>
+                                    <div>
+                                        <span
+                                            class="text-[10px] uppercase tracking-wider text-slate-400 block font-medium"
+                                            >Valid Thru</span
+                                        >
+                                        <span class="font-mono font-bold text-slate-200 text-xs">07/15</span>
+                                    </div>
+                                    <div>
+                                        <span
+                                            class="text-[10px] uppercase tracking-wider text-slate-400 block font-medium"
+                                            >Test OTP</span
+                                        >
+                                        <span class="font-mono font-extrabold text-xs" style="color: #34d399"
+                                            >123456</span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Button for VNPay -->
+                            <div class="pt-2 space-y-3">
+                                <form th:action="@{/bookings/{id}/vnpay-payment(id=${booking.id})}" method="post">
                                     <button
                                         type="submit"
-                                        class="btn-amber w-full py-3.5 text-sm font-bold shadow-sm hover:shadow-md transition-all justify-center cursor-pointer"
+                                        class="btn-vnpay-primary w-full py-3.5 px-6 text-sm font-bold shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
                                     >
-                                        <span>I Have Transferred Deposit</span>
-
+                                        <span>Proceed to VNPay Payment</span>
                                         <svg
                                             class="w-4 h-4 ml-1"
                                             viewBox="0 0 24 24"
                                             fill="none"
                                             stroke="currentColor"
-                                            stroke-width="2"
+                                            stroke-width="2.5"
                                         >
                                             <path d="M5 12h14M12 5l7 7-7 7" />
                                         </svg>
@@ -321,19 +333,21 @@
                     <!-- Right Column (2 cols): Sticky Order Summary Sidebar -->
                     <div class="lg:col-span-2">
                         <div class="checkout-summary-box space-y-5 sticky top-20">
-                            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
-                                <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wide">Order Summary</h2>
+                            <div class="flex items-center justify-between pb-4">
+                                <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wide">
+                                    Reservation Summary
+                                </h2>
                                 <span class="plate-badge text-xs" th:text="'#' + ${booking.id}">#1</span>
                             </div>
 
-                            <!-- Vehicle Summary (Generous pb-4 so line doesn't stick to license plate) -->
+                            <!-- Vehicle Summary -->
                             <div class="flex items-center gap-3.5 pb-4 border-b border-slate-100">
                                 <img
                                     th:src="${booking.imageUrl}"
                                     th:alt="${booking.vehicleTypeName}"
                                     class="w-20 h-16 rounded-xl object-cover bg-slate-100 flex-shrink-0 border border-slate-200"
                                 />
-                                <div class="space-y-1 min-w-0 flex-1">
+                                <div class="ml-2 space-y-1 min-w-0 flex-1">
                                     <div
                                         class="text-xs font-bold uppercase tracking-wider text-slate-500"
                                         th:text="${booking.vehicleCategory}"
@@ -446,8 +460,8 @@
                                 </div>
                             </div>
 
-                            <!-- Trust perks (with generous pt-3.5 top clearance) -->
-                            <div class="pt-3.5 border-t border-slate-100 space-y-2.5 text-xs text-slate-500">
+                            <!-- Operational Trust Perks -->
+                            <div class="pt-3.5 space-y-2.5 text-xs text-slate-500">
                                 <div class="flex items-center gap-2">
                                     <svg
                                         class="w-4 h-4 text-emerald-600 flex-shrink-0"
@@ -458,7 +472,19 @@
                                     >
                                         <polyline points="20 6 9 17 4 12" />
                                     </svg>
-                                    <span>24/7 Auto-reconcile Bank Transfer</span>
+                                    <span>100% Bao Viet Insurance Coverage</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <svg
+                                        class="w-4 h-4 text-emerald-600 flex-shrink-0"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2.5"
+                                    >
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    <span>Central Depot Hub: 120 Trường Chinh, Tân Bình</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <svg
@@ -482,7 +508,7 @@
         <div th:replace="~{fragments/footer :: footer}"></div>
 
         <script>
-            // Clean Icon-Only Copy helper
+            // 1-Click Copy Helper
             function copyToClipboard(text, btn) {
                 if (!navigator.clipboard) {
                     const temp = document.createElement("input");
@@ -502,9 +528,10 @@
             function showCopiedFeedback(btn) {
                 const originalHTML = btn.innerHTML;
                 btn.innerHTML = `
-                    <svg class="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <polyline points="20 6 9 17 4 12"/>
                     </svg>
+                    <span style="color: #34d399;">Copied!</span>
                 `;
                 setTimeout(() => {
                     btn.innerHTML = originalHTML;

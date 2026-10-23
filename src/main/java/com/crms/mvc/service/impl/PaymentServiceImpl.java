@@ -38,6 +38,10 @@ public class PaymentServiceImpl implements PaymentService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
 
+        if ("confirmed".equalsIgnoreCase(booking.getStatus())) {
+            return paymentRepository.findByBookingIdAndPaymentType(bookingId, "DEPOSIT").orElse(null);
+        }
+
         if (!"pending_payment".equalsIgnoreCase(booking.getStatus())) {
             throw new IllegalStateException("Booking is not in pending_payment status");
         }

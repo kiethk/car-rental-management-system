@@ -45,7 +45,7 @@
                 />
 
                 <!-- Card Header -->
-                <div class="px-6 py-4 border-b border-border/80 bg-surface/60">
+                <div class="px-6 py-4 border-border/80">
                     <h2 class="text-base font-bold text-slate-900 tracking-tight" th:text="${title}">
                         Select Rental Schedule
                     </h2>
@@ -216,7 +216,7 @@
                                                 <polyline points="12 6 12 12 16 14" />
                                             </svg>
                                             <span id="pickup-hour-display" class="font-semibold text-slate-800 truncate"
-                                                >09:00 (9:00 AM)</span
+                                                >09:00</span
                                             >
                                         </div>
                                         <svg
@@ -403,7 +403,7 @@
                                                 <polyline points="12 6 12 12 16 14" />
                                             </svg>
                                             <span id="return-hour-display" class="font-semibold text-slate-800 truncate"
-                                                >18:00 (6:00 PM)</span
+                                                >18:00</span
                                             >
                                         </div>
                                         <svg
@@ -431,9 +431,7 @@
                 </div>
 
                 <!-- Card Footer: Live Summary & Action -->
-                <div
-                    class="px-6 py-4 bg-surface/60 border-t border-border/80 flex flex-col sm:flex-row items-center justify-between gap-4"
-                >
+                <div class="px-6 py-4 border-border/80 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div class="flex items-center gap-3 text-xs text-muted-foreground w-full sm:w-auto">
                         <div
                             class="w-9 h-9 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center flex-shrink-0 border border-slate-200"
@@ -455,18 +453,6 @@
                             <span class="font-bold text-slate-900 text-sm block" id="rental-itinerary"
                                 >Thu, 22 Oct 09:00 → Thu, 22 Oct 18:00 (9h)</span
                             >
-                            <span class="text-muted-foreground flex items-center gap-1 text-[11px] mt-0.5">
-                                <svg
-                                    class="w-3.5 h-3.5 text-emerald-600 inline"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2.5"
-                                >
-                                    <polyline points="20 6 9 17 4 12" />
-                                </svg>
-                                Free cancellation up to 3 days before pickup
-                            </span>
                         </div>
                     </div>
 
@@ -604,11 +590,7 @@
                         }
 
                         function formatHourDisplay(timeStr) {
-                            if (!timeStr) return "";
-                            const hour = parseInt(timeStr.split(":")[0], 10);
-                            const ampm = hour >= 12 ? "PM" : "AM";
-                            const formattedHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-                            return timeStr + " (" + formattedHour + ":00 " + ampm + ")";
+                            return timeStr || "";
                         }
 
                         // Calendar Navigation State
