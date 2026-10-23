@@ -76,6 +76,13 @@
                 <span class="text-muted-foreground">Rental fee due on return</span>
                 <span class="font-bold text-navy"><span th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT')}">1,200,000</span> đ</span>
             </div>
+            <div th:if="${param.vnp_TransactionNo != null and !#strings.isEmpty(param.vnp_TransactionNo)}" class="flex justify-between border-t border-border pt-2 text-xs text-slate-500">
+                <span class="flex items-center gap-1 text-emerald-700 font-semibold">
+                    <svg class="w-3.5 h-3.5 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    VNPay Verified Transaction
+                </span>
+                <span class="font-mono text-slate-800 font-bold" th:text="'#' + ${param.vnp_TransactionNo}">#14253678</span>
+            </div>
         </div>
 
         <!-- Pickup Instructions Notice -->
