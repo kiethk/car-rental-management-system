@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>DriveNow — Khám phá & Tìm kiếm Đội xe</title>
+    <title>Browse Cars — DriveNow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -49,76 +49,56 @@
         .car-card:hover .car-img-wrapper img {
             transform: scale(1.05);
         }
-        .spec-badge {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            color: #334155;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.375rem;
-            font-size: 0.75rem;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
     </style>
 </head>
 <body class="d-flex flex-column min-vh-100 bg-surface">
 
 <div th:replace="~{fragments/header :: header}"></div>
 
-<main class="container-fluid px-lg-5 my-4 flex-grow-1">
+<main class="crms-container py-8 flex-grow-1">
 
-    <!-- Top Banner -->
-    <div class="bg-navy text-white rounded-2xl p-4 p-md-5 mb-4 shadow-sm">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <span class="badge badge-warning text-dark font-weight-bold text-uppercase px-2 py-1 mb-2">Đội xe chất lượng cao</span>
-                <h1 class="h2 font-weight-bold mb-2">Khám Phá Dàn Xe Thuê Tự Lái</h1>
-                <p class="text-white-50 mb-0">Hơn 20+ dòng xe đa dạng phân khúc từ Sedan, SUV, MPV đến Xe điện thông minh. Kiểm định an toàn nghiêm ngặt trước mỗi chuyến đi.</p>
-            </div>
-            <div class="col-md-4 text-md-right mt-3 mt-md-0">
-                <a th:href="@{/search}" class="btn btn-warning font-weight-bold px-4 py-2">
-                    📅 Đặt Theo Khung Giờ (Slot)
-                </a>
-            </div>
+    <!-- Top Hero Banner with Rounded Corners (Unified with Rent page) -->
+    <div class="crms-hero-banner">
+        <div>
+            <h1>Explore Our Self-Drive Cars</h1>
+            <p>Choose from our modern collection of sedans, SUVs, MPVs, and electric vehicles. Thoroughly inspected and sanitized before every trip.</p>
         </div>
     </div>
 
     <!-- Main Content: Sidebar + Grid -->
-    <div class="row">
-        <!-- Sidebar Filter (Left) -->
-        <div class="col-lg-3 mb-4">
-            <div class="card border-0 shadow-sm rounded-xl p-4 sticky-top" style="top: 20px; z-index: 10;">
+    <div class="crms-layout-sidebar">
+        <!-- Sidebar Filter (Left - Sticky scrolling) -->
+        <div class="crms-sidebar mb-4">
+            <div class="card border-0 shadow-sm rounded-xl p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                    <h5 class="font-weight-bold text-navy mb-0">Bộ lọc tìm kiếm</h5>
-                    <a th:href="@{/vehicles}" class="text-muted small text-decoration-none">Đặt lại</a>
+                    <h5 class="font-weight-bold text-navy mb-0">Filter Cars</h5>
+                    <a th:href="@{/vehicles}" class="text-muted small text-decoration-none">Reset</a>
                 </div>
 
                 <form method="get" th:action="@{/vehicles}">
                     <!-- Keyword search -->
                     <div class="form-group mb-3">
-                        <label class="small font-weight-bold text-muted mb-1">Từ khóa tìm kiếm</label>
+                        <label class="small font-weight-bold text-muted mb-1">Search Keyword</label>
                         <input type="text" name="keyword" th:value="${filter.keyword}"
                                class="form-control form-control-sm rounded-lg"
-                               placeholder="Tìm tên xe, dòng xe...">
+                               placeholder="Model or brand...">
                     </div>
 
                     <!-- Brand filter -->
                     <div class="form-group mb-3">
-                        <label class="small font-weight-bold text-muted mb-1">Hãng sản xuất</label>
+                        <label class="small font-weight-bold text-muted mb-1">Make / Brand</label>
                         <select name="brand" class="form-control form-control-sm rounded-lg">
-                            <option value="all" th:selected="${filter.brand == null or filter.brand == 'all'}">Tất cả hãng xe</option>
+                            <option value="all" th:selected="${filter.brand == null or filter.brand == 'all'}">All Brands</option>
                             <option th:each="b : ${brands}" th:value="${b}" th:text="${b}"
-                                    th:selected="${filter.brand != null and filter.brand.equalsIgnoreCase(b)}"></option>
+                                     th:selected="${filter.brand != null and filter.brand.equalsIgnoreCase(b)}"></option>
                         </select>
                     </div>
 
                     <!-- Category filter -->
                     <div class="form-group mb-3">
-                        <label class="small font-weight-bold text-muted mb-1">Phân khúc (Category)</label>
+                        <label class="small font-weight-bold text-muted mb-1">Category</label>
                         <select name="category" class="form-control form-control-sm rounded-lg">
-                            <option value="all" th:selected="${filter.category == null or filter.category == 'all'}">Tất cả phân khúc</option>
+                            <option value="all" th:selected="${filter.category == null or filter.category == 'all'}">All Categories</option>
                             <option th:each="c : ${categories}" th:value="${c}" th:text="${#strings.capitalize(c)}"
                                     th:selected="${filter.category != null and filter.category.equalsIgnoreCase(c)}"></option>
                         </select>
@@ -126,53 +106,50 @@
 
                     <!-- Seats filter -->
                     <div class="form-group mb-3">
-                        <label class="small font-weight-bold text-muted mb-1">Số chỗ ngồi</label>
+                        <label class="small font-weight-bold text-muted mb-1">Seats</label>
                         <select name="seats" class="form-control form-control-sm rounded-lg">
-                            <option value="0" th:selected="${filter.seats == null or filter.seats == 0}">Mọi số chỗ</option>
-                            <option value="4" th:selected="${filter.seats == 4}">4 chỗ</option>
-                            <option value="5" th:selected="${filter.seats == 5}">5 chỗ</option>
-                            <option value="7" th:selected="${filter.seats == 7}">7 chỗ trở lên</option>
+                            <option value="0" th:selected="${filter.seats == null or filter.seats == 0}">Any Seats</option>
+                            <option value="4" th:selected="${filter.seats == 4}">4 Seats</option>
+                            <option value="5" th:selected="${filter.seats == 5}">5 Seats</option>
+                            <option value="7" th:selected="${filter.seats == 7}">7+ Seats</option>
                         </select>
                     </div>
 
                     <!-- Transmission filter -->
                     <div class="form-group mb-3">
-                        <label class="small font-weight-bold text-muted mb-1">Hộp số</label>
+                        <label class="small font-weight-bold text-muted mb-1">Transmission</label>
                         <select name="transmission" class="form-control form-control-sm rounded-lg">
-                            <option value="all" th:selected="${filter.transmission == null or filter.transmission == 'all'}">Tất cả hộp số</option>
-                            <option value="automatic" th:selected="${filter.transmission == 'automatic'}">Tự động (Automatic)</option>
-                            <option value="manual" th:selected="${filter.transmission == 'manual'}">Số sàn (Manual)</option>
+                            <option value="all" th:selected="${filter.transmission == null or filter.transmission == 'all'}">All Transmissions</option>
+                            <option value="automatic" th:selected="${filter.transmission == 'automatic'}">Automatic</option>
+                            <option value="manual" th:selected="${filter.transmission == 'manual'}">Manual</option>
                         </select>
                     </div>
 
                     <!-- Sort By -->
                     <div class="form-group mb-4">
-                        <label class="small font-weight-bold text-muted mb-1">Sắp xếp theo</label>
+                        <label class="small font-weight-bold text-muted mb-1">Sort By</label>
                         <select name="sortBy" class="form-control form-control-sm rounded-lg">
-                            <option value="price_asc" th:selected="${filter.sortBy == 'price_asc'}">Giá thuê: Thấp đến Cao</option>
-                            <option value="price_desc" th:selected="${filter.sortBy == 'price_desc'}">Giá thuê: Cao đến Thấp</option>
-                            <option value="year_desc" th:selected="${filter.sortBy == 'year_desc'}">Năm sản xuất: Mới nhất</option>
-                            <option value="name_asc" th:selected="${filter.sortBy == 'name_asc'}">Tên xe: A - Z</option>
+                            <option value="price_asc" th:selected="${filter.sortBy == 'price_asc'}">Price: Low to High</option>
+                            <option value="price_desc" th:selected="${filter.sortBy == 'price_desc'}">Price: High to Low</option>
+                            <option value="year_desc" th:selected="${filter.sortBy == 'year_desc'}">Year: Newest</option>
+                            <option value="name_asc" th:selected="${filter.sortBy == 'name_asc'}">Name: A - Z</option>
                         </select>
                     </div>
 
                     <button type="submit" class="btn btn-navy btn-sm btn-block py-2 font-weight-bold shadow-sm rounded-lg">
-                        Áp Dụng Bộ Lọc
+                        Apply Filters
                     </button>
                 </form>
             </div>
         </div>
 
         <!-- Vehicle Grid (Right) -->
-        <div class="col-lg-9">
+        <div class="crms-content">
             <!-- Results Bar -->
             <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                 <div>
-                    <h2 class="h5 font-weight-bold text-navy mb-0">Danh Sách Xe Khả Dụng</h2>
-                    <span class="small text-muted">Tìm thấy <strong class="text-navy" th:text="${totalCount}">0</strong> chiếc xe khả dụng</span>
-                </div>
-                <div class="d-none d-sm-block">
-                    <span class="badge badge-light border text-muted px-2.5 py-1 text-xs">Nhận và trả xe tại bãi xe trung tâm</span>
+                    <h2 class="h5 font-weight-bold text-navy mb-0">Available Car Models</h2>
+                    <span class="small text-muted">Showing <strong class="text-navy" th:text="${totalCount}">0</strong> car models found</span>
                 </div>
             </div>
 
@@ -181,60 +158,59 @@
                 <div class="mb-3 text-muted">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto text-muted"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 11l2-6h10l2 6"/></svg>
                 </div>
-                <h4 class="font-weight-bold text-navy mb-2">Không tìm thấy xe phù hợp</h4>
-                <p class="text-muted small max-w-md mx-auto mb-4">Hiện tại không có xe khả dụng nào khớp với điều kiện tìm kiếm. Vui lòng thử nới lỏng bộ lọc hoặc xóa điều kiện tìm kiếm.</p>
+                <h4 class="font-weight-bold text-navy mb-2">No cars match your criteria</h4>
+                <p class="text-muted small max-w-md mx-auto mb-4">Try loosening your filter parameters or search terms to see available vehicles.</p>
                 <div>
-                    <a th:href="@{/vehicles}" class="btn btn-navy btn-sm px-4 py-2 font-weight-bold rounded-lg">
-                        Xem Toàn Bộ Đội Xe
+                    <a th:href="@{/vehicles}" class="btn btn-navy btn-sm px-4 py-2 font-weight-bold rounded-lg text-decoration-none">
+                        Reset Filters
                     </a>
                 </div>
             </div>
 
-            <!-- Vehicle Cards Grid -->
+            <!-- Vehicle Cards Grid (Synchronized Card Component) -->
             <div th:unless="${#lists.isEmpty(vehicles)}" class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
                 <div class="col mb-4" th:each="v : ${vehicles}">
                     <div class="car-card shadow-sm">
-                        <!-- Car Image -->
+                        <!-- Car Image (No corner badge per requirement) -->
                         <div class="car-img-wrapper">
                             <img th:src="${v.imageUrl != null and !v.imageUrl.isBlank() ? v.imageUrl : '/images/car-rental-logo.svg'}"
                                  th:alt="${v.displayName}"
                                  onerror="this.onerror=null; this.src='/images/car-rental-logo.svg';">
-                            <div class="position-absolute" style="top: 10px; left: 10px;">
-                                <span class="badge text-uppercase px-2.5 py-1 font-weight-bold shadow-xs"
-                                      style="background-color: rgba(30, 41, 59, 0.85); color: #ffffff; font-size: 0.7rem; letter-spacing: 0.05em;"
-                                      th:text="${v.category}">Sedan</span>
-                                <span th:if="${v.fuelType == 'electric'}" class="badge badge-success px-2 py-1 shadow-xs font-weight-bold" style="font-size: 0.7rem;">EV</span>
-                                <span th:if="${v.fuelType == 'hybrid'}" class="badge badge-info px-2 py-1 shadow-xs font-weight-bold" style="font-size: 0.7rem;">Hybrid</span>
-                            </div>
                         </div>
 
                         <!-- Card Body -->
                         <div class="p-4 d-flex flex-column flex-grow-1">
-                            <!-- Title & Plate -->
-                            <div class="d-flex justify-content-between align-items-start mb-1">
-                                <div>
-                                    <h3 class="h6 font-weight-bold text-navy mb-1"
-                                        th:text="${v.displayName}">Toyota Vios 2023</h3>
-                                    <span class="small text-muted" th:text="${v.year + ' · ' + v.color}">2023 · Trắng</span>
+                            <!-- Title & Rating -->
+                            <div class="mb-2">
+                                <h3 class="h6 font-weight-bold text-navy mb-1"
+                                    th:text="${v.displayName}">Toyota Vios 2023</h3>
+                                <div class="d-flex align-items-center gap-1 small text-amber font-weight-semibold">
+                                    <span>★</span>
+                                    <span>4.8</span>
+                                    <span class="text-muted font-weight-normal">(124 reviews)</span>
                                 </div>
-                                <span class="badge badge-light border text-navy font-weight-bold px-2 py-1" style="font-size: 0.75rem;" th:text="${v.licensePlate}">51A-123.45</span>
                             </div>
 
-                            <!-- Specs: Professional minimal dot-separated layout, NO emojis, NO colored tags -->
-                            <div class="text-secondary small mb-3 py-1" style="font-size: 0.8125rem;">
-                                <span th:text="${v.seats + ' chỗ'}">5 chỗ</span>
-                                <span class="text-muted mx-1">·</span>
-                                <span th:text="${v.transmission == 'automatic' ? 'Tự động' : (v.transmission == 'manual' ? 'Số sàn' : v.transmission)}">Tự động</span>
-                                <span class="text-muted mx-1">·</span>
-                                <span th:text="${v.fuelType == 'gasoline' ? 'Xăng' : (v.fuelType == 'diesel' ? 'Dầu diesel' : (v.fuelType == 'electric' ? 'Điện' : (v.fuelType == 'hybrid' ? 'Hybrid' : v.fuelType)))}">Xăng</span>
-                                <span class="text-muted mx-1">·</span>
-                                <span th:text="${#numbers.formatDecimal(v.odometer, 0, 'COMMA', 0, 'POINT') + ' km'}">12,000 km</span>
+                            <!-- Specs in Description: Category, Seats, Transmission, Fuel Type -->
+                            <div class="small text-muted font-weight-medium mb-2" style="font-size: 0.8125rem;">
+                                <span class="text-navy font-weight-bold text-uppercase" th:text="${v.category}">Sedan</span>
+                                <span class="mx-1">·</span>
+                                <span th:text="${v.seats + ' seats'}">5 seats</span>
+                                <span class="mx-1">·</span>
+                                <span class="text-capitalize" th:text="${v.transmission}">Automatic</span>
+                                <span class="mx-1">·</span>
+                                <span class="text-capitalize" th:text="${v.fuelType}">Gasoline</span>
                             </div>
+
+                            <p class="small text-muted mb-3 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.5rem;"
+                               th:text="${v.description != null ? v.description : 'Clean, dependable, and efficient drive for city travel and weekend getaways.'}">
+                                Car description...
+                            </p>
 
                             <!-- Price & Action (Bottom) -->
                             <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
                                 <div>
-                                    <span class="small text-muted d-block" style="font-size: 0.75rem;">Đơn giá thuê</span>
+                                    <span class="small text-muted d-block" style="font-size: 0.75rem;">Hourly rate</span>
                                     <div class="font-weight-bold text-navy" style="font-size: 1.15rem;">
                                         <span th:text="${#numbers.formatDecimal(v.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span>
                                         <span class="small font-weight-normal text-muted">đ/h</span>
@@ -243,13 +219,12 @@
 
                                 <div class="d-flex gap-2">
                                     <a th:href="@{/vehicles/{id}(id=${v.id})}"
-                                       class="btn btn-outline-secondary btn-sm px-3 font-weight-semibold rounded-lg"
-                                       title="Xem chi tiết kỹ thuật">
-                                        Chi tiết
+                                       class="car-action-btn-secondary">
+                                        Details
                                     </a>
-                                    <a th:href="@{/search(category=${v.category})}"
-                                       class="btn btn-navy btn-sm px-3 font-weight-semibold rounded-lg shadow-sm">
-                                        Thuê ngay
+                                    <a th:href="@{/search(keyword=${v.displayName})}"
+                                       class="car-action-btn-primary">
+                                        Rent Now
                                     </a>
                                 </div>
                             </div>

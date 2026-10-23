@@ -18,9 +18,6 @@ public class BookingDetailDTO implements Serializable {
     private Integer seats;
     private String imageUrl;
 
-    public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
-
     private Long vehicleId;
     private String licensePlate;
     private String vehicleColor;
@@ -41,24 +38,82 @@ public class BookingDetailDTO implements Serializable {
     private OffsetDateTime createdAt;
 
     private List<PaymentDTO> payments;
+    private ContractDTO contract;
+    private List<BookingFeeDTO> fees;
 
     public static class PaymentDTO implements Serializable {
         private Long id;
+        private String transactionCode;
         private String paymentType;
         private BigDecimal amount;
+        private String paymentMethod;
         private String status;
         private OffsetDateTime paidAt;
 
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
+        public String getTransactionCode() { return transactionCode; }
+        public void setTransactionCode(String transactionCode) { this.transactionCode = transactionCode; }
         public String getPaymentType() { return paymentType; }
         public void setPaymentType(String paymentType) { this.paymentType = paymentType; }
         public BigDecimal getAmount() { return amount; }
         public void setAmount(BigDecimal amount) { this.amount = amount; }
+        public String getPaymentMethod() { return paymentMethod; }
+        public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
         public String getStatus() { return status; }
         public void setStatus(String status) { this.status = status; }
         public OffsetDateTime getPaidAt() { return paidAt; }
         public void setPaidAt(OffsetDateTime paidAt) { this.paidAt = paidAt; }
+    }
+
+    public static class ContractDTO implements Serializable {
+        private Long id;
+        private String contractNumber;
+        private OffsetDateTime signedAt;
+        private String signatureType;
+        private String termsSnapshot;
+        private String contractStatus;
+        private String filePdfUrl;
+        private OffsetDateTime createdAt;
+
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getContractNumber() { return contractNumber; }
+        public void setContractNumber(String contractNumber) { this.contractNumber = contractNumber; }
+        public OffsetDateTime getSignedAt() { return signedAt; }
+        public void setSignedAt(OffsetDateTime signedAt) { this.signedAt = signedAt; }
+        public String getSignatureType() { return signatureType; }
+        public void setSignatureType(String signatureType) { this.signatureType = signatureType; }
+        public String getTermsSnapshot() { return termsSnapshot; }
+        public void setTermsSnapshot(String termsSnapshot) { this.termsSnapshot = termsSnapshot; }
+        public String getContractStatus() { return contractStatus; }
+        public void setContractStatus(String contractStatus) { this.contractStatus = contractStatus; }
+        public String getFilePdfUrl() { return filePdfUrl; }
+        public void setFilePdfUrl(String filePdfUrl) { this.filePdfUrl = filePdfUrl; }
+        public OffsetDateTime getCreatedAt() { return createdAt; }
+        public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
+    }
+
+    public static class BookingFeeDTO implements Serializable {
+        private Long id;
+        private String feeType;
+        private BigDecimal amount;
+        private String description;
+        private Long issueId;
+        private OffsetDateTime createdAt;
+
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getFeeType() { return feeType; }
+        public void setFeeType(String feeType) { this.feeType = feeType; }
+        public BigDecimal getAmount() { return amount; }
+        public void setAmount(BigDecimal amount) { this.amount = amount; }
+        public String getDescription() { return description; }
+        public void setDescription(String description) { this.description = description; }
+        public Long getIssueId() { return issueId; }
+        public void setIssueId(Long issueId) { this.issueId = issueId; }
+        public OffsetDateTime getCreatedAt() { return createdAt; }
+        public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
     }
 
     public Long getId() { return id; }
@@ -79,6 +134,8 @@ public class BookingDetailDTO implements Serializable {
     public void setVehicleCategory(String vehicleCategory) { this.vehicleCategory = vehicleCategory; }
     public Integer getSeats() { return seats; }
     public void setSeats(Integer seats) { this.seats = seats; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public Long getVehicleId() { return vehicleId; }
     public void setVehicleId(Long vehicleId) { this.vehicleId = vehicleId; }
     public String getLicensePlate() { return licensePlate; }
@@ -111,4 +168,8 @@ public class BookingDetailDTO implements Serializable {
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
     public List<PaymentDTO> getPayments() { return payments; }
     public void setPayments(List<PaymentDTO> payments) { this.payments = payments; }
+    public ContractDTO getContract() { return contract; }
+    public void setContract(ContractDTO contract) { this.contract = contract; }
+    public List<BookingFeeDTO> getFees() { return fees; }
+    public void setFees(List<BookingFeeDTO> fees) { this.fees = fees; }
 }

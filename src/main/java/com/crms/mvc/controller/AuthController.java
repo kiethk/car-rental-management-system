@@ -61,7 +61,7 @@ public class AuthController {
         session.setAttribute("employeeId", account.accountId());
         session.setAttribute("employeeName", account.name());
         session.setAttribute("employeeRole", account.role());
-        return "redirect:/admin/licenses";
+        return "redirect:/admin/dashboard";
     }
 
     @GetMapping("/register")

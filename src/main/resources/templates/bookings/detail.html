@@ -85,8 +85,54 @@
                         </div>
                         <div class="col-span-2 pt-2 border-t border-border">
                             <div class="text-xs text-muted-foreground">Warehouse Location</div>
-                            <div class="font-medium text-navy">123 Đường Đinh Bộ Lĩnh, Phường 26, Bình Thạnh, TP.HCM</div>
+                            <div class="font-medium text-navy">123 Dinh Bo Linh St, Ward 26, Binh Thanh, HCMC</div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Rental Contract & Policy Snapshot Card -->
+                <div th:if="${booking.contract != null}" class="bg-white rounded-lg border border-border p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <h3 class="font-semibold text-navy text-base mb-0">Digital Rental Agreement & Policies</h3>
+                            <div class="text-xs text-muted-foreground font-mono" th:text="${booking.contract.contractNumber}">CTR-20261022-0001</div>
+                        </div>
+                        <div>
+                            <span th:if="${booking.contract.contractStatus == 'DRAFT'}" class="text-xs font-semibold px-2.5 py-1 rounded bg-amber-50 text-amber-700 border border-amber-200">Draft (DRAFT)</span>
+                            <span th:if="${booking.contract.contractStatus == 'SIGNED'}" class="text-xs font-semibold px-2.5 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200">Signed (SIGNED)</span>
+                            <span th:if="${booking.contract.contractStatus == 'ACTIVE'}" class="text-xs font-semibold px-2.5 py-1 rounded bg-green-50 text-green-700 border border-green-200">Active (ACTIVE)</span>
+                            <span th:if="${booking.contract.contractStatus == 'COMPLETED'}" class="text-xs font-semibold px-2.5 py-1 rounded bg-gray-50 text-gray-700 border border-gray-200">Completed (COMPLETED)</span>
+                            <span th:if="${booking.contract.contractStatus == 'CANCELLED'}" class="text-xs font-semibold px-2.5 py-1 rounded bg-red-50 text-red-600 border border-red-200">Cancelled (CANCELLED)</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-muted-foreground mb-3" th:if="${booking.contract.signedAt != null}">
+                        Digitally signed at: <span class="font-medium text-navy" th:text="${#temporals.format(booking.contract.signedAt, 'dd/MM/yyyy HH:mm')}">Time</span> · Method: <span class="font-medium text-navy" th:text="${booking.contract.signatureType}">DIGITAL_CHECK</span>
+                    </div>
+                    <div class="bg-surface rounded-md p-3.5 border border-border text-xs text-navy leading-relaxed max-h-48 overflow-y-auto whitespace-pre-line font-sans" th:text="${booking.contract.termsSnapshot}">
+                        Agreement Terms & Policies Snapshot...
+                    </div>
+                </div>
+
+                <!-- Incidental Fees Card (If any) -->
+                <div th:if="${booking.fees != null and not #lists.isEmpty(booking.fees)}" class="bg-white rounded-lg border border-border p-5">
+                    <h3 class="font-semibold text-navy mb-3 text-base">Incidental Fees & Incurred Charges</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left">
+                            <thead class="bg-surface text-muted-foreground uppercase border-b border-border">
+                                <tr>
+                                    <th class="p-2.5">Fee Type</th>
+                                    <th class="p-2.5">Description</th>
+                                    <th class="p-2.5">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border">
+                                <tr th:each="f : ${booking.fees}">
+                                    <td class="p-2.5 font-bold text-navy" th:text="${f.feeType}">LATE_FEE</td>
+                                    <td class="p-2.5 text-muted-foreground" th:text="${f.description}">Late return penalty</td>
+                                    <td class="p-2.5 font-semibold text-navy"><span th:text="${#numbers.formatDecimal(f.amount, 0, 'COMMA', 0, 'POINT')}">0</span> đ</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -97,16 +143,20 @@
                         <table class="w-full text-xs text-left">
                             <thead class="bg-surface text-muted-foreground uppercase border-b border-border">
                                 <tr>
-                                    <th class="p-2.5">Transaction</th>
+                                    <th class="p-2.5">Txn Code</th>
+                                    <th class="p-2.5">Payment Type</th>
                                     <th class="p-2.5">Amount</th>
+                                    <th class="p-2.5">Method</th>
                                     <th class="p-2.5">Status</th>
                                     <th class="p-2.5">Timestamp</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border">
                                 <tr th:each="p : ${booking.payments}">
+                                    <td class="p-2.5 font-mono text-xs text-muted-foreground" th:text="${p.transactionCode != null ? p.transactionCode : 'N/A'}">TXN-123</td>
                                     <td class="p-2.5 font-bold text-navy" th:text="${p.paymentType}">DEPOSIT</td>
                                     <td class="p-2.5 font-semibold text-navy"><span th:text="${#numbers.formatDecimal(p.amount, 0, 'COMMA', 0, 'POINT')}">5,000,000</span> đ</td>
+                                    <td class="p-2.5 font-medium text-navy" th:text="${p.paymentMethod != null ? p.paymentMethod : 'VIETQR'}">VIETQR</td>
                                     <td class="p-2.5">
                                         <span th:if="${p.status == 'paid'}" class="bg-green-50 text-green-700 px-2 py-0.5 rounded font-medium border border-green-200">Paid ✓</span>
                                         <span th:if="${p.status != 'paid'}" class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded font-medium border border-amber-200" th:text="${p.status}">Pending</span>
@@ -114,7 +164,7 @@
                                     <td class="p-2.5 text-muted-foreground" th:text="${#temporals.format(p.paidAt, 'dd/MM/yyyy HH:mm')}">Time</td>
                                 </tr>
                                 <tr th:if="${booking.payments == null or booking.payments.isEmpty()}">
-                                    <td colspan="4" class="p-4 text-center text-muted-foreground">No payment records yet.</td>
+                                    <td colspan="6" class="p-4 text-center text-muted-foreground">No payment records yet.</td>
                                 </tr>
                             </tbody>
                         </table>

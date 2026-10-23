@@ -24,6 +24,7 @@ class VehicleControllerTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private VehicleService vehicleService;
     @MockitoBean private VehicleTypeService vehicleTypeService;
+    @MockitoBean private com.crms.mvc.repository.VehicleRepository vehicleRepository;
 
     private final VehicleDTO vehicle = new VehicleDTO(1L, "51A-123.45", "Toyota", "Vios", 2025, new BigDecimal("180000"), "available");
 
@@ -37,13 +38,13 @@ class VehicleControllerTest {
         when(vehicleService.searchWithFilter(any())).thenReturn(List.of(vehicle));
         mvc.perform(get("/vehicles").param("keyword", "Toyota"))
                 .andExpect(status().isOk()).andExpect(view().name("vehicles/list"))
-                .andExpect(content().string(containsString("51A-123.45")))
+                .andExpect(content().string(containsString("Toyota Vios")))
                 .andExpect(content().string(containsString("/vehicles/1")));
     }
     @Test void emptySearchRendersEmptyState() throws Exception {
         when(vehicleService.searchWithFilter(any())).thenReturn(List.of());
         mvc.perform(get("/vehicles").param("keyword", "missing"))
-                .andExpect(status().isOk()).andExpect(content().string(containsString("Không tìm thấy xe phù hợp")));
+                .andExpect(status().isOk()).andExpect(content().string(containsString("No cars match your criteria")));
     }
     @Test void searchInputIsEscaped() throws Exception {
         String input = "<script>alert(1)</script>";

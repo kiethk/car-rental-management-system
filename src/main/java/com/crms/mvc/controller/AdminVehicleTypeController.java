@@ -59,7 +59,7 @@ public class AdminVehicleTypeController {
 
         try {
             VehicleType created = vehicleTypeService.create(form);
-            ra.addFlashAttribute("success", "Thêm dòng xe mới thành công: " + created.getBrand() + " " + created.getName());
+            ra.addFlashAttribute("success", "Vehicle model created successfully: " + created.getBrand() + " " + created.getName());
             return "redirect:/admin/vehicle-types";
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
@@ -71,7 +71,7 @@ public class AdminVehicleTypeController {
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         VehicleType vt = vehicleTypeService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dòng xe ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Vehicle model not found for ID: " + id));
 
         if (!model.containsAttribute("typeForm")) {
             model.addAttribute("typeForm", VehicleTypeFormDTO.fromEntity(vt));
@@ -96,7 +96,7 @@ public class AdminVehicleTypeController {
 
         try {
             VehicleType updated = vehicleTypeService.update(id, form);
-            ra.addFlashAttribute("success", "Cập nhật dòng xe thành công: " + updated.getBrand() + " " + updated.getName());
+            ra.addFlashAttribute("success", "Vehicle model updated successfully: " + updated.getBrand() + " " + updated.getName());
             return "redirect:/admin/vehicle-types";
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
@@ -108,7 +108,7 @@ public class AdminVehicleTypeController {
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
         try {
             vehicleTypeService.delete(id);
-            ra.addFlashAttribute("success", "Đã xóa dòng xe ID: " + id);
+            ra.addFlashAttribute("success", "Vehicle model deleted ID: " + id);
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
         }

@@ -36,7 +36,7 @@
             <!-- Sub Nav Tabs -->
             <ul class="nav nav-pills mb-4 bg-white p-2 rounded-xl border">
                 <li class="nav-item">
-                    <a class="nav-link font-weight-bold text-navy" th:href="@{/admin/vehicles}">Physical Fleet</a>
+                    <a class="nav-link font-weight-bold text-navy" th:href="@{/admin/vehicles}">Cars</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link font-weight-bold text-navy" th:href="@{/admin/vehicle-types}">Vehicle Models</a>
@@ -83,7 +83,7 @@
             <!-- Table Card -->
             <div class="card border-0 shadow-sm rounded-xl overflow-hidden bg-white">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0 align-middle">
+                    <table class="table table-hover mb-0 align-middle admin-table">
                         <thead class="bg-surface-2 text-navy small font-weight-bold">
                             <tr>
                                 <th class="border-top-0 py-3">License Plate</th>
@@ -98,8 +98,7 @@
                         <tbody>
                             <tr th:each="p : ${plates}">
                                 <td>
-                                    <span class="badge badge-light border border-secondary px-2 py-1 font-weight-bold text-navy"
-                                          style="font-size: 0.95rem;"
+                                    <span class="admin-plate-badge"
                                           th:text="${p.plate}">51A-123.45</span>
                                 </td>
                                 <td th:text="${p.province != null ? p.province : 'Not updated'}">Ho Chi Minh City</td>
@@ -110,16 +109,16 @@
                                             Vehicle #1 (Toyota Vios)
                                         </a>
                                     </span>
-                                    <span th:if="${p.vehicleId == null}" class="badge badge-secondary">Unassigned Pool</span>
+                                    <span th:if="${p.vehicleId == null}" class="admin-status-badge badge-secondary" style="height: 24px !important; min-height: 24px !important; font-size: 10px !important; padding: 0 6px !important;">Unassigned</span>
                                 </td>
                                 <td>
-                                    <span th:if="${p.vehicleStatus == 'available'}" class="badge badge-success">Available</span>
-                                    <span th:if="${p.vehicleStatus == 'rented'}" class="badge badge-warning text-dark">Rented</span>
-                                    <span th:if="${p.vehicleStatus == 'maintenance'}" class="badge badge-secondary">Maintenance</span>
+                                    <span th:if="${p.vehicleStatus == 'available'}" class="admin-status-badge badge-success" style="height: 24px !important; min-height: 24px !important; font-size: 10px !important; padding: 0 6px !important;">Available</span>
+                                    <span th:if="${p.vehicleStatus == 'rented'}" class="admin-status-badge badge-warning text-dark" style="height: 24px !important; min-height: 24px !important; font-size: 10px !important; padding: 0 6px !important;">Rented</span>
+                                    <span th:if="${p.vehicleStatus == 'maintenance'}" class="admin-status-badge badge-secondary" style="height: 24px !important; min-height: 24px !important; font-size: 10px !important; padding: 0 6px !important;">Maintenance</span>
                                     <span th:if="${p.vehicleStatus == 'unassigned'}" class="text-muted small">—</span>
                                 </td>
                                 <td>
-                                    <span class="font-weight-bold"
+                                    <span class="font-weight-bold text-navy"
                                           th:text="${p.registrationExpiry != null ? #temporals.format(p.registrationExpiry, 'yyyy-MM-dd') : 'No data'}">
                                         2026-10-15
                                     </span>
@@ -129,27 +128,27 @@
                                            th:text="'Expired ' + ${-p.daysRemaining} + ' days ago'">Expired 5 days ago</small>
                                 </td>
                                 <td class="text-center">
-                                    <span th:if="${p.expiryStatus == 'VALID'}" class="badge badge-success px-2 py-1">
+                                    <span th:if="${p.expiryStatus == 'VALID'}" class="admin-status-badge badge-success">
                                         Valid
                                     </span>
-                                    <span th:if="${p.expiryStatus == 'EXPIRING_SOON'}" class="badge badge-warning text-dark px-2 py-1 font-weight-bold">
+                                    <span th:if="${p.expiryStatus == 'EXPIRING_SOON'}" class="admin-status-badge badge-warning text-dark">
                                         Expiring Soon
                                     </span>
-                                    <span th:if="${p.expiryStatus == 'EXPIRED'}" class="badge badge-danger px-2 py-1 font-weight-bold">
+                                    <span th:if="${p.expiryStatus == 'EXPIRED'}" class="admin-status-badge badge-danger">
                                         Expired
                                     </span>
-                                    <span th:if="${p.expiryStatus == 'UNKNOWN'}" class="badge badge-light border text-muted px-2 py-1">
+                                    <span th:if="${p.expiryStatus == 'UNKNOWN'}" class="admin-status-badge badge-light border text-muted">
                                         Unknown
                                     </span>
                                 </td>
                                 <td class="text-center">
-                                    <div class="d-inline-flex gap-1">
+                                    <div class="d-inline-flex align-items-center justify-content-center" style="gap: 6px;">
                                         <a th:if="${p.vehicleId != null}"
                                            th:href="@{/admin/inspections/new(vehicleId=${p.vehicleId})}"
-                                           class="btn btn-outline-info btn-sm px-2 py-1" title="Schedule state registry inspection">
+                                           class="admin-btn btn-soft-secondary" title="Schedule state registry inspection">
                                             Inspection
                                         </a>
-                                        <button type="button" class="btn btn-outline-primary btn-sm px-2 py-1"
+                                        <button type="button" class="admin-btn btn-soft-primary"
                                                 th:attr="data-id=${p.id},data-plate=${p.plate},data-province=${p.province},data-expiry=${p.registrationExpiry}"
                                                 onclick="openQuickEdit(this)">
                                             Edit Date

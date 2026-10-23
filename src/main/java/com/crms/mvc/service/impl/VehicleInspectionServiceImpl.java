@@ -47,7 +47,7 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     @Override
     public VehicleInspection schedule(VehicleInspectionFormDTO dto) {
         Vehicle vehicle = vehicleRepository.findByIdWithDetails(dto.getVehicleId())
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe ID: " + dto.getVehicleId()));
+                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with ID: " + dto.getVehicleId()));
 
         VehicleInspection inspection = new VehicleInspection();
         inspection.setVehicle(vehicle);
@@ -65,11 +65,11 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     @Override
     public void startInspection(Long inspectionId) {
         VehicleInspection inspection = vehicleInspectionRepository.findById(inspectionId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch kiểm định ID: " + inspectionId));
+                .orElseThrow(() -> new IllegalArgumentException("Inspection schedule not found with ID: " + inspectionId));
 
         Vehicle vehicle = inspection.getVehicle();
         if ("rented".equalsIgnoreCase(vehicle.getStatus())) {
-            throw new IllegalStateException("Không thể đưa xe vào kiểm định vì xe đang được khách thuê (rented)!");
+            throw new IllegalStateException("Cannot inspect vehicle while it is currently rented!");
         }
 
         vehicle.setStatus("maintenance");
@@ -79,10 +79,10 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     @Override
     public void recordResult(Long inspectionId, String status, String notes, LocalDate newRegistrationExpiry) {
         VehicleInspection inspection = vehicleInspectionRepository.findById(inspectionId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch kiểm định ID: " + inspectionId));
+                .orElseThrow(() -> new IllegalArgumentException("Inspection schedule not found with ID: " + inspectionId));
 
         if (!"passed".equalsIgnoreCase(status) && !"failed".equalsIgnoreCase(status)) {
-            throw new IllegalArgumentException("Kết quả kiểm định phải là 'passed' hoặc 'failed'");
+            throw new IllegalArgumentException("Inspection result must be either 'passed' or 'failed'");
         }
 
         inspection.setStatus(status.toLowerCase());

@@ -13,33 +13,33 @@ import java.time.LocalDate;
 public class VehicleFormDTO {
     private Long id;
 
-    @NotNull(message = "Vui lòng chọn dòng xe")
+    @NotNull(message = "Please select a vehicle model")
     private Long vehicleTypeId;
 
-    @NotBlank(message = "Biển số xe không được để trống")
-    @Size(max = 20, message = "Biển số xe tối đa 20 ký tự")
+    @NotBlank(message = "License plate cannot be blank")
+    @Size(max = 20, message = "License plate cannot exceed 20 characters")
     private String plate;
 
-    @Size(max = 100, message = "Tỉnh/thành đăng ký tối đa 100 ký tự")
+    @Size(max = 100, message = "Province cannot exceed 100 characters")
     private String province;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate registrationExpiry;
 
-    @NotBlank(message = "Màu sắc xe không được để trống")
-    @Size(max = 50, message = "Màu sắc tối đa 50 ký tự")
+    @NotBlank(message = "Color cannot be blank")
+    @Size(max = 50, message = "Color cannot exceed 50 characters")
     private String color;
 
-    @NotNull(message = "Năm sản xuất không được để trống")
-    @Min(value = 1990, message = "Năm sản xuất không hợp lệ")
-    @Max(value = 2100, message = "Năm sản xuất không hợp lệ")
+    @NotNull(message = "Manufacturing year cannot be empty")
+    @Min(value = 1990, message = "Manufacturing year is invalid")
+    @Max(value = 2100, message = "Manufacturing year is invalid")
     private Integer year = LocalDate.now().getYear();
 
-    @NotNull(message = "Số km đã đi (odometer) không được để trống")
-    @Min(value = 0, message = "Số km không được âm")
+    @NotNull(message = "Odometer cannot be empty")
+    @Min(value = 0, message = "Odometer cannot be negative")
     private Integer odometer = 0;
 
-    @NotBlank(message = "Trạng thái xe không được để trống")
+    @NotBlank(message = "Vehicle status cannot be blank")
     private String status = "available";
 
     public VehicleFormDTO() {}

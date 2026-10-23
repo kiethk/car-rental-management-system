@@ -50,7 +50,7 @@
                         <div class="row">
                             <div class="col-sm-6 mb-2">
                                 <span class="small text-muted d-block">Full Name</span>
-                                <strong th:text="${booking.customerName}">Nguyễn Văn Khách</strong>
+                                <strong th:text="${booking.customerName}">Customer</strong>
                             </div>
                             <div class="col-sm-6 mb-2">
                                 <span class="small text-muted d-block">Phone Number</span>
@@ -84,6 +84,85 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Rental Contract & Terms Snapshot Card -->
+                    <div th:if="${booking.contract != null}" class="card card-drivenow border-0 p-4 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h2 class="h5 font-weight-bold text-navy mb-0">Digital Rental Agreement</h2>
+                                <span class="small text-muted font-mono" th:text="${booking.contract.contractNumber}">CTR-20261022-0001</span>
+                            </div>
+                            <div>
+                                <span th:if="${booking.contract.contractStatus == 'DRAFT'}" class="badge badge-warning px-2 py-1">DRAFT</span>
+                                <span th:if="${booking.contract.contractStatus == 'SIGNED'}" class="badge badge-info px-2 py-1">SIGNED</span>
+                                <span th:if="${booking.contract.contractStatus == 'ACTIVE'}" class="badge badge-primary px-2 py-1">ACTIVE</span>
+                                <span th:if="${booking.contract.contractStatus == 'COMPLETED'}" class="badge badge-success px-2 py-1">COMPLETED</span>
+                                <span th:if="${booking.contract.contractStatus == 'CANCELLED'}" class="badge badge-secondary px-2 py-1">CANCELLED</span>
+                            </div>
+                        </div>
+                        <div class="small text-muted mb-2" th:if="${booking.contract.signedAt != null}">
+                            Signed at: <strong th:text="${#temporals.format(booking.contract.signedAt, 'dd/MM/yyyy HH:mm')}">Time</strong>
+                            (Method: <span th:text="${booking.contract.signatureType}">DIGITAL_CHECK</span>)
+                        </div>
+                        <div class="bg-light p-3 rounded small text-navy" style="max-height: 180px; overflow-y: auto; white-space: pre-line;" th:text="${booking.contract.termsSnapshot}">
+                            Frozen Agreement Terms & Policies...
+                        </div>
+                    </div>
+
+                    <!-- Incidental Fees Breakdown -->
+                    <div th:if="${booking.fees != null and not #lists.isEmpty(booking.fees)}" class="card card-drivenow border-0 p-4 mb-4">
+                        <h2 class="h5 font-weight-bold text-navy mb-3">Incidental Fees & Incident Damage</h2>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped small mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Fee Type</th>
+                                        <th>Description</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="f : ${booking.fees}">
+                                        <td class="font-weight-bold" th:text="${f.feeType}">DAMAGE_COMPENSATION</td>
+                                        <td class="text-muted" th:text="${f.description}">Incident compensation</td>
+                                        <td class="font-weight-bold text-danger"><span th:text="${#numbers.formatDecimal(f.amount, 0, 'COMMA', 0, 'POINT')}">0</span> đ</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Payments Ledger -->
+                    <div class="card card-drivenow border-0 p-4 mb-4">
+                        <h2 class="h5 font-weight-bold text-navy mb-3">Payment Transaction History</h2>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped small mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Txn Code</th>
+                                        <th>Type</th>
+                                        <th>Amount</th>
+                                        <th>Method</th>
+                                        <th>Status</th>
+                                        <th>Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="p : ${booking.payments}">
+                                        <td class="font-mono text-muted" th:text="${p.transactionCode != null ? p.transactionCode : 'N/A'}">TXN-001</td>
+                                        <td class="font-weight-bold text-navy" th:text="${p.paymentType}">DEPOSIT</td>
+                                        <td class="font-weight-bold"><span th:text="${#numbers.formatDecimal(p.amount, 0, 'COMMA', 0, 'POINT')}">0</span> đ</td>
+                                        <td th:text="${p.paymentMethod != null ? p.paymentMethod : 'VIETQR'}">VIETQR</td>
+                                        <td>
+                                            <span th:if="${p.status == 'paid'}" class="badge badge-success">Paid ✓</span>
+                                            <span th:if="${p.status != 'paid'}" class="badge badge-warning" th:text="${p.status}">Pending</span>
+                                        </td>
+                                        <td class="text-muted" th:text="${#temporals.format(p.paidAt, 'dd/MM/yyyy HH:mm')}">Time</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Dispatch Actions -->
@@ -94,7 +173,7 @@
                         <p class="text-muted small">Select an available physical car of matching type <strong th:text="${booking.vehicleTypeName}"></strong>.</p>
 
                         <div th:if="${#lists.isEmpty(availableVehicles)}" class="alert alert-warning small">
-                            No matching available vehicles in fleet right now.
+                            No matching available cars right now.
                         </div>
 
                         <form th:action="@{/admin/bookings/{id}/assign(id=${booking.id})}" method="post" th:unless="${#lists.isEmpty(availableVehicles)}">
@@ -143,7 +222,7 @@
                     <!-- Completed Note -->
                     <div class="card card-drivenow border-0 p-4 text-center" th:if="${booking.status == 'completed'}">
                         <div class="h5 font-weight-bold text-success mb-1">Rental Trip Completed</div>
-                        <p class="text-muted small mb-0">Vehicle returned to available fleet. Payments and deposit settlements finalized.</p>
+                        <p class="text-muted small mb-0">Car returned to warehouse. Payments and deposit settlements finalized.</p>
                     </div>
                 </div>
             </div>
@@ -155,4 +234,3 @@
 
 </body>
 </html>
-

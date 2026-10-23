@@ -36,7 +36,7 @@
             <!-- Sub Nav Tabs -->
             <ul class="nav nav-pills mb-4 bg-white p-2 rounded-xl border">
                 <li class="nav-item">
-                    <a class="nav-link font-weight-bold text-navy" th:href="@{/admin/vehicles}">Physical Fleet</a>
+                    <a class="nav-link font-weight-bold text-navy" th:href="@{/admin/vehicles}">Cars</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active font-weight-bold bg-navy text-white" th:href="@{/admin/vehicle-types}">Vehicle Models</a>
@@ -62,7 +62,7 @@
             <!-- Table Card -->
             <div class="card border-0 shadow-sm rounded-xl overflow-hidden bg-white">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0 align-middle">
+                    <table class="table table-hover mb-0 align-middle admin-table">
                         <thead class="bg-surface-2 text-navy small font-weight-bold">
                             <tr>
                                 <th class="border-top-0 py-3">Photo</th>
@@ -105,12 +105,12 @@
                                           th:text="${vehicleCounts.get(vt.id) != null ? vehicleCounts.get(vt.id) : 0}">2</span>
                                 </td>
                                 <td class="text-center">
-                                    <div class="d-inline-flex gap-1">
+                                    <div class="d-inline-flex align-items-center justify-content-center" style="gap: 6px;">
                                         <a th:href="@{/admin/vehicle-types/{id}/edit(id=${vt.id})}"
-                                           class="btn btn-outline-primary btn-sm px-2 py-1">Edit</a>
-                                        <form method="post" th:action="@{/admin/vehicle-types/{id}/delete(id=${vt.id})}"
+                                           class="admin-btn btn-soft-primary">Edit</a>
+                                        <form method="post" th:action="@{/admin/vehicle-types/{id}/delete(id=${vt.id})}" class="m-0"
                                               onsubmit="return confirm('Are you sure you want to delete this vehicle model? Deletion will be rejected if vehicles reference it.');">
-                                            <button type="submit" class="btn btn-outline-danger btn-sm px-2 py-1">Delete</button>
+                                            <button type="submit" class="admin-btn btn-soft-danger">Delete</button>
                                         </form>
                                     </div>
                                 </td>

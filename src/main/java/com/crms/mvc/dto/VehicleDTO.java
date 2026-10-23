@@ -43,6 +43,26 @@ public class VehicleDTO {
         }
     }
 
+        public static VehicleDTO fromVehicleType(com.crms.mvc.entity.VehicleType vt) {
+        VehicleDTO dto = new VehicleDTO();
+        dto.setId(vt.getId());
+        dto.setVehicleTypeId(vt.getId());
+        dto.setBrand(vt.getBrand());
+        dto.setModel(vt.getName());
+        dto.setCategory(vt.getCategory());
+        dto.setSeats(vt.getSeats());
+        dto.setTransmission(vt.getTransmission());
+        dto.setFuelType(vt.getFuelType());
+        dto.setPricePerHour(vt.getPricePerHour());
+        dto.setDescription(vt.getDescription());
+        dto.setImageUrl(vt.getImageUrl());
+        dto.setStatus("available");
+        if (vt.getPricePerHour() != null) {
+            dto.setEstimatedDeposit(vt.getPricePerHour().multiply(BigDecimal.valueOf(12)));
+        }
+        return dto;
+    }
+
     public static VehicleDTO fromEntity(Vehicle vehicle) {
         VehicleDTO dto = new VehicleDTO();
         dto.setId(vehicle.getId());
@@ -56,7 +76,7 @@ public class VehicleDTO {
             dto.setProvince(vehicle.getLicensePlate().getProvince());
             dto.setRegistrationExpiry(vehicle.getLicensePlate().getRegistrationExpiry());
         } else {
-            dto.setLicensePlate("Chưa gán");
+            dto.setLicensePlate("Unassigned");
         }
 
         if (vehicle.getVehicleType() != null) {
