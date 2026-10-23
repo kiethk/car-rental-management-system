@@ -90,26 +90,177 @@
                     </div>
                 </div>
 
-                <!-- Rental Contract & Policy Snapshot Card -->
-                <div th:if="${booking.contract != null}" class="bg-white rounded-lg border border-border p-5">
-                    <div class="flex items-center justify-between mb-3">
-                        <div>
-                            <h3 class="font-semibold text-navy text-base mb-0">Digital Rental Agreement & Policies</h3>
-                            <div class="text-xs text-muted-foreground font-mono" th:text="${booking.contract.contractNumber}">CTR-20261022-0001</div>
+                <!-- Formal Digital Rental Contract Document Card -->
+                <div th:if="${booking.contract != null}" class="bg-white rounded-2xl border border-border shadow-xs overflow-hidden">
+                    <!-- Contract Top Bar -->
+                    <div class="px-6 py-4 bg-slate-50 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-navy text-white flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-navy text-base mb-0">Self-Drive Vehicle Rental Contract</h3>
+                                <div class="text-xs text-muted-foreground font-mono" th:text="${booking.contract.contractNumber}">CTR-20261022-0001</div>
+                            </div>
                         </div>
-                        <div>
-                            <span th:if="${booking.contract.contractStatus == 'DRAFT'}" class="text-xs font-semibold px-2.5 py-1 rounded bg-amber-50 text-amber-700 border border-amber-200">Draft (DRAFT)</span>
-                            <span th:if="${booking.contract.contractStatus == 'SIGNED'}" class="text-xs font-semibold px-2.5 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200">Signed (SIGNED)</span>
-                            <span th:if="${booking.contract.contractStatus == 'ACTIVE'}" class="text-xs font-semibold px-2.5 py-1 rounded bg-green-50 text-green-700 border border-green-200">Active (ACTIVE)</span>
-                            <span th:if="${booking.contract.contractStatus == 'COMPLETED'}" class="text-xs font-semibold px-2.5 py-1 rounded bg-gray-50 text-gray-700 border border-gray-200">Completed (COMPLETED)</span>
-                            <span th:if="${booking.contract.contractStatus == 'CANCELLED'}" class="text-xs font-semibold px-2.5 py-1 rounded bg-red-50 text-red-600 border border-red-200">Cancelled (CANCELLED)</span>
+                        <div class="flex items-center gap-2">
+                            <span th:if="${booking.contract.contractStatus == 'DRAFT'}" class="text-xs font-bold px-2.5 py-1 rounded bg-amber-50 text-amber-700 border border-amber-200">DRAFT (PENDING DEPOSIT)</span>
+                            <span th:if="${booking.contract.contractStatus == 'SIGNED'}" class="text-xs font-bold px-2.5 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200">SIGNED (CONFIRMED)</span>
+                            <span th:if="${booking.contract.contractStatus == 'ACTIVE'}" class="text-xs font-bold px-2.5 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">ACTIVE (RENTAL IN PROGRESS)</span>
+                            <span th:if="${booking.contract.contractStatus == 'COMPLETED'}" class="text-xs font-bold px-2.5 py-1 rounded bg-slate-100 text-slate-700 border border-slate-300">COMPLETED</span>
+                            <span th:if="${booking.contract.contractStatus == 'CANCELLED'}" class="text-xs font-bold px-2.5 py-1 rounded bg-rose-50 text-rose-700 border border-rose-200">CANCELLED</span>
+                            
+                            <button type="button" onclick="window.print()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition-all cursor-pointer">
+                                <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                    <rect x="6" y="14" width="12" height="8"></rect>
+                                </svg>
+                                <span>Print / Save PDF</span>
+                            </button>
                         </div>
                     </div>
-                    <div class="text-xs text-muted-foreground mb-3" th:if="${booking.contract.signedAt != null}">
-                        Digitally signed at: <span class="font-medium text-navy" th:text="${#temporals.format(booking.contract.signedAt, 'dd/MM/yyyy HH:mm')}">Time</span> · Method: <span class="font-medium text-navy" th:text="${booking.contract.signatureType}">DIGITAL_CHECK</span>
-                    </div>
-                    <div class="bg-surface rounded-md p-3.5 border border-border text-xs text-navy leading-relaxed max-h-48 overflow-y-auto whitespace-pre-line font-sans" th:text="${booking.contract.termsSnapshot}">
-                        Agreement Terms & Policies Snapshot...
+
+                    <!-- Contract Document Body -->
+                    <div class="p-6 sm:p-8 space-y-6 text-xs leading-relaxed text-slate-700">
+                        <!-- Contract Formal Title -->
+                        <div class="text-center pb-4 border-b border-slate-200">
+                            <div class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Official Rental Agreement</div>
+                            <h2 class="text-base font-extrabold text-slate-900 uppercase mt-0.5 tracking-wide">SELF-DRIVE VEHICLE RENTAL CONTRACT</h2>
+                            <div class="text-[11px] text-slate-500 mt-1">
+                                Contract Ref: <strong class="font-mono text-slate-800" th:text="${booking.contract.contractNumber}">CTR-20261022-0001</strong> • Booking #<strong class="font-mono text-slate-800" th:text="${booking.id}">1</strong>
+                            </div>
+                        </div>
+
+                        <!-- Article 1: Contracting Parties -->
+                        <div class="space-y-2">
+                            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider text-navy">Article 1: Contracting Parties</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                <div>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Party A (Lessor)</span>
+                                    <div class="font-bold text-slate-900 text-xs mt-0.5">DriveNow Mobility Vietnam Co., Ltd</div>
+                                    <div class="text-slate-600 mt-1">Central Station: 120 Trường Chinh, Tân Bình, HCMC</div>
+                                    <div class="text-slate-600">Hotline 24/7: 1800 6868</div>
+                                </div>
+                                <div class="sm:border-l sm:border-slate-200 sm:pl-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200">
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Party B (Lessee)</span>
+                                    <div class="font-bold text-slate-900 text-xs mt-0.5" th:text="${booking.customerName}">Customer Name</div>
+                                    <div class="text-slate-600 mt-1" th:text="'Phone: ' + (${booking.customerPhone != null ? booking.customerPhone : 'N/A'})">Phone: 0901234567</div>
+                                    <div class="text-slate-600" th:text="'Email: ' + (${booking.customerEmail != null ? booking.customerEmail : 'N/A'})">Email: customer@gmail.com</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Article 2: Vehicle & Rental Schedule -->
+                        <div class="space-y-2">
+                            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider text-navy">Article 2: Assigned Vehicle & Rental Schedule</h4>
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-200">
+                                    <div>
+                                        <span class="text-slate-500">Vehicle Model:</span>
+                                        <strong class="text-slate-900" th:text="${booking.vehicleTypeName}">Toyota Vios</strong>
+                                        <span class="text-slate-500 text-[11px]" th:text="'(' + ${booking.vehicleCategory} + ', ' + ${booking.seats} + ' seats)'">(Sedan, 5 seats)</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-500">Assigned Plate:</span>
+                                        <strong class="font-mono text-slate-900 px-2 py-0.5 rounded bg-white border border-slate-300" th:text="${booking.licensePlate != null ? booking.licensePlate : 'Auto-assigned'}">51A-123.45</strong>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-slate-600">
+                                    <div>Pickup Time: <strong class="text-slate-900 font-mono" th:text="${#temporals.format(booking.pickupTime, 'HH:mm dd/MM/yyyy')}">09:00 24/10/2026</strong></div>
+                                    <div>Scheduled Return: <strong class="text-slate-900 font-mono" th:text="${#temporals.format(booking.scheduledEndTime, 'HH:mm dd/MM/yyyy')}">18:00 24/10/2026</strong></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Article 3: Financial Settlement -->
+                        <div class="space-y-2">
+                            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider text-navy">Article 3: Rental Rate, Deposit & Settlement</h4>
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                                    <div class="bg-white p-2.5 rounded-lg border border-slate-200">
+                                        <div class="text-[10px] text-slate-400 font-bold uppercase">Hourly Rate</div>
+                                        <div class="font-bold text-slate-900 font-mono mt-0.5" th:text="${#numbers.formatDecimal(booking.pricePerHour, 0, 'COMMA', 0, 'POINT') + ' đ/h'}">150,000 đ/h</div>
+                                    </div>
+                                    <div class="bg-white p-2.5 rounded-lg border border-slate-200">
+                                        <div class="text-[10px] text-slate-400 font-bold uppercase">Total Rental</div>
+                                        <div class="font-bold text-slate-900 font-mono mt-0.5" th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT') + ' đ'}">1,350,000 đ</div>
+                                    </div>
+                                    <div class="bg-emerald-50 p-2.5 rounded-lg border border-emerald-200">
+                                        <div class="text-[10px] text-emerald-700 font-bold uppercase">Deposit (50%)</div>
+                                        <div class="font-extrabold text-emerald-800 font-mono mt-0.5" th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT') + ' đ'}">675,000 đ</div>
+                                    </div>
+                                    <div class="bg-white p-2.5 rounded-lg border border-slate-200">
+                                        <div class="text-[10px] text-slate-400 font-bold uppercase">Balance On Return</div>
+                                        <div class="font-bold text-slate-900 font-mono mt-0.5" th:text="${#numbers.formatDecimal(booking.totalPrice - booking.depositAmount, 0, 'COMMA', 0, 'POINT') + ' đ'}">675,000 đ</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Article 4: Standard Policies -->
+                        <div class="space-y-2">
+                            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider text-navy">Article 4: Standard Operating Regulations</h4>
+                            <div class="space-y-2 text-slate-700">
+                                <p class="pl-3 border-l-2 border-slate-300 mb-0">
+                                    <strong>4.1. Reservation Deposit:</strong> 50% reservation deposit guarantees vehicle allocation. Remaining rental balance and incidental fees settled upon return.
+                                </p>
+                                <p class="pl-3 border-l-2 border-slate-300 mb-0">
+                                    <strong>4.2. Cancellation Policy:</strong> 100% refund of deposit for cancellations made at least 72 hours before scheduled pickup. Non-refundable within 72 hours.
+                                </p>
+                                <p class="pl-3 border-l-2 border-slate-300 mb-0">
+                                    <strong>4.3. Late Return Surcharge:</strong> Delayed returns beyond contractual time assessed at 200% standard hourly rental rate.
+                                </p>
+                                <p class="pl-3 border-l-2 border-slate-300 mb-0">
+                                    <strong>4.4. Depot Handover:</strong> Handover depot operates 06:00 – 22:00 daily. Physical Citizen ID and Driver License verification mandatory. Mutual digital checklist recorded upon pickup and return.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Article 5: Signatures Block -->
+                        <div class="space-y-3 pt-3 border-t border-slate-200">
+                            <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider text-navy">Article 5: Legal Signatures & Digital Authorization</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <!-- Party A Stamp -->
+                                <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex flex-col justify-between">
+                                    <div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Party A (Lessor)</span>
+                                        <div class="font-bold text-slate-900 text-xs mt-1">DriveNow Mobility Services</div>
+                                    </div>
+                                    <div class="mt-4 pt-3 border-t border-slate-200 flex items-center gap-2 text-emerald-700">
+                                        <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                                        <span class="text-[11px] font-bold">Authorized Digital System Seal</span>
+                                    </div>
+                                </div>
+
+                                <!-- Party B Signature -->
+                                <div class="p-4 rounded-xl border flex flex-col justify-between"
+                                     th:classappend="${booking.contract.signedAt != null ? 'border-emerald-200 bg-emerald-50/40' : 'border-dashed border-amber-300 bg-amber-50/40'}">
+                                    <div>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Party B (Lessee)</span>
+                                        <div class="font-bold text-slate-900 text-xs mt-1" th:text="${booking.customerName}">Customer Name</div>
+                                    </div>
+                                    <div class="mt-4 pt-3 border-t border-slate-200">
+                                        <div th:if="${booking.contract.signedAt != null}" class="text-emerald-800 text-[11px] space-y-0.5">
+                                            <div class="font-bold flex items-center gap-1.5">
+                                                <svg class="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                                <span>Digitally Signed & Legally Binding</span>
+                                            </div>
+                                            <div class="text-[10px] text-slate-500" th:text="'Signed at: ' + ${#temporals.format(booking.contract.signedAt, 'HH:mm dd/MM/yyyy')} + ' • Method: ' + ${booking.contract.signatureType}">Signed at: 09:00 24/10/2026</div>
+                                        </div>
+                                        <div th:unless="${booking.contract.signedAt != null}" class="text-amber-800 text-[11px] flex items-center gap-1.5">
+                                            <svg class="w-3.5 h-3.5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                            <span>Pending Deposit Payment to Finalize Signature</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

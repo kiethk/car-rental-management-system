@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import com.crms.mvc.entity.LicenseDocument;
 import com.crms.mvc.service.LicenseDocumentService;
+import com.crms.mvc.service.PolicyService;
 
 @Controller
 public class BookingController {
@@ -38,18 +39,21 @@ public class BookingController {
     private final PaymentService paymentService;
     private final VehicleTypeRepository vehicleTypeRepository;
     private final LicenseDocumentService licenseDocumentService;
+    private final PolicyService policyService;
 
     public BookingController(
             BookingService bookingService,
             SlotService slotService,
             PaymentService paymentService,
             VehicleTypeRepository vehicleTypeRepository,
-            LicenseDocumentService licenseDocumentService) {
+            LicenseDocumentService licenseDocumentService,
+            PolicyService policyService) {
         this.bookingService = bookingService;
         this.slotService = slotService;
         this.paymentService = paymentService;
         this.vehicleTypeRepository = vehicleTypeRepository;
         this.licenseDocumentService = licenseDocumentService;
+        this.policyService = policyService;
     }
 
     // STEP 1 & 2: Choose rental schedule & filter available vehicle types
@@ -269,6 +273,8 @@ public class BookingController {
         model.addAttribute("depositAmount", depositAmount);
         model.addAttribute("remainingAmount", remainingAmount);
         model.addAttribute("vehicleImage", resolveVehicleImage(vt));
+        model.addAttribute("termsSnapshot", policyService.buildTermsSnapshot());
+        model.addAttribute("rentalPolicies", policyService.getAllPolicies());
         return "bookings/checkout";
     }
 

@@ -1287,3 +1287,27 @@ a.admin-btn {
 .admin-odometer-wrap button:hover {
   background: #e2e8f0 !important;
 }
+
+/* --- Print Styles for Digital Contract & Invoices --- */
+@media print {
+  header, footer, nav, .btn, button, .crms-dropdown, #rentalTermsModal, #depositContractModal {
+    display: none !important;
+  }
+  body, main {
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .max-w-7xl, .container, .crms-container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .bg-white, .bg-surface {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    box-shadow: none !important;
+  }
+}
