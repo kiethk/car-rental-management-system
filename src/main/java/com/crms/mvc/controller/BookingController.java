@@ -52,7 +52,7 @@ public class BookingController {
         this.licenseDocumentService = licenseDocumentService;
     }
 
-    // BƯỚC 1 & 2: Khách chọn ngày giờ nhận/trả -> Xem danh sách dòng xe khả dụng
+    // STEP 1 & 2: Choose rental schedule & filter available vehicle types
     @GetMapping({"/search", "/vehicles/available"})
     public String searchAvailableVehicles(
             @RequestParam(value = "startDate", required = false) String startDateStr,
@@ -60,8 +60,11 @@ public class BookingController {
             @RequestParam(value = "date", required = false) String dateStr,
             @RequestParam(value = "startTime", required = false) String startStr,
             @RequestParam(value = "endTime", required = false) String endStr,
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "brand", required = false, defaultValue = "all") String brand,
             @RequestParam(value = "category", required = false, defaultValue = "all") String category,
             @RequestParam(value = "seats", required = false, defaultValue = "0") Integer minSeats,
+            @RequestParam(value = "transmission", required = false, defaultValue = "all") String transmission,
             @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
             @RequestParam(value = "sortBy", required = false, defaultValue = "price") String sortBy,
             Model model) {
@@ -122,10 +125,26 @@ public class BookingController {
         List<VehicleTypeSearchResultDTO> rawResults = slotService.searchAvailableVehicleTypes(
                 startDateTime.atOffset(offset), endDateTime.atOffset(offset), category);
 
-        // Filter by min seats
+        // Filter by keyword, brand, transmission, seats, max price
         List<VehicleTypeSearchResultDTO> results = rawResults.stream()
                 .filter(v -> minSeats == null || minSeats == 0 || (v.getSeats() != null && v.getSeats() >= minSeats))
                 .filter(v -> maxPrice == null || v.getPricePerHour().compareTo(maxPrice) <= 0)
+                .filter(v -> {
+                    if (keyword == null || keyword.isBlank()) return true;
+                    String kw = keyword.trim().toLowerCase();
+                    String name = v.getName() != null ? v.getName().toLowerCase() : "";
+                    String b = v.getBrand() != null ? v.getBrand().toLowerCase() : "";
+                    String display = v.getDisplayName() != null ? v.getDisplayName().toLowerCase() : "";
+                    return name.contains(kw) || b.contains(kw) || display.contains(kw);
+                })
+                .filter(v -> {
+                    if (brand == null || brand.isBlank() || brand.equalsIgnoreCase("all")) return true;
+                    return v.getBrand() != null && v.getBrand().equalsIgnoreCase(brand.trim());
+                })
+                .filter(v -> {
+                    if (transmission == null || transmission.isBlank() || transmission.equalsIgnoreCase("all")) return true;
+                    return v.getTransmission() != null && v.getTransmission().equalsIgnoreCase(transmission.trim());
+                })
                 .toList();
 
         long rentalHours = Math.max(1, Duration.between(startDateTime, endDateTime).toHours());
@@ -141,8 +160,11 @@ public class BookingController {
         model.addAttribute("selectedEnd", endTime.toString().substring(0, 5));
         model.addAttribute("startTime", startDateTime);
         model.addAttribute("endTime", endDateTime);
+        model.addAttribute("keyword", keyword != null ? keyword.trim() : "");
+        model.addAttribute("brand", brand);
         model.addAttribute("category", category);
         model.addAttribute("minSeats", minSeats);
+        model.addAttribute("transmission", transmission);
         model.addAttribute("maxPrice", maxPrice != null ? maxPrice : BigDecimal.valueOf(500000));
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("rentalHours", rentalHours);
@@ -151,6 +173,8 @@ public class BookingController {
         model.addAttribute("durationDisplay", durationDisplay);
         model.addAttribute("results", results);
         model.addAttribute("allCount", results.size());
+        model.addAttribute("brands", vehicleTypeRepository.findDistinctBrands());
+        model.addAttribute("categories", vehicleTypeRepository.findDistinctCategories());
         return "bookings/search";
     }
 

@@ -7,9 +7,8 @@
 -->
 <div th:fragment="sidebar(active)" class="list-group shadow-sm border-0 rounded-lg overflow-hidden mb-4">
     <div class="list-group-item bg-navy text-white py-3 border-0">
-        <div class="d-flex justify-content-between align-items-center">
-            <span class="font-weight-bold text-uppercase small" style="letter-spacing: 0.05em;">CRMS Admin</span>
-            <span class="badge badge-warning text-dark font-weight-bold" th:text="${session.employeeRole != null ? session.employeeRole : 'STAFF'}">STAFF</span>
+        <div class="d-flex align-items-center gap-2">
+            <span class="font-weight-bold text-uppercase small" style="letter-spacing: 0.05em;">Operations Portal</span>
         </div>
     </div>
 
@@ -25,10 +24,10 @@
         Rental Management
     </a>
 
-    <!-- Fleet & License Plates -->
+    <!-- Car Management -->
     <a th:href="@{/admin/vehicles}"
        th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'vehicles'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
-        Fleet Management
+        Car Management
     </a>
     <a th:href="@{/admin/inspections}"
        th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'inspections'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
@@ -56,7 +55,7 @@
     </a>
 
     <div class="list-group-item bg-light p-3 text-center border-0">
-        <a th:href="@{/}" class="btn btn-outline-secondary btn-sm btn-block">Back to Customer View</a>
+        <a th:href="@{/}" class="btn btn-outline-secondary btn-sm btn-block">Customer View</a>
     </div>
 </div>
 </body>

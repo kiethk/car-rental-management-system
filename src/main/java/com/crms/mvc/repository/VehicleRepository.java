@@ -32,4 +32,8 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     @Query("SELECT v FROM Vehicle v JOIN FETCH v.vehicleType vt LEFT JOIN FETCH v.licensePlate lp ORDER BY v.id ASC")
     List<Vehicle> findAllWithDetails();
+
+    @Query("SELECT v FROM Vehicle v JOIN FETCH v.vehicleType vt LEFT JOIN FETCH v.licensePlate lp WHERE vt.id = :typeId ORDER BY v.id ASC")
+    List<Vehicle> findByVehicleTypeIdWithDetails(@Param("typeId") Long typeId);
+
 }

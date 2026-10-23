@@ -36,7 +36,7 @@ public class AuthServiceImpl implements AuthService {
             if (admin == null) {
                 try {
                     admin = new Employee();
-                    admin.setName("Admin Quản Trị");
+                    admin.setName("System Admin");
                     admin.setEmail("admin@crms.com");
                     admin.setPhone("0988888888");
                     admin.setRole("admin");
@@ -46,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
                 }
             }
             Long adminId = (admin != null && admin.getId() != null) ? admin.getId() : 1L;
-            String adminName = (admin != null && admin.getName() != null) ? admin.getName() : "Admin Quản Trị";
+            String adminName = (admin != null && admin.getName() != null) ? admin.getName() : "System Admin";
             return new LoginIdentityDTO("employee", adminId, adminName, "admin");
         }
 

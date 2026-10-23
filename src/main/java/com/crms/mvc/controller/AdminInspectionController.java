@@ -72,7 +72,7 @@ public class AdminInspectionController {
 
         try {
             VehicleInspection scheduled = vehicleInspectionService.schedule(form);
-            ra.addFlashAttribute("success", "Đã lên lịch kiểm định cho xe #" + scheduled.getVehicle().getId() + " (" + scheduled.getVehicle().getLicensePlate().getPlate() + ")");
+            ra.addFlashAttribute("success", "Inspection scheduled for car #" + scheduled.getVehicle().getId() + " (" + scheduled.getVehicle().getLicensePlate().getPlate() + ")");
             return "redirect:/admin/inspections";
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
@@ -85,7 +85,7 @@ public class AdminInspectionController {
     public String startInspection(@PathVariable Long id, RedirectAttributes ra) {
         try {
             vehicleInspectionService.startInspection(id);
-            ra.addFlashAttribute("success", "Xe đã được đưa vào xưởng kiểm định. Trạng thái xe đổi sang ĐANG BẢO DƯỠNG (maintenance).");
+            ra.addFlashAttribute("success", "Car moved to inspection workshop. Status updated to MAINTENANCE.");
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
         }
@@ -95,7 +95,7 @@ public class AdminInspectionController {
     @GetMapping("/{id}/result")
     public String resultForm(@PathVariable Long id, Model model) {
         VehicleInspection inspection = vehicleInspectionService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đợt kiểm định ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Inspection record not found for ID: " + id));
 
         VehicleInspectionFormDTO form = VehicleInspectionFormDTO.fromEntity(inspection);
         if (form.getNewRegistrationExpiry() == null) {
@@ -118,9 +118,9 @@ public class AdminInspectionController {
         try {
             vehicleInspectionService.recordResult(id, status, notes, newRegistrationExpiry);
             if ("passed".equalsIgnoreCase(status)) {
-                ra.addFlashAttribute("success", "Ghi nhận kiểm định ĐẠT thành công! Xe đã trở về trạng thái SẴN SÀNG (available) và hạn đăng kiểm đã được gia hạn.");
+                ra.addFlashAttribute("success", "Inspection recorded as PASSED! Car is now AVAILABLE and registration date renewed.");
             } else {
-                ra.addFlashAttribute("warning", "Ghi nhận kiểm định KHÔNG ĐẠT. Xe tiếp tục ở trạng thái ĐANG BẢO DƯỠNG (maintenance) để sửa chữa.");
+                ra.addFlashAttribute("warning", "Inspection recorded as FAILED. Car remains in MAINTENANCE for repairs.");
             }
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());

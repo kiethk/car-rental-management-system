@@ -47,7 +47,7 @@
                         <div class="col-md-12 form-group mb-3">
                             <label class="font-weight-bold small text-navy mb-1">Select Vehicle for Inspection / Maintenance <span class="text-danger">*</span></label>
                             <select th:field="*{vehicleId}" class="form-control rounded-lg" required>
-                                <option value="" disabled selected>-- Select a vehicle from fleet --</option>
+                                <option value="" disabled selected>-- Select an available car --</option>
                                 <option th:each="v : ${vehicles}" th:value="${v.id}"
                                         th:text="'Vehicle #' + ${v.id} + ' — ' + ${v.vehicleType.displayName} + ' — Plate: ' + (${v.licensePlate != null} ? ${v.licensePlate.plate} : 'Unassigned') + ' (Status: ' + ${v.status} + ')'"></option>
                             </select>

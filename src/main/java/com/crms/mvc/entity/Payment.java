@@ -16,11 +16,17 @@ public class Payment {
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 
-    @Column(name = "payment_type", nullable = false, length = 30)
+    @Column(name = "transaction_code", length = 100)
+    private String transactionCode;
+
+    @Column(name = "payment_type", nullable = false, length = 40)
     private String paymentType;
 
     @Column(name = "amount", nullable = false, precision = 14, scale = 2)
     private BigDecimal amount;
+
+    @Column(name = "payment_method", nullable = false, length = 30)
+    private String paymentMethod = "VIETQR";
 
     @Column(name = "status", nullable = false, length = 30)
     private String status;
@@ -34,11 +40,17 @@ public class Payment {
     public Booking getBooking() { return booking; }
     public void setBooking(Booking booking) { this.booking = booking; }
 
+    public String getTransactionCode() { return transactionCode; }
+    public void setTransactionCode(String transactionCode) { this.transactionCode = transactionCode; }
+
     public String getPaymentType() { return paymentType; }
     public void setPaymentType(String paymentType) { this.paymentType = paymentType; }
 
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
+
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

@@ -3,7 +3,9 @@ package com.crms.mvc.service.impl;
 import com.crms.mvc.dto.*;
 import com.crms.mvc.entity.*;
 import com.crms.mvc.repository.*;
+import com.crms.mvc.service.BookingFeeService;
 import com.crms.mvc.service.BookingService;
+import com.crms.mvc.service.ContractService;
 import com.crms.mvc.service.PaymentService;
 import com.crms.mvc.service.SlotService;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,8 @@ public class BookingServiceImpl implements BookingService {
     private final EmployeeRepository employeeRepository;
     private final PromotionRepository promotionRepository;
     private final PaymentService paymentService;
+    private final ContractService contractService;
+    private final BookingFeeService bookingFeeService;
 
     public BookingServiceImpl(
             BookingRepository bookingRepository,
@@ -37,7 +41,9 @@ public class BookingServiceImpl implements BookingService {
             VehicleRepository vehicleRepository,
             EmployeeRepository employeeRepository,
             PromotionRepository promotionRepository,
-            PaymentService paymentService) {
+            PaymentService paymentService,
+            ContractService contractService,
+            BookingFeeService bookingFeeService) {
         this.bookingRepository = bookingRepository;
         this.customerRepository = customerRepository;
         this.slotService = slotService;
@@ -46,6 +52,8 @@ public class BookingServiceImpl implements BookingService {
         this.employeeRepository = employeeRepository;
         this.promotionRepository = promotionRepository;
         this.paymentService = paymentService;
+        this.contractService = contractService;
+        this.bookingFeeService = bookingFeeService;
     }
 
     @Override
@@ -68,38 +76,27 @@ public class BookingServiceImpl implements BookingService {
         bookingRepository.cancelExpiredPendingBookings(OffsetDateTime.now().minusMinutes(15));
 
         // 0.1 Nếu khách hàng này đã có đơn 'pending_payment' trong cùng khung giờ,
-        // tự động hủy đơn cũ để nhả xe cho đơn mới:
-        List<Booking> myOldPendingBookings = bookingRepository.findPendingBookingsByCustomerAndTimeRange(customerId, start, end);
-        for (Booking oldPending : myOldPendingBookings) {
+        // hệ thống tự hủy đơn pending cũ đó để nhường chỗ cho lần tạo mới này!
+        List<Booking> existingPendingBookings = bookingRepository.findPendingBookingsByCustomerAndTimeRange(customerId,
+                start, end);
+        for (Booking oldPending : existingPendingBookings) {
             oldPending.setStatus("cancelled");
             oldPending.setCancelledAt(OffsetDateTime.now());
             bookingRepository.save(oldPending);
+            contractService.updateContractStatus(oldPending.getId(), "CANCELLED");
         }
 
-        // 1. Kiểm tra xem có xe khả dụng trong khung giờ này không
-        List<Vehicle> availableCars = slotService.findAvailableVehiclesInTimeRange(type.getId(), start, end);
-        if (availableCars.isEmpty()) {
-            throw new IllegalStateException("No available cars of this type in the selected timeframe.");
-        }
-
-        // 2. Nếu khách chọn xe ưu tiên, kiểm tra xe đó có rảnh không; nếu không chọn
-        // thì auto-assign xe đầu tiên khả dụng
+        // 1. Tìm xe thực tế có sẵn thông qua SlotService
+        List<Vehicle> availableVehicles = slotService.findAvailableVehiclesInTimeRange(type.getId(), start, end);
         Vehicle assignedVehicle = null;
-        if (dto.getVehicleId() != null) {
-            assignedVehicle = availableCars.stream()
-                    .filter(v -> v.getId().equals(dto.getVehicleId()))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException(
-                            "Selected preferred vehicle is not available in this timeframe."));
-        } else {
-            // Auto-assign: pick first available vehicle of the requested type
-            assignedVehicle = availableCars.get(0);
+        if (!availableVehicles.isEmpty()) {
+            assignedVehicle = availableVehicles.get(0);
         }
 
-        // 3. Tạo Slot động cho khoảng thời gian của khách
+        // 2. Tạo Slot mới tương ứng
         Slot slot = slotService.createSlotForBooking(type.getId(), start, end);
 
-        // 4. Tính toán chi phí
+        // 3. Tính toán chi phí
         long hours = Math.max(1, Duration.between(start, end).toHours());
         BigDecimal rentalPrice = type.getPricePerHour().multiply(BigDecimal.valueOf(hours));
         BigDecimal discountAmount = BigDecimal.ZERO;
@@ -138,7 +135,12 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus("pending_payment");
         booking.setCreatedAt(OffsetDateTime.now());
 
-        return bookingRepository.save(booking);
+        Booking saved = bookingRepository.save(booking);
+
+        // Tạo hợp đồng nháp (DRAFT) đóng băng chính sách hiện hành
+        contractService.createContractForBooking(saved);
+
+        return saved;
     }
 
     @Override
@@ -152,22 +154,26 @@ public class BookingServiceImpl implements BookingService {
             s.setVehicleTypeName(vt.getName());
             s.setVehicleCategory(vt.getCategory());
             s.setImageUrl(resolveImageUrl(vt));
-            s.setLicensePlate(b.getVehicle() != null && b.getVehicle().getLicensePlate() != null
-                    ? b.getVehicle().getLicensePlate().getPlate()
-                    : "Unassigned");
+            if (b.getVehicle() != null) {
+                s.setLicensePlate(
+                        b.getVehicle().getLicensePlate() != null ? b.getVehicle().getLicensePlate().getPlate() : "N/A");
+            } else {
+                s.setLicensePlate("Unassigned");
+            }
             s.setPickupTime(b.getPickupTime());
             s.setScheduledEndTime(b.getScheduledEndTime());
-            s.setStatus(b.getStatus());
             s.setTotalPrice(b.getTotalPrice());
             s.setDepositAmount(b.getDepositAmount());
-            s.setCustomerName(b.getCustomer().getName());
+            s.setStatus(b.getStatus());
+            s.setCustomerName(b.getCustomer() != null ? b.getCustomer().getName() : null);
             return s;
         }).toList();
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public BookingDetailDTO getBookingDetail(Long bookingId, Long customerId) {
+        bookingRepository.cancelExpiredPendingBookings(OffsetDateTime.now().minusMinutes(15));
         Booking b = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
         if (customerId != null && !b.getCustomer().getId().equals(customerId)) {
@@ -177,17 +183,19 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public BookingDetailDTO getBookingDetailForAdmin(Long bookingId) {
+        bookingRepository.cancelExpiredPendingBookings(OffsetDateTime.now().minusMinutes(15));
         Booking b = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
         return mapToDetailDTO(b);
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<BookingSummaryDTO> getAllBookings(String status) {
-        List<Booking> list = (status == null || status.trim().isEmpty() || "all".equalsIgnoreCase(status))
+        bookingRepository.cancelExpiredPendingBookings(OffsetDateTime.now().minusMinutes(15));
+        List<Booking> list = (status == null || status.isBlank())
                 ? bookingRepository.findAllByOrderByCreatedAtDesc()
                 : bookingRepository.findByStatusOrderByCreatedAtDesc(status.trim());
 
@@ -198,15 +206,18 @@ public class BookingServiceImpl implements BookingService {
             s.setVehicleTypeName(vt.getName());
             s.setVehicleCategory(vt.getCategory());
             s.setImageUrl(resolveImageUrl(vt));
-            s.setLicensePlate(b.getVehicle() != null && b.getVehicle().getLicensePlate() != null
-                    ? b.getVehicle().getLicensePlate().getPlate()
-                    : "Unassigned");
+            if (b.getVehicle() != null) {
+                s.setLicensePlate(
+                        b.getVehicle().getLicensePlate() != null ? b.getVehicle().getLicensePlate().getPlate() : "N/A");
+            } else {
+                s.setLicensePlate("Unassigned");
+            }
             s.setPickupTime(b.getPickupTime());
             s.setScheduledEndTime(b.getScheduledEndTime());
-            s.setStatus(b.getStatus());
             s.setTotalPrice(b.getTotalPrice());
             s.setDepositAmount(b.getDepositAmount());
-            s.setCustomerName(b.getCustomer().getName());
+            s.setStatus(b.getStatus());
+            s.setCustomerName(b.getCustomer() != null ? b.getCustomer().getName() : null);
             return s;
         }).toList();
     }
@@ -225,6 +236,7 @@ public class BookingServiceImpl implements BookingService {
         b.setStatus("cancelled");
         b.setCancelledAt(OffsetDateTime.now());
         bookingRepository.save(b);
+        contractService.updateContractStatus(bookingId, "CANCELLED");
     }
 
     @Override
@@ -265,6 +277,7 @@ public class BookingServiceImpl implements BookingService {
 
         vehicleRepository.save(b.getVehicle());
         bookingRepository.save(b);
+        contractService.updateContractStatus(bookingId, "ACTIVE");
     }
 
     @Override
@@ -282,7 +295,8 @@ public class BookingServiceImpl implements BookingService {
         BigDecimal lateFee = BigDecimal.ZERO;
         if (actualReturn.isAfter(b.getScheduledEndTime())) {
             long lateHours = Math.max(1, Duration.between(b.getScheduledEndTime(), actualReturn).toHours());
-            lateFee = b.getPricePerHour().multiply(BigDecimal.valueOf(lateHours)).multiply(BigDecimal.valueOf(1.5));
+            // Áp dụng chính sách phạt trễ hạn 200% đơn giá theo giờ
+            lateFee = b.getPricePerHour().multiply(BigDecimal.valueOf(lateHours)).multiply(BigDecimal.valueOf(2.0));
         }
 
         paymentService.processSettlement(bookingId, lateFee, dto != null ? dto.getAdditionalFine() : BigDecimal.ZERO);
@@ -337,13 +351,43 @@ public class BookingServiceImpl implements BookingService {
         for (Payment p : pList) {
             BookingDetailDTO.PaymentDTO pd = new BookingDetailDTO.PaymentDTO();
             pd.setId(p.getId());
+            pd.setTransactionCode(p.getTransactionCode());
             pd.setPaymentType(p.getPaymentType());
             pd.setAmount(p.getAmount());
+            pd.setPaymentMethod(p.getPaymentMethod());
             pd.setStatus(p.getStatus());
             pd.setPaidAt(p.getPaidAt());
             pDtos.add(pd);
         }
         d.setPayments(pDtos);
+
+        contractService.getContractByBookingId(b.getId()).ifPresent(c -> {
+            BookingDetailDTO.ContractDTO cd = new BookingDetailDTO.ContractDTO();
+            cd.setId(c.getId());
+            cd.setContractNumber(c.getContractNumber());
+            cd.setSignedAt(c.getSignedAt());
+            cd.setSignatureType(c.getSignatureType());
+            cd.setTermsSnapshot(c.getTermsSnapshot());
+            cd.setContractStatus(c.getContractStatus());
+            cd.setFilePdfUrl(c.getFilePdfUrl());
+            cd.setCreatedAt(c.getCreatedAt());
+            d.setContract(cd);
+        });
+
+        List<BookingFee> fees = bookingFeeService.getFeesByBooking(b.getId());
+        List<BookingDetailDTO.BookingFeeDTO> feeDtos = new ArrayList<>();
+        for (BookingFee fee : fees) {
+            BookingDetailDTO.BookingFeeDTO fd = new BookingDetailDTO.BookingFeeDTO();
+            fd.setId(fee.getId());
+            fd.setFeeType(fee.getFeeType());
+            fd.setAmount(fee.getAmount());
+            fd.setDescription(fee.getDescription());
+            fd.setIssueId(fee.getIssue() != null ? fee.getIssue().getId() : null);
+            fd.setCreatedAt(fee.getCreatedAt());
+            feeDtos.add(fd);
+        }
+        d.setFees(feeDtos);
+
         return d;
     }
 

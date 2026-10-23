@@ -24,7 +24,7 @@ public class ProfileController {
     public String profile(HttpSession session, Model model) {
         Long customerId = (Long) session.getAttribute("customerId");
         if (customerId == null) {
-            return "redirect:/admin/licenses";
+            return session.getAttribute("employeeId") != null ? "redirect:/admin/dashboard" : "redirect:/login";
         }
 
         CustomerProfileDTO profile = customerService.getProfile(customerId);
@@ -44,7 +44,7 @@ public class ProfileController {
                                 Model model) {
         Long customerId = (Long) session.getAttribute("customerId");
         if (customerId == null) {
-            return "redirect:/admin/licenses";
+            return session.getAttribute("employeeId") != null ? "redirect:/admin/dashboard" : "redirect:/login";
         }
 
         if (result.hasErrors()) {
@@ -68,7 +68,7 @@ public class ProfileController {
                                  Model model) {
         Long customerId = (Long) session.getAttribute("customerId");
         if (customerId == null) {
-            return "redirect:/admin/licenses";
+            return session.getAttribute("employeeId") != null ? "redirect:/admin/dashboard" : "redirect:/login";
         }
 
         CustomerProfileDTO profile = customerService.getProfile(customerId);

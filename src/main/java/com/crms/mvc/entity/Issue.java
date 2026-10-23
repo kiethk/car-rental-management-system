@@ -1,7 +1,6 @@
 package com.crms.mvc.entity;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -37,9 +36,6 @@ public class Issue {
     @Column(name = "status", nullable = false, length = 30)
     private String status;
 
-    @Column(name = "fine_amount", nullable = false, precision = 14, scale = 2)
-    private BigDecimal fineAmount;
-
     @Column(name = "evidence_url", length = 500)
     private String evidenceUrl;
 
@@ -69,9 +65,6 @@ public class Issue {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
-
-    public BigDecimal getFineAmount() { return fineAmount; }
-    public void setFineAmount(BigDecimal fineAmount) { this.fineAmount = fineAmount; }
 
     public String getEvidenceUrl() { return evidenceUrl; }
     public void setEvidenceUrl(String evidenceUrl) { this.evidenceUrl = evidenceUrl; }

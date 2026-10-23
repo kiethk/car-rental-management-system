@@ -34,13 +34,13 @@
                 <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
                     <div>
                         <h1 class="h4 font-weight-bold text-navy mb-1"
-                            th:text="${vehicleForm.id != null ? 'Edit Vehicle #' + vehicleForm.id : 'Add New Vehicle to Fleet'}">
+                            th:text="${vehicleForm.id != null ? 'Edit Vehicle #' + vehicleForm.id : 'Add New Car'}">
                             Add New Vehicle
                         </h1>
                         <p class="text-muted small mb-0">Configure physical car specifications and assigned legal license plate (Strict 1:1 relationship).</p>
                     </div>
                     <a th:href="@{/admin/vehicles}" class="btn btn-outline-secondary btn-sm rounded-lg">
-                        Back to Fleet
+                        Back to Cars
                     </a>
                 </div>
 

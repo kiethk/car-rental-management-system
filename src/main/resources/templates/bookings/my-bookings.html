@@ -58,7 +58,7 @@
         <!-- Empty State -->
         <div th:if="${bookings.isEmpty()}" class="bg-white rounded-lg border border-border p-12 text-center text-muted-foreground">
             <p class="text-base font-semibold text-navy mb-2">No bookings found in this status.</p>
-            <p class="text-sm mb-4">Start your next journey by exploring our available fleet.</p>
+            <p class="text-sm mb-4">Start your next journey by exploring our available cars.</p>
             <a th:href="@{/search}" class="bg-amber hover:bg-amber-dark text-white font-semibold px-6 py-2.5 rounded-md text-sm transition-all text-decoration-none inline-block">
                 Book a Car
             </a>
@@ -121,7 +121,7 @@
 
                         <!-- Card Action Footer -->
                         <div class="mt-4 pt-3 border-t border-border flex justify-between items-center text-xs">
-                            <span class="text-muted-foreground">📍 Bình Thạnh Warehouse Pickup</span>
+                            <span class="text-muted-foreground">📍 Binh Thanh Warehouse Pickup</span>
                             <div class="flex gap-2">
                                 <a th:if="${b.status == 'pending_payment'}" th:href="@{/bookings/{id}/pay-deposit(id=${b.id})}"
                                    class="bg-amber hover:bg-amber-dark text-white font-semibold px-4 py-1.5 rounded-md transition-all text-decoration-none">
