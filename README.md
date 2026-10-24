@@ -64,6 +64,7 @@ Nhắn nhóm tiến độ/vướng mắc; cần trao đổi thêm thì nói trê
   2. Thêm vào `application-local.properties` (xem [file mẫu](config/application-local.properties.example)): `spring.mail.username=<gmail>` và `spring.mail.password=<app password 16 ký tự>`.
   3. Khi test, dùng email của chính mình cho tài khoản khách (ví dụ `ten.ban+khach1@gmail.com`); dữ liệu seed dùng `@example.com` nên không gửi tới ai.
 - Schema đã đổi (bỏ `policies`, thêm `contract_templates`). DB tạo trước thay đổi này phải tạo lại: xóa database `car_rental_management`, tạo mới rồi chạy lại `schema.sql` + `seed.sql`. App dùng `ddl-auto=validate` nên sẽ báo lỗi ngay khi khởi động nếu schema DB không khớp entity.
+- Câu chữ của các chính sách (cọc, hủy, trả trễ) viết trực tiếp trong từng trang, chỉ con số lấy từ DB. Mọi chỗ hiển thị chính sách đều gắn thuộc tính `data-policy` (`deposit`, `cancellation`, `lateReturn`); khi đổi quy tắc, tìm `data-policy` trong toàn project (Ctrl+Shift+F) để sửa đủ. Thêm chỗ hiển thị chính sách mới thì nhớ gắn thuộc tính này.
 - ERD đề xuất cho phần này: [contract-templates-erd.md](docs/proposed/contract-templates-erd.md).
 
 Kiểm tra build/test: `mvn verify`.

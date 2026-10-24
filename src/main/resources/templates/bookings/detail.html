@@ -636,22 +636,18 @@
                     </div>
 
                     <div class="agreement-meta-row">
-                        <span class="agreement-meta-label">Terms version</span>
-                        <span class="agreement-meta-val" th:text="'v' + ${booking.contract.terms.versionNo}">v1</span>
-                    </div>
-                    <div class="agreement-meta-row">
                         <span class="agreement-meta-label">Accepted at</span>
                         <span class="agreement-meta-val"
                               th:text="${#temporals.format(booking.contract.acceptedAt, 'dd/MM/yyyy HH:mm')}">23/10/2026 04:00</span>
                     </div>
                     <div class="agreement-meta-row">
                         <span class="agreement-meta-label">Deposit / free cancellation</span>
-                        <span class="agreement-meta-val"
+                        <span data-policy="deposit cancellation" class="agreement-meta-val"
                               th:text="${booking.contract.terms.depositPercent} + '% / ' + ${booking.contract.terms.freeCancellationHours} + 'h before pickup'">50% / 72h before pickup</span>
                     </div>
                     <div class="agreement-meta-row">
                         <span class="agreement-meta-label">Late return</span>
-                        <span class="agreement-meta-val"
+                        <span data-policy="lateReturn" class="agreement-meta-val"
                               th:text="${booking.contract.terms.lateFeePercent} + '% of hourly rate'">200% of hourly rate</span>
                     </div>
 

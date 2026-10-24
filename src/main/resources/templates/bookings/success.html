@@ -710,7 +710,7 @@
                                             >
                                                 <polyline points="20 6 9 17 4 12" />
                                             </svg>
-                                            <th:block th:text="'Deposit paid (' + ${booking.contract?.terms?.depositPercent} + '%, VNPay)'">Deposit paid (50%, VNPay)</th:block>
+                                            <th:block data-policy="deposit" th:text="'Deposit paid (' + ${booking.contract?.terms?.depositPercent} + '%, VNPay)'">Deposit paid (50%, VNPay)</th:block>
                                         </span>
                                         <span class="payment-val-green">
                                             <span

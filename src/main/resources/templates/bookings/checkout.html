@@ -563,7 +563,7 @@
                                         <div>
                                             <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                                                 <span>Deposit Due Now</span>
-                                                <span
+                                                <span data-policy="deposit"
                                                     class="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded"
                                                     th:text="${contractTerms.depositPercent} + '%'"
                                                     >50%</span
@@ -595,7 +595,7 @@
                                 </div>
 
                                 <!-- Agreement Checkbox -->
-                                <label class="flex items-start gap-2.5 cursor-pointer pt-1">
+                                <label class="terms-accept">
                                     <!-- Clickwrap: not pre-checked; the server re-validates acceptedTerms and the version id -->
                                     <input
                                         type="checkbox"
@@ -603,12 +603,11 @@
                                         name="acceptedTerms"
                                         value="true"
                                         required
-                                        class="w-4 h-4 mt-0.5 accent-slate-900 cursor-pointer flex-shrink-0"
+                                        class="terms-accept-checkbox"
                                     />
-                                    <span class="text-xs text-slate-600 leading-relaxed">
+                                    <span class="terms-accept-text">
                                         I have read and agree to the
-                                        <button type="button" onclick="openTermsModal(event)" class="text-slate-900 font-semibold underline hover:text-amber transition-colors bg-transparent border-0 p-0 text-xs inline cursor-pointer">Rental Agreement</button>
-                                        <span th:text="'(version ' + ${contractTerms.versionNo} + ')'">(version 1)</span>.
+                                        <button type="button" onclick="openTermsModal(event)" class="terms-accept-link">Rental Agreement</button>.
                                     </span>
                                 </label>
 
@@ -696,7 +695,7 @@
                                         >
                                             <polyline points="20 6 9 17 4 12" />
                                         </svg>
-                                        <span th:text="'Free cancellation up to ' + ${contractTerms.freeCancellationHours} + ' hours before pickup'">Free cancellation up to 72 hours before pickup</span>
+                                        <span data-policy="cancellation" th:text="'Free cancellation up to ' + ${contractTerms.freeCancellationHours} + ' hours before pickup'">Free cancellation up to 72 hours before pickup</span>
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <svg
@@ -736,6 +735,7 @@
             }
 
             const baseRentalTotal = /*[[${estimatedTotal}]]*/ 1350000;
+            // data-policy="deposit": live price preview uses the accepted terms version
             const depositRate = /*[[${contractTerms.depositRate}]]*/ 0.5;
 
             function formatVND(num) {
@@ -844,15 +844,15 @@
         </script>
 
         <!-- Rental Terms & Policies Modal -->
-        <div id="rentalTermsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-            <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[88vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div id="rentalTermsModal" class="terms-modal hidden" role="dialog" aria-modal="true">
+            <div class="terms-modal-dialog">
                 <!-- Modal Header -->
                 <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
                     <div class="flex items-center gap-3">
                         <img th:src="@{/images/car-rental-logo.svg}" alt="DriveNow" class="w-8 h-8 rounded-lg object-contain flex-shrink-0" onerror="this.style.display='none'">
                         <div>
                             <h3 class="text-base font-bold text-slate-900 mb-0" th:text="${contractTerms.title}">Hợp đồng thuê xe ô tô tự lái</h3>
-                            <p class="text-[11px] text-slate-500 mb-0" th:text="'Version ' + ${contractTerms.versionNo} + ' • DriveNow Mobility Vietnam'">Version 1 • DriveNow Mobility Vietnam</p>
+                            <p class="text-[11px] text-slate-500 mb-0">DriveNow Mobility Vietnam</p>
                         </div>
                     </div>
                     <button type="button" onclick="closeTermsModal()" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200 transition-colors">
@@ -861,7 +861,7 @@
                 </div>
 
                 <!-- Modal Body: exactly the version the customer is about to accept -->
-                <div class="p-6 sm:p-8 overflow-y-auto space-y-6 text-xs leading-relaxed text-slate-700 font-sans">
+                <div class="terms-modal-body space-y-6 text-xs leading-relaxed text-slate-700">
                     <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
                         <div><strong>Bên A (bên cho thuê):</strong> Công ty TNHH DriveNow Mobility Việt Nam • 120 Trường Chinh, Tân Bình, TP. Hồ Chí Minh • Hotline 1800 6868</div>
                         <div><strong>Bên B (bên thuê):</strong> <span th:text="${session.customerName != null ? session.customerName : 'Khách hàng'}">Khách hàng</span>, tài khoản đã xác minh giấy phép lái xe trên DriveNow</div>

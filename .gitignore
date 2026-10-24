@@ -25,3 +25,5 @@ skills-lock.json
 .gemini/
 .trail/
 .github/copilot-instructions.md
+
+database/payment-card-example.txt

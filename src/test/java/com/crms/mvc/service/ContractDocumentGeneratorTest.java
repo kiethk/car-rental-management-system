@@ -54,6 +54,7 @@ class ContractDocumentGeneratorTest {
             assertTrue(text.contains("Nguyễn Thị Hồng Nhung"));
             assertTrue(text.contains("CTR-20261023-0042"));
             assertTrue(text.contains("Tiền đặt cọc (40%)"), "deposit percent comes from the template version");
+            assertTrue(text.contains("Bên B đặt cọc 40% tổng giá trị hợp đồng"), "Điều 3 states the deposit rule");
             assertTrue(text.contains("ít nhất 48 giờ"), "cancellation window comes from the template version");
             assertTrue(text.contains("1.350.000 đ"), "amounts use Vietnamese number format");
             assertTrue(text.contains("Không hút thuốc trong xe"), "admin-written wording is printed");

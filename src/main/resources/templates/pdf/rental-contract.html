@@ -63,7 +63,6 @@
 <h1 th:text="${#strings.toUpperCase(doc.terms.title)}">HỢP ĐỒNG THUÊ XE Ô TÔ TỰ LÁI</h1>
 <p class="number">
     Số: <strong th:text="${doc.contractNumber}">CTR-20261023-0001</strong>
-    (điều khoản phiên bản <span th:text="${doc.terms.versionNo}">1</span>)
 </p>
 
 <p class="basis">- Căn cứ Bộ luật Dân sự năm 2015;</p>
@@ -151,6 +150,10 @@
 
 <div class="keep-together">
 <h2>Điều 3. Giá thuê, đặt cọc và thanh toán</h2>
+<p data-policy="deposit" th:text="'Bên B đặt cọc ' + ${doc.terms.depositPercent}
+            + '% tổng giá trị hợp đồng khi đặt xe; số tiền còn lại được thanh toán khi trả xe.'">
+    Bên B đặt cọc 50% tổng giá trị hợp đồng khi đặt xe; số tiền còn lại được thanh toán khi trả xe.
+</p>
 <table>
     <tr>
         <td class="label">Đơn giá thuê</td>
@@ -169,7 +172,7 @@
         <td class="amount" th:text="${#numbers.formatDecimal(doc.totalPrice, 0, 'POINT', 0, 'COMMA')} + ' đ'">1.350.000 đ</td>
     </tr>
     <tr>
-        <td class="label" th:text="'Tiền đặt cọc (' + ${doc.terms.depositPercent} + '%)'">Tiền đặt cọc (50%)</td>
+        <td data-policy="deposit" class="label" th:text="'Tiền đặt cọc (' + ${doc.terms.depositPercent} + '%)'">Tiền đặt cọc (50%)</td>
         <td class="amount" th:text="${#numbers.formatDecimal(doc.depositAmount, 0, 'POINT', 0, 'COMMA')} + ' đ'">675.000 đ</td>
     </tr>
     <tr>
@@ -187,11 +190,11 @@
 
 <div class="keep-together">
 <h2>Điều 4. Hủy đặt xe và trả xe trễ hạn</h2>
-<p th:text="'1. Bên B hủy đặt xe trước thời điểm nhận xe ít nhất ' + ${doc.terms.freeCancellationHours}
+<p data-policy="cancellation" th:text="'1. Bên B hủy đặt xe trước thời điểm nhận xe ít nhất ' + ${doc.terms.freeCancellationHours}
             + ' giờ được hoàn lại 100% tiền đặt cọc. Hủy sau mốc này, tiền đặt cọc không được hoàn lại.'">
     1. Hủy trước 72 giờ được hoàn 100% tiền cọc.
 </p>
-<p th:text="'2. Bên B trả xe sau thời điểm trả xe tại Điều 2 phải trả phí trễ hạn bằng ' + ${doc.terms.lateFeePercent}
+<p data-policy="lateReturn" th:text="'2. Bên B trả xe sau thời điểm trả xe tại Điều 2 phải trả phí trễ hạn bằng ' + ${doc.terms.lateFeePercent}
             + '% đơn giá thuê cho mỗi giờ trễ, trừ trường hợp được Bên A đồng ý gia hạn trước.'">
     2. Phí trễ hạn 200% đơn giá mỗi giờ.
 </p>
@@ -220,13 +223,12 @@
     <tr>
         <td class="evidence">
             Xác nhận điện tử bởi hệ thống DriveNow<br/>
-            Phát hành lúc <span th:text="${#temporals.format(doc.issuedAt, 'HH:mm, dd/MM/yyyy')}">09:05, 23/10/2026</span>
+            <span style="white-space: nowrap;">Phát hành lúc <span th:text="${#temporals.format(doc.issuedAt, 'HH:mm, dd/MM/yyyy')}">09:05, 23/10/2026</span></span>
         </td>
         <td class="evidence">
             <strong th:text="${doc.customerName}">Nguyễn Văn A</strong><br/>
-            Đồng ý điều khoản phiên bản <span th:text="${doc.terms.versionNo}">1</span>
-            lúc <span th:text="${#temporals.format(doc.acceptedAt, 'HH:mm, dd/MM/yyyy')}">09:00, 23/10/2026</span><br/>
-            <span th:if="${doc.acceptedIp != null}" th:text="'Địa chỉ IP: ' + ${doc.acceptedIp}">Địa chỉ IP: 127.0.0.1</span>
+            Đồng ý các điều khoản của hợp đồng<br/>
+            <span style="white-space: nowrap;">lúc <span th:text="${#temporals.format(doc.acceptedAt, 'HH:mm, dd/MM/yyyy')}">09:00, 23/10/2026</span></span>
         </td>
     </tr>
 </table>

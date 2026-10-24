@@ -1,7 +1,30 @@
 -- Schema for Car Rental Management System
 -- SLOT = rental time window for a vehicle type.
+--
+-- WARNING: re-running this script DROPS every table and ALL data, then recreates an empty schema.
+-- Run database/seed.sql right after it, then register new accounts (see README).
 
 BEGIN;
+
+-- Children first; CASCADE also removes any foreign key that still points at a dropped table.
+-- "policies" is the old table replaced by contract_templates; dropped so older databases are cleaned up too.
+DROP TABLE IF EXISTS booking_fees CASCADE;
+DROP TABLE IF EXISTS issues CASCADE;
+DROP TABLE IF EXISTS vehicle_inspections CASCADE;
+DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS payments CASCADE;
+DROP TABLE IF EXISTS contracts CASCADE;
+DROP TABLE IF EXISTS contract_templates CASCADE;
+DROP TABLE IF EXISTS policies CASCADE;
+DROP TABLE IF EXISTS bookings CASCADE;
+DROP TABLE IF EXISTS slots CASCADE;
+DROP TABLE IF EXISTS license_documents CASCADE;
+DROP TABLE IF EXISTS promotions CASCADE;
+DROP TABLE IF EXISTS vehicles CASCADE;
+DROP TABLE IF EXISTS license_plates CASCADE;
+DROP TABLE IF EXISTS vehicle_types CASCADE;
+DROP TABLE IF EXISTS employees CASCADE;
+DROP TABLE IF EXISTS customers CASCADE;
 
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 

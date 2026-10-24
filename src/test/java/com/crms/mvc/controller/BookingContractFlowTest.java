@@ -104,7 +104,7 @@ class BookingContractFlowTest {
                 // 10 hours x 100,000 = 1,000,000; deposit 30% from version 3
                 .andExpect(content().string(containsString("300,000")))
                 .andExpect(content().string(containsString("name=\"contractTemplateId\" value=\"3\"")))
-                .andExpect(content().string(containsString("(version 3)")))
+                .andExpect(content().string(containsString("DriveNow Mobility Vietnam")))
                 .andExpect(content().string(containsString("Không hút thuốc trong xe")))
                 .andReturn().getResponse().getContentAsString();
 

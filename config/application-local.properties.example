@@ -4,7 +4,6 @@ spring.datasource.username=postgres
 spring.datasource.password=123456
 server.port=8081
 
-# Optional: email contracts through Gmail. Requires 2-Step Verification + an App Password
-# (https://myaccount.google.com/apppasswords). Leave commented out to run without email.
-# spring.mail.username=your.account@gmail.com
-# spring.mail.password=your16charapppassword
+# Cấu hình gửi mail
+spring.mail.username=<email_của_ae>
+spring.mail.password=<tạo_mật_khẩu_ứng_dụng>
