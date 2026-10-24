@@ -130,7 +130,7 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <span class="badge badge-light border text-navy font-weight-bold px-2 py-1">50% Deposit</span>
+                            <span data-policy="deposit" class="badge badge-light border text-navy font-weight-bold px-2 py-1" th:text="${contractTerms.depositPercent} + '% Deposit'">50% Deposit</span>
                         </div>
                     </div>
                 </div>
@@ -164,8 +164,10 @@
                 <div class="alert alert-light border rounded-xl small mb-4">
                     <div class="font-weight-bold text-navy mb-1">Reservation & Cancellation Policy:</div>
                     <ul class="mb-0 pl-3 text-muted">
-                        <li>50% security deposit required to confirm booking slot.</li>
-                        <li>100% refund for cancellations at least 72 hours prior to scheduled pickup.</li>
+                        <!-- Values come from the active rental terms version (Admin > Rental Terms) -->
+                        <li data-policy="deposit" th:text="${contractTerms.depositPercent} + '% security deposit required to confirm booking slot.'">50% security deposit required to confirm booking slot.</li>
+                        <li data-policy="cancellation" th:text="'100% refund for cancellations at least ' + ${contractTerms.freeCancellationHours} + ' hours prior to scheduled pickup.'">100% refund for cancellations at least 72 hours prior to scheduled pickup.</li>
+                        <li data-policy="lateReturn" th:text="'Late return: ' + ${contractTerms.lateFeePercent} + '% of the hourly rate for each hour late.'">Late return: 200% of the hourly rate for each hour late.</li>
                     </ul>
                 </div>
 

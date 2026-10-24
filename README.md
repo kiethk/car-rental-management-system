@@ -55,4 +55,16 @@ Nhắn nhóm tiến độ/vướng mắc; cần trao đổi thêm thì nói trê
 - Schema base là đề xuất: biển số–xe hiện hành 1:1, booking được gán xe sau; cần thống nhất capacity slot và chính sách cọc/hoàn/phạt khi làm luồng thuê.
 - Mẫu để làm theo: `VehicleController`, `VehicleService`, `VehicleServiceImpl`, `VehicleDTO`, các trang `templates/vehicles/`.
 
+## Hợp đồng thuê xe
+
+- Điều khoản nằm trong bảng `contract_templates`, mỗi dòng là một phiên bản. Chỉ bản DRAFT được sửa; admin vào **Rental Terms** (`/admin/contract-templates`) để tạo bản nháp rồi kích hoạt. Tỉ lệ cọc, phí trễ và số giờ hủy miễn phí là các cột riêng, code đọc từ đúng phiên bản khách đã đồng ý.
+- Khi checkout, khách tick đồng ý: hệ thống lưu thời điểm, IP và phiên bản vào `contracts`. Sau khi cọc VNPay thành công, `ContractIssuingListener` sinh PDF (`templates/pdf/rental-contract.html`) vào `uploads/contracts/` (không public) và gửi email kèm PDF.
+- Gửi email hợp đồng là **tùy chọn**. Không cấu hình thì app vẫn chạy bình thường, chỉ ghi log "Email is not configured" và admin có thể gửi lại sau. Muốn gửi thật qua Gmail:
+  1. Bật xác minh 2 bước cho tài khoản Google, tạo App Password tại https://myaccount.google.com/apppasswords.
+  2. Thêm vào `application-local.properties` (xem [file mẫu](config/application-local.properties.example)): `spring.mail.username=<gmail>` và `spring.mail.password=<app password 16 ký tự>`.
+  3. Khi test, dùng email của chính mình cho tài khoản khách (ví dụ `ten.ban+khach1@gmail.com`); dữ liệu seed dùng `@example.com` nên không gửi tới ai.
+- Schema đã đổi (bỏ `policies`, thêm `contract_templates`). DB tạo trước thay đổi này phải tạo lại: xóa database `car_rental_management`, tạo mới rồi chạy lại `schema.sql` + `seed.sql`. App dùng `ddl-auto=validate` nên sẽ báo lỗi ngay khi khởi động nếu schema DB không khớp entity.
+- Câu chữ của các chính sách (cọc, hủy, trả trễ) viết trực tiếp trong từng trang, chỉ con số lấy từ DB. Mọi chỗ hiển thị chính sách đều gắn thuộc tính `data-policy` (`deposit`, `cancellation`, `lateReturn`); khi đổi quy tắc, tìm `data-policy` trong toàn project (Ctrl+Shift+F) để sửa đủ. Thêm chỗ hiển thị chính sách mới thì nhớ gắn thuộc tính này.
+- ERD đề xuất cho phần này: [contract-templates-erd.md](docs/proposed/contract-templates-erd.md).
+
 Kiểm tra build/test: `mvn verify`.

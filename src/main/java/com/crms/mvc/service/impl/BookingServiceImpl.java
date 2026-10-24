@@ -6,6 +6,7 @@ import com.crms.mvc.repository.*;
 import com.crms.mvc.service.BookingFeeService;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.ContractService;
+import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.service.PaymentService;
 import com.crms.mvc.service.SlotService;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class BookingServiceImpl implements BookingService {
     private final PromotionRepository promotionRepository;
     private final PaymentService paymentService;
     private final ContractService contractService;
+    private final ContractTemplateService contractTemplateService;
     private final BookingFeeService bookingFeeService;
 
     public BookingServiceImpl(
@@ -43,6 +45,7 @@ public class BookingServiceImpl implements BookingService {
             PromotionRepository promotionRepository,
             PaymentService paymentService,
             ContractService contractService,
+            ContractTemplateService contractTemplateService,
             BookingFeeService bookingFeeService) {
         this.bookingRepository = bookingRepository;
         this.customerRepository = customerRepository;
@@ -53,11 +56,12 @@ public class BookingServiceImpl implements BookingService {
         this.promotionRepository = promotionRepository;
         this.paymentService = paymentService;
         this.contractService = contractService;
+        this.contractTemplateService = contractTemplateService;
         this.bookingFeeService = bookingFeeService;
     }
 
     @Override
-    public Booking createBooking(Long customerId, BookingCreateDTO dto) {
+    public Booking createBooking(Long customerId, BookingCreateDTO dto, String clientIp) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new NoSuchElementException("Customer not found: " + customerId));
 
@@ -72,6 +76,13 @@ public class BookingServiceImpl implements BookingService {
         VehicleType type = vehicleTypeRepository.findById(dto.getVehicleTypeId())
                 .orElseThrow(() -> new NoSuchElementException("VehicleType not found: " + dto.getVehicleTypeId()));
 
+        // Clickwrap: the customer is bound only by the version they saw on the checkout page.
+        ContractTemplateDTO terms = contractTemplateService.getActiveTemplate();
+        if (!terms.getId().equals(dto.getContractTemplateId())) {
+            throw new IllegalStateException("The rental terms were updated while you were checking out. "
+                    + "Please review and accept the new version.");
+        }
+
         // 0. Tự động hủy các đơn pending quá hạn (15 phút) của toàn hệ thống
         bookingRepository.cancelExpiredPendingBookings(OffsetDateTime.now().minusMinutes(15));
 
@@ -83,7 +94,6 @@ public class BookingServiceImpl implements BookingService {
             oldPending.setStatus("cancelled");
             oldPending.setCancelledAt(OffsetDateTime.now());
             bookingRepository.save(oldPending);
-            contractService.updateContractStatus(oldPending.getId(), "CANCELLED");
         }
 
         // 1. Tìm xe thực tế có sẵn thông qua SlotService
@@ -118,7 +128,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         BigDecimal totalPrice = rentalPrice.subtract(discountAmount);
-        BigDecimal depositAmount = totalPrice.multiply(BigDecimal.valueOf(0.5)).setScale(0, RoundingMode.HALF_UP);
+        BigDecimal depositAmount = totalPrice.multiply(terms.getDepositRate()).setScale(0, RoundingMode.HALF_UP);
 
         Booking booking = new Booking();
         booking.setCustomer(customer);
@@ -137,8 +147,8 @@ public class BookingServiceImpl implements BookingService {
 
         Booking saved = bookingRepository.save(booking);
 
-        // Tạo hợp đồng nháp (DRAFT) đóng băng chính sách hiện hành
-        contractService.createContractForBooking(saved);
+        // Lưu bằng chứng khách đã đồng ý đúng phiên bản điều khoản; PDF được phát hành sau khi cọc
+        contractService.createContract(saved, terms.getId(), clientIp);
 
         return saved;
     }
@@ -236,7 +246,6 @@ public class BookingServiceImpl implements BookingService {
         b.setStatus("cancelled");
         b.setCancelledAt(OffsetDateTime.now());
         bookingRepository.save(b);
-        contractService.updateContractStatus(bookingId, "CANCELLED");
     }
 
     @Override
@@ -277,7 +286,6 @@ public class BookingServiceImpl implements BookingService {
 
         vehicleRepository.save(b.getVehicle());
         bookingRepository.save(b);
-        contractService.updateContractStatus(bookingId, "ACTIVE");
     }
 
     @Override
@@ -295,8 +303,9 @@ public class BookingServiceImpl implements BookingService {
         BigDecimal lateFee = BigDecimal.ZERO;
         if (actualReturn.isAfter(b.getScheduledEndTime())) {
             long lateHours = Math.max(1, Duration.between(b.getScheduledEndTime(), actualReturn).toHours());
-            // Áp dụng chính sách phạt trễ hạn 200% đơn giá theo giờ
-            lateFee = b.getPricePerHour().multiply(BigDecimal.valueOf(lateHours)).multiply(BigDecimal.valueOf(2.0));
+            // Hệ số phạt lấy từ phiên bản điều khoản khách đã đồng ý, không lấy bản đang áp dụng
+            BigDecimal multiplier = contractService.getTermsOfBooking(bookingId).getLateFeeMultiplier();
+            lateFee = b.getPricePerHour().multiply(BigDecimal.valueOf(lateHours)).multiply(multiplier);
         }
 
         paymentService.processSettlement(bookingId, lateFee, dto != null ? dto.getAdditionalFine() : BigDecimal.ZERO);
@@ -361,18 +370,7 @@ public class BookingServiceImpl implements BookingService {
         }
         d.setPayments(pDtos);
 
-        contractService.getContractByBookingId(b.getId()).ifPresent(c -> {
-            BookingDetailDTO.ContractDTO cd = new BookingDetailDTO.ContractDTO();
-            cd.setId(c.getId());
-            cd.setContractNumber(c.getContractNumber());
-            cd.setSignedAt(c.getSignedAt());
-            cd.setSignatureType(c.getSignatureType());
-            cd.setTermsSnapshot(c.getTermsSnapshot());
-            cd.setContractStatus(c.getContractStatus());
-            cd.setFilePdfUrl(c.getFilePdfUrl());
-            cd.setCreatedAt(c.getCreatedAt());
-            d.setContract(cd);
-        });
+        contractService.findByBookingId(b.getId()).ifPresent(d::setContract);
 
         List<BookingFee> fees = bookingFeeService.getFeesByBooking(b.getId());
         List<BookingDetailDTO.BookingFeeDTO> feeDtos = new ArrayList<>();

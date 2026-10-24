@@ -2,11 +2,12 @@ package com.crms.mvc.service.impl;
 
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Payment;
+import com.crms.mvc.event.DepositConfirmedEvent;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.PaymentRepository;
 import com.crms.mvc.service.BookingFeeService;
-import com.crms.mvc.service.ContractService;
 import com.crms.mvc.service.PaymentService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,16 +22,16 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final BookingRepository bookingRepository;
     private final BookingFeeService bookingFeeService;
-    private final ContractService contractService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public PaymentServiceImpl(PaymentRepository paymentRepository,
                               BookingRepository bookingRepository,
                               BookingFeeService bookingFeeService,
-                              ContractService contractService) {
+                              ApplicationEventPublisher eventPublisher) {
         this.paymentRepository = paymentRepository;
         this.bookingRepository = bookingRepository;
         this.bookingFeeService = bookingFeeService;
-        this.contractService = contractService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -64,8 +65,8 @@ public class PaymentServiceImpl implements PaymentService {
         booking.setStatus("confirmed");
         bookingRepository.save(booking);
 
-        // Sign contract digitally when deposit is paid
-        contractService.signContract(bookingId, "DIGITAL_CHECK");
+        // The contract PDF is issued by ContractIssuingListener after this transaction commits.
+        eventPublisher.publishEvent(new DepositConfirmedEvent(bookingId));
 
         return saved;
     }
@@ -103,9 +104,6 @@ public class PaymentServiceImpl implements PaymentService {
 
         booking.setStatus("completed");
         bookingRepository.save(booking);
-
-        // Update contract status to completed
-        contractService.updateContractStatus(bookingId, "COMPLETED");
 
         return finalPayment;
     }

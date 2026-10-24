@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.UUID;
 
 @Service
@@ -19,6 +20,9 @@ public class FileUploadServiceImpl implements FileUploadService {
             Path.of("uploads", "licenses").toAbsolutePath().normalize();
     private static final Path VEHICLE_UPLOAD_DIRECTORY =
             Path.of("uploads", "vehicles").toAbsolutePath().normalize();
+    // Kept outside every public resource mapping; served only through ContractController.
+    private static final Path CONTRACT_DIRECTORY =
+            Path.of("uploads", "contracts").toAbsolutePath().normalize();
 
     @Override
     public String saveLicenseImage(MultipartFile image) {
@@ -51,18 +55,7 @@ public class FileUploadServiceImpl implements FileUploadService {
 
     @Override
     public Resource loadLicenseImage(String fileName) {
-        if (fileName == null || !fileName.equals(Path.of(fileName).getFileName().toString())) {
-            return null;
-        }
-
-        Path imagePath = LICENSE_UPLOAD_DIRECTORY.resolve(fileName).normalize();
-        if (!imagePath.startsWith(LICENSE_UPLOAD_DIRECTORY)
-                || !Files.isRegularFile(imagePath)
-                || !Files.isReadable(imagePath)) {
-            return null;
-        }
-
-        return new FileSystemResource(imagePath);
+        return loadFrom(LICENSE_UPLOAD_DIRECTORY, fileName);
     }
 
     @Override
@@ -96,17 +89,43 @@ public class FileUploadServiceImpl implements FileUploadService {
 
     @Override
     public Resource loadVehicleImage(String fileName) {
+        return loadFrom(VEHICLE_UPLOAD_DIRECTORY, fileName);
+    }
+
+    @Override
+    public String saveContractPdf(String contractNumber, byte[] content) {
+        if (content == null || content.length == 0) {
+            throw new IllegalArgumentException("Contract PDF is empty");
+        }
+
+        String fileName = contractNumber + "-" + UUID.randomUUID() + ".pdf";
+        try {
+            Files.createDirectories(CONTRACT_DIRECTORY);
+            // CREATE_NEW: an issued contract file must never be overwritten.
+            Files.write(CONTRACT_DIRECTORY.resolve(fileName), content, StandardOpenOption.CREATE_NEW);
+            return fileName;
+        } catch (IOException exception) {
+            throw new IllegalStateException("Could not save contract PDF", exception);
+        }
+    }
+
+    @Override
+    public Resource loadContractPdf(String fileName) {
+        return loadFrom(CONTRACT_DIRECTORY, fileName);
+    }
+
+    private Resource loadFrom(Path directory, String fileName) {
         if (fileName == null || !fileName.equals(Path.of(fileName).getFileName().toString())) {
             return null;
         }
 
-        Path imagePath = VEHICLE_UPLOAD_DIRECTORY.resolve(fileName).normalize();
-        if (!imagePath.startsWith(VEHICLE_UPLOAD_DIRECTORY)
-                || !Files.isRegularFile(imagePath)
-                || !Files.isReadable(imagePath)) {
+        Path filePath = directory.resolve(fileName).normalize();
+        if (!filePath.startsWith(directory)
+                || !Files.isRegularFile(filePath)
+                || !Files.isReadable(filePath)) {
             return null;
         }
 
-        return new FileSystemResource(imagePath);
+        return new FileSystemResource(filePath);
     }
 }

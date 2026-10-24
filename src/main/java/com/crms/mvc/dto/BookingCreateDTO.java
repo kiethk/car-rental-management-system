@@ -1,5 +1,6 @@
 package com.crms.mvc.dto;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.io.Serializable;
@@ -20,6 +21,13 @@ public class BookingCreateDTO implements Serializable {
     private Long vehicleId; // Optional: preferred physical vehicle
     private String promotionCode;
 
+    // Clickwrap: the customer must accept exactly the template version shown on the checkout page.
+    @NotNull(message = "Rental terms version is missing")
+    private Long contractTemplateId;
+
+    @AssertTrue(message = "You must accept the rental terms to continue")
+    private boolean acceptedTerms;
+
     public Long getVehicleTypeId() { return vehicleTypeId; }
     public void setVehicleTypeId(Long vehicleTypeId) { this.vehicleTypeId = vehicleTypeId; }
 
@@ -34,4 +42,10 @@ public class BookingCreateDTO implements Serializable {
 
     public String getPromotionCode() { return promotionCode; }
     public void setPromotionCode(String promotionCode) { this.promotionCode = promotionCode; }
+
+    public Long getContractTemplateId() { return contractTemplateId; }
+    public void setContractTemplateId(Long contractTemplateId) { this.contractTemplateId = contractTemplateId; }
+
+    public boolean isAcceptedTerms() { return acceptedTerms; }
+    public void setAcceptedTerms(boolean acceptedTerms) { this.acceptedTerms = acceptedTerms; }
 }

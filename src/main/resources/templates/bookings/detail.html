@@ -345,6 +345,39 @@
             font-weight: 600;
             color: #0f172a;
         }
+        .status-pill-pending {
+            background-color: #fffbeb;
+            color: #b45309;
+            border: 1px solid #fde68a;
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .status-pill-cancelled {
+            background-color: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .btn-download-contract {
+            display: block;
+            margin-top: 12px;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            color: #0f172a !important;
+            text-decoration: none !important;
+        }
+        .btn-download-contract:hover {
+            background-color: #f8fafc;
+        }
         .agreement-terms-box {
             background-color: #f8fafc;
             border: 1px solid #edf2f7;
@@ -584,38 +617,51 @@
                     </form>
                 </div>
 
-                <!-- Card 2: Rental Agreement -->
-                <div class="surface-card">
+                <!-- Card 2: Rental Agreement (clickwrap evidence + issued PDF) -->
+                <div class="surface-card" th:if="${booking.contract != null}">
                     <div class="agreement-header">
                         <div>
                             <h2 class="card-title" style="margin-bottom: 2px;">Rental agreement</h2>
                             <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #94a3b8;"
-                                 th:text="${booking.contract != null ? booking.contract.contractNumber : ('CTR-20261023-00' + booking.id)}">
+                                 th:text="${booking.contract.contractNumber}">
                                 CTR-20261023-0012
                             </div>
                         </div>
                         <div>
-                            <span class="status-pill-paid">
-                                ✓ Signed
-                            </span>
+                            <!-- Validity follows the booking status; contracts have no separate status -->
+                            <span th:if="${booking.status == 'pending_payment'}" class="status-pill-pending">Awaiting deposit</span>
+                            <span th:if="${booking.status == 'cancelled'}" class="status-pill-cancelled">Cancelled</span>
+                            <span th:if="${booking.status != 'pending_payment' and booking.status != 'cancelled'}" class="status-pill-paid">✓ In effect</span>
                         </div>
                     </div>
 
                     <div class="agreement-meta-row">
-                        <span class="agreement-meta-label">Signed at</span>
+                        <span class="agreement-meta-label">Accepted at</span>
                         <span class="agreement-meta-val"
-                              th:text="${booking.contract != null and booking.contract.signedAt != null ? #temporals.format(booking.contract.signedAt, 'dd/MM/yyyy HH:mm') : #temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}">
-                            23/10/2026 04:00
-                        </span>
+                              th:text="${#temporals.format(booking.contract.acceptedAt, 'dd/MM/yyyy HH:mm')}">23/10/2026 04:00</span>
                     </div>
-
                     <div class="agreement-meta-row">
-                        <span class="agreement-meta-label">Method</span>
-                        <span class="agreement-meta-val">Digital check</span>
+                        <span class="agreement-meta-label">Deposit / free cancellation</span>
+                        <span data-policy="deposit cancellation" class="agreement-meta-val"
+                              th:text="${booking.contract.terms.depositPercent} + '% / ' + ${booking.contract.terms.freeCancellationHours} + 'h before pickup'">50% / 72h before pickup</span>
+                    </div>
+                    <div class="agreement-meta-row">
+                        <span class="agreement-meta-label">Late return</span>
+                        <span data-policy="lateReturn" class="agreement-meta-val"
+                              th:text="${booking.contract.terms.lateFeePercent} + '% of hourly rate'">200% of hourly rate</span>
                     </div>
 
-                    <div class="agreement-terms-box">
-                        DriveNow car rental agreement terms: commitment to standard service regulations.
+                    <div class="agreement-terms-box contract-terms-text" th:text="${booking.contract.terms.termsContent}">
+                        Rights and obligations of both parties.
+                    </div>
+
+                    <a th:if="${booking.contract.issued}" th:href="@{/bookings/{id}/contract(id=${booking.id})}"
+                       target="_blank" rel="noopener" class="btn-download-contract">
+                        Download contract (PDF)
+                    </a>
+                    <div th:if="${!booking.contract.issued and booking.status != 'pending_payment' and booking.status != 'cancelled'}"
+                         class="agreement-meta-label" style="margin-top: 10px;">
+                        The PDF contract is being prepared.
                     </div>
                 </div>
 

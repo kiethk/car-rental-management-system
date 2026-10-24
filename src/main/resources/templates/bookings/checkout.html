@@ -96,6 +96,7 @@
                     <input type="hidden" th:field="*{vehicleTypeId}" />
                     <input type="hidden" th:field="*{startTime}" />
                     <input type="hidden" th:field="*{endTime}" />
+                    <input type="hidden" th:field="*{contractTemplateId}" />
 
                     <div class="checkout-grid">
                         <!-- Left Column (lg:col-span-3): 2 Clean Groups -->
@@ -562,8 +563,9 @@
                                         <div>
                                             <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                                                 <span>Deposit Due Now</span>
-                                                <span
+                                                <span data-policy="deposit"
                                                     class="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded"
+                                                    th:text="${contractTerms.depositPercent} + '%'"
                                                     >50%</span
                                                 >
                                             </div>
@@ -593,16 +595,19 @@
                                 </div>
 
                                 <!-- Agreement Checkbox -->
-                                <label class="flex items-start gap-2.5 cursor-pointer pt-1">
+                                <label class="terms-accept">
+                                    <!-- Clickwrap: not pre-checked; the server re-validates acceptedTerms and the version id -->
                                     <input
                                         type="checkbox"
+                                        id="termsCheckbox"
+                                        name="acceptedTerms"
+                                        value="true"
                                         required
-                                        class="w-4 h-4 mt-0.5 accent-slate-900 cursor-pointer flex-shrink-0"
+                                        class="terms-accept-checkbox"
                                     />
-                                    <span class="text-xs text-slate-600 leading-relaxed">
-                                        I agree to the
-                                        <a href="#" class="text-slate-900 font-semibold underline">rental terms</a> and
-                                        warehouse pickup & return policy.
+                                    <span class="terms-accept-text">
+                                        I have read and agree to the
+                                        <button type="button" onclick="openTermsModal(event)" class="terms-accept-link">Rental Agreement</button>.
                                     </span>
                                 </label>
 
@@ -690,7 +695,7 @@
                                         >
                                             <polyline points="20 6 9 17 4 12" />
                                         </svg>
-                                        <span>Free cancellation up to 3 days before pickup</span>
+                                        <span data-policy="cancellation" th:text="'Free cancellation up to ' + ${contractTerms.freeCancellationHours} + ' hours before pickup'">Free cancellation up to 72 hours before pickup</span>
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <svg
@@ -730,6 +735,8 @@
             }
 
             const baseRentalTotal = /*[[${estimatedTotal}]]*/ 1350000;
+            // data-policy="deposit": live price preview uses the accepted terms version
+            const depositRate = /*[[${contractTerms.depositRate}]]*/ 0.5;
 
             function formatVND(num) {
                 return Math.round(num).toLocaleString("en-US");
@@ -751,7 +758,7 @@
                     discountRow.classList.add("hidden");
                     discountRow.classList.remove("flex");
                     totalRentalFeeDisplay.textContent = formatVND(baseRentalTotal);
-                    const dep = Math.round(baseRentalTotal * 0.5);
+                    const dep = Math.round(baseRentalTotal * depositRate);
                     depositDueDisplay.textContent = formatVND(dep);
                     remainingBalanceDisplay.textContent = formatVND(baseRentalTotal - dep);
                     return;
@@ -773,7 +780,7 @@
 
                 if (isValid && discount > 0) {
                     const newTotal = Math.max(0, baseRentalTotal - discount);
-                    const newDeposit = Math.round(newTotal * 0.5);
+                    const newDeposit = Math.round(newTotal * depositRate);
                     const newRemaining = newTotal - newDeposit;
 
                     discountLabel.textContent = label;
@@ -788,7 +795,7 @@
                     discountRow.classList.add("hidden");
                     discountRow.classList.remove("flex");
                     totalRentalFeeDisplay.textContent = formatVND(baseRentalTotal);
-                    const dep = Math.round(baseRentalTotal * 0.5);
+                    const dep = Math.round(baseRentalTotal * depositRate);
                     depositDueDisplay.textContent = formatVND(dep);
                     remainingBalanceDisplay.textContent = formatVND(baseRentalTotal - dep);
                 }
@@ -800,6 +807,84 @@
                     applyPromoCode();
                 }
             });
+
+            function openTermsModal(e) {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                const modal = document.getElementById('rentalTermsModal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+
+            function closeTermsModal() {
+                const modal = document.getElementById('rentalTermsModal');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+            }
+
+            function acceptTermsAndClose() {
+                const cb = document.getElementById('termsCheckbox');
+                if (cb) {
+                    cb.checked = true;
+                }
+                closeTermsModal();
+            }
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeTermsModal();
+                }
+            });
         </script>
+
+        <!-- Rental Terms & Policies Modal -->
+        <div id="rentalTermsModal" class="terms-modal hidden" role="dialog" aria-modal="true">
+            <div class="terms-modal-dialog">
+                <!-- Modal Header -->
+                <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                    <div class="flex items-center gap-3">
+                        <img th:src="@{/images/car-rental-logo.svg}" alt="DriveNow" class="w-8 h-8 rounded-lg object-contain flex-shrink-0" onerror="this.style.display='none'">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 mb-0" th:text="${contractTerms.title}">Hợp đồng thuê xe ô tô tự lái</h3>
+                            <p class="text-[11px] text-slate-500 mb-0">DriveNow Mobility Vietnam</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeTermsModal()" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+
+                <!-- Modal Body: exactly the version the customer is about to accept -->
+                <div class="terms-modal-body space-y-6 text-xs leading-relaxed text-slate-700">
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                        <div><strong>Bên A (bên cho thuê):</strong> Công ty TNHH DriveNow Mobility Việt Nam • 120 Trường Chinh, Tân Bình, TP. Hồ Chí Minh • Hotline 1800 6868</div>
+                        <div><strong>Bên B (bên thuê):</strong> <span th:text="${session.customerName != null ? session.customerName : 'Khách hàng'}">Khách hàng</span>, tài khoản đã xác minh giấy phép lái xe trên DriveNow</div>
+                    </div>
+
+                    <div th:replace="~{fragments/contract-terms :: terms(${contractTerms})}"></div>
+
+                    <p class="text-[11px] text-slate-500 mb-0">
+                        Khi tick ô đồng ý và xác nhận đặt xe, hệ thống ghi nhận thời điểm, địa chỉ IP và phiên bản điều khoản bạn đã đồng ý.
+                        Sau khi thanh toán tiền cọc, hợp đồng PDF đầy đủ (gồm thông tin xe, thời hạn và số tiền) được gửi đến email của bạn.
+                    </p>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="px-6 py-4 border-t border-slate-200 flex items-center justify-end gap-3 bg-slate-50">
+                    <button type="button" onclick="closeTermsModal()" class="px-4 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-colors">
+                        Close
+                    </button>
+                    <button type="button" onclick="acceptTermsAndClose()" class="btn-amber px-5 py-2 rounded-lg text-xs font-bold shadow-xs">
+                        I Agree & Accept Terms
+                    </button>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

@@ -3,7 +3,7 @@
 <body>
 <!--
     Admin Sidebar Fragment
-    Pass active param: 'dashboard', 'bookings', 'vehicles', 'inspections', 'promotions', 'issues', 'licenses', 'accounts'
+    Pass active param: 'dashboard', 'bookings', 'contracts', 'vehicles', 'inspections', 'promotions', 'issues', 'licenses', 'accounts'
 -->
 <div th:fragment="sidebar(active)" class="list-group shadow-sm border-0 rounded-lg overflow-hidden mb-4">
     <div class="list-group-item bg-navy text-white py-3 border-0">
@@ -22,6 +22,10 @@
     <a th:href="@{/admin/bookings}"
        th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'bookings'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
         Rental Management
+    </a>
+    <a th:href="@{/admin/contract-templates}"
+       th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'contracts'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
+        Rental Terms
     </a>
 
     <!-- Car Management -->

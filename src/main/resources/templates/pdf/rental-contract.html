@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<!--
+    Rendered to PDF by OpenHtmlToPdfContractGenerator. Keep this file well-formed XHTML:
+    close every tag, no named entities such as nbsp, no @{...} links (there is no web request here).
+    Structure follows common Vietnamese self-drive rental contracts: parties, vehicle, term, price and deposit,
+    cancellation and late return, rights and obligations, disputes, validity, signatures.
+-->
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="'Hợp đồng ' + ${doc.contractNumber}">Hợp đồng</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 18mm 18mm 20mm 18mm;
+            @bottom-right {
+                content: "Trang " counter(page) "/" counter(pages);
+                font-family: ContractFont;
+                font-size: 8pt;
+                color: #6b7280;
+            }
+            @bottom-left {
+                content: "DriveNow - Hợp đồng thuê xe tự lái";
+                font-family: ContractFont;
+                font-size: 8pt;
+                color: #6b7280;
+            }
+        }
+        body { font-family: ContractFont; font-size: 10.5pt; line-height: 1.45; color: #111827; }
+        .center { text-align: center; }
+        .nation { font-weight: 700; font-size: 11pt; margin: 0; }
+        .motto { font-weight: 700; margin: 2px 0 0 0; }
+        .motto-line { width: 160px; margin: 2px auto 0 auto; border-top: 1px solid #111827; }
+        h1 { font-size: 15pt; font-weight: 700; margin: 22px 0 2px 0; text-align: center; }
+        .number { text-align: center; margin: 0 0 14px 0; }
+        .basis { font-style: italic; margin: 0 0 1px 0; }
+        h2 { font-size: 11pt; font-weight: 700; margin: 14px 0 6px 0; }
+        p { margin: 3px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 4px 0; }
+        td, th { border: 1px solid #9ca3af; padding: 4px 6px; vertical-align: top; text-align: left; }
+        th { background-color: #f3f4f6; font-weight: 700; }
+        .label { width: 38%; color: #374151; }
+        .amount { text-align: right; white-space: nowrap; }
+        .total td { font-weight: 700; }
+        .party { border: none; padding: 0 0 2px 0; }
+        .terms { white-space: pre-line; }
+        .signature td { border: none; text-align: center; width: 50%; padding-top: 10px; }
+        .evidence { font-size: 9pt; color: #374151; }
+        .note { font-size: 9pt; color: #4b5563; margin-top: 10px; }
+        /* Keep each short article and the signature block on one page */
+        .keep-together { page-break-inside: avoid; }
+        tr { page-break-inside: avoid; }
+    </style>
+</head>
+<body>
+
+<div class="center">
+    <p class="nation">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+    <p class="motto">Độc lập - Tự do - Hạnh phúc</p>
+    <div class="motto-line"></div>
+</div>
+
+<h1 th:text="${#strings.toUpperCase(doc.terms.title)}">HỢP ĐỒNG THUÊ XE Ô TÔ TỰ LÁI</h1>
+<p class="number">
+    Số: <strong th:text="${doc.contractNumber}">CTR-20261023-0001</strong>
+</p>
+
+<p class="basis">- Căn cứ Bộ luật Dân sự năm 2015;</p>
+<p class="basis">- Căn cứ Luật Giao dịch điện tử năm 2023;</p>
+<p class="basis">- Căn cứ nhu cầu và thỏa thuận của hai bên.</p>
+
+<p style="margin-top: 10px;">
+    Hợp đồng được giao kết bằng phương tiện điện tử trên nền tảng DriveNow, Bên B xác nhận đồng ý lúc
+    <strong th:text="${#temporals.format(doc.acceptedAt, 'HH:mm, dd/MM/yyyy')}">09:00, 23/10/2026</strong>, giữa:
+</p>
+
+<div class="keep-together">
+<h2>BÊN CHO THUÊ (BÊN A)</h2>
+<table>
+    <tr><td class="label">Tên đơn vị</td><td>Công ty TNHH DriveNow Mobility Việt Nam</td></tr>
+    <tr><td class="label">Địa chỉ</td><td>120 Trường Chinh, phường Tân Bình, TP. Hồ Chí Minh</td></tr>
+    <tr><td class="label">Hotline</td><td>1800 6868</td></tr>
+</table>
+</div>
+
+<div class="keep-together">
+<h2>BÊN THUÊ (BÊN B)</h2>
+<table>
+    <tr><td class="label">Họ và tên</td><td th:text="${doc.customerName}">Nguyễn Văn A</td></tr>
+    <tr><td class="label">Số điện thoại</td><td th:text="${doc.customerPhone}">0901234567</td></tr>
+    <tr><td class="label">Email</td><td th:text="${doc.customerEmail}">a@example.com</td></tr>
+    <tr>
+        <td class="label">Giấy phép lái xe</td>
+        <td th:if="${doc.licenseNumber != null}"
+            th:text="'Số ' + ${doc.licenseNumber} + ' - hạng ' + ${doc.licenseClass}
+                     + ' - có giá trị đến ' + ${#temporals.format(doc.licenseExpiry, 'dd/MM/yyyy')}">Số 790123456789 - hạng B</td>
+        <td th:unless="${doc.licenseNumber != null}">Xuất trình bản gốc khi nhận xe</td>
+    </tr>
+</table>
+</div>
+
+<p style="margin-top: 8px;">Hai bên thống nhất ký kết hợp đồng thuê xe ô tô tự lái (không kèm người lái) với các điều khoản sau:</p>
+
+<div class="keep-together">
+<h2>Điều 1. Xe cho thuê</h2>
+<table>
+    <tr><td class="label">Hiệu xe</td><td th:text="${doc.vehicleName}">Toyota Vios</td></tr>
+    <tr>
+        <td class="label">Loại xe / số chỗ</td>
+        <td th:text="${#strings.toUpperCase(doc.vehicleCategory)} + ' - ' + ${doc.seats} + ' chỗ'">SEDAN - 5 chỗ</td>
+    </tr>
+    <tr>
+        <td class="label">Hộp số / nhiên liệu</td>
+        <td>
+            <span th:switch="${doc.transmission}">
+                <span th:case="'automatic'">Số tự động</span>
+                <span th:case="'manual'">Số sàn</span>
+                <span th:case="*" th:text="${doc.transmission}">Số tự động</span>
+            </span>
+            /
+            <span th:switch="${doc.fuelType}">
+                <span th:case="'gasoline'">Xăng</span>
+                <span th:case="'diesel'">Dầu diesel</span>
+                <span th:case="'electric'">Điện</span>
+                <span th:case="'hybrid'">Hybrid xăng - điện</span>
+                <span th:case="*" th:text="${doc.fuelType}">Xăng</span>
+            </span>
+        </td>
+    </tr>
+    <tr>
+        <td class="label">Biển số</td>
+        <td th:text="${doc.licensePlate != null ? doc.licensePlate : 'Được xác định và ghi trong biên bản bàn giao khi nhận xe'}">51A-123.45</td>
+    </tr>
+    <tr th:if="${doc.vehicleColor != null}">
+        <td class="label">Màu sơn / năm sản xuất</td>
+        <td th:text="${doc.vehicleColor} + ' / ' + ${doc.vehicleYear}">Trắng / 2024</td>
+    </tr>
+</table>
+<p>Tình trạng xe, số km và mức nhiên liệu được ghi nhận trong biên bản bàn giao do hai bên xác nhận khi giao và nhận lại xe.</p>
+</div>
+
+<div class="keep-together">
+<h2>Điều 2. Thời hạn thuê</h2>
+<table>
+    <tr><td class="label">Thời điểm nhận xe</td><td th:text="${#temporals.format(doc.pickupTime, 'HH:mm, dd/MM/yyyy')}">09:00, 24/10/2026</td></tr>
+    <tr><td class="label">Thời điểm trả xe</td><td th:text="${#temporals.format(doc.scheduledEndTime, 'HH:mm, dd/MM/yyyy')}">18:00, 24/10/2026</td></tr>
+    <tr><td class="label">Số giờ thuê tính phí</td><td th:text="${doc.rentalHours} + ' giờ'">9 giờ</td></tr>
+</table>
+</div>
+
+<div class="keep-together">
+<h2>Điều 3. Giá thuê, đặt cọc và thanh toán</h2>
+<p data-policy="deposit" th:text="'Bên B đặt cọc ' + ${doc.terms.depositPercent}
+            + '% tổng giá trị hợp đồng khi đặt xe; số tiền còn lại được thanh toán khi trả xe.'">
+    Bên B đặt cọc 50% tổng giá trị hợp đồng khi đặt xe; số tiền còn lại được thanh toán khi trả xe.
+</p>
+<table>
+    <tr>
+        <td class="label">Đơn giá thuê</td>
+        <td class="amount" th:text="${#numbers.formatDecimal(doc.pricePerHour, 0, 'POINT', 0, 'COMMA')} + ' đ/giờ'">150.000 đ/giờ</td>
+    </tr>
+    <tr>
+        <td class="label">Thành tiền</td>
+        <td class="amount" th:text="${#numbers.formatDecimal(doc.rentalPrice, 0, 'POINT', 0, 'COMMA')} + ' đ'">1.350.000 đ</td>
+    </tr>
+    <tr th:if="${doc.discountAmount != null and doc.discountAmount.signum() > 0}">
+        <td class="label" th:text="'Giảm giá' + (${doc.promotionCode != null} ? ' (mã ' + ${doc.promotionCode} + ')' : '')">Giảm giá</td>
+        <td class="amount" th:text="'- ' + ${#numbers.formatDecimal(doc.discountAmount, 0, 'POINT', 0, 'COMMA')} + ' đ'">- 0 đ</td>
+    </tr>
+    <tr class="total">
+        <td class="label">Tổng giá trị hợp đồng</td>
+        <td class="amount" th:text="${#numbers.formatDecimal(doc.totalPrice, 0, 'POINT', 0, 'COMMA')} + ' đ'">1.350.000 đ</td>
+    </tr>
+    <tr>
+        <td data-policy="deposit" class="label" th:text="'Tiền đặt cọc (' + ${doc.terms.depositPercent} + '%)'">Tiền đặt cọc (50%)</td>
+        <td class="amount" th:text="${#numbers.formatDecimal(doc.depositAmount, 0, 'POINT', 0, 'COMMA')} + ' đ'">675.000 đ</td>
+    </tr>
+    <tr>
+        <td class="label">Còn lại thanh toán khi trả xe</td>
+        <td class="amount" th:text="${#numbers.formatDecimal(doc.remainingAmount, 0, 'POINT', 0, 'COMMA')} + ' đ'">675.000 đ</td>
+    </tr>
+</table>
+<p th:if="${doc.depositTransactionCode != null}">
+    Bên B đã thanh toán tiền đặt cọc qua cổng VNPay, mã giao dịch
+    <strong th:text="${doc.depositTransactionCode}">TXN-DEP-1</strong>,
+    lúc <span th:text="${#temporals.format(doc.depositPaidAt, 'HH:mm, dd/MM/yyyy')}">09:05, 23/10/2026</span>.
+</p>
+<p>Phí trả xe trễ hạn, phí bồi thường hư hỏng và các chi phí phát sinh khác (nếu có) được thanh toán cùng số tiền còn lại khi trả xe.</p>
+</div>
+
+<div class="keep-together">
+<h2>Điều 4. Hủy đặt xe và trả xe trễ hạn</h2>
+<p data-policy="cancellation" th:text="'1. Bên B hủy đặt xe trước thời điểm nhận xe ít nhất ' + ${doc.terms.freeCancellationHours}
+            + ' giờ được hoàn lại 100% tiền đặt cọc. Hủy sau mốc này, tiền đặt cọc không được hoàn lại.'">
+    1. Hủy trước 72 giờ được hoàn 100% tiền cọc.
+</p>
+<p data-policy="lateReturn" th:text="'2. Bên B trả xe sau thời điểm trả xe tại Điều 2 phải trả phí trễ hạn bằng ' + ${doc.terms.lateFeePercent}
+            + '% đơn giá thuê cho mỗi giờ trễ, trừ trường hợp được Bên A đồng ý gia hạn trước.'">
+    2. Phí trễ hạn 200% đơn giá mỗi giờ.
+</p>
+</div>
+
+<h2>Điều 5. Quyền và nghĩa vụ của các bên</h2>
+<div class="terms" th:text="${doc.terms.termsContent}">Nội dung điều khoản</div>
+
+<div class="keep-together">
+<h2>Điều 6. Giải quyết tranh chấp</h2>
+<p>Tranh chấp phát sinh từ hợp đồng được hai bên giải quyết trước hết bằng thương lượng. Trường hợp không thương lượng được, một trong hai bên có quyền yêu cầu Tòa án nhân dân có thẩm quyền giải quyết theo quy định của pháp luật.</p>
+</div>
+
+<div class="keep-together">
+<h2>Điều 7. Hiệu lực hợp đồng</h2>
+<p>1. Hợp đồng có hiệu lực kể từ khi Bên B xác nhận đồng ý điều khoản và thanh toán tiền đặt cọc; chấm dứt khi hai bên hoàn tất thanh toán sau khi trả xe, hoặc khi việc đặt xe bị hủy theo Điều 4.</p>
+<p>2. Hợp đồng được lập dưới dạng thông điệp dữ liệu và được gửi đến địa chỉ email của Bên B; mỗi bên lưu giữ một bản có giá trị như nhau.</p>
+</div>
+
+<div class="keep-together">
+<table class="signature">
+    <tr>
+        <td><strong>ĐẠI DIỆN BÊN A</strong></td>
+        <td><strong>BÊN B</strong></td>
+    </tr>
+    <tr>
+        <td class="evidence">
+            Xác nhận điện tử bởi hệ thống DriveNow<br/>
+            <span style="white-space: nowrap;">Phát hành lúc <span th:text="${#temporals.format(doc.issuedAt, 'HH:mm, dd/MM/yyyy')}">09:05, 23/10/2026</span></span>
+        </td>
+        <td class="evidence">
+            <strong th:text="${doc.customerName}">Nguyễn Văn A</strong><br/>
+            Đồng ý các điều khoản của hợp đồng<br/>
+            <span style="white-space: nowrap;">lúc <span th:text="${#temporals.format(doc.acceptedAt, 'HH:mm, dd/MM/yyyy')}">09:00, 23/10/2026</span></span>
+        </td>
+    </tr>
+</table>
+</div>
+
+<p class="note">Mã đặt xe: #<span th:text="${doc.bookingId}">1</span>. Biên bản bàn giao xe là phụ lục không tách rời của hợp đồng này.</p>
+
+</body>
+</html>

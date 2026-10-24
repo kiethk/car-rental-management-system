@@ -6,9 +6,9 @@ BEGIN;
 -- 1. CUSTOMERS
 INSERT INTO customers (customer_id, name, phone, email, password_hash, created_at)
 VALUES 
-    (1, 'John Doe', '0901234567', 'customer@gmail.com', '$2a$10$f1dC/wkm8nQT1k3YNvBP3e75TsnTOcT4JaMR6LcS.KsJ5nBC0w.nW', CURRENT_TIMESTAMP - INTERVAL '10 days'),
-    (2, 'Jane Smith', '0912345678', 'customer2@gmail.com', '$2a$10$f1dC/wkm8nQT1k3YNvBP3e75TsnTOcT4JaMR6LcS.KsJ5nBC0w.nW', CURRENT_TIMESTAMP - INTERVAL '5 days'),
-    (3, 'David Miller', '0923456789', 'customer3@gmail.com', '$2a$10$f1dC/wkm8nQT1k3YNvBP3e75TsnTOcT4JaMR6LcS.KsJ5nBC0w.nW', CURRENT_TIMESTAMP - INTERVAL '2 days')
+    (1, 'John Doe', '0901234567', 'customer@example.com', '$2a$10$f1dC/wkm8nQT1k3YNvBP3e75TsnTOcT4JaMR6LcS.KsJ5nBC0w.nW', CURRENT_TIMESTAMP - INTERVAL '10 days'),
+    (2, 'Jane Smith', '0912345678', 'customer2@example.com', '$2a$10$f1dC/wkm8nQT1k3YNvBP3e75TsnTOcT4JaMR6LcS.KsJ5nBC0w.nW', CURRENT_TIMESTAMP - INTERVAL '5 days'),
+    (3, 'David Miller', '0923456789', 'customer3@example.com', '$2a$10$f1dC/wkm8nQT1k3YNvBP3e75TsnTOcT4JaMR6LcS.KsJ5nBC0w.nW', CURRENT_TIMESTAMP - INTERVAL '2 days')
 ON CONFLICT (customer_id) DO NOTHING;
 
 -- 2. EMPLOYEES
@@ -22,26 +22,26 @@ ON CONFLICT (employee_id) DO NOTHING;
 -- 3. VEHICLE_TYPES (20 diverse vehicle models with high quality online images)
 INSERT INTO vehicle_types (vehicle_type_id, name, brand, category, seats, transmission, fuel_type, price_per_hour, description, image_url)
 VALUES 
-    (1, 'Vios 2023', 'Toyota', 'sedan', 5, 'automatic', 'gasoline', 150000.00, 'Compact 5-seater sedan, fuel-efficient, ideal for city commute.', '/images/vehicles/vios.jpg'),
-    (2, 'CR-V 2024', 'Honda', 'suv', 7, 'automatic', 'gasoline', 300000.00, 'Spacious 7-seater SUV, perfect for family road trips.', '/images/vehicles/crv.jpg'),
-    (3, 'VF8 2023', 'VinFast', 'suv', 5, 'automatic', 'electric', 280000.00, 'Smart D-segment electric SUV, premium ride with advanced ADAS technology.', '/images/vehicles/vf8.jpg'),
-    (4, 'Morning 2023', 'Kia', 'hatchback', 4, 'automatic', 'gasoline', 120000.00, 'Compact urban hatchback, agile in city traffic, ultra-economical rental.', '/images/vehicles/morning.jpg'),
-    (5, 'Accent 2024', 'Hyundai', 'sedan', 5, 'automatic', 'gasoline', 160000.00, 'Next-generation modern sedan, well-equipped and comfortable on all journeys.', '/images/vehicles/accent.jpg'),
-    (6, 'Mazda 3 2023', 'Mazda', 'sedan', 5, 'automatic', 'gasoline', 220000.00, 'Sporty KODO styling, near-luxury interior and exhilarating handling.', '/images/vehicles/mazda3.jpg'),
-    (7, 'Ranger Wildtrak 2023', 'Ford', 'pickup', 5, 'automatic', 'diesel', 320000.00, 'Powerful pickup truck with 4WD, ready to conquer any rugged terrain.', '/images/vehicles/ranger.jpg'),
-    (8, 'Xpander 2024', 'Mitsubishi', 'minivan', 7, 'automatic', 'gasoline', 240000.00, 'Top-selling 7-seater MPV, high ground clearance, versatile family interior.', '/images/vehicles/xpander.jpg'),
-    (9, 'Fortuner Legender', 'Toyota', 'suv', 7, 'automatic', 'diesel', 350000.00, 'Rugged full-size 7-seater SUV with superior off-road capabilities.', '/images/vehicles/fortuner.jpg'),
-    (10, 'Santa Fe 2023', 'Hyundai', 'suv', 7, 'automatic', 'diesel', 360000.00, 'Luxurious stylish SUV with premium appointments and Harman Kardon audio.', '/images/vehicles/santafe.jpg'),
-    (11, 'Carnival 2024', 'Kia', 'minivan', 8, 'automatic', 'diesel', 450000.00, 'Spacious 8-seater luxury MPV, captain seats designed for long distance comfort.', '/images/vehicles/carnival.jpg'),
-    (12, 'VF9 Plus 2024', 'VinFast', 'suv', 7, 'automatic', 'electric', 480000.00, 'Flagship full-size electric SUV with premium leather interior and autonomous driving tech.', '/images/vehicles/vf9.jpg'),
-    (13, 'Camry 2.5Q 2023', 'Toyota', 'sedan', 5, 'automatic', 'gasoline', 350000.00, 'Refined executive sedan, quiet cabin, executive rear seating.', '/images/vehicles/camry.jpg'),
-    (14, 'Civic RS 2023', 'Honda', 'sedan', 5, 'automatic', 'gasoline', 250000.00, 'Sporty sedan with turbocharged VTEC performance and responsive steering.', '/images/vehicles/civic.jpg'),
-    (15, '320i M Sport', 'BMW', 'sedan', 5, 'automatic', 'gasoline', 500000.00, 'German luxury sports sedan with M Sport package and perfect 50:50 chassis balance.', '/images/vehicles/bmw320i.jpg'),
-    (16, 'C200 Avantgarde', 'Mercedes-Benz', 'sedan', 5, 'automatic', 'gasoline', 520000.00, 'Elegant Mercedes-Benz sedan, 11.9-inch portrait touchscreen, 64-color ambient lighting.', '/images/vehicles/c200.jpg'),
-    (17, 'Macan 2023', 'Porsche', 'suv', 5, 'automatic', 'gasoline', 850000.00, 'High-performance luxury sports SUV from Stuttgart with pure sports car DNA.', '/images/vehicles/macan.jpg'),
-    (18, 'A6 2023', 'Audi', 'sedan', 5, 'automatic', 'gasoline', 600000.00, 'High-tech executive sedan, Matrix LED lighting, dual touchscreen cockpit.', '/images/vehicles/a6.jpg'),
+    (1, 'Vios', 'Toyota', 'sedan', 5, 'automatic', 'gasoline', 150000.00, 'Compact 5-seater sedan, fuel-efficient, ideal for city commute.', '/images/vehicles/vios.jpg'),
+    (2, 'CR-V', 'Honda', 'suv', 7, 'automatic', 'gasoline', 300000.00, 'Spacious 7-seater SUV, perfect for family road trips.', '/images/vehicles/crv.jpg'),
+    (3, 'VF8', 'VinFast', 'suv', 5, 'automatic', 'electric', 280000.00, 'Smart D-segment electric SUV, premium ride with advanced ADAS technology.', '/images/vehicles/vf8.jpg'),
+    (4, 'Morning', 'Kia', 'hatchback', 4, 'automatic', 'gasoline', 120000.00, 'Compact urban hatchback, agile in city traffic, ultra-economical rental.', '/images/vehicles/morning.jpg'),
+    (5, 'Accent', 'Hyundai', 'sedan', 5, 'automatic', 'gasoline', 160000.00, 'Next-generation modern sedan, well-equipped and comfortable on all journeys.', '/images/vehicles/accent.jpg'),
+    (6, 'Mazda 3', 'Mazda', 'sedan', 5, 'automatic', 'gasoline', 220000.00, 'Sporty KODO styling, near-luxury interior and exhilarating handling.', '/images/vehicles/mazda3.jpg'),
+    (7, 'Ranger', 'Ford', 'pickup', 5, 'automatic', 'diesel', 320000.00, 'Powerful pickup truck with 4WD, ready to conquer any rugged terrain.', '/images/vehicles/ranger.jpg'),
+    (8, 'Xpander', 'Mitsubishi', 'minivan', 7, 'automatic', 'gasoline', 240000.00, 'Top-selling 7-seater MPV, high ground clearance, versatile family interior.', '/images/vehicles/xpander.jpg'),
+    (9, 'Fortuner', 'Toyota', 'suv', 7, 'automatic', 'diesel', 350000.00, 'Rugged full-size 7-seater SUV with superior off-road capabilities.', '/images/vehicles/fortuner.jpg'),
+    (10, 'Santa Fe', 'Hyundai', 'suv', 7, 'automatic', 'diesel', 360000.00, 'Luxurious stylish SUV with premium appointments and Harman Kardon audio.', '/images/vehicles/santafe.jpg'),
+    (11, 'Carnival', 'Kia', 'minivan', 8, 'automatic', 'diesel', 450000.00, 'Spacious 8-seater luxury MPV, captain seats designed for long distance comfort.', '/images/vehicles/carnival.jpg'),
+    (12, 'VF9', 'VinFast', 'suv', 7, 'automatic', 'electric', 480000.00, 'Flagship full-size electric SUV with premium leather interior and autonomous driving tech.', '/images/vehicles/vf9.jpg'),
+    (13, 'Camry', 'Toyota', 'sedan', 5, 'automatic', 'gasoline', 350000.00, 'Refined executive sedan, quiet cabin, executive rear seating.', '/images/vehicles/camry.jpg'),
+    (14, 'Civic', 'Honda', 'sedan', 5, 'automatic', 'gasoline', 250000.00, 'Sporty sedan with turbocharged VTEC performance and responsive steering.', '/images/vehicles/civic.jpg'),
+    (15, '320i', 'BMW', 'sedan', 5, 'automatic', 'gasoline', 500000.00, 'German luxury sports sedan with M Sport package and perfect 50:50 chassis balance.', '/images/vehicles/bmw320i.jpg'),
+    (16, 'C200', 'Mercedes-Benz', 'sedan', 5, 'automatic', 'gasoline', 520000.00, 'Elegant Mercedes-Benz sedan, 11.9-inch portrait touchscreen, 64-color ambient lighting.', '/images/vehicles/c200.jpg'),
+    (17, 'Macan', 'Porsche', 'suv', 5, 'automatic', 'gasoline', 850000.00, 'High-performance luxury sports SUV from Stuttgart with pure sports car DNA.', '/images/vehicles/macan.jpg'),
+    (18, 'A6', 'Audi', 'sedan', 5, 'automatic', 'gasoline', 600000.00, 'High-tech executive sedan, Matrix LED lighting, dual touchscreen cockpit.', '/images/vehicles/a6.jpg'),
     (19, 'VF e34', 'VinFast', 'suv', 5, 'automatic', 'electric', 180000.00, 'Eco-friendly electric crossover, low operating cost and smart connected features.', '/images/vehicles/vfe34.jpg'),
-    (20, 'Corolla Cross Hybrid', 'Toyota', 'suv', 5, 'automatic', 'hybrid', 270000.00, 'Ultra-quiet and efficient petrol-electric hybrid with Toyota Safety Sense.', '/images/vehicles/corollacross.jpg')
+    (20, 'Corolla Cross', 'Toyota', 'suv', 5, 'automatic', 'hybrid', 270000.00, 'Ultra-quiet and efficient petrol-electric hybrid with Toyota Safety Sense.', '/images/vehicles/corollacross.jpg')
 ON CONFLICT (vehicle_type_id) DO UPDATE SET 
     name = EXCLUDED.name, brand = EXCLUDED.brand, category = EXCLUDED.category, seats = EXCLUDED.seats, 
     transmission = EXCLUDED.transmission, fuel_type = EXCLUDED.fuel_type, price_per_hour = EXCLUDED.price_per_hour, 
@@ -161,28 +161,35 @@ VALUES
     )
 ON CONFLICT (booking_id) DO NOTHING;
 
--- 10. POLICIES
-INSERT INTO policies (policy_id, policy_code, title, content, updated_at)
+-- 10. CONTRACT_TEMPLATES
+-- status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED'. Numbers live in typed columns; terms_content holds wording only.
+INSERT INTO contract_templates (contract_template_id, version_no, title, terms_content,
+                                deposit_rate, late_fee_multiplier, free_cancellation_hours,
+                                status, created_by, created_at, activated_at)
 VALUES
-    (1, 'DEPOSIT_PERCENT', '50% Reservation Deposit', 'Customers are required to pay a 50% reservation deposit of the total rental value to confirm vehicle reservation prior to pickup.', CURRENT_TIMESTAMP),
-    (2, 'CANCELLATION_POLICY', 'Cancellation Policy', 'Customers receive a 100% deposit refund if the reservation is cancelled at least 72 hours prior to scheduled pickup. Cancellations within 72 hours are non-refundable.', CURRENT_TIMESTAMP),
-    (3, 'LATE_RETURN_PENALTY', 'Late Return Penalty', 'Each hour delayed beyond the agreed contractual return time will be charged a penalty equal to 200% of the standard hourly rental rate.', CURRENT_TIMESTAMP),
-    (4, 'OPERATING_HOURS', 'Operating & Handover Hours', 'Vehicle handover and return depot operates daily from 06:00 to 22:00 across all station locations.', CURRENT_TIMESTAMP)
-ON CONFLICT (policy_id) DO NOTHING;
+    (1, 1, 'Hợp đồng thuê xe ô tô tự lái',
+     E'Quyền và nghĩa vụ của Bên A\n'
+     || E'1. Bàn giao xe đúng thời gian và địa điểm đã thỏa thuận; xe ở tình trạng kỹ thuật tốt, có đủ giấy đăng ký, giấy chứng nhận kiểm định và bảo hiểm trách nhiệm dân sự bắt buộc còn hiệu lực.\n'
+     || E'2. Cùng Bên B lập biên bản bàn giao, ghi nhận số km, mức nhiên liệu và tình trạng ngoại thất, nội thất khi giao và khi nhận lại xe.\n'
+     || E'3. Chịu chi phí bảo dưỡng định kỳ và các hư hỏng do hao mòn tự nhiên của xe.\n'
+     || E'\nQuyền và nghĩa vụ của Bên B\n'
+     || E'4. Xuất trình bản gốc căn cước công dân và giấy phép lái xe phù hợp với hạng xe khi nhận xe.\n'
+     || E'5. Sử dụng xe đúng mục đích, tuân thủ pháp luật về giao thông đường bộ và chịu trách nhiệm về mọi vi phạm giao thông, kể cả phạt nguội, phát sinh trong thời gian thuê.\n'
+     || E'6. Không giao xe cho người khác điều khiển khi chưa được Bên A đồng ý; không cầm cố, thế chấp, cho thuê lại xe; không dùng xe để chở hàng cấm hoặc đua xe.\n'
+     || E'7. Bồi thường thiệt hại khi xe bị hư hỏng hoặc mất mát do lỗi của Bên B, căn cứ biên bản bàn giao và chi phí sửa chữa thực tế.\n'
+     || E'8. Trả xe đúng thời hạn, đúng địa điểm, với mức nhiên liệu như khi nhận; tự chi trả phí cầu đường, bến bãi phát sinh.',
+     0.5000, 2.00, 72,
+     'ACTIVE', 1, CURRENT_TIMESTAMP - INTERVAL '30 days', CURRENT_TIMESTAMP - INTERVAL '30 days')
+ON CONFLICT (contract_template_id) DO NOTHING;
 
 -- 11. CONTRACTS
--- contract_status: 'DRAFT' | 'SIGNED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
-INSERT INTO contracts (contract_id, contract_number, booking_id, signed_at, signature_type, terms_snapshot, contract_status, file_pdf_url, created_at)
+-- Contract validity follows bookings.status. file_name is NULL until the PDF is issued.
+INSERT INTO contracts (contract_id, contract_number, booking_id, contract_template_id,
+                       accepted_at, accepted_ip, file_name, issued_at, emailed_at, created_at)
 VALUES
-    (1, 'CTR-20261018-0001', 1, CURRENT_TIMESTAMP - INTERVAL '4 days', 'DIGITAL_CHECK', 
-     'DRIVENOW SELF-DRIVE CAR RENTAL TERMS: 1. 50% reservation deposit. 2. Free cancellation up to 72 hours prior to pickup. 3. Late return penalty at 200% hourly rate. 4. Return car in original condition.', 
-     'COMPLETED', '/uploads/contracts/contract_1.pdf', CURRENT_TIMESTAMP - INTERVAL '4 days'),
-    (2, 'CTR-20261021-0002', 2, CURRENT_TIMESTAMP - INTERVAL '1 day', 'DIGITAL_CHECK', 
-     'DRIVENOW SELF-DRIVE CAR RENTAL TERMS: 1. 50% reservation deposit. 2. Free cancellation up to 72 hours prior to pickup. 3. Late return penalty at 200% hourly rate. 4. Return car in original condition.', 
-     'ACTIVE', '/uploads/contracts/contract_2.pdf', CURRENT_TIMESTAMP - INTERVAL '1 day'),
-    (3, 'CTR-20261022-0003', 3, CURRENT_TIMESTAMP - INTERVAL '1 hour', 'DIGITAL_CHECK', 
-     'DRIVENOW SELF-DRIVE CAR RENTAL TERMS: 1. 50% reservation deposit. 2. Free cancellation up to 72 hours prior to pickup. 3. Late return penalty at 200% hourly rate. 4. Return car in original condition.', 
-     'SIGNED', NULL, CURRENT_TIMESTAMP - INTERVAL '1 hour')
+    (1, 'CTR-20261018-0001', 1, 1, CURRENT_TIMESTAMP - INTERVAL '4 days', '127.0.0.1', NULL, NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '4 days'),
+    (2, 'CTR-20261021-0002', 2, 1, CURRENT_TIMESTAMP - INTERVAL '1 day', '127.0.0.1', NULL, NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '1 day'),
+    (3, 'CTR-20261022-0003', 3, 1, CURRENT_TIMESTAMP - INTERVAL '1 hour', '127.0.0.1', NULL, NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '1 hour')
 ON CONFLICT (contract_id) DO NOTHING;
 
 -- 12. PAYMENTS
@@ -236,7 +243,7 @@ SELECT setval(pg_get_serial_sequence('promotions', 'promotion_id'), COALESCE(MAX
 SELECT setval(pg_get_serial_sequence('license_documents', 'license_document_id'), COALESCE(MAX(license_document_id), 1)) FROM license_documents;
 SELECT setval(pg_get_serial_sequence('slots', 'slot_id'), COALESCE(MAX(slot_id), 1)) FROM slots;
 SELECT setval(pg_get_serial_sequence('bookings', 'booking_id'), COALESCE(MAX(booking_id), 1)) FROM bookings;
-SELECT setval(pg_get_serial_sequence('policies', 'policy_id'), COALESCE(MAX(policy_id), 1)) FROM policies;
+SELECT setval(pg_get_serial_sequence('contract_templates', 'contract_template_id'), COALESCE(MAX(contract_template_id), 1)) FROM contract_templates;
 SELECT setval(pg_get_serial_sequence('contracts', 'contract_id'), COALESCE(MAX(contract_id), 1)) FROM contracts;
 SELECT setval(pg_get_serial_sequence('payments', 'payment_id'), COALESCE(MAX(payment_id), 1)) FROM payments;
 SELECT setval(pg_get_serial_sequence('reviews', 'review_id'), COALESCE(MAX(review_id), 1)) FROM reviews;

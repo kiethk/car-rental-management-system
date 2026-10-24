@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rental Terms — DriveNow Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container-fluid px-lg-5 my-4 flex-grow-1">
+    <div class="row">
+        <div class="col-md-3 col-lg-2">
+            <div th:replace="~{fragments/admin-sidebar :: sidebar(active='contracts')}"></div>
+        </div>
+
+        <div class="col-md-9 col-lg-10">
+            <div th:if="${success}" class="alert alert-success border-0 rounded-lg shadow-sm" role="alert" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger border-0 rounded-lg shadow-sm" role="alert" th:text="${error}"></div>
+
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+                <div>
+                    <h1 class="h3 font-weight-bold text-navy mb-1">Rental Terms Versions</h1>
+                    <p class="text-muted small mb-0">
+                        New bookings accept the <strong>active</strong> version. Bookings keep the version they accepted,
+                        so a version can never be edited once it is active. To change the terms, create a draft and activate it.
+                    </p>
+                </div>
+                <form th:if="${isAdmin}" th:action="@{/admin/contract-templates/draft}" method="post" class="mt-3 mt-md-0">
+                    <button type="submit" class="btn btn-navy font-weight-bold btn-sm px-3 py-2 rounded-lg shadow-sm">+ New draft from active</button>
+                </form>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-xl overflow-hidden bg-white">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle admin-table">
+                        <thead class="bg-surface-2 text-navy small font-weight-bold">
+                            <tr>
+                                <th class="border-top-0 py-3">Version</th>
+                                <th class="border-top-0 py-3">Title</th>
+                                <th class="border-top-0 py-3 text-center">Deposit</th>
+                                <th class="border-top-0 py-3 text-center">Late fee / hour</th>
+                                <th class="border-top-0 py-3 text-center">Free cancellation</th>
+                                <th class="border-top-0 py-3">Status</th>
+                                <th class="border-top-0 py-3">Activated</th>
+                                <th class="border-top-0 py-3 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="t : ${templates}">
+                                <td class="font-weight-bold text-navy" th:text="'v' + ${t.versionNo}">v1</td>
+                                <td th:text="${t.title}">Hợp đồng thuê xe ô tô tự lái</td>
+                                <td class="text-center" th:text="${t.depositPercent} + '%'">50%</td>
+                                <td class="text-center" th:text="${t.lateFeePercent} + '% of rate'">200% of rate</td>
+                                <td class="text-center" th:text="${t.freeCancellationHours} + ' h before pickup'">72 h before pickup</td>
+                                <td>
+                                    <span th:if="${t.status.name() == 'ACTIVE'}" class="badge badge-success px-2 py-1">Active</span>
+                                    <span th:if="${t.status.name() == 'DRAFT'}" class="badge badge-warning px-2 py-1">Draft</span>
+                                    <span th:if="${t.status.name() == 'ARCHIVED'}" class="badge badge-secondary px-2 py-1">Archived</span>
+                                </td>
+                                <td class="small text-muted" th:text="${t.activatedAt != null} ? ${#temporals.format(t.activatedAt, 'dd/MM/yyyy HH:mm')} : '—'">—</td>
+                                <td class="text-center">
+                                    <a th:href="@{/admin/contract-templates/{id}(id=${t.id})}" class="btn btn-outline-secondary btn-sm"
+                                       th:text="${t.editable and isAdmin} ? 'Edit' : 'View'">View</a>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(templates)}">
+                                <td colspan="8" class="text-center text-muted py-4">No rental terms configured.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

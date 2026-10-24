@@ -5,7 +5,8 @@ import com.crms.mvc.entity.Booking;
 import java.util.List;
 
 public interface BookingService {
-    Booking createBooking(Long customerId, BookingCreateDTO dto);
+    /** clientIp is stored as clickwrap evidence on the contract. */
+    Booking createBooking(Long customerId, BookingCreateDTO dto, String clientIp);
     List<BookingSummaryDTO> getMyBookings(Long customerId);
     BookingDetailDTO getBookingDetail(Long bookingId, Long customerId);
     BookingDetailDTO getBookingDetailForAdmin(Long bookingId);

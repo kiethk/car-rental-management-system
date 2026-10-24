@@ -663,7 +663,7 @@
                         <!-- Deposit Amount Summary Strip -->
                         <div class="deposit-row-box">
                             <div>
-                                <div class="deposit-label-main">Security deposit required (50%)</div>
+                                <div data-policy="deposit" class="deposit-label-main" th:text="'Security deposit required (' + ${booking.contract?.terms?.depositPercent} + '%)'">Security deposit required (50%)</div>
                                 <div class="deposit-label-sub">Remaining balance will be settled at vehicle return</div>
                             </div>
                             <div
@@ -859,7 +859,7 @@
                                 <div class="dh-top">
                                     <div class="dh-title-wrap">
                                         <span class="dh-title">Deposit due now</span>
-                                        <span class="badge-pct">50%</span>
+                                        <span data-policy="deposit" class="badge-pct" th:text="${booking.contract?.terms?.depositPercent} + '%'">50%</span>
                                     </div>
                                     <div
                                         class="dh-val"
@@ -891,7 +891,7 @@
                                 </div>
                                 <div class="perk-item">
                                     <span style="color: #059669; font-weight: 700">✓</span>
-                                    <span>Free cancellation up to 3 days before pickup</span>
+                                    <span data-policy="cancellation" th:text="'Free cancellation up to ' + ${booking.contract?.terms?.freeCancellationHours} + ' hours before pickup'">Free cancellation up to 72 hours before pickup</span>
                                 </div>
                             </div>
                         </div>

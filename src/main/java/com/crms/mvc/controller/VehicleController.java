@@ -5,6 +5,7 @@ import com.crms.mvc.dto.PhysicalCarItemDTO;
 import com.crms.mvc.dto.VehicleSearchFilterDTO;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.repository.VehicleRepository;
+import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.service.VehicleService;
 import com.crms.mvc.service.VehicleTypeService;
 import org.springframework.http.HttpStatus;
@@ -23,13 +24,16 @@ public class VehicleController {
     private final VehicleService vehicleService;
     private final VehicleTypeService vehicleTypeService;
     private final VehicleRepository vehicleRepository;
+    private final ContractTemplateService contractTemplateService;
 
     public VehicleController(VehicleService vehicleService,
                              VehicleTypeService vehicleTypeService,
-                             VehicleRepository vehicleRepository) {
+                             VehicleRepository vehicleRepository,
+                             ContractTemplateService contractTemplateService) {
         this.vehicleService = vehicleService;
         this.vehicleTypeService = vehicleTypeService;
         this.vehicleRepository = vehicleRepository;
+        this.contractTemplateService = contractTemplateService;
     }
 
     @GetMapping("/vehicles")
@@ -48,6 +52,7 @@ public class VehicleController {
         VehicleDTO vehicle = vehicleService.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found!"));
         model.addAttribute("vehicle", vehicle);
+        model.addAttribute("contractTerms", contractTemplateService.getActiveTemplate());
 
         if (vehicle.getVehicleTypeId() != null) {
             List<Vehicle> cars = vehicleRepository.findByVehicleTypeIdWithDetails(vehicle.getVehicleTypeId());
