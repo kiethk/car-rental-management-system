@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "crms-contract-test",
+      "runtimeExecutable": "D:/Class/tailieuki5/hsf302/CRMS/car-rental-management-system/mvnw.cmd",
+      "runtimeArgs": [
+        "-q",
+        "-f",
+        "D:/Class/tailieuki5/hsf302/CRMS/car-rental-management-system/pom.xml",
+        "spring-boot:run",
+        "-Dspring-boot.run.arguments=--server.port=8091 --spring.datasource.url=jdbc:postgresql://localhost:5434/crms_contract_test"
+      ],
+      "port": 8091
+    }
+  ]
+}

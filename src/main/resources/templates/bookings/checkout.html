@@ -96,6 +96,7 @@
                     <input type="hidden" th:field="*{vehicleTypeId}" />
                     <input type="hidden" th:field="*{startTime}" />
                     <input type="hidden" th:field="*{endTime}" />
+                    <input type="hidden" th:field="*{contractTemplateId}" />
 
                     <div class="checkout-grid">
                         <!-- Left Column (lg:col-span-3): 2 Clean Groups -->
@@ -564,6 +565,7 @@
                                                 <span>Deposit Due Now</span>
                                                 <span
                                                     class="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded"
+                                                    th:text="${contractTerms.depositPercent} + '%'"
                                                     >50%</span
                                                 >
                                             </div>
@@ -594,15 +596,19 @@
 
                                 <!-- Agreement Checkbox -->
                                 <label class="flex items-start gap-2.5 cursor-pointer pt-1">
+                                    <!-- Clickwrap: not pre-checked; the server re-validates acceptedTerms and the version id -->
                                     <input
                                         type="checkbox"
                                         id="termsCheckbox"
+                                        name="acceptedTerms"
+                                        value="true"
                                         required
                                         class="w-4 h-4 mt-0.5 accent-slate-900 cursor-pointer flex-shrink-0"
                                     />
                                     <span class="text-xs text-slate-600 leading-relaxed">
-                                        I agree to the
-                                        <button type="button" onclick="openTermsModal(event)" class="text-slate-900 font-semibold underline hover:text-amber transition-colors bg-transparent border-0 p-0 text-xs inline cursor-pointer">Rental Agreement & Operating Policies</button>.
+                                        I have read and agree to the
+                                        <button type="button" onclick="openTermsModal(event)" class="text-slate-900 font-semibold underline hover:text-amber transition-colors bg-transparent border-0 p-0 text-xs inline cursor-pointer">Rental Agreement</button>
+                                        <span th:text="'(version ' + ${contractTerms.versionNo} + ')'">(version 1)</span>.
                                     </span>
                                 </label>
 
@@ -690,7 +696,7 @@
                                         >
                                             <polyline points="20 6 9 17 4 12" />
                                         </svg>
-                                        <span>Free cancellation up to 3 days before pickup</span>
+                                        <span th:text="'Free cancellation up to ' + ${contractTerms.freeCancellationHours} + ' hours before pickup'">Free cancellation up to 72 hours before pickup</span>
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <svg
@@ -730,6 +736,7 @@
             }
 
             const baseRentalTotal = /*[[${estimatedTotal}]]*/ 1350000;
+            const depositRate = /*[[${contractTerms.depositRate}]]*/ 0.5;
 
             function formatVND(num) {
                 return Math.round(num).toLocaleString("en-US");
@@ -751,7 +758,7 @@
                     discountRow.classList.add("hidden");
                     discountRow.classList.remove("flex");
                     totalRentalFeeDisplay.textContent = formatVND(baseRentalTotal);
-                    const dep = Math.round(baseRentalTotal * 0.5);
+                    const dep = Math.round(baseRentalTotal * depositRate);
                     depositDueDisplay.textContent = formatVND(dep);
                     remainingBalanceDisplay.textContent = formatVND(baseRentalTotal - dep);
                     return;
@@ -773,7 +780,7 @@
 
                 if (isValid && discount > 0) {
                     const newTotal = Math.max(0, baseRentalTotal - discount);
-                    const newDeposit = Math.round(newTotal * 0.5);
+                    const newDeposit = Math.round(newTotal * depositRate);
                     const newRemaining = newTotal - newDeposit;
 
                     discountLabel.textContent = label;
@@ -788,7 +795,7 @@
                     discountRow.classList.add("hidden");
                     discountRow.classList.remove("flex");
                     totalRentalFeeDisplay.textContent = formatVND(baseRentalTotal);
-                    const dep = Math.round(baseRentalTotal * 0.5);
+                    const dep = Math.round(baseRentalTotal * depositRate);
                     depositDueDisplay.textContent = formatVND(dep);
                     remainingBalanceDisplay.textContent = formatVND(baseRentalTotal - dep);
                 }
@@ -844,8 +851,8 @@
                     <div class="flex items-center gap-3">
                         <img th:src="@{/images/car-rental-logo.svg}" alt="DriveNow" class="w-8 h-8 rounded-lg object-contain flex-shrink-0" onerror="this.style.display='none'">
                         <div>
-                            <h3 class="text-base font-bold text-slate-900 mb-0">Self-Drive Vehicle Rental Master Agreement</h3>
-                            <p class="text-[11px] text-slate-500 mb-0">Standard Terms & Operating Conditions • DriveNow Mobility Vietnam</p>
+                            <h3 class="text-base font-bold text-slate-900 mb-0" th:text="${contractTerms.title}">Hợp đồng thuê xe ô tô tự lái</h3>
+                            <p class="text-[11px] text-slate-500 mb-0" th:text="'Version ' + ${contractTerms.versionNo} + ' • DriveNow Mobility Vietnam'">Version 1 • DriveNow Mobility Vietnam</p>
                         </div>
                     </div>
                     <button type="button" onclick="closeTermsModal()" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200 transition-colors">
@@ -853,103 +860,19 @@
                     </button>
                 </div>
 
-                <!-- Modal Body: Formal Legal Agreement Document -->
+                <!-- Modal Body: exactly the version the customer is about to accept -->
                 <div class="p-6 sm:p-8 overflow-y-auto space-y-6 text-xs leading-relaxed text-slate-700 font-sans">
-                    <!-- Document Header Strip -->
-                    <div class="text-center pb-4 border-b border-slate-200">
-                        <div class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Legal Agreement Document</div>
-                        <h2 class="text-base font-extrabold text-slate-900 uppercase mt-0.5 tracking-wide">DRIVENOW SELF-DRIVE VEHICLE RENTAL TERMS</h2>
-                        <div class="text-[11px] text-slate-500 mt-1">Applicable to all online reservations and digital clickwrap agreements</div>
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                        <div><strong>Bên A (bên cho thuê):</strong> Công ty TNHH DriveNow Mobility Việt Nam • 120 Trường Chinh, Tân Bình, TP. Hồ Chí Minh • Hotline 1800 6868</div>
+                        <div><strong>Bên B (bên thuê):</strong> <span th:text="${session.customerName != null ? session.customerName : 'Khách hàng'}">Khách hàng</span>, tài khoản đã xác minh giấy phép lái xe trên DriveNow</div>
                     </div>
 
-                    <!-- Article 1: Parties to Agreement -->
-                    <div class="space-y-2">
-                        <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider text-navy">Article 1: Contracting Parties</h4>
-                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                            <div><strong>Party A (Lessor):</strong> DriveNow Mobility Vietnam Co., Ltd • Central Station: 120 Trường Chinh, Tân Bình, Ho Chi Minh City • Hotline: 1800 6868</div>
-                            <div><strong>Party B (Lessee):</strong> Customer verified on DriveNow platform <span class="font-semibold text-slate-900" th:text="${session.customerName != null ? '(' + session.customerName + ')' : ''}">(Customer)</span> • Verified Driver License verified prior to vehicle release.</div>
-                        </div>
-                    </div>
+                    <div th:replace="~{fragments/contract-terms :: terms(${contractTerms})}"></div>
 
-                    <!-- Article 2: Reservation & Deposit Policy -->
-                    <div class="space-y-2">
-                        <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider text-navy">Article 2: Reservation & 50% Security Deposit</h4>
-                        <p class="text-slate-700 pl-3 border-l-2 border-slate-300">
-                            A security deposit equal to <strong>50% of the total estimated rental fee</strong> is required upon completing the online reservation. This deposit guarantees vehicle assignment and locks the selected timeslot in the depot inventory.
-                        </p>
-                    </div>
-
-                    <!-- Article 3: Cancellation & Refund Policy -->
-                    <div class="space-y-2">
-                        <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider text-navy">Article 3: Cancellation & Refund Policy</h4>
-                        <p class="text-slate-700 pl-3 border-l-2 border-slate-300">
-                            • <strong>Cancellations made at least 72 hours</strong> prior to the scheduled pickup time receive a <strong>100% full refund</strong> of the deposit amount.<br>
-                            • Cancellations made within 72 hours of scheduled pickup are non-refundable to offset slot holding and depot scheduling costs.
-                        </p>
-                    </div>
-
-                    <!-- Article 4: Handover, Inspection & Depot Hours -->
-                    <div class="space-y-2">
-                        <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider text-navy">Article 4: Vehicle Handover, Operating Hours & Inspection</h4>
-                        <p class="text-slate-700 pl-3 border-l-2 border-slate-300">
-                            • Central depot station operates daily from <strong>06:00 to 22:00</strong>.<br>
-                            • Lessee must present the physical original Citizen ID card and valid Driver License matching the registered account.<br>
-                            • A mutual digital inspection report (recording odometer reading, fuel level, and exterior condition photos) must be confirmed by both parties at handover and return.
-                        </p>
-                    </div>
-
-                    <!-- Article 5: Late Return Surcharge & Incidentals -->
-                    <div class="space-y-2">
-                        <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider text-navy">Article 5: Late Return Penalty & Incidental Charges</h4>
-                        <p class="text-slate-700 pl-3 border-l-2 border-slate-300">
-                            • Each hour delayed beyond the contracted return time without prior approved extension will incur a penalty equal to <strong>200% of the standard hourly rental rate</strong>.<br>
-                            • Any incidental charges (toll fees, traffic citations, deep cleaning, or scratch repair per inspection report) will be tallied upon drop-off and settled in the final payment.
-                        </p>
-                    </div>
-
-                    <!-- Article 6: Insurance & Driver Responsibility -->
-                    <div class="space-y-2">
-                        <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider text-navy">Article 6: Insurance Coverage & Operational Compliance</h4>
-                        <p class="text-slate-700 pl-3 border-l-2 border-slate-300">
-                            • All vehicles are enrolled in 100% Comprehensive Bao Viet Vehicle Insurance.<br>
-                            • The Lessee shall strictly obey traffic regulations and must not permit unverified individuals to operate the vehicle, nor transport hazardous or illicit materials.
-                        </p>
-                    </div>
-
-                    <!-- Article 7: Digital Signature Clause & Signatures Block -->
-                    <div class="space-y-3 pt-3 border-t border-slate-200">
-                        <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider text-navy">Article 7: Digital Clickwrap Acceptance & Signatures</h4>
-                        <p class="text-slate-500 text-[11px]">
-                            By checking the agreement box on the checkout page, the Lessee agrees that this digital acceptance constitutes a legally binding Electronic Signature under the Law on Electronic Transactions.
-                        </p>
-
-                        <!-- Two-Party Signature Boxes -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                            <!-- Party A Stamp -->
-                            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex flex-col justify-between">
-                                <div>
-                                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Party A (Lessor)</span>
-                                    <div class="font-bold text-slate-900 text-xs mt-1">DriveNow Mobility Services</div>
-                                </div>
-                                <div class="mt-4 pt-3 border-t border-slate-200 flex items-center gap-2 text-emerald-700">
-                                    <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-                                    <span class="text-[11px] font-bold">Certified System Digital Seal</span>
-                                </div>
-                            </div>
-
-                            <!-- Party B Signature -->
-                            <div class="p-4 rounded-xl border border-dashed border-slate-300 bg-white flex flex-col justify-between">
-                                <div>
-                                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Party B (Lessee)</span>
-                                    <div class="font-bold text-slate-900 text-xs mt-1" th:text="${session.customerName != null ? session.customerName : 'Registered Customer'}">Customer Name</div>
-                                </div>
-                                <div class="mt-4 pt-3 border-t border-slate-200 text-slate-500 text-[11px] flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                    <span>Acceptance on Checkout Checkbox</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <p class="text-[11px] text-slate-500 mb-0">
+                        Khi tick ô đồng ý và xác nhận đặt xe, hệ thống ghi nhận thời điểm, địa chỉ IP và phiên bản điều khoản bạn đã đồng ý.
+                        Sau khi thanh toán tiền cọc, hợp đồng PDF đầy đủ (gồm thông tin xe, thời hạn và số tiền) được gửi đến email của bạn.
+                    </p>
                 </div>
 
                 <!-- Modal Footer -->

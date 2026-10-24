@@ -53,4 +53,12 @@ Nhắn nhóm tiến độ/vướng mắc; cần trao đổi thêm thì nói trê
 - Schema base là đề xuất: biển số–xe hiện hành 1:1, booking được gán xe sau; cần thống nhất capacity slot và chính sách cọc/hoàn/phạt khi làm luồng thuê.
 - Mẫu để làm theo: `VehicleController`, `VehicleService`, `VehicleServiceImpl`, `VehicleDTO`, các trang `templates/vehicles/`.
 
+## Hợp đồng thuê xe
+
+- Điều khoản nằm trong bảng `contract_templates`, mỗi dòng là một phiên bản. Chỉ bản DRAFT được sửa; admin vào **Rental Terms** (`/admin/contract-templates`) để tạo bản nháp rồi kích hoạt. Tỉ lệ cọc, phí trễ và số giờ hủy miễn phí là các cột riêng, code đọc từ đúng phiên bản khách đã đồng ý.
+- Khi checkout, khách tick đồng ý: hệ thống lưu thời điểm, IP và phiên bản vào `contracts`. Sau khi cọc VNPay thành công, `ContractIssuingListener` sinh PDF (`templates/pdf/rental-contract.html`) vào `uploads/contracts/` (không public) và gửi email kèm PDF.
+- Email khi chạy local đi vào Mailpit trong `compose.yaml`; xem tại http://localhost:8025. Muốn gửi hộp thư thật thì cấu hình SMTP trong file local (xem [file mẫu](config/application-local.properties.example)).
+- Schema đã đổi (bỏ `policies`, thêm `contract_templates`). DB tạo trước thay đổi này phải reset để chạy lại `schema.sql` + `seed.sql` (xóa volume `postgres_data` rồi `docker compose up -d`). App dùng `ddl-auto=validate` nên sẽ báo lỗi ngay khi khởi động nếu schema DB không khớp entity.
+- ERD đề xuất cho phần này: [contract-templates-erd.md](docs/proposed/contract-templates-erd.md).
+
 Kiểm tra build/test: `mvn verify`.

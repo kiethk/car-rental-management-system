@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="'Rental Terms v' + ${template.versionNo} + ' — DriveNow Admin'">Rental Terms — DriveNow Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container-fluid px-lg-5 my-4 flex-grow-1">
+    <div class="row">
+        <div class="col-md-3 col-lg-2">
+            <div th:replace="~{fragments/admin-sidebar :: sidebar(active='contracts')}"></div>
+        </div>
+
+        <div class="col-md-9 col-lg-10" th:with="canEdit=${template.editable and isAdmin}">
+            <div th:if="${success}" class="alert alert-success border-0 rounded-lg shadow-sm" role="alert" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger border-0 rounded-lg shadow-sm" role="alert" th:text="${error}"></div>
+
+            <a th:href="@{/admin/contract-templates}" class="small text-muted">← All versions</a>
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mt-2 mb-4">
+                <div>
+                    <h1 class="h3 font-weight-bold text-navy mb-1">
+                        <span th:text="'Rental Terms v' + ${template.versionNo}">Rental Terms v1</span>
+                        <span th:if="${template.status.name() == 'ACTIVE'}" class="badge badge-success align-middle">Active</span>
+                        <span th:if="${template.status.name() == 'DRAFT'}" class="badge badge-warning align-middle">Draft</span>
+                        <span th:if="${template.status.name() == 'ARCHIVED'}" class="badge badge-secondary align-middle">Archived</span>
+                    </h1>
+                    <p class="text-muted small mb-0"
+                       th:text="'Created ' + ${#temporals.format(template.createdAt, 'dd/MM/yyyy HH:mm')}
+                                + (${template.createdByName != null} ? ' by ' + ${template.createdByName} : '')">Created</p>
+                </div>
+                <div th:if="${canEdit}" class="d-flex gap-2 mt-3 mt-md-0">
+                    <form th:action="@{/admin/contract-templates/{id}/delete(id=${template.id})}" method="post">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm"
+                                onclick="return confirm('Delete this draft?');">Delete draft</button>
+                    </form>
+                    <form th:action="@{/admin/contract-templates/{id}/activate(id=${template.id})}" method="post">
+                        <button type="submit" class="btn btn-amber btn-sm font-weight-bold"
+                                onclick="return confirm('Activate the saved draft? All new bookings will use it immediately. Unsaved changes in the form are not included.');">
+                            Activate saved draft
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div th:unless="${template.editable}" class="alert alert-light border small">
+                This version is <strong th:text="${#strings.toLowerCase(template.status.name())}">active</strong> and can no longer be changed,
+                because customers may have accepted it. Create a new draft to change the terms.
+            </div>
+
+            <div class="row">
+                <!-- Editor (drafts only) -->
+                <div class="col-lg-6 mb-4" th:if="${canEdit}">
+                    <div class="card border-0 shadow-sm rounded-xl bg-white p-4">
+                        <form th:action="@{/admin/contract-templates/{id}(id=${template.id})}" th:object="${templateForm}" method="post">
+                            <div class="form-group">
+                                <label class="small font-weight-bold text-navy" for="title">Title</label>
+                                <input id="title" type="text" th:field="*{title}" class="form-control" th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'">
+                                <div class="invalid-feedback" th:errors="*{title}"></div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label class="small font-weight-bold text-navy" for="depositPercent">Deposit (%)</label>
+                                    <input id="depositPercent" type="number" step="0.01" min="1" max="100" th:field="*{depositPercent}"
+                                           class="form-control" th:classappend="${#fields.hasErrors('depositPercent')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:errors="*{depositPercent}"></div>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label class="small font-weight-bold text-navy" for="lateFeePercent">Late fee (% of hourly rate)</label>
+                                    <input id="lateFeePercent" type="number" step="1" min="100" max="999" th:field="*{lateFeePercent}"
+                                           class="form-control" th:classappend="${#fields.hasErrors('lateFeePercent')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:errors="*{lateFeePercent}"></div>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label class="small font-weight-bold text-navy" for="freeCancellationHours">Free cancellation (hours)</label>
+                                    <input id="freeCancellationHours" type="number" step="1" min="0" max="720" th:field="*{freeCancellationHours}"
+                                           class="form-control" th:classappend="${#fields.hasErrors('freeCancellationHours')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:errors="*{freeCancellationHours}"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="small font-weight-bold text-navy" for="termsContent">Rights and obligations</label>
+                                <textarea id="termsContent" rows="16" th:field="*{termsContent}" class="form-control small"
+                                          th:classappend="${#fields.hasErrors('termsContent')} ? 'is-invalid'"></textarea>
+                                <div class="invalid-feedback" th:errors="*{termsContent}"></div>
+                                <small class="form-text text-muted">
+                                    Write the wording only. Do not type the deposit, late fee or cancellation numbers here:
+                                    they are printed from the fields above so the text and the charges always match.
+                                </small>
+                            </div>
+
+                            <button type="submit" class="btn btn-navy btn-sm font-weight-bold">Save draft</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Preview: exactly what customers see at checkout and in the PDF -->
+                <div th:class="${canEdit} ? 'col-lg-6 mb-4' : 'col-lg-9 mb-4'">
+                    <div class="card border-0 shadow-sm rounded-xl bg-white p-4">
+                        <div class="small font-weight-bold text-muted text-uppercase mb-3">Customer preview (saved version)</div>
+                        <h2 class="h6 font-weight-bold text-navy" th:text="${template.title}">Hợp đồng thuê xe ô tô tự lái</h2>
+                        <div th:replace="~{fragments/contract-terms :: terms(${template})}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

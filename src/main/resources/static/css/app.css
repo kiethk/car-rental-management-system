@@ -1311,3 +1311,8 @@ a.admin-btn {
     box-shadow: none !important;
   }
 }
+
+/* Contract terms: keep the line breaks staff typed in the template editor */
+.contract-terms-text {
+  white-space: pre-line;
+}

@@ -161,28 +161,35 @@ VALUES
     )
 ON CONFLICT (booking_id) DO NOTHING;
 
--- 10. POLICIES
-INSERT INTO policies (policy_id, policy_code, title, content, updated_at)
+-- 10. CONTRACT_TEMPLATES
+-- status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED'. Numbers live in typed columns; terms_content holds wording only.
+INSERT INTO contract_templates (contract_template_id, version_no, title, terms_content,
+                                deposit_rate, late_fee_multiplier, free_cancellation_hours,
+                                status, created_by, created_at, activated_at)
 VALUES
-    (1, 'DEPOSIT_PERCENT', '50% Reservation Deposit', 'Customers are required to pay a 50% reservation deposit of the total rental value to confirm vehicle reservation prior to pickup.', CURRENT_TIMESTAMP),
-    (2, 'CANCELLATION_POLICY', 'Cancellation Policy', 'Customers receive a 100% deposit refund if the reservation is cancelled at least 72 hours prior to scheduled pickup. Cancellations within 72 hours are non-refundable.', CURRENT_TIMESTAMP),
-    (3, 'LATE_RETURN_PENALTY', 'Late Return Penalty', 'Each hour delayed beyond the agreed contractual return time will be charged a penalty equal to 200% of the standard hourly rental rate.', CURRENT_TIMESTAMP),
-    (4, 'OPERATING_HOURS', 'Operating & Handover Hours', 'Vehicle handover and return depot operates daily from 06:00 to 22:00 across all station locations.', CURRENT_TIMESTAMP)
-ON CONFLICT (policy_id) DO NOTHING;
+    (1, 1, 'Hợp đồng thuê xe ô tô tự lái',
+     E'Quyền và nghĩa vụ của Bên A\n'
+     || E'1. Bàn giao xe đúng thời gian và địa điểm đã thỏa thuận; xe ở tình trạng kỹ thuật tốt, có đủ giấy đăng ký, giấy chứng nhận kiểm định và bảo hiểm trách nhiệm dân sự bắt buộc còn hiệu lực.\n'
+     || E'2. Cùng Bên B lập biên bản bàn giao, ghi nhận số km, mức nhiên liệu và tình trạng ngoại thất, nội thất khi giao và khi nhận lại xe.\n'
+     || E'3. Chịu chi phí bảo dưỡng định kỳ và các hư hỏng do hao mòn tự nhiên của xe.\n'
+     || E'\nQuyền và nghĩa vụ của Bên B\n'
+     || E'4. Xuất trình bản gốc căn cước công dân và giấy phép lái xe phù hợp với hạng xe khi nhận xe.\n'
+     || E'5. Sử dụng xe đúng mục đích, tuân thủ pháp luật về giao thông đường bộ và chịu trách nhiệm về mọi vi phạm giao thông, kể cả phạt nguội, phát sinh trong thời gian thuê.\n'
+     || E'6. Không giao xe cho người khác điều khiển khi chưa được Bên A đồng ý; không cầm cố, thế chấp, cho thuê lại xe; không dùng xe để chở hàng cấm hoặc đua xe.\n'
+     || E'7. Bồi thường thiệt hại khi xe bị hư hỏng hoặc mất mát do lỗi của Bên B, căn cứ biên bản bàn giao và chi phí sửa chữa thực tế.\n'
+     || E'8. Trả xe đúng thời hạn, đúng địa điểm, với mức nhiên liệu như khi nhận; tự chi trả phí cầu đường, bến bãi phát sinh.',
+     0.5000, 2.00, 72,
+     'ACTIVE', 1, CURRENT_TIMESTAMP - INTERVAL '30 days', CURRENT_TIMESTAMP - INTERVAL '30 days')
+ON CONFLICT (contract_template_id) DO NOTHING;
 
 -- 11. CONTRACTS
--- contract_status: 'DRAFT' | 'SIGNED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
-INSERT INTO contracts (contract_id, contract_number, booking_id, signed_at, signature_type, terms_snapshot, contract_status, file_pdf_url, created_at)
+-- Contract validity follows bookings.status. file_name is NULL until the PDF is issued.
+INSERT INTO contracts (contract_id, contract_number, booking_id, contract_template_id,
+                       accepted_at, accepted_ip, file_name, issued_at, emailed_at, created_at)
 VALUES
-    (1, 'CTR-20261018-0001', 1, CURRENT_TIMESTAMP - INTERVAL '4 days', 'DIGITAL_CHECK', 
-     'DRIVENOW SELF-DRIVE CAR RENTAL TERMS: 1. 50% reservation deposit. 2. Free cancellation up to 72 hours prior to pickup. 3. Late return penalty at 200% hourly rate. 4. Return car in original condition.', 
-     'COMPLETED', '/uploads/contracts/contract_1.pdf', CURRENT_TIMESTAMP - INTERVAL '4 days'),
-    (2, 'CTR-20261021-0002', 2, CURRENT_TIMESTAMP - INTERVAL '1 day', 'DIGITAL_CHECK', 
-     'DRIVENOW SELF-DRIVE CAR RENTAL TERMS: 1. 50% reservation deposit. 2. Free cancellation up to 72 hours prior to pickup. 3. Late return penalty at 200% hourly rate. 4. Return car in original condition.', 
-     'ACTIVE', '/uploads/contracts/contract_2.pdf', CURRENT_TIMESTAMP - INTERVAL '1 day'),
-    (3, 'CTR-20261022-0003', 3, CURRENT_TIMESTAMP - INTERVAL '1 hour', 'DIGITAL_CHECK', 
-     'DRIVENOW SELF-DRIVE CAR RENTAL TERMS: 1. 50% reservation deposit. 2. Free cancellation up to 72 hours prior to pickup. 3. Late return penalty at 200% hourly rate. 4. Return car in original condition.', 
-     'SIGNED', NULL, CURRENT_TIMESTAMP - INTERVAL '1 hour')
+    (1, 'CTR-20261018-0001', 1, 1, CURRENT_TIMESTAMP - INTERVAL '4 days', '127.0.0.1', NULL, NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '4 days'),
+    (2, 'CTR-20261021-0002', 2, 1, CURRENT_TIMESTAMP - INTERVAL '1 day', '127.0.0.1', NULL, NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '1 day'),
+    (3, 'CTR-20261022-0003', 3, 1, CURRENT_TIMESTAMP - INTERVAL '1 hour', '127.0.0.1', NULL, NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '1 hour')
 ON CONFLICT (contract_id) DO NOTHING;
 
 -- 12. PAYMENTS
@@ -236,7 +243,7 @@ SELECT setval(pg_get_serial_sequence('promotions', 'promotion_id'), COALESCE(MAX
 SELECT setval(pg_get_serial_sequence('license_documents', 'license_document_id'), COALESCE(MAX(license_document_id), 1)) FROM license_documents;
 SELECT setval(pg_get_serial_sequence('slots', 'slot_id'), COALESCE(MAX(slot_id), 1)) FROM slots;
 SELECT setval(pg_get_serial_sequence('bookings', 'booking_id'), COALESCE(MAX(booking_id), 1)) FROM bookings;
-SELECT setval(pg_get_serial_sequence('policies', 'policy_id'), COALESCE(MAX(policy_id), 1)) FROM policies;
+SELECT setval(pg_get_serial_sequence('contract_templates', 'contract_template_id'), COALESCE(MAX(contract_template_id), 1)) FROM contract_templates;
 SELECT setval(pg_get_serial_sequence('contracts', 'contract_id'), COALESCE(MAX(contract_id), 1)) FROM contracts;
 SELECT setval(pg_get_serial_sequence('payments', 'payment_id'), COALESCE(MAX(payment_id), 1)) FROM payments;
 SELECT setval(pg_get_serial_sequence('reviews', 'review_id'), COALESCE(MAX(review_id), 1)) FROM reviews;

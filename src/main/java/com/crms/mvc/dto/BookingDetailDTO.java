@@ -66,34 +66,6 @@ public class BookingDetailDTO implements Serializable {
         public void setPaidAt(OffsetDateTime paidAt) { this.paidAt = paidAt; }
     }
 
-    public static class ContractDTO implements Serializable {
-        private Long id;
-        private String contractNumber;
-        private OffsetDateTime signedAt;
-        private String signatureType;
-        private String termsSnapshot;
-        private String contractStatus;
-        private String filePdfUrl;
-        private OffsetDateTime createdAt;
-
-        public Long getId() { return id; }
-        public void setId(Long id) { this.id = id; }
-        public String getContractNumber() { return contractNumber; }
-        public void setContractNumber(String contractNumber) { this.contractNumber = contractNumber; }
-        public OffsetDateTime getSignedAt() { return signedAt; }
-        public void setSignedAt(OffsetDateTime signedAt) { this.signedAt = signedAt; }
-        public String getSignatureType() { return signatureType; }
-        public void setSignatureType(String signatureType) { this.signatureType = signatureType; }
-        public String getTermsSnapshot() { return termsSnapshot; }
-        public void setTermsSnapshot(String termsSnapshot) { this.termsSnapshot = termsSnapshot; }
-        public String getContractStatus() { return contractStatus; }
-        public void setContractStatus(String contractStatus) { this.contractStatus = contractStatus; }
-        public String getFilePdfUrl() { return filePdfUrl; }
-        public void setFilePdfUrl(String filePdfUrl) { this.filePdfUrl = filePdfUrl; }
-        public OffsetDateTime getCreatedAt() { return createdAt; }
-        public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
-    }
-
     public static class BookingFeeDTO implements Serializable {
         private Long id;
         private String feeType;

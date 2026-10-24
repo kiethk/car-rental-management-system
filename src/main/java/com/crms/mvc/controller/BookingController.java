@@ -30,7 +30,9 @@ import java.util.Collections;
 import java.util.List;
 import com.crms.mvc.entity.LicenseDocument;
 import com.crms.mvc.service.LicenseDocumentService;
-import com.crms.mvc.service.PolicyService;
+import com.crms.mvc.dto.ContractTemplateDTO;
+import com.crms.mvc.service.ContractTemplateService;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
 public class BookingController {
@@ -39,7 +41,7 @@ public class BookingController {
     private final PaymentService paymentService;
     private final VehicleTypeRepository vehicleTypeRepository;
     private final LicenseDocumentService licenseDocumentService;
-    private final PolicyService policyService;
+    private final ContractTemplateService contractTemplateService;
 
     public BookingController(
             BookingService bookingService,
@@ -47,13 +49,13 @@ public class BookingController {
             PaymentService paymentService,
             VehicleTypeRepository vehicleTypeRepository,
             LicenseDocumentService licenseDocumentService,
-            PolicyService policyService) {
+            ContractTemplateService contractTemplateService) {
         this.bookingService = bookingService;
         this.slotService = slotService;
         this.paymentService = paymentService;
         this.vehicleTypeRepository = vehicleTypeRepository;
         this.licenseDocumentService = licenseDocumentService;
-        this.policyService = policyService;
+        this.contractTemplateService = contractTemplateService;
     }
 
     // STEP 1 & 2: Choose rental schedule & filter available vehicle types
@@ -246,13 +248,15 @@ public class BookingController {
         long remainingHours = rentalHours % 24;
         String durationDisplay = (rentalDays > 0 ? (rentalDays + "d ") : "") + (remainingHours > 0 ? (remainingHours + "h") : (rentalDays == 0 ? "1h" : ""));
         BigDecimal estimatedTotal = vt.getPricePerHour().multiply(BigDecimal.valueOf(rentalHours));
-        BigDecimal depositAmount = estimatedTotal.multiply(BigDecimal.valueOf(0.5)).setScale(0, RoundingMode.HALF_UP);
+        ContractTemplateDTO contractTerms = contractTemplateService.getActiveTemplate();
+        BigDecimal depositAmount = estimatedTotal.multiply(contractTerms.getDepositRate()).setScale(0, RoundingMode.HALF_UP);
         BigDecimal remainingAmount = estimatedTotal.subtract(depositAmount);
 
         BookingCreateDTO form = new BookingCreateDTO();
         form.setVehicleTypeId(vehicleTypeId);
         form.setStartTime(startTime);
         form.setEndTime(endTime);
+        form.setContractTemplateId(contractTerms.getId());
 
         LicenseDocument license = licenseDocumentService.getCustomerLicense(customerId);
         boolean isLicenseVerified = licenseDocumentService.isCustomerVerified(customerId);
@@ -273,15 +277,15 @@ public class BookingController {
         model.addAttribute("depositAmount", depositAmount);
         model.addAttribute("remainingAmount", remainingAmount);
         model.addAttribute("vehicleImage", resolveVehicleImage(vt));
-        model.addAttribute("termsSnapshot", policyService.buildTermsSnapshot());
-        model.addAttribute("rentalPolicies", policyService.getAllPolicies());
+        model.addAttribute("contractTerms", contractTerms);
         return "bookings/checkout";
     }
 
     // TẠO ĐƠN: POST /bookings -> Lưu Booking (pending_payment) -> Sang trang cọc
     @PostMapping("/bookings")
     public String createBooking(@Valid @ModelAttribute("bookingForm") BookingCreateDTO form,
-                                BindingResult result, HttpSession session, Model model, RedirectAttributes ra) {
+                                BindingResult result, HttpServletRequest request,
+                                HttpSession session, RedirectAttributes ra) {
         Long customerId = (Long) session.getAttribute("customerId");
         if (customerId == null) return "redirect:/login";
 
@@ -291,18 +295,25 @@ public class BookingController {
         }
 
         if (result.hasErrors()) {
-            ra.addFlashAttribute("error", "Invalid booking parameters.");
-            return "redirect:/search";
+            ra.addFlashAttribute("error", result.getAllErrors().get(0).getDefaultMessage());
+            boolean canReturnToCheckout = form.getVehicleTypeId() != null
+                    && form.getStartTime() != null && form.getEndTime() != null;
+            return canReturnToCheckout ? redirectToCheckout(form) : "redirect:/search";
         }
 
         try {
-            Booking booking = bookingService.createBooking(customerId, form);
+            // Server-side address, not a client header, because it is stored as acceptance evidence.
+            Booking booking = bookingService.createBooking(customerId, form, request.getRemoteAddr());
             return "redirect:/bookings/" + booking.getId() + "/pay-deposit";
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
-            return "redirect:/bookings/checkout?vehicleTypeId=" + form.getVehicleTypeId() +
-                   "&startTime=" + form.getStartTime() + "&endTime=" + form.getEndTime();
+            return redirectToCheckout(form);
         }
+    }
+
+    private String redirectToCheckout(BookingCreateDTO form) {
+        return "redirect:/bookings/checkout?vehicleTypeId=" + form.getVehicleTypeId()
+                + "&startTime=" + form.getStartTime() + "&endTime=" + form.getEndTime();
     }
 
     // BƯỚC 4: Thanh toán tiền cọc (Deposit)

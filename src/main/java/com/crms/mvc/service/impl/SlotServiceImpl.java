@@ -8,6 +8,7 @@ import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.SlotRepository;
 import com.crms.mvc.repository.VehicleRepository;
 import com.crms.mvc.repository.VehicleTypeRepository;
+import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.service.SlotService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,16 +27,19 @@ public class SlotServiceImpl implements SlotService {
     private final VehicleRepository vehicleRepository;
     private final VehicleTypeRepository vehicleTypeRepository;
     private final BookingRepository bookingRepository;
+    private final ContractTemplateService contractTemplateService;
 
     public SlotServiceImpl(
             SlotRepository slotRepository,
             VehicleRepository vehicleRepository,
             VehicleTypeRepository vehicleTypeRepository,
-            BookingRepository bookingRepository) {
+            BookingRepository bookingRepository,
+            ContractTemplateService contractTemplateService) {
         this.slotRepository = slotRepository;
         this.vehicleRepository = vehicleRepository;
         this.vehicleTypeRepository = vehicleTypeRepository;
         this.bookingRepository = bookingRepository;
+        this.contractTemplateService = contractTemplateService;
     }
 
     @Override
@@ -60,6 +64,7 @@ public class SlotServiceImpl implements SlotService {
         List<VehicleTypeSearchResultDTO> results = new ArrayList<>();
 
         long hours = Math.max(1, Duration.between(startTime, endTime).toHours());
+        BigDecimal depositRate = contractTemplateService.getActiveTemplate().getDepositRate();
 
         for (VehicleType vt : allTypes) {
             if (category != null && !category.trim().isEmpty() && !"all".equalsIgnoreCase(category)) {
@@ -81,7 +86,7 @@ public class SlotServiceImpl implements SlotService {
             dto.setPricePerHour(vt.getPricePerHour());
             BigDecimal estimatedTotal = vt.getPricePerHour().multiply(BigDecimal.valueOf(hours));
             dto.setEstimatedTotal(estimatedTotal);
-            dto.setDepositAmount(estimatedTotal.multiply(BigDecimal.valueOf(0.5)).setScale(0, RoundingMode.HALF_UP));
+            dto.setDepositAmount(estimatedTotal.multiply(depositRate).setScale(0, RoundingMode.HALF_UP));
 
             String img = vt.getImageUrl();
             if (img == null || img.isBlank()) {

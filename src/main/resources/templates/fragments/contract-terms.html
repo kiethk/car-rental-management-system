@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+    Rental terms of one contract template version (ContractTemplateDTO).
+    Numbers come from typed columns, wording from terms_content, so the two can never disagree.
+    Usage: <div th:replace="~{fragments/contract-terms :: terms(${contractTerms})}"></div>
+-->
+<div th:fragment="terms(terms)" class="space-y-5 text-xs leading-relaxed text-slate-700">
+    <div class="space-y-2">
+        <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider">Đặt cọc, hủy đặt xe và trả xe trễ</h4>
+        <div class="pl-3 border-l-2 border-slate-300 space-y-1">
+            <p class="mb-0">
+                • Đặt cọc <strong th:text="${terms.depositPercent} + '%'">50%</strong> tổng giá trị đơn thuê khi đặt xe;
+                phần còn lại thanh toán khi trả xe.
+            </p>
+            <p class="mb-0">
+                • Hủy trước giờ nhận xe ít nhất <strong th:text="${terms.freeCancellationHours} + ' giờ'">72 giờ</strong>:
+                hoàn 100% tiền cọc. Hủy sau mốc này, tiền cọc không được hoàn lại.
+            </p>
+            <p class="mb-0">
+                • Trả xe trễ: mỗi giờ trễ tính <strong th:text="${terms.lateFeePercent} + '%'">200%</strong> đơn giá thuê theo giờ.
+            </p>
+        </div>
+    </div>
+
+    <div class="space-y-2">
+        <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider">Quyền và nghĩa vụ của các bên</h4>
+        <div class="pl-3 border-l-2 border-slate-300 contract-terms-text" th:text="${terms.termsContent}">Nội dung điều khoản</div>
+    </div>
+
+    <p class="text-[11px] text-slate-500 mb-0">
+        Điều khoản phiên bản <strong th:text="${terms.versionNo}">1</strong>.
+        Tranh chấp được giải quyết bằng thương lượng; nếu không thành, một trong hai bên có quyền yêu cầu Tòa án có thẩm quyền giải quyết.
+    </p>
+</div>
+</body>
+</html>

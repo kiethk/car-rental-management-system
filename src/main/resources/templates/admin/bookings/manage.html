@@ -85,27 +85,40 @@
                         </div>
                     </div>
 
-                    <!-- Rental Contract & Terms Snapshot Card -->
+                    <!-- Rental Contract: acceptance evidence + issued PDF -->
                     <div th:if="${booking.contract != null}" class="card card-drivenow border-0 p-4 mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div>
-                                <h2 class="h5 font-weight-bold text-navy mb-0">Digital Rental Agreement</h2>
+                                <h2 class="h5 font-weight-bold text-navy mb-0">Rental Contract</h2>
                                 <span class="small text-muted font-mono" th:text="${booking.contract.contractNumber}">CTR-20261022-0001</span>
                             </div>
-                            <div>
-                                <span th:if="${booking.contract.contractStatus == 'DRAFT'}" class="badge badge-warning px-2 py-1">DRAFT</span>
-                                <span th:if="${booking.contract.contractStatus == 'SIGNED'}" class="badge badge-info px-2 py-1">SIGNED</span>
-                                <span th:if="${booking.contract.contractStatus == 'ACTIVE'}" class="badge badge-primary px-2 py-1">ACTIVE</span>
-                                <span th:if="${booking.contract.contractStatus == 'COMPLETED'}" class="badge badge-success px-2 py-1">COMPLETED</span>
-                                <span th:if="${booking.contract.contractStatus == 'CANCELLED'}" class="badge badge-secondary px-2 py-1">CANCELLED</span>
-                            </div>
+                            <a th:href="@{/admin/contract-templates/{id}(id=${booking.contract.terms.id})}" class="badge badge-secondary px-2 py-1"
+                               th:text="'Terms v' + ${booking.contract.terms.versionNo}">Terms v1</a>
                         </div>
-                        <div class="small text-muted mb-2" th:if="${booking.contract.signedAt != null}">
-                            Signed at: <strong th:text="${#temporals.format(booking.contract.signedAt, 'dd/MM/yyyy HH:mm')}">Time</strong>
-                            (Method: <span th:text="${booking.contract.signatureType}">DIGITAL_CHECK</span>)
-                        </div>
-                        <div class="bg-light p-3 rounded small text-navy" style="max-height: 180px; overflow-y: auto; white-space: pre-line;" th:text="${booking.contract.termsSnapshot}">
-                            Frozen Agreement Terms & Policies...
+                        <table class="table table-sm small mb-3">
+                            <tr>
+                                <td class="text-muted border-top-0">Accepted by customer</td>
+                                <td class="border-top-0" th:text="${#temporals.format(booking.contract.acceptedAt, 'dd/MM/yyyy HH:mm')} + (${booking.contract.acceptedIp != null} ? ' from IP ' + ${booking.contract.acceptedIp} : '')">23/10/2026 09:00</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">PDF issued</td>
+                                <td th:text="${booking.contract.issued} ? ${#temporals.format(booking.contract.issuedAt, 'dd/MM/yyyy HH:mm')} : 'Not yet'">Not yet</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Emailed to customer</td>
+                                <td th:text="${booking.contract.emailedAt != null} ? ${#temporals.format(booking.contract.emailedAt, 'dd/MM/yyyy HH:mm')} : 'Not yet'">Not yet</td>
+                            </tr>
+                        </table>
+                        <div class="d-flex gap-2">
+                            <a th:if="${booking.contract.issued}" th:href="@{/admin/bookings/{id}/contract(id=${booking.id})}" target="_blank" rel="noopener"
+                               class="btn btn-outline-secondary btn-sm">Open PDF</a>
+                            <!-- Retry path when the automatic issue/email after deposit failed -->
+                            <form th:if="${booking.status != 'pending_payment' and booking.status != 'cancelled'
+                                          and (!booking.contract.issued or booking.contract.emailedAt == null)}"
+                                  th:action="@{/admin/bookings/{id}/contract/issue(id=${booking.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-navy btn-sm"
+                                        th:text="${booking.contract.issued} ? 'Resend email' : 'Issue PDF and email'">Issue PDF and email</button>
+                            </form>
                         </div>
                     </div>
 

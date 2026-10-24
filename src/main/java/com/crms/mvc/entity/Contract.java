@@ -18,23 +18,31 @@ public class Contract {
     @JoinColumn(name = "booking_id", nullable = false, unique = true)
     private Booking booking;
 
-    @Column(name = "signed_at")
-    private OffsetDateTime signedAt;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "contract_template_id", nullable = false)
+    private ContractTemplate template;
 
-    @Column(name = "signature_type", length = 30)
-    private String signatureType = "DIGITAL_CHECK";
+    @Column(name = "accepted_at", nullable = false)
+    private OffsetDateTime acceptedAt;
 
-    @Column(name = "terms_snapshot", nullable = false, columnDefinition = "TEXT")
-    private String termsSnapshot;
+    @Column(name = "accepted_ip", length = 45)
+    private String acceptedIp;
 
-    @Column(name = "contract_status", nullable = false, length = 30)
-    private String contractStatus = "DRAFT";
+    @Column(name = "file_name", length = 255)
+    private String fileName;
 
-    @Column(name = "file_pdf_url", length = 500)
-    private String filePdfUrl;
+    @Column(name = "issued_at")
+    private OffsetDateTime issuedAt;
 
-    @Column(name = "created_at")
+    @Column(name = "emailed_at")
+    private OffsetDateTime emailedAt;
+
+    @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
+
+    public boolean isIssued() {
+        return fileName != null;
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -45,20 +53,23 @@ public class Contract {
     public Booking getBooking() { return booking; }
     public void setBooking(Booking booking) { this.booking = booking; }
 
-    public OffsetDateTime getSignedAt() { return signedAt; }
-    public void setSignedAt(OffsetDateTime signedAt) { this.signedAt = signedAt; }
+    public ContractTemplate getTemplate() { return template; }
+    public void setTemplate(ContractTemplate template) { this.template = template; }
 
-    public String getSignatureType() { return signatureType; }
-    public void setSignatureType(String signatureType) { this.signatureType = signatureType; }
+    public OffsetDateTime getAcceptedAt() { return acceptedAt; }
+    public void setAcceptedAt(OffsetDateTime acceptedAt) { this.acceptedAt = acceptedAt; }
 
-    public String getTermsSnapshot() { return termsSnapshot; }
-    public void setTermsSnapshot(String termsSnapshot) { this.termsSnapshot = termsSnapshot; }
+    public String getAcceptedIp() { return acceptedIp; }
+    public void setAcceptedIp(String acceptedIp) { this.acceptedIp = acceptedIp; }
 
-    public String getContractStatus() { return contractStatus; }
-    public void setContractStatus(String contractStatus) { this.contractStatus = contractStatus; }
+    public String getFileName() { return fileName; }
+    public void setFileName(String fileName) { this.fileName = fileName; }
 
-    public String getFilePdfUrl() { return filePdfUrl; }
-    public void setFilePdfUrl(String filePdfUrl) { this.filePdfUrl = filePdfUrl; }
+    public OffsetDateTime getIssuedAt() { return issuedAt; }
+    public void setIssuedAt(OffsetDateTime issuedAt) { this.issuedAt = issuedAt; }
+
+    public OffsetDateTime getEmailedAt() { return emailedAt; }
+    public void setEmailedAt(OffsetDateTime emailedAt) { this.emailedAt = emailedAt; }
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }

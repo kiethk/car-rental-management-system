@@ -1,6 +1,8 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.dto.VehicleDTO;
+import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.service.VehicleService;
 import com.crms.mvc.service.VehicleTypeService;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +27,7 @@ class VehicleControllerTest {
     @MockitoBean private VehicleService vehicleService;
     @MockitoBean private VehicleTypeService vehicleTypeService;
     @MockitoBean private com.crms.mvc.repository.VehicleRepository vehicleRepository;
+    @MockitoBean private ContractTemplateService contractTemplateService;
 
     private final VehicleDTO vehicle = new VehicleDTO(1L, "51A-123.45", "Toyota", "Vios", 2025, new BigDecimal("180000"), "available");
 
@@ -32,6 +35,12 @@ class VehicleControllerTest {
     void setup() {
         when(vehicleTypeService.getDistinctBrands()).thenReturn(List.of("Toyota", "Honda"));
         when(vehicleTypeService.getDistinctCategories()).thenReturn(List.of("sedan", "suv"));
+
+        ContractTemplateDTO terms = new ContractTemplateDTO();
+        terms.setDepositRate(new BigDecimal("0.4000"));
+        terms.setLateFeeMultiplier(new BigDecimal("2.00"));
+        terms.setFreeCancellationHours(48);
+        when(contractTemplateService.getActiveTemplate()).thenReturn(terms);
     }
 
     @Test void listsDatabaseResultsThroughThymeleaf() throws Exception {
@@ -55,7 +64,9 @@ class VehicleControllerTest {
     @Test void showsVehicleDetail() throws Exception {
         when(vehicleService.findById(1L)).thenReturn(Optional.of(vehicle));
         mvc.perform(get("/vehicles/1")).andExpect(status().isOk())
-                .andExpect(content().string(containsString("Toyota Vios")));
+                .andExpect(content().string(containsString("Toyota Vios")))
+                .andExpect(content().string(containsString("40% Deposit")))
+                .andExpect(content().string(containsString("at least 48 hours")));
     }
     @Test void unknownVehicleReturns404() throws Exception {
         when(vehicleService.findById(99L)).thenReturn(Optional.empty());

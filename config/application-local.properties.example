@@ -3,3 +3,12 @@ spring.datasource.url=jdbc:postgresql://localhost:5434/car_rental_management
 spring.datasource.username=crms
 spring.datasource.password=crms_password
 server.port=8081
+
+# Optional: send contract emails to a real inbox through Gmail (requires 2FA + an App Password).
+# spring.mail.host=smtp.gmail.com
+# spring.mail.port=587
+# spring.mail.username=your.account@gmail.com
+# spring.mail.password=your-16-char-app-password
+# spring.mail.properties.mail.smtp.auth=true
+# spring.mail.properties.mail.smtp.starttls.enable=true
+# crms.mail.from=DriveNow <your.account@gmail.com>
