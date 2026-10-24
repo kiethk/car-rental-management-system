@@ -43,8 +43,8 @@ public class VehicleInspectionFormDTO {
             dto.setVehicleId(inspection.getVehicle().getId());
             if (inspection.getVehicle().getLicensePlate() != null) {
                 dto.setVehiclePlate(inspection.getVehicle().getLicensePlate().getPlate());
-                dto.setNewRegistrationExpiry(inspection.getVehicle().getLicensePlate().getRegistrationExpiry());
             }
+            dto.setNewRegistrationExpiry(inspection.getVehicle().getRegistrationExpiry());
             if (inspection.getVehicle().getVehicleType() != null) {
                 dto.setVehicleName(inspection.getVehicle().getVehicleType().getBrand() + " " + inspection.getVehicle().getVehicleType().getName());
             }

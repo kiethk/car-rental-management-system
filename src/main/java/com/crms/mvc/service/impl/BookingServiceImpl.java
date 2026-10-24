@@ -164,12 +164,7 @@ public class BookingServiceImpl implements BookingService {
             s.setVehicleTypeName(vt.getName());
             s.setVehicleCategory(vt.getCategory());
             s.setImageUrl(resolveImageUrl(vt));
-            if (b.getVehicle() != null) {
-                s.setLicensePlate(
-                        b.getVehicle().getLicensePlate() != null ? b.getVehicle().getLicensePlate().getPlate() : "N/A");
-            } else {
-                s.setLicensePlate("Unassigned");
-            }
+            s.setLicensePlate(resolvePlate(b));
             s.setPickupTime(b.getPickupTime());
             s.setScheduledEndTime(b.getScheduledEndTime());
             s.setTotalPrice(b.getTotalPrice());
@@ -216,12 +211,7 @@ public class BookingServiceImpl implements BookingService {
             s.setVehicleTypeName(vt.getName());
             s.setVehicleCategory(vt.getCategory());
             s.setImageUrl(resolveImageUrl(vt));
-            if (b.getVehicle() != null) {
-                s.setLicensePlate(
-                        b.getVehicle().getLicensePlate() != null ? b.getVehicle().getLicensePlate().getPlate() : "N/A");
-            } else {
-                s.setLicensePlate("Unassigned");
-            }
+            s.setLicensePlate(resolvePlate(b));
             s.setPickupTime(b.getPickupTime());
             s.setScheduledEndTime(b.getScheduledEndTime());
             s.setTotalPrice(b.getTotalPrice());
@@ -283,6 +273,10 @@ public class BookingServiceImpl implements BookingService {
         b.setStatus("active");
         b.setEmployee(emp);
         b.getVehicle().setStatus("rented");
+        // Handover: record the plate that is physically on the car right now
+        if (b.getVehicle().getLicensePlate() != null) {
+            b.setLicensePlate(b.getVehicle().getLicensePlate().getPlate());
+        }
 
         vehicleRepository.save(b.getVehicle());
         bookingRepository.save(b);
@@ -333,12 +327,9 @@ public class BookingServiceImpl implements BookingService {
 
         if (b.getVehicle() != null) {
             d.setVehicleId(b.getVehicle().getId());
-            d.setLicensePlate(
-                    b.getVehicle().getLicensePlate() != null ? b.getVehicle().getLicensePlate().getPlate() : "N/A");
             d.setVehicleColor(b.getVehicle().getColor());
-        } else {
-            d.setLicensePlate("Unassigned");
         }
+        d.setLicensePlate(resolvePlate(b));
 
         d.setSlotId(b.getSlot().getId());
         d.setPickupTime(b.getPickupTime());
@@ -387,6 +378,17 @@ public class BookingServiceImpl implements BookingService {
         d.setFees(feeDtos);
 
         return d;
+    }
+
+    /** The plate recorded on the booking wins; before that the vehicle's current plate is shown. */
+    private String resolvePlate(Booking b) {
+        if (b.getLicensePlate() != null) {
+            return b.getLicensePlate();
+        }
+        if (b.getVehicle() == null) {
+            return "Unassigned";
+        }
+        return b.getVehicle().getLicensePlate() != null ? b.getVehicle().getLicensePlate().getPlate() : "N/A";
     }
 
     private String resolveImageUrl(VehicleType vt) {

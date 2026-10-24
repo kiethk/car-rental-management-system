@@ -46,7 +46,7 @@ public class AdminBookingController {
 
         try {
             BookingDetailDTO detail = bookingService.getBookingDetailForAdmin(bookingId);
-            List<Vehicle> availableVehicles = vehicleRepository.findByStatus("available").stream()
+            List<Vehicle> availableVehicles = vehicleRepository.findByStatusWithDetails("available").stream()
                     .filter(v -> v.getVehicleType().getId().equals(detail.getVehicleTypeId()))
                     .toList();
 

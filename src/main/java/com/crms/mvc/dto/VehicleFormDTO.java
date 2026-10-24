@@ -53,8 +53,8 @@ public class VehicleFormDTO {
         if (vehicle.getLicensePlate() != null) {
             dto.setPlate(vehicle.getLicensePlate().getPlate());
             dto.setProvince(vehicle.getLicensePlate().getProvince());
-            dto.setRegistrationExpiry(vehicle.getLicensePlate().getRegistrationExpiry());
         }
+        dto.setRegistrationExpiry(vehicle.getRegistrationExpiry());
         dto.setColor(vehicle.getColor());
         dto.setYear(vehicle.getYear());
         dto.setOdometer(vehicle.getOdometer());

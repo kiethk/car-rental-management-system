@@ -90,7 +90,7 @@ class BookingContractFlowTest {
         Vehicle car = new Vehicle();
         car.setId(9L);
         car.setColor("White");
-        car.setLicensePlate(plate);
+        car.setCurrentPlate(plate);
         car.setVehicleType(type);
         when(vehicleTypeRepository.findById(1L)).thenReturn(Optional.of(type));
         when(slotService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(car));

@@ -52,7 +52,7 @@ Nhắn nhóm tiến độ/vướng mắc; cần trao đổi thêm thì nói trê
 - Giao diện: `src/main/resources/templates/`; CSS trong `static/`.
 - SQL: [schema](database/schema.sql), [seed](database/seed.sql). Nếu dùng DB sẵn, chạy trên database mới/empty rồi chỉnh cấu hình local.
 - ERD: [erd_car.drawio](docs/reference/erd_car.drawio). Conceptual có 13 thực thể; physical trong file còn 8 bảng. `SLOT` là khung giờ thuê theo loại xe.
-- Schema base là đề xuất: biển số–xe hiện hành 1:1, booking được gán xe sau; cần thống nhất capacity slot và chính sách cọc/hoàn/phạt khi làm luồng thuê.
+- Schema base là đề xuất: một xe có nhiều biển số theo thời gian (1-N, bảng `license_plates` có `valid_from`/`valid_to`, biển cũ giữ làm lịch sử và không dùng lại; xem [license-plate-history-erd.md](docs/proposed/license-plate-history-erd.md)), booking được gán xe sau; cần thống nhất capacity slot và chính sách cọc/hoàn/phạt khi làm luồng thuê.
 - Mẫu để làm theo: `VehicleController`, `VehicleService`, `VehicleServiceImpl`, `VehicleDTO`, các trang `templates/vehicles/`.
 
 ## Hợp đồng thuê xe
