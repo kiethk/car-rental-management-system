@@ -6,24 +6,26 @@ Dự án HSF302 của Kiệt, Phú, Phúc, Trí. Java 21, Spring Boot 4.1.1, MVC
 
 ## Chạy project
 
-Cài JDK 21, Maven, Docker Desktop; bật Docker trước khi chạy.
+Cài JDK 21, Maven, PostgreSQL 16 và DBeaver.
+
+1. Tạo database `car_rental_management` trên PostgreSQL local.
+2. Mở DBeaver chạy lần lượt 2 file script:
+   - `database/schema.sql` (tạo bảng)
+   - `database/seed.sql` (dữ liệu mẫu)
+3. Chạy ứng dụng:
 
 ```bash
 git clone https://github.com/kiethk/car-rental-management-system.git
 cd car-rental-management-system
-docker compose up -d
 mvn spring-boot:run
 ```
 
 Mở http://localhost:8081/vehicles. Chưa cài Maven thì dùng `./mvnw spring-boot:run` trong Git Bash hoặc `.\mvnw.cmd spring-boot:run` trong PowerShell.
 
-DBeaver: host `localhost`, port `5434`, database `car_rental_management`, user `crms`, password `crms_password` — cấu hình demo local.
+DBeaver: host `localhost`, port `5434` (hoặc `5432`), database `car_rental_management`, user `postgres`, password đặt theo máy local.
 
 - App trùng cổng: đặt `SERVER_PORT` hoặc sửa `server.port` trong file local.
-- DB trùng cổng: copy `.env.example` thành `.env`, chọn `DB_PORT` còn trống; sửa URL Spring tương ứng.
 - Cấu hình riêng: copy [file mẫu](config/application-local.properties.example) thành `src/main/resources/application-local.properties`. File này không đưa lên Git.
-- `.env` chỉ được Docker Compose đọc. Nếu đổi user/password/port DB, cập nhật cấu hình Spring tương ứng.
-- SQL mẫu tự chạy khi tạo volume lần đầu. Không xóa volume để sửa lỗi kết nối vì sẽ mất dữ liệu.
 
 ## Phân luồng
 
