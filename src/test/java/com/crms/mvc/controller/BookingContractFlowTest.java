@@ -152,18 +152,29 @@ class BookingContractFlowTest {
         mvc.perform(get("/bookings/42").session(customerSession))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("/bookings/42/contract")))
-                .andExpect(content().string(containsString("Đã đồng ý điều khoản phiên bản 3")))
-                .andExpect(content().string(containsString("Đặt cọc (30%)")));
+                .andExpect(content().string(containsString("CTR-20261023-0042")))
+                .andExpect(content().string(containsString("30% / 48h before pickup")))
+                .andExpect(content().string(containsString("150% of hourly rate")));
     }
 
     @Test
-    void depositPageShowsContractWithoutDownloadLink() throws Exception {
+    void depositPageUsesTermsVersionAcceptedAtCheckout() throws Exception {
         when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("pending_payment", false));
 
         mvc.perform(get("/bookings/42/pay-deposit").session(customerSession))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("CTR-20261023-0042")))
+                .andExpect(content().string(containsString("Security deposit required (30%)")))
+                .andExpect(content().string(containsString("up to 48 hours before pickup")))
                 .andExpect(content().string(not(containsString("/bookings/42/contract\""))));
+    }
+
+    @Test
+    void successPageShowsDepositPercentOfAcceptedTerms() throws Exception {
+        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("confirmed", true));
+
+        mvc.perform(get("/bookings/42/success").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Deposit paid (30%, VNPay)")));
     }
 
     private BookingDetailDTO bookingWithContract(String status, boolean issued) {

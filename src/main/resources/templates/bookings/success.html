@@ -1,111 +1,756 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Booking Confirmed — DriveNow</title>
-    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
-    <link rel="stylesheet" th:href="@{/css/app.css}">
-</head>
-<body class="bg-surface text-navy min-h-screen flex flex-col items-center justify-center px-4 py-10">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Booking Confirmed — DriveNow</title>
+        <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" th:href="@{/css/drivenow.css}" />
+        <link rel="stylesheet" th:href="@{/css/app.css}" />
+        <style>
+            .success-page-container {
+                max-width: 1140px;
+                margin: 0 auto;
+                padding: 24px 20px 64px;
+            }
+            .stepper-wrap {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 28px;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            .stepper-link {
+                color: #64748b;
+                font-size: 13px;
+                font-weight: 600;
+                text-decoration: none !important;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                transition: color 0.15s ease;
+            }
+            .stepper-link:hover {
+                color: #0f172a;
+            }
+            .stepper-steps {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 13px;
+                font-weight: 500;
+                color: #047857;
+            }
+            .step-dot {
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                background-color: #059669;
+                color: #ffffff;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+                font-weight: 800;
+            }
+            .step-divider {
+                color: #cbd5e1;
+                font-weight: 300;
+            }
+            .step-confirmed-badge {
+                background-color: #ecfdf5;
+                color: #047857;
+                font-weight: 800;
+                padding: 3px 12px;
+                border-radius: 9999px;
+                border: 1px solid #a7f3d0;
+            }
 
-<!-- Success Card matching BookingSuccessPage.tsx -->
-<div class="bg-white rounded-lg border border-border shadow-xs w-full max-w-lg overflow-hidden my-auto">
-    <!-- Green Header -->
-    <div class="bg-green-700 p-8 text-center">
-        <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M20 6L9 17l-5-5"/>
-            </svg>
-        </div>
-        <h1 class="font-heading text-2xl text-white mb-1">Booking Confirmed!</h1>
-        <p class="text-green-100 text-xs">Your security deposit has been received</p>
-    </div>
+            /* Header Row */
+            .success-heading-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 20px;
+                margin-bottom: 32px;
+                flex-wrap: wrap;
+            }
+            .heading-left {
+                flex: 1;
+                min-width: 320px;
+            }
+            .heading-title-group {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                margin-bottom: 8px;
+            }
+            .check-circle-icon {
+                width: 44px;
+                height: 44px;
+                border-radius: 50%;
+                background-color: #047857;
+                color: #ffffff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                box-shadow: 0 2px 8px rgba(4, 120, 87, 0.25);
+            }
+            .heading-title {
+                font-size: 32px;
+                font-weight: 800;
+                color: #0f172a;
+                letter-spacing: -0.03em;
+                line-height: 1.15;
+                margin: 0;
+            }
+            .heading-subtitle {
+                font-size: 14px;
+                color: #64748b;
+                margin: 0;
+                line-height: 1.5;
+                max-width: 580px;
+                padding-left: 58px;
+            }
 
-    <!-- Booking Reference Bar -->
-    <div class="bg-surface px-6 py-3 flex items-center justify-between border-b border-border text-xs">
-        <span class="text-muted-foreground font-medium uppercase tracking-wider">Booking Reference</span>
-        <span class="font-mono font-bold text-navy text-sm tracking-wide" th:text="'#' + ${booking.id}">#1</span>
-    </div>
+            /* Reference Cards */
+            .ref-badges-group {
+                display: flex;
+                gap: 12px;
+                flex-shrink: 0;
+            }
+            .ref-card {
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 14px;
+                padding: 10px 18px;
+                text-align: center;
+                min-width: 95px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+            }
+            .ref-card-label {
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #94a3b8;
+                margin-bottom: 2px;
+            }
+            .ref-card-val {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 18px;
+                font-weight: 800;
+                color: #0f172a;
+            }
 
-    <!-- Details Body -->
-    <div class="p-6">
-        <!-- Vehicle Thumbnail & Name -->
-        <div class="flex gap-4 mb-5 pb-5 border-b border-border">
-            <img th:src="${booking.imageUrl}" th:alt="${booking.vehicleTypeName}" class="w-20 h-14 rounded-md object-cover bg-surface-2 flex-shrink-0">
-            <div>
-                <div class="font-bold text-navy text-base" th:text="${booking.vehicleTypeName}">Toyota Vios</div>
-                <div class="text-xs text-muted-foreground capitalize" th:text="${booking.vehicleCategory + ' · ' + booking.seats + ' seats'}">sedan · 5 seats</div>
-                <div class="text-xs text-muted-foreground mt-1">
-                    Assigned plate: <span class="font-mono font-bold text-navy" th:text="${booking.licensePlate}">51A-123.45</span>
+            /* Main 2-Column Grid Layout */
+            .success-grid-layout {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            @media (min-width: 992px) {
+                .success-grid-layout {
+                    grid-template-columns: 1.55fr 1fr;
+                    gap: 28px;
+                    align-items: start;
+                }
+            }
+
+            .surface-card {
+                background-color: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 18px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+                overflow: hidden;
+            }
+
+            /* Timeline Area */
+            .trip-card-content {
+                padding: 24px 28px;
+            }
+            .card-header-title {
+                font-size: 18px;
+                font-weight: 700;
+                color: #0f172a;
+                margin: 0 0 24px 0;
+            }
+            .timeline-item {
+                display: flex;
+                gap: 18px;
+                position: relative;
+            }
+            .timeline-time-col {
+                width: 105px;
+                flex-shrink: 0;
+            }
+            .time-val {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 26px;
+                font-weight: 800;
+                color: #0f172a;
+                line-height: 1.1;
+            }
+            .date-val {
+                font-size: 12px;
+                color: #94a3b8;
+                font-weight: 500;
+                margin-top: 2px;
+            }
+            .timeline-axis {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 18px;
+                padding-top: 6px;
+            }
+            .dot-solid {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background-color: #059669;
+                box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+            }
+            .dot-hollow {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background-color: #ffffff;
+                border: 2px solid #059669;
+            }
+            .axis-line {
+                width: 2px;
+                border-left: 2px dashed #10b981;
+                height: 48px;
+                margin: 4px 0;
+            }
+            .timeline-content {
+                flex: 1;
+                padding-top: 2px;
+            }
+            .timeline-title {
+                font-size: 15px;
+                font-weight: 700;
+                color: #0f172a;
+            }
+            .timeline-desc {
+                font-size: 13px;
+                color: #64748b;
+                margin-top: 2px;
+            }
+            .duration-tag {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                background-color: #f1f5f9;
+                color: #475569;
+                font-size: 12px;
+                font-weight: 600;
+                padding: 3px 9px;
+                border-radius: 6px;
+                margin-top: 8px;
+            }
+
+            /* Before You Go Notice */
+            .before-you-go {
+                background-color: #fdfaf3;
+                border: 1px solid #fed7aa;
+                border-radius: 14px;
+                padding: 18px 20px;
+                margin-top: 24px;
+            }
+            .before-title {
+                font-size: 13px;
+                font-weight: 700;
+                color: #9a3412;
+                margin-bottom: 12px;
+            }
+            .checklist-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 16px;
+                padding-bottom: 14px;
+                border-bottom: 1px solid #fde68a;
+            }
+            @media (min-width: 640px) {
+                .checklist-grid {
+                    grid-template-columns: 1fr 1fr;
+                }
+            }
+            .check-item {
+                display: flex;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .check-square {
+                width: 16px;
+                height: 16px;
+                border: 2px solid #b45309;
+                border-radius: 4px;
+                margin-top: 2px;
+                flex-shrink: 0;
+            }
+            .check-bold {
+                font-size: 13px;
+                font-weight: 700;
+                color: #0f172a;
+            }
+            .check-sub {
+                font-size: 12px;
+                color: #64748b;
+                margin-top: 1px;
+            }
+            .hotline-row {
+                padding-top: 12px;
+                font-size: 12px;
+                color: #475569;
+            }
+
+            /* Action Buttons */
+            .action-buttons-wrap {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-top: 20px;
+                flex-wrap: wrap;
+            }
+            .btn-my-bookings {
+                background-color: #0d1527 !important;
+                color: #ffffff !important;
+                font-weight: 700;
+                font-size: 14px;
+                padding: 12px 22px;
+                border-radius: 12px;
+                text-decoration: none !important;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                border: none;
+                transition: all 0.15s ease;
+            }
+            .btn-my-bookings:hover {
+                background-color: #1e293b !important;
+                color: #ffffff !important;
+                box-shadow: 0 4px 12px rgba(13, 21, 39, 0.2);
+            }
+            .btn-view-details {
+                background-color: #ffffff !important;
+                color: #334155 !important;
+                font-weight: 600;
+                font-size: 14px;
+                padding: 12px 22px;
+                border-radius: 12px;
+                text-decoration: none !important;
+                border: 1px solid #cbd5e1;
+                transition: all 0.15s ease;
+            }
+            .btn-view-details:hover {
+                background-color: #f8fafc !important;
+                color: #0f172a !important;
+            }
+            .btn-back-home {
+                background: transparent;
+                color: #64748b;
+                font-weight: 600;
+                font-size: 14px;
+                padding: 12px 18px;
+                text-decoration: none !important;
+                border: none;
+                transition: all 0.15s ease;
+            }
+            .btn-back-home:hover {
+                color: #0f172a;
+            }
+
+            /* Right Column: Vehicle Card */
+            .vehicle-card-content {
+                display: flex;
+                align-items: center;
+                gap: 18px;
+                padding: 20px;
+            }
+            .vehicle-img {
+                width: 124px;
+                height: 84px;
+                border-radius: 12px;
+                object-fit: cover;
+                background: #f1f5f9;
+                border: 1px solid #e2e8f0;
+                flex-shrink: 0;
+            }
+            .vehicle-meta-cat {
+                font-size: 12px;
+                color: #94a3b8;
+                font-weight: 500;
+            }
+            .vehicle-meta-name {
+                font-size: 20px;
+                font-weight: 800;
+                color: #0f172a;
+                margin: 2px 0 6px 0;
+                line-height: 1.2;
+            }
+            .plate-frame {
+                border: 2px solid #0f172a;
+                border-radius: 7px;
+                padding: 3px 12px;
+                text-align: center;
+                font-family: "JetBrains Mono", monospace;
+                font-weight: 800;
+                font-size: 13px;
+                line-height: 1.15;
+                background: #ffffff;
+                color: #0f172a;
+                display: inline-block;
+            }
+
+            /* Right Column: Payment Card */
+            .payment-card-content {
+                padding: 22px;
+            }
+            .payment-progress-bar {
+                width: 100%;
+                height: 8px;
+                background: #e2e8f0;
+                border-radius: 4px;
+                overflow: hidden;
+                margin: 14px 0 16px;
+            }
+            .payment-progress-fill {
+                width: 50%;
+                height: 100%;
+                background-color: #059669;
+                border-radius: 4px;
+            }
+            .payment-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 13px;
+                color: #475569;
+                margin-bottom: 10px;
+            }
+            .payment-row-label {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .payment-val-green {
+                font-family: "JetBrains Mono", monospace;
+                font-weight: 700;
+                color: #059669;
+                font-size: 14px;
+            }
+            .payment-val-dark {
+                font-family: "JetBrains Mono", monospace;
+                font-weight: 700;
+                color: #0f172a;
+                font-size: 14px;
+            }
+            .payment-total-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                padding-top: 14px;
+                border-top: 1px solid #e2e8f0;
+                margin-top: 6px;
+            }
+            .payment-total-label {
+                font-size: 13px;
+                color: #64748b;
+                font-weight: 500;
+            }
+            .payment-total-val {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 26px;
+                font-weight: 900;
+                color: #0f172a;
+            }
+        </style>
+    </head>
+    <body class="bg-surface text-navy min-h-screen flex flex-col font-sans">
+        <div th:replace="~{fragments/header :: header}"></div>
+
+        <main class="flex-1">
+            <div class="success-page-container">
+                <!-- Top Navigation Bar & Stepper -->
+                <div class="stepper-wrap">
+                    <a th:href="@{/bookings/my-bookings}" class="stepper-link">
+                        <span style="font-size: 14px">←</span> My Bookings
+                    </a>
+
+                    <!-- Stepper Progress Bar -->
+                    <div class="stepper-steps">
+                        <span><span class="step-dot">✓</span> Schedule</span>
+                        <span class="step-divider">—</span>
+                        <span><span class="step-dot">✓</span> Review</span>
+                        <span class="step-divider">—</span>
+                        <span><span class="step-dot">✓</span> Deposit</span>
+                        <span class="step-divider">—</span>
+                        <span class="step-confirmed-badge">Confirmed</span>
+                    </div>
+                </div>
+
+                <!-- Heading Section with Confirmation Badges -->
+                <div class="success-heading-row">
+                    <div class="heading-left">
+                        <div class="heading-title-group">
+                            <div class="check-circle-icon">
+                                <svg
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="#ffffff"
+                                    stroke-width="3"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                            </div>
+                            <h1 class="heading-title">Booking confirmed</h1>
+                        </div>
+                    </div>
+
+                    <!-- Booking & VNPay Ref Badges -->
+                    <div class="ref-badges-group">
+                        <div class="ref-card">
+                            <div class="ref-card-label">Booking</div>
+                            <div class="ref-card-val" th:text="'#' + ${booking.id}">#11</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2-Column Main Content Layout -->
+                <div class="success-grid-layout">
+                    <!-- Left Column: Trip Timeline & Checklist -->
+                    <div>
+                        <!-- Trip Card -->
+                        <div class="surface-card">
+                            <div class="trip-card-content">
+                                <h2 class="card-header-title">Your trip</h2>
+
+                                <!-- Vertical Timeline -->
+                                <div style="margin-bottom: 24px">
+                                    <!-- Pickup Row -->
+                                    <div class="timeline-item">
+                                        <div class="timeline-time-col">
+                                            <div
+                                                class="time-val"
+                                                th:text="${#temporals.format(booking.pickupTime, 'HH:mm')}"
+                                            >
+                                                02:00
+                                            </div>
+                                            <div
+                                                class="date-val"
+                                                th:text="${#temporals.format(booking.pickupTime, 'EEE, dd/MM/yyyy')}"
+                                            >
+                                                Sat, 24/10/2026
+                                            </div>
+                                        </div>
+                                        <div class="timeline-axis">
+                                            <span class="dot-solid"></span>
+                                            <div class="axis-line"></div>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <div class="timeline-title">Pick up at Central Depot</div>
+                                            <div class="timeline-desc">120 Trường Chinh, Ward 12, Tân Bình</div>
+                                            <div
+                                                class="duration-tag"
+                                                th:with="diffHours=${T(java.time.Duration).between(booking.pickupTime, booking.scheduledEndTime).toHours()}"
+                                            >
+                                                <svg
+                                                    width="13"
+                                                    height="13"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="#64748b"
+                                                    stroke-width="2"
+                                                >
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <polyline points="12 6 12 12 16 14" />
+                                                </svg>
+                                                <span th:text="${diffHours + ' hours rental'}">9 hours rental</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Return Row -->
+                                    <div class="timeline-item" style="margin-top: 4px">
+                                        <div class="timeline-time-col">
+                                            <div
+                                                class="time-val"
+                                                th:text="${#temporals.format(booking.scheduledEndTime, 'HH:mm')}"
+                                            >
+                                                11:00
+                                            </div>
+                                            <div
+                                                class="date-val"
+                                                th:text="${#temporals.format(booking.scheduledEndTime, 'EEE, dd/MM/yyyy')}"
+                                            >
+                                                Sat, 24/10/2026
+                                            </div>
+                                        </div>
+                                        <div class="timeline-axis">
+                                            <span class="dot-hollow"></span>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <div class="timeline-title">Return to Central Depot</div>
+                                            <div class="timeline-desc">
+                                                Same hub · pay the remaining
+                                                <span
+                                                    style="font-weight: 600; color: #0f172a"
+                                                    th:text="${#numbers.formatDecimal(booking.totalPrice - booking.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"
+                                                    >675,000 đ</span
+                                                >
+                                                on return
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Before You Go Notice Box -->
+                                <div class="before-you-go">
+                                    <div class="before-title">Before you go</div>
+                                    <div class="checklist-grid">
+                                        <div class="check-item">
+                                            <span class="check-square"></span>
+                                            <div>
+                                                <div class="check-bold">Arrive 10–15 minutes early</div>
+                                                <div class="check-sub">Before the scheduled pickup time</div>
+                                            </div>
+                                        </div>
+                                        <div class="check-item">
+                                            <span class="check-square"></span>
+                                            <div>
+                                                <div class="check-bold">Bring your documents</div>
+                                                <div class="check-sub">Citizen ID card + driver license</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="hotline-row">
+                                        <span
+                                            >24/7 Roadside hotline
+                                            <strong style="color: #0f172a; margin-left: 4px">1800 6868</strong></span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Navigation Action Buttons -->
+                        <div class="action-buttons-wrap">
+                            <a th:href="@{/bookings/{id}(id=${booking.id})}" class="btn-view-details"> View details </a>
+                            <a th:href="@{/}" class="btn-back-home"> Back to Home </a>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Vehicle & Payment Cards -->
+                    <div style="display: flex; flex-direction: column; gap: 20px">
+                        <!-- Vehicle Card -->
+                        <div class="surface-card">
+                            <div class="vehicle-card-content">
+                                <img
+                                    th:src="${booking.imageUrl != null and !booking.imageUrl.isBlank() ? booking.imageUrl : '/images/car-rental-logo.svg'}"
+                                    th:alt="${booking.vehicleTypeName}"
+                                    class="vehicle-img"
+                                    onerror="
+                                        this.onerror = null;
+                                        this.src = '/images/car-rental-logo.svg';
+                                    "
+                                />
+                                <div style="flex: 1; min-width: 0">
+                                    <h3 class="vehicle-meta-name" th:text="${booking.vehicleTypeName}">Vios 2023</h3>
+                                    <div class="plate-frame">
+                                        <div
+                                            th:text="${booking.licensePlate != null and booking.licensePlate.contains('-') ? #strings.substringBefore(booking.licensePlate, '-') : (booking.licensePlate != null ? booking.licensePlate : '51A')}"
+                                        >
+                                            51A
+                                        </div>
+                                        <div
+                                            th:text="${booking.licensePlate != null and booking.licensePlate.contains('-') ? #strings.substringAfter(booking.licensePlate, '-') : '123.45'}"
+                                        >
+                                            123.45
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Breakdown Card -->
+                        <div class="surface-card">
+                            <div class="payment-card-content">
+                                <h2 class="card-header-title" style="margin-bottom: 0">Payment</h2>
+
+                                <!-- 50% Progress Bar -->
+                                <div class="payment-progress-bar">
+                                    <div class="payment-progress-fill"></div>
+                                </div>
+
+                                <!-- Payment Line Items -->
+                                <div>
+                                    <div class="payment-row">
+                                        <span class="payment-row-label">
+                                            <svg
+                                                width="14"
+                                                height="14"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="#059669"
+                                                stroke-width="2.5"
+                                            >
+                                                <polyline points="20 6 9 17 4 12" />
+                                            </svg>
+                                            <th:block th:text="'Deposit paid (' + ${booking.contract?.terms?.depositPercent} + '%, VNPay)'">Deposit paid (50%, VNPay)</th:block>
+                                        </span>
+                                        <span class="payment-val-green">
+                                            <span
+                                                th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}"
+                                                >675,000</span
+                                            >
+                                            đ
+                                        </span>
+                                    </div>
+
+                                    <div class="payment-row">
+                                        <span>Due on return</span>
+                                        <span class="payment-val-dark">
+                                            <span
+                                                th:text="${#numbers.formatDecimal(booking.totalPrice - booking.depositAmount, 0, 'COMMA', 0, 'POINT')}"
+                                                >675,000</span
+                                            >
+                                            đ
+                                        </span>
+                                    </div>
+
+                                    <!-- Total Rental Cost -->
+                                    <div class="payment-total-row">
+                                        <span class="payment-total-label">Total rental cost</span>
+                                        <div class="payment-total-val">
+                                            <span
+                                                th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT')}"
+                                                >1,350,000</span
+                                            >
+                                            <span style="font-size: 16px; font-weight: 700; color: #64748b">đ</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </main>
 
-        <!-- 4 Grid Tiles -->
-        <div class="grid grid-cols-2 gap-3 mb-5">
-            <div class="bg-surface rounded-md p-3">
-                <div class="text-xs text-muted-foreground mb-0.5">Pickup Date</div>
-                <div class="text-sm font-semibold text-navy" th:text="${#temporals.format(booking.pickupTime, 'dd/MM/yyyy')}">Date</div>
-            </div>
-            <div class="bg-surface rounded-md p-3">
-                <div class="text-xs text-muted-foreground mb-0.5">Pickup Time</div>
-                <div class="text-sm font-semibold text-navy" th:text="${#temporals.format(booking.pickupTime, 'HH:mm')}">09:00</div>
-            </div>
-            <div class="bg-surface rounded-md p-3">
-                <div class="text-xs text-muted-foreground mb-0.5">Return Date</div>
-                <div class="text-sm font-semibold text-navy" th:text="${#temporals.format(booking.scheduledEndTime, 'dd/MM/yyyy')}">Date</div>
-            </div>
-            <div class="bg-surface rounded-md p-3">
-                <div class="text-xs text-muted-foreground mb-0.5">Return Time</div>
-                <div class="text-sm font-semibold text-navy" th:text="${#temporals.format(booking.scheduledEndTime, 'HH:mm')}">18:00</div>
-            </div>
-        </div>
-
-        <!-- Payment Summary Box -->
-        <div class="bg-navy/5 rounded-md p-4 mb-5 space-y-2 text-xs">
-            <div class="flex justify-between">
-                <span class="text-muted-foreground">Deposit paid</span>
-                <span class="font-bold text-green-700">✓ <span th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}">5,000,000</span> đ</span>
-            </div>
-            <div class="flex justify-between border-t border-border pt-2 text-sm">
-                <span class="text-muted-foreground">Rental fee due on return</span>
-                <span class="font-bold text-navy"><span th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT')}">1,200,000</span> đ</span>
-            </div>
-            <div th:if="${param.vnp_TransactionNo != null and !#strings.isEmpty(param.vnp_TransactionNo)}" class="flex justify-between border-t border-border pt-2 text-xs text-slate-500">
-                <span class="flex items-center gap-1 text-emerald-700 font-semibold">
-                    <svg class="w-3.5 h-3.5 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    VNPay Verified Transaction
-                </span>
-                <span class="font-mono text-slate-800 font-bold" th:text="'#' + ${param.vnp_TransactionNo}">#14253678</span>
-            </div>
-        </div>
-
-        <!-- Pickup Instructions Notice -->
-        <div class="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6 text-xs text-amber-800 space-y-1.5">
-            <div class="font-bold text-amber-900 text-sm mb-1">Pickup Instructions</div>
-            <div><strong>Location:</strong> 123 Dinh Bo Linh St, Ward 26, Binh Thanh, HCMC</div>
-            <div><strong>Arrive by:</strong> <span th:text="${#temporals.format(booking.pickupTime, 'HH:mm dd/MM/yyyy')}">09:00</span></div>
-            <div><strong>Bring:</strong> Citizen ID card + Driver license for handover verification</div>
-            <div><strong>Hotline 24/7:</strong> 1800 6868</div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="flex gap-3">
-            <a th:href="@{/bookings/{id}(id=${booking.id})}" class="flex-1 bg-navy hover:bg-navy-light text-white text-center font-semibold py-2.5 px-4 rounded-md text-xs transition-all text-decoration-none">
-                View Booking Details
-            </a>
-            <a th:href="@{/}" class="flex-1 bg-surface hover:bg-surface-2 border border-border text-navy text-center font-semibold py-2.5 px-4 rounded-md text-xs transition-all text-decoration-none">
-                Back to Home
-            </a>
-        </div>
-    </div>
-</div>
-
-</body>
+        <div th:replace="~{fragments/footer :: footer}"></div>
+    </body>
 </html>
-

@@ -6,9 +6,9 @@ BEGIN;
 -- 1. CUSTOMERS
 INSERT INTO customers (customer_id, name, phone, email, password_hash, created_at)
 VALUES 
-    (1, 'John Doe', '0901234567', 'customer@gmail.com', '$2a$10$f1dC/wkm8nQT1k3YNvBP3e75TsnTOcT4JaMR6LcS.KsJ5nBC0w.nW', CURRENT_TIMESTAMP - INTERVAL '10 days'),
-    (2, 'Jane Smith', '0912345678', 'customer2@gmail.com', '$2a$10$f1dC/wkm8nQT1k3YNvBP3e75TsnTOcT4JaMR6LcS.KsJ5nBC0w.nW', CURRENT_TIMESTAMP - INTERVAL '5 days'),
-    (3, 'David Miller', '0923456789', 'customer3@gmail.com', '$2a$10$f1dC/wkm8nQT1k3YNvBP3e75TsnTOcT4JaMR6LcS.KsJ5nBC0w.nW', CURRENT_TIMESTAMP - INTERVAL '2 days')
+    (1, 'John Doe', '0901234567', 'customer@example.com', '$2a$10$f1dC/wkm8nQT1k3YNvBP3e75TsnTOcT4JaMR6LcS.KsJ5nBC0w.nW', CURRENT_TIMESTAMP - INTERVAL '10 days'),
+    (2, 'Jane Smith', '0912345678', 'customer2@example.com', '$2a$10$f1dC/wkm8nQT1k3YNvBP3e75TsnTOcT4JaMR6LcS.KsJ5nBC0w.nW', CURRENT_TIMESTAMP - INTERVAL '5 days'),
+    (3, 'David Miller', '0923456789', 'customer3@example.com', '$2a$10$f1dC/wkm8nQT1k3YNvBP3e75TsnTOcT4JaMR6LcS.KsJ5nBC0w.nW', CURRENT_TIMESTAMP - INTERVAL '2 days')
 ON CONFLICT (customer_id) DO NOTHING;
 
 -- 2. EMPLOYEES

@@ -1,18 +1,27 @@
 target/
 .idea/
-.agents/
 .vscode/
 *.iml
 *.log
-.env
-.env.*
-!.env.example
-src/main/resources/application-local.properties
 .build-cache/
 .DS_Store
 Thumbs.db
 
-# User-uploaded documents stay local.
+# Local environment & properties
+.env
+.env.*
+src/main/resources/application-local.properties
+
+# User-uploaded documents stay local
 uploads/
 
-GEMINI.md
+# AI assistants & local agent configs (do not push to repo)
+AGENTS.md
+GEMINI.md
+skills-lock.json
+.agents/
+.claude/
+.cursor/
+.gemini/
+.trail/
+.github/copilot-instructions.md

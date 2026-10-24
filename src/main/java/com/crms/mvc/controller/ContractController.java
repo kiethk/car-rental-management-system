@@ -44,7 +44,15 @@ public class ContractController {
     public String issueContract(@PathVariable("id") Long bookingId, RedirectAttributes ra) {
         try {
             contractService.issueContract(bookingId);
-            ra.addFlashAttribute("success", "Contract issued. The customer email is sent when the mail server is reachable.");
+            boolean emailed = contractService.findByBookingId(bookingId)
+                    .map(contract -> contract.getEmailedAt() != null)
+                    .orElse(false);
+            if (emailed) {
+                ra.addFlashAttribute("success", "Contract PDF issued and emailed to the customer.");
+            } else {
+                ra.addFlashAttribute("error", "Contract PDF issued, but the email was not sent. "
+                        + "Check that a Gmail account is configured in application-local.properties (see server log).");
+            }
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Could not issue contract: " + e.getMessage());
         }

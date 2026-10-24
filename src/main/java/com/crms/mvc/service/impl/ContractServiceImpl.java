@@ -120,8 +120,8 @@ public class ContractServiceImpl implements ContractService {
             contractMailService.sendContract(document, pdf);
             contract.setEmailedAt(OffsetDateTime.now());
         } catch (RuntimeException exception) {
-            // The PDF is already stored; staff can resend from the booking page later.
-            log.warn("Could not email contract {}: {}", contract.getContractNumber(), exception.getMessage());
+            // Email is optional: the PDF is already stored and staff can resend from the booking page.
+            log.warn("Contract {} was issued but not emailed. {}", contract.getContractNumber(), exception.getMessage());
         }
     }
 
