@@ -1,5 +1,5 @@
 # Copy to src/main/resources/application-local.properties when overriding defaults.
 spring.datasource.url=jdbc:postgresql://localhost:5434/car_rental_management
-spring.datasource.username=crms
-spring.datasource.password=crms_password
+spring.datasource.username=postgres
+spring.datasource.password=123456
 server.port=8081

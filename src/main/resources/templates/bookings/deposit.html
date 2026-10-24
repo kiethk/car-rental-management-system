@@ -14,41 +14,562 @@
         <link rel="stylesheet" th:href="@{/css/drivenow.css}" />
         <link rel="stylesheet" th:href="@{/css/app.css}" />
         <style>
-            .btn-vnpay-primary {
-                background-color: #ea580c !important;
-                color: #ffffff !important;
-                border: 1px solid #ea580c !important;
-                border-radius: 12px !important;
-                font-weight: 700 !important;
-                transition: all 0.15s ease !important;
-                cursor: pointer !important;
+            .deposit-page-container {
+                max-width: 1080px;
+                margin: 0 auto;
+                padding: 20px 16px 56px;
             }
-            .btn-vnpay-primary:hover {
-                background-color: #c2410c !important;
-                border-color: #c2410c !important;
-                box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25) !important;
+
+            /* Top Bar */
+            .deposit-top-bar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 24px;
+                flex-wrap: wrap;
+                gap: 12px;
             }
-            .sandbox-card {
-                background: linear-gradient(135deg, #090d16 0%, #172136 100%);
-                border: 1px solid #27354f;
-                border-radius: 14px;
-                padding: 18px 20px;
-                color: #ffffff;
-                box-shadow: 0 4px 16px rgba(9, 13, 22, 0.2);
+            .breadcrumb-group {
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }
-            .copy-pill {
-                background: rgba(255, 255, 255, 0.08);
-                border: 1px solid rgba(255, 255, 255, 0.15);
+            .breadcrumb-back {
+                color: #64748b;
+                font-size: 13px;
+                font-weight: 500;
+                text-decoration: none !important;
+                transition: color 0.15s ease;
+            }
+            .breadcrumb-back:hover {
+                color: #0f172a;
+            }
+            .breadcrumb-sep {
                 color: #cbd5e1;
-                border-radius: 6px;
+                font-size: 13px;
+            }
+            .page-title {
+                font-size: 18px;
+                font-weight: 700;
+                color: #0f172a;
+                margin: 0;
+                letter-spacing: -0.01em;
+            }
+
+            /* Stepper */
+            .stepper-steps {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 12px;
+                font-weight: 500;
+                color: #64748b;
+            }
+            .step-done {
+                color: #047857;
+                font-weight: 600;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+            }
+            .step-active-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background-color: #ecfdf5;
+                color: #047857;
+                font-weight: 700;
+                padding: 3px 10px;
+                border-radius: 9999px;
+                border: 1px solid #a7f3d0;
+            }
+
+            /* 2-Column Grid Layout */
+            .deposit-grid-layout {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            @media (min-width: 900px) {
+                .deposit-grid-layout {
+                    grid-template-columns: 1.45fr 1fr;
+                    gap: 20px;
+                    align-items: start;
+                }
+            }
+
+            /* Cards Standard Styling (Harmonious with detail.html) */
+            .surface-card {
+                background-color: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                padding: 20px;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+            }
+            .card-header-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 4px;
+            }
+            .card-title {
+                font-size: 16px;
+                font-weight: 700;
+                color: #0f172a;
+                margin: 0;
+            }
+            .card-subtitle {
+                font-size: 12px;
+                color: #64748b;
+                margin: 2px 0 16px 0;
+            }
+
+            /* Holding Vehicle Badge */
+            .holding-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 11px;
+                font-weight: 600;
+                background-color: #fffbeb;
+                color: #92400e;
+                border: 1px solid #fde68a;
+                padding: 3px 10px;
+                border-radius: 9999px;
+            }
+            .pulse-dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background-color: #d97706;
+                animation: pulse 1.5s infinite;
+            }
+            @keyframes pulse {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.4;
+                }
+            }
+
+            /* Payment Method Card */
+            .method-card {
+                border: 1.5px solid #0f172a;
+                border-radius: 9px;
+                padding: 16px;
+                background-color: #f8fafc;
+                margin-bottom: 16px;
+            }
+            .method-top {
+                display: flex;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .method-radio {
+                margin-top: 3px;
+                accent-color: #0f172a;
+                width: 16px;
+                height: 16px;
+            }
+            .method-info {
+                flex: 1;
+            }
+            .method-title-line {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 6px;
+                margin-bottom: 4px;
+            }
+            .method-name-wrap {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .method-name {
+                font-size: 14px;
+                font-weight: 700;
+                color: #0f172a;
+            }
+            .vnpay-badge {
+                background-color: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 4px;
+                padding: 2px 6px;
+                font-size: 10px;
+                font-weight: 800;
+                display: inline-flex;
+                letter-spacing: -0.02em;
+            }
+            .badge-verified {
+                background-color: #ecfdf5;
+                color: #047857;
+                border: 1px solid #a7f3d0;
+                border-radius: 4px;
+                padding: 2px 7px;
+                font-size: 10px;
+                font-weight: 700;
+            }
+            .method-desc {
+                font-size: 12px;
+                color: #64748b;
+                line-height: 1.45;
+                margin: 4px 0 10px 0;
+            }
+            .channels-strip {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                padding-top: 10px;
+                border-top: 1px solid #e2e8f0;
+            }
+            .channel-pill {
+                background-color: #ffffff;
+                border: 1px solid #cbd5e1;
+                border-radius: 5px;
                 padding: 3px 8px;
                 font-size: 11px;
+                font-weight: 500;
+                color: #334155;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            /* Deposit Amount Row */
+            .deposit-row-box {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 14px 16px;
+                background-color: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                margin-bottom: 16px;
+            }
+            .deposit-label-main {
+                font-size: 12px;
+                font-weight: 600;
+                color: #475569;
+            }
+            .deposit-label-sub {
+                font-size: 11px;
+                color: #94a3b8;
+                margin-top: 2px;
+            }
+            .deposit-val-large {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 22px;
+                font-weight: 800;
+                color: #0f172a;
+            }
+
+            /* Sandbox Test Credentials Box */
+            .sandbox-box {
+                background-color: #fef7ee;
+                border: 1px solid #fed7aa;
+                border-radius: 8px;
+                padding: 14px 16px;
+                margin-bottom: 20px;
+            }
+            .sandbox-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding-bottom: 10px;
+                border-bottom: 1px solid #fed7aa;
+                margin-bottom: 10px;
+            }
+            .sandbox-title-wrap {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .demo-pill {
+                background-color: #9a3412;
+                color: #ffffff;
+                font-size: 9px;
+                font-weight: 800;
+                padding: 2px 5px;
+                border-radius: 4px;
+                letter-spacing: 0.05em;
+            }
+            .sandbox-title {
+                font-size: 12px;
+                font-weight: 700;
+                color: #9a3412;
+            }
+            .btn-copy-card {
+                background-color: #ffffff;
+                border: 1px solid #fed7aa;
+                color: #9a3412;
+                font-size: 11px;
+                font-weight: 600;
+                padding: 4px 10px;
+                border-radius: 5px;
                 cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
                 transition: all 0.15s ease;
             }
-            .copy-pill:hover {
-                background: rgba(255, 255, 255, 0.18);
+            .btn-copy-card:hover {
+                background-color: #fffbeb;
+                border-color: #f59e0b;
+            }
+            .sandbox-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px 14px;
+            }
+            @media (min-width: 600px) {
+                .sandbox-grid {
+                    grid-template-columns: repeat(4, 1fr);
+                }
+            }
+            .sandbox-col-label {
+                font-size: 10px;
+                color: #94a3b8;
+                font-weight: 500;
+            }
+            .sandbox-col-val {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 12px;
+                font-weight: 700;
+                color: #0f172a;
+                margin-top: 1px;
+            }
+
+            /* Action Button */
+            .btn-submit-vnpay {
+                width: 100%;
+                background-color: #0f172a !important;
+                color: #ffffff !important;
+                border: 1px solid #0f172a !important;
+                border-radius: 8px;
+                padding: 12px 18px;
+                font-size: 14px;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                transition: all 0.15s ease;
+                box-shadow: 0 1px 2px rgba(15, 23, 42, 0.1);
+            }
+            .btn-submit-vnpay:hover {
+                background-color: #1e293b !important;
+                border-color: #1e293b !important;
+                box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+            }
+            .pay-later-link {
+                display: block;
+                text-align: center;
+                margin-top: 10px;
+                color: #64748b;
+                font-size: 12px;
+                text-decoration: none !important;
+                transition: color 0.15s ease;
+            }
+            .pay-later-link:hover {
+                color: #0f172a;
+            }
+
+            /* Trust Strip */
+            .trust-strip {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 16px;
+                margin-top: 20px;
+                padding-top: 16px;
+                border-top: 1px solid #f1f5f9;
+                font-size: 11px;
+                color: #64748b;
+                flex-wrap: wrap;
+            }
+
+            /* Right Column Cards */
+            .sidebar-cards-wrap {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+            .vehicle-summary-top {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                padding-bottom: 14px;
+                border-bottom: 1px solid #f1f5f9;
+            }
+            .sidebar-vehicle-img {
+                width: 96px;
+                height: 64px;
+                border-radius: 8px;
+                object-fit: cover;
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                flex-shrink: 0;
+            }
+            .sidebar-car-meta {
+                font-size: 11px;
+                color: #94a3b8;
+            }
+            .sidebar-car-name {
+                font-size: 16px;
+                font-weight: 700;
+                color: #0f172a;
+                margin: 2px 0 4px 0;
+                line-height: 1.2;
+            }
+            .plate-box {
+                border: 1.5px solid #1e293b;
+                border-radius: 5px;
+                padding: 2px 8px;
+                font-family: "JetBrains Mono", monospace;
+                font-weight: 700;
+                font-size: 11px;
+                background: #ffffff;
+                color: #0f172a;
+                display: inline-block;
+            }
+
+            /* Timeline in Right Card */
+            .sidebar-timeline {
+                padding-top: 14px;
+            }
+            .sb-timeline-item {
+                display: flex;
+                gap: 12px;
+                align-items: flex-start;
+            }
+            .sb-time-col {
+                width: 75px;
+                flex-shrink: 0;
+            }
+            .sb-time {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 14px;
+                font-weight: 700;
+                color: #0f172a;
+            }
+            .sb-date {
+                font-size: 10px;
+                color: #94a3b8;
+            }
+            .sb-axis {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 12px;
+                padding-top: 3px;
+            }
+            .sb-dot-solid {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: #059669;
+            }
+            .sb-dot-hollow {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: #ffffff;
+                border: 1.5px solid #059669;
+            }
+            .sb-line {
+                width: 1px;
+                border-left: 1.5px dashed #10b981;
+                height: 28px;
+                margin: 2px 0;
+            }
+            .sb-info-title {
+                font-size: 12px;
+                font-weight: 600;
+                color: #0f172a;
+            }
+            .sb-info-sub {
+                font-size: 11px;
+                color: #64748b;
+            }
+
+            /* Pricing Card */
+            .cost-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 12px;
+            }
+            .cost-label {
+                font-size: 13px;
+                color: #475569;
+            }
+            .cost-val {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 16px;
+                font-weight: 700;
+                color: #0f172a;
+            }
+            .deposit-highlight-card {
+                background-color: #ecfdf5;
+                border: 1px solid #bbf7d0;
+                border-radius: 8px;
+                padding: 12px 14px;
+                margin-bottom: 16px;
+            }
+            .dh-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .dh-title-wrap {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .dh-title {
+                font-size: 12px;
+                font-weight: 700;
+                color: #065f46;
+            }
+            .badge-pct {
+                background-color: #059669;
                 color: #ffffff;
+                font-size: 9px;
+                font-weight: 800;
+                padding: 1px 5px;
+                border-radius: 3px;
+            }
+            .dh-val {
+                font-family: "JetBrains Mono", monospace;
+                font-size: 18px;
+                font-weight: 800;
+                color: #065f46;
+            }
+            .dh-sub-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 8px;
+                padding-top: 8px;
+                border-top: 1px solid #d1fae5;
+                font-size: 11px;
+                color: #047857;
+            }
+            .perks-list {
+                space-y: 6px;
+                font-size: 11px;
+                color: #64748b;
+            }
+            .perk-item {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                margin-bottom: 6px;
             }
         </style>
     </head>
@@ -56,446 +577,320 @@
         <div th:replace="~{fragments/header :: header}"></div>
 
         <main class="flex-1">
-            <!-- Top Navigation & Stepper Header -->
-            <div class="bg-white border-b border-border">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div class="flex items-center gap-3">
-                            <a
-                                th:href="@{/bookings/my-bookings}"
-                                class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 text-decoration-none transition-colors"
-                            >
-                                <svg
-                                    class="w-3.5 h-3.5"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path d="M19 12H5M12 5l-7 7 7 7" />
-                                </svg>
-                                My Bookings
-                            </a>
-                            <span class="text-slate-300">/</span>
-                            <h1 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900">Deposit Payment</h1>
-                        </div>
+            <div class="deposit-page-container">
+                <!-- Top Bar: Navigation & Stepper -->
+                <div class="deposit-top-bar">
+                    <div class="breadcrumb-group">
+                        <a th:href="@{/bookings/my-bookings}" class="breadcrumb-back"> ← My Bookings </a>
+                        <span class="breadcrumb-sep">/</span>
+                        <h1 class="page-title">Deposit Payment</h1>
+                    </div>
 
-                        <!-- 3-Step Breadcrumb Progress -->
-                        <div class="flex items-center gap-2 text-xs">
-                            <span class="inline-flex items-center gap-1 text-slate-500 font-medium">
-                                <svg
-                                    class="w-3.5 h-3.5 text-emerald-600"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2.5"
-                                >
-                                    <polyline points="20 6 9 17 4 12" />
-                                </svg>
-                                Schedule
-                            </span>
-                            <span class="text-slate-300">→</span>
-                            <span class="inline-flex items-center gap-1 text-slate-500 font-medium">
-                                <svg
-                                    class="w-3.5 h-3.5 text-emerald-600"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2.5"
-                                >
-                                    <polyline points="20 6 9 17 4 12" />
-                                </svg>
-                                Review
-                            </span>
-                            <span class="text-slate-300">→</span>
-                            <span
-                                class="inline-flex items-center gap-1.5 font-bold text-slate-900 bg-slate-100 px-3 py-1 rounded-full border border-slate-300"
+                    <!-- 3-Step Stepper -->
+                    <div class="stepper-steps">
+                        <span class="step-done">
+                            <svg
+                                class="w-3.5 h-3.5 text-emerald-600"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
                             >
-                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                                Deposit
-                            </span>
-                        </div>
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Schedule
+                        </span>
+                        <span style="color: #cbd5e1">—</span>
+                        <span class="step-done">
+                            <svg
+                                class="w-3.5 h-3.5 text-emerald-600"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                            >
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Review
+                        </span>
+                        <span style="color: #cbd5e1">—</span>
+                        <span class="step-active-pill"> Deposit </span>
                     </div>
                 </div>
-            </div>
 
-            <!-- Main Content Container -->
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-                <!-- Alert Banner -->
-                <div
-                    th:if="${error != null or param.error != null}"
-                    class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center gap-2"
-                >
-                    <svg
-                        class="w-4 h-4 text-red-600 flex-shrink-0"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                    >
-                        <circle cx="12" cy="12" r="10" />
-                        <line x1="12" y1="8" x2="12" y2="12" />
-                        <line x1="12" y1="16" x2="12.01" y2="16" />
-                    </svg>
-                    <span th:text="${error != null ? error : param.error}">Error message</span>
-                </div>
-
-                <div class="checkout-grid">
-                    <!-- Left Column (3 cols): Dedicated VNPay Payment Terminal -->
-                    <div class="lg:col-span-3 space-y-6">
-                        <div class="checkout-section space-y-6">
-                            <!-- Card Header & Reservation Holding Countdown -->
-                            <div
-                                class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-slate-100"
-                            >
-                                <div class="flex items-center gap-3">
-                                    <span
-                                        class="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-xs font-black tracking-tight inline-flex items-center"
-                                    >
-                                        <span style="color: #005baa">VN</span><span style="color: #ed1c24">PAY</span>
-                                    </span>
-                                    <div>
-                                        <h2 class="text-base font-bold text-slate-900 leading-tight">
-                                            VNPay Payment Gateway
-                                        </h2>
-                                    </div>
-                                </div>
-                                <div
-                                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-200/80 shadow-2xs self-start sm:self-auto"
-                                >
-                                    <span
-                                        >Holding vehicle:
-                                        <strong id="depositTimer" class="font-mono text-amber-950 font-bold"
-                                            >14:59</strong
-                                        ></span
-                                    >
-                                </div>
-                            </div>
-
-                            <!-- Deposit Due Callout Strip -->
-                            <div
-                                class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3 pb-4 border-b border-slate-100"
-                            >
-                                <div>
-                                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400"
-                                        >Security Deposit Required (50%)</span
-                                    >
-                                    <div class="text-3xl font-extrabold text-slate-900 tracking-tight mt-0.5 font-mono">
-                                        <span
-                                            th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}"
-                                            >675,000</span
-                                        >
-                                        <span class="text-lg font-bold text-slate-400">đ</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Accepted Payment Channels Strip -->
-                            <div class="flex flex-wrap items-center gap-2 text-xs text-slate-600">
-                                <span class="text-slate-400 text-[11px] font-medium mr-1">Accepted channels:</span>
+                <!-- 2-Column Content Layout -->
+                <div class="deposit-grid-layout">
+                    <!-- Left Column: Payment Method Selection -->
+                    <div class="surface-card">
+                        <!-- Title & Holding Timer -->
+                        <div class="card-header-row">
+                            <h2 class="card-title">Select payment method</h2>
+                            <div class="holding-badge">
+                                <span class="pulse-dot"></span>
                                 <span
-                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-700 bg-slate-50 border border-slate-200"
+                                    >Holding vehicle · <strong id="depositTimer" class="font-mono">14:43</strong></span
                                 >
-                                    <span class="font-bold text-[10px]" style="color: #005baa">VNPAY-QR</span>
-                                    <span>Mobile Banking</span>
-                                </span>
-                                <span
-                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-700 bg-slate-50 border border-slate-200"
-                                >
-                                    <span>40+ Domestic ATM Cards</span>
-                                </span>
-                                <span
-                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-700 bg-slate-50 border border-slate-200"
-                                >
-                                    <span>Visa · Mastercard · JCB</span>
-                                </span>
                             </div>
+                        </div>
 
-                            <!-- Precision Sandbox Virtual Test Card -->
-                            <div class="sandbox-card relative overflow-hidden">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center gap-2">
-                                        <div
-                                            style="
-                                                background-color: rgba(255, 255, 255, 0.1);
-                                                border: 1px solid rgba(255, 255, 255, 0.15);
-                                                border-radius: 6px;
-                                                padding: 3px 8px;
-                                            "
-                                            class="flex items-center gap-1.5"
-                                        >
-                                            <span
-                                                class="w-1.5 h-1.5 rounded-full"
-                                                style="background-color: #38bdf8"
-                                            ></span>
-                                            <span class="text-[10px] font-bold tracking-wider uppercase text-slate-200"
-                                                >Sandbox Test Card</span
-                                            >
+                        <!-- VNPay Payment Method Radio Card -->
+                        <div class="method-card">
+                            <div class="method-top">
+                                <input type="radio" checked disabled class="method-radio" />
+                                <div class="method-info">
+                                    <div class="method-title-line">
+                                        <div class="method-name-wrap">
+                                            <span class="method-name">VNPay payment gateway</span>
+                                            <span class="vnpay-badge">
+                                                <span style="color: #005baa">VN</span
+                                                ><span style="color: #ed1c24">PAY</span>
+                                            </span>
                                         </div>
-                                        <span class="text-xs font-semibold text-slate-300">NCB Bank</span>
+                                        <span class="badge-verified">Instant verification</span>
                                     </div>
-                                    <button
-                                        type="button"
-                                        title="Copy card number"
-                                        onclick="copyToClipboard('9704198526191432198', this)"
-                                        class="copy-pill flex items-center gap-1"
-                                    >
-                                        <svg
-                                            class="w-3.5 h-3.5"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2"
-                                        >
-                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                                        </svg>
-                                        <span>Copy Card No.</span>
-                                    </button>
-                                </div>
 
-                                <!-- Card Number Display -->
-                                <div class="mb-4">
-                                    <div class="text-[10px] uppercase tracking-wider text-slate-400 font-medium mb-1">
-                                        Card Number
+                                    <div class="channels-strip">
+                                        <span class="channel-pill">
+                                            <strong style="color: #005baa">VNPAY-QR</strong> Mobile app
+                                        </span>
+                                        <span class="channel-pill">40+ domestic ATM cards</span>
+                                        <span class="channel-pill">Visa · Mastercard · JCB</span>
                                     </div>
-                                    <div
-                                        class="font-mono text-lg sm:text-xl font-bold tracking-widest text-white flex items-center gap-2"
-                                    >
-                                        <span>9704</span>
-                                        <span>1985</span>
-                                        <span>2619</span>
-                                        <span>1432</span>
-                                        <span>198</span>
-                                    </div>
-                                </div>
-
-                                <!-- Card Footer Details -->
-                                <div class="grid grid-cols-3 gap-3 pt-3 border-t border-slate-700/60 text-xs">
-                                    <div>
-                                        <span
-                                            class="text-[10px] uppercase tracking-wider text-slate-400 block font-medium"
-                                            >Cardholder</span
-                                        >
-                                        <span class="font-mono font-bold text-slate-200 text-xs">NGUYEN VAN A</span>
-                                    </div>
-                                    <div>
-                                        <span
-                                            class="text-[10px] uppercase tracking-wider text-slate-400 block font-medium"
-                                            >Valid Thru</span
-                                        >
-                                        <span class="font-mono font-bold text-slate-200 text-xs">07/15</span>
-                                    </div>
-                                    <div>
-                                        <span
-                                            class="text-[10px] uppercase tracking-wider text-slate-400 block font-medium"
-                                            >Test OTP</span
-                                        >
-                                        <span class="font-mono font-extrabold text-xs" style="color: #34d399"
-                                            >123456</span
-                                        >
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Action Button for VNPay -->
-                            <div class="pt-2 space-y-3">
-                                <form th:action="@{/bookings/{id}/vnpay-payment(id=${booking.id})}" method="post">
-                                    <button
-                                        type="submit"
-                                        class="btn-vnpay-primary w-full py-3.5 px-6 text-sm font-bold shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
-                                    >
-                                        <span>Proceed to VNPay Payment</span>
-                                        <svg
-                                            class="w-4 h-4 ml-1"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2.5"
-                                        >
-                                            <path d="M5 12h14M12 5l7 7-7 7" />
-                                        </svg>
-                                    </button>
-                                </form>
-
-                                <div class="text-center">
-                                    <a
-                                        th:href="@{/bookings/my-bookings}"
-                                        class="text-xs text-slate-400 hover:text-slate-700 hover:underline transition-colors"
-                                    >
-                                        Pay later (Return to My Bookings)
-                                    </a>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Deposit Amount Summary Strip -->
+                        <div class="deposit-row-box">
+                            <div>
+                                <div class="deposit-label-main">Security deposit required (50%)</div>
+                                <div class="deposit-label-sub">Remaining balance will be settled at vehicle return</div>
+                            </div>
+                            <div
+                                class="deposit-val-large"
+                                th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"
+                            >
+                                720,000 đ
+                            </div>
+                        </div>
+
+                        <!-- DEMO Sandbox Test Credentials Callout Box -->
+                        <div class="sandbox-box">
+                            <div class="sandbox-header">
+                                <div class="sandbox-title-wrap">
+                                    <span class="demo-pill">DEMO</span>
+                                    <span class="sandbox-title">Test credentials</span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onclick="copyToClipboard('9704198526191432198', this)"
+                                    class="btn-copy-card"
+                                >
+                                    <svg
+                                        class="w-3 h-3"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                    >
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                                    </svg>
+                                    <span>Copy card number</span>
+                                </button>
+                            </div>
+                            <div class="sandbox-grid">
+                                <div>
+                                    <div class="sandbox-col-label">Bank</div>
+                                    <div class="sandbox-col-val">NCB Bank</div>
+                                </div>
+                                <div>
+                                    <div class="sandbox-col-label">Card number</div>
+                                    <div class="sandbox-col-val">9704 1985 2619 1432 198</div>
+                                </div>
+                                <div>
+                                    <div class="sandbox-col-label">Cardholder / Exp</div>
+                                    <div class="sandbox-col-val" style="font-weight: 600">NGUYEN VAN A · 07/15</div>
+                                </div>
+                                <div>
+                                    <div class="sandbox-col-label">Test OTP</div>
+                                    <div class="sandbox-col-val" style="color: #059669">123456</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <form th:action="@{/bookings/{id}/vnpay-payment(id=${booking.id})}" method="post">
+                            <button type="submit" class="btn-submit-vnpay">
+                                <span>Proceed to VNPay payment</span>
+                                <span>→</span>
+                            </button>
+                        </form>
+
+                        <a th:href="@{/bookings/my-bookings}" class="pay-later-link">
+                            Pay later (return to My Bookings)
+                        </a>
+
+                        <!-- Trust Strip -->
+                        <div class="trust-strip">
+                            <span>✓ 256-bit SSL encrypted</span>
+                            <span>✓ Instant confirmation</span>
+                            <span>✓ PCI-DSS compliant gateway</span>
+                        </div>
                     </div>
 
-                    <!-- Right Column (2 cols): Sticky Order Summary Sidebar -->
-                    <div class="lg:col-span-2">
-                        <div class="checkout-summary-box space-y-5 sticky top-20">
-                            <div class="flex items-center justify-between pb-4">
-                                <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wide">
-                                    Reservation Summary
-                                </h2>
-                                <span class="plate-badge text-xs" th:text="'#' + ${booking.id}">#1</span>
+                    <!-- Right Column: Reservation Summary & Pricing -->
+                    <div class="sidebar-cards-wrap">
+                        <!-- Card 1: Reservation Summary (Vehicle + Integrated Timeline) -->
+                        <div class="surface-card">
+                            <div class="card-header-row" style="margin-bottom: 14px">
+                                <h2 class="card-title">Reservation summary</h2>
+                                <span
+                                    class="plate-box"
+                                    style="font-size: 11px; padding: 1px 7px"
+                                    th:text="'#' + ${booking.id}"
+                                    >#12</span
+                                >
                             </div>
 
                             <!-- Vehicle Summary -->
-                            <div class="flex items-center gap-3.5 pb-4 border-b border-slate-100">
+                            <div class="vehicle-summary-top">
                                 <img
-                                    th:src="${booking.imageUrl}"
+                                    th:src="${booking.imageUrl != null and !booking.imageUrl.isBlank() ? booking.imageUrl : '/images/car-rental-logo.svg'}"
                                     th:alt="${booking.vehicleTypeName}"
-                                    class="w-20 h-16 rounded-xl object-cover bg-slate-100 flex-shrink-0 border border-slate-200"
+                                    class="sidebar-vehicle-img"
+                                    onerror="
+                                        this.onerror = null;
+                                        this.src = '/images/car-rental-logo.svg';
+                                    "
                                 />
-                                <div class="ml-2 space-y-1 min-w-0 flex-1">
+                                <div style="flex: 1; min-width: 0">
                                     <div
-                                        class="text-xs font-bold uppercase tracking-wider text-slate-500"
-                                        th:text="${booking.vehicleCategory}"
+                                        class="sidebar-car-meta"
+                                        th:text="${booking.vehicleCategory + ' · ' + booking.seats + ' seats'}"
                                     >
-                                        Sedan
+                                        Sedan · 5 seats
                                     </div>
-                                    <h3
-                                        class="font-bold text-slate-900 text-sm leading-tight truncate"
-                                        th:text="${booking.vehicleTypeName}"
+                                    <div class="sidebar-car-name" th:text="${booking.vehicleTypeName}">Accent 2024</div>
+                                    <div
+                                        class="plate-box"
+                                        th:text="${booking.licensePlate != null ? booking.licensePlate : '51K-333.44'}"
                                     >
-                                        Toyota Vios
-                                    </h3>
-                                    <div class="pt-1">
-                                        <span
-                                            class="plate-badge text-[11px]"
-                                            th:text="${booking.licensePlate != null ? booking.licensePlate : 'Auto-assigned'}"
-                                            >51A-123.45</span
-                                        >
+                                        51K-333.44
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Schedule Line Items -->
-                            <div class="space-y-3 text-xs">
-                                <div class="flex justify-between items-center text-slate-600">
-                                    <span class="flex items-center gap-1.5">
-                                        <svg
-                                            class="w-3.5 h-3.5 text-slate-400"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2"
+                            <!-- Timeline in Summary Card -->
+                            <div class="sidebar-timeline">
+                                <!-- Pickup -->
+                                <div class="sb-timeline-item">
+                                    <div class="sb-time-col">
+                                        <div
+                                            class="sb-time"
+                                            th:text="${#temporals.format(booking.pickupTime, 'HH:mm')}"
                                         >
-                                            <circle cx="12" cy="12" r="10" />
-                                            <polyline points="12 6 12 12 16 14" />
-                                        </svg>
-                                        Pickup
-                                    </span>
-                                    <span
-                                        class="font-bold text-slate-900"
-                                        th:text="${#temporals.format(booking.pickupTime, 'dd/MM/yyyy, HH:mm')}"
-                                        >23/10/2026, 09:00</span
-                                    >
-                                </div>
-                                <div class="flex justify-between items-center text-slate-600">
-                                    <span class="flex items-center gap-1.5">
-                                        <svg
-                                            class="w-3.5 h-3.5 text-slate-400"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2"
+                                            02:00
+                                        </div>
+                                        <div
+                                            class="sb-date"
+                                            th:text="${#temporals.format(booking.pickupTime, 'dd/MM/yyyy')}"
                                         >
-                                            <circle cx="12" cy="12" r="10" />
-                                            <polyline points="12 6 12 12 16 14" />
-                                        </svg>
-                                        Return
-                                    </span>
-                                    <span
-                                        class="font-bold text-slate-900"
-                                        th:text="${#temporals.format(booking.scheduledEndTime, 'dd/MM/yyyy, HH:mm')}"
-                                        >23/10/2026, 18:00</span
-                                    >
-                                </div>
-                                <div
-                                    class="flex justify-between items-center pt-3.5 border-t border-slate-100 text-slate-600"
-                                >
-                                    <span class="font-semibold text-slate-900 text-sm">Total Rental Fee</span>
-                                    <span class="font-extrabold text-slate-900 text-base">
-                                        <span
-                                            th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT')}"
-                                            >1,200,000</span
-                                        >
-                                        đ
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Deposit Due Card with clean vertical margins -->
-                            <div class="checkout-deposit-card my-1.5">
-                                <div class="checkout-deposit-top">
-                                    <div>
-                                        <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                                            <span>Deposit Due Now</span>
-                                            <span
-                                                class="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded"
-                                                >50%</span
-                                            >
+                                            24/10/2026
                                         </div>
                                     </div>
-                                    <div class="checkout-deposit-val">
-                                        <span
-                                            th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}"
-                                            >600,000</span
-                                        >
-                                        <span class="text-xs font-bold text-slate-500">đ</span>
+                                    <div class="sb-axis">
+                                        <span class="sb-dot-solid"></span>
+                                        <div class="sb-line"></div>
+                                    </div>
+                                    <div style="flex: 1">
+                                        <div class="sb-info-title">Pickup</div>
+                                        <div class="sb-info-sub">Central Depot</div>
                                     </div>
                                 </div>
-                                <div
-                                    class="pt-2.5 border-t border-slate-200/80 flex justify-between items-center text-xs text-slate-600"
-                                >
-                                    <span>Remaining balance on return</span>
-                                    <span class="font-bold text-slate-900 whitespace-nowrap">
-                                        <span
-                                            th:text="${#numbers.formatDecimal(booking.totalPrice - booking.depositAmount, 0, 'COMMA', 0, 'POINT')}"
-                                            >600,000</span
+
+                                <!-- Return -->
+                                <div class="sb-timeline-item" style="margin-top: 2px">
+                                    <div class="sb-time-col">
+                                        <div
+                                            class="sb-time"
+                                            th:text="${#temporals.format(booking.scheduledEndTime, 'HH:mm')}"
                                         >
-                                        đ
+                                            11:00
+                                        </div>
+                                        <div
+                                            class="sb-date"
+                                            th:text="${#temporals.format(booking.scheduledEndTime, 'dd/MM/yyyy')}"
+                                        >
+                                            24/10/2026
+                                        </div>
+                                    </div>
+                                    <div class="sb-axis">
+                                        <span class="sb-dot-hollow"></span>
+                                    </div>
+                                    <div style="flex: 1">
+                                        <div class="sb-info-title">Return</div>
+                                        <div
+                                            class="sb-info-sub"
+                                            th:with="diffHours=${T(java.time.Duration).between(booking.pickupTime, booking.scheduledEndTime).toHours()}"
+                                        >
+                                            <span th:text="${diffHours + ' hours rental'}">9 hours rental</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Cost Breakdown & Perks -->
+                        <div class="surface-card">
+                            <!-- Total Rental Fee -->
+                            <div class="cost-row">
+                                <span class="cost-label">Total rental fee</span>
+                                <span
+                                    class="cost-val"
+                                    th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"
+                                >
+                                    1,440,000 đ
+                                </span>
+                            </div>
+
+                            <!-- Deposit Highlight Box -->
+                            <div class="deposit-highlight-card">
+                                <div class="dh-top">
+                                    <div class="dh-title-wrap">
+                                        <span class="dh-title">Deposit due now</span>
+                                        <span class="badge-pct">50%</span>
+                                    </div>
+                                    <div
+                                        class="dh-val"
+                                        th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"
+                                    >
+                                        720,000 đ
+                                    </div>
+                                </div>
+                                <div class="dh-sub-row">
+                                    <span>Remaining balance on return</span>
+                                    <span
+                                        style="font-family: &quot;JetBrains Mono&quot;, monospace; font-weight: 700"
+                                        th:text="${#numbers.formatDecimal(booking.totalPrice - booking.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"
+                                    >
+                                        720,000 đ
                                     </span>
                                 </div>
                             </div>
 
-                            <!-- Operational Trust Perks -->
-                            <div class="pt-3.5 space-y-2.5 text-xs text-slate-500">
-                                <div class="flex items-center gap-2">
-                                    <svg
-                                        class="w-4 h-4 text-emerald-600 flex-shrink-0"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2.5"
-                                    >
-                                        <polyline points="20 6 9 17 4 12" />
-                                    </svg>
-                                    <span>100% Bao Viet Insurance Coverage</span>
+                            <!-- Perks List -->
+                            <div class="perks-list">
+                                <div class="perk-item">
+                                    <span style="color: #059669; font-weight: 700">✓</span>
+                                    <span>100% Bao Viet Insurance coverage</span>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <svg
-                                        class="w-4 h-4 text-emerald-600 flex-shrink-0"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2.5"
-                                    >
-                                        <polyline points="20 6 9 17 4 12" />
-                                    </svg>
+                                <div class="perk-item">
+                                    <span style="color: #059669; font-weight: 700">✓</span>
                                     <span>Central Depot Hub: 120 Trường Chinh, Tân Bình</span>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <svg
-                                        class="w-4 h-4 text-emerald-600 flex-shrink-0"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2.5"
-                                    >
-                                        <polyline points="20 6 9 17 4 12" />
-                                    </svg>
+                                <div class="perk-item">
+                                    <span style="color: #059669; font-weight: 700">✓</span>
                                     <span>Free cancellation up to 3 days before pickup</span>
                                 </div>
                             </div>
@@ -528,18 +923,18 @@
             function showCopiedFeedback(btn) {
                 const originalHTML = btn.innerHTML;
                 btn.innerHTML = `
-                    <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                    <span style="color: #34d399;">Copied!</span>
-                `;
+                <svg class="w-3 h-3 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span style="color: #059669; font-weight: 700;">Copied!</span>
+            `;
                 setTimeout(() => {
                     btn.innerHTML = originalHTML;
                 }, 1500);
             }
 
             // 15-Minute Countdown Timer
-            let timeLeft = 15 * 60;
+            let timeLeft = 14 * 60 + 43;
             const timerEl = document.getElementById("depositTimer");
             if (timerEl) {
                 const timerInterval = setInterval(() => {
