@@ -4,8 +4,8 @@ import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.ContractDTO;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.entity.ContractTemplateStatus;
-import com.crms.mvc.repository.VehicleRepository;
 import com.crms.mvc.service.BookingService;
+import com.crms.mvc.service.VehicleService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -26,12 +26,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AdminBookingContractViewTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private BookingService bookingService;
-    @MockitoBean private VehicleRepository vehicleRepository;
+    @MockitoBean private VehicleService vehicleService;
 
     @Test
     void confirmedBookingWithoutPdfOffersRetry() throws Exception {
         when(bookingService.getBookingDetailForAdmin(42L)).thenReturn(confirmedBooking());
-        when(vehicleRepository.findByStatus("available")).thenReturn(List.of());
+        when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
 
         MockHttpSession staff = new MockHttpSession();
         staff.setAttribute("employeeId", 2L);

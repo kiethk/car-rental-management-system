@@ -174,7 +174,11 @@ public class VehicleServiceImpl implements VehicleService {
         vehicle.setYear(dto.getYear());
         vehicle.setOdometer(dto.getOdometer() != null ? dto.getOdometer() : 0);
         vehicle.setRegistrationExpiry(dto.getRegistrationExpiry());
-        vehicle.setStatus(dto.getStatus() != null ? dto.getStatus().trim().toLowerCase() : "available");
+        String status = dto.getStatus() != null ? dto.getStatus().trim().toLowerCase() : "available";
+        if (!"available".equals(status) && !"maintenance".equals(status)) {
+            throw new IllegalArgumentException("Invalid vehicle status: " + status + ". Allowed: 'available', 'maintenance'");
+        }
+        vehicle.setStatus(status);
         Vehicle saved = vehicleRepository.save(vehicle);
 
         // First plate of the vehicle's history; later changes go through LicensePlateService.changePlate.
@@ -203,7 +207,11 @@ public class VehicleServiceImpl implements VehicleService {
             throw new IllegalStateException("Cannot change status of vehicle while currently rented!");
         }
         if (dto.getStatus() != null) {
-            vehicle.setStatus(dto.getStatus().trim().toLowerCase());
+            String newStatus = dto.getStatus().trim().toLowerCase();
+            if (!"available".equals(newStatus) && !"maintenance".equals(newStatus)) {
+                throw new IllegalArgumentException("Invalid vehicle status: " + newStatus + ". Allowed: 'available', 'maintenance'");
+            }
+            vehicle.setStatus(newStatus);
         }
 
         // The plate is not edited here: changing it creates a new plate record (LicensePlateService.changePlate).
@@ -219,6 +227,10 @@ public class VehicleServiceImpl implements VehicleService {
 
         if ("rented".equalsIgnoreCase(vehicle.getStatus())) {
             throw new IllegalStateException("Cannot change status of vehicle while currently rented!");
+        }
+
+        if (newStatus == null || (!"available".equalsIgnoreCase(newStatus.trim()) && !"maintenance".equalsIgnoreCase(newStatus.trim()))) {
+            throw new IllegalArgumentException("Invalid vehicle status: " + newStatus + ". Only 'available' and 'maintenance' are allowed.");
         }
 
         vehicle.setStatus(newStatus.trim().toLowerCase());
@@ -245,6 +257,18 @@ public class VehicleServiceImpl implements VehicleService {
         }
         vehicle.setRegistrationExpiry(registrationExpiry);
         vehicleRepository.save(vehicle);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Vehicle> findByVehicleTypeIdWithDetails(Long typeId) {
+        return vehicleRepository.findByVehicleTypeIdWithDetails(typeId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Vehicle> findByStatusWithDetails(String status) {
+        return vehicleRepository.findByStatusWithDetails(status);
     }
 
     @Override

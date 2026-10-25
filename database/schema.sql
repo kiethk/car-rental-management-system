@@ -195,7 +195,7 @@ CREATE TABLE payments (
     transaction_code VARCHAR(100),
     payment_type VARCHAR(40) NOT NULL,
     amount NUMERIC(14,2) NOT NULL,
-    payment_method VARCHAR(30) NOT NULL DEFAULT 'VIETQR',
+    payment_method VARCHAR(30) NOT NULL DEFAULT 'VNPAY',
     status VARCHAR(30) NOT NULL,
     paid_at TIMESTAMP WITH TIME ZONE,
     CHECK (status IN ('pending','paid','failed')),

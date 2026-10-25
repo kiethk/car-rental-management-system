@@ -38,25 +38,25 @@
         Inspections & Maintenance
     </a>
 
-    <!-- Promotions -->
-    <a th:href="@{/admin/promotions}"
-       th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'promotions'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
-        Promotions & Vouchers
-    </a>
-    <a th:href="@{/admin/issues}"
-       th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'issues'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
-        Incidents & Fines
-    </a>
+    <!-- Promotions & Incidents (Coming soon) -->
+    <div class="list-group-item py-3 border-bottom text-muted d-flex align-items-center justify-content-between" style="opacity: 0.65; cursor: not-allowed;" title="Chức năng đang phát triển theo Roadmap">
+        <span>Promotions & Vouchers</span>
+        <span class="badge badge-light border text-muted" style="font-size: 10px;">Coming soon</span>
+    </div>
+    <div class="list-group-item py-3 border-bottom text-muted d-flex align-items-center justify-content-between" style="opacity: 0.65; cursor: not-allowed;" title="Chức năng đang phát triển theo Roadmap">
+        <span>Incidents & Fines</span>
+        <span class="badge badge-light border text-muted" style="font-size: 10px;">Coming soon</span>
+    </div>
 
     <!-- Driving License Review -->
     <a th:href="@{/admin/licenses}"
        th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'licenses'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
         Driving License Review
     </a>
-    <a th:href="@{/admin/accounts}"
-       th:class="'list-group-item list-group-item-action py-3 border-bottom ' + (${active == 'accounts'} ? 'bg-surface-2 font-weight-bold text-navy' : 'text-muted-foreground')">
-        Account Management
-    </a>
+    <div class="list-group-item py-3 border-bottom text-muted d-flex align-items-center justify-content-between" style="opacity: 0.65; cursor: not-allowed;" title="Chức năng đang phát triển theo Roadmap">
+        <span>Account Management</span>
+        <span class="badge badge-light border text-muted" style="font-size: 10px;">Coming soon</span>
+    </div>
 
     <div class="list-group-item bg-light p-3 text-center border-0">
         <a th:href="@{/}" class="btn btn-outline-secondary btn-sm btn-block">Customer View</a>

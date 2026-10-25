@@ -75,7 +75,7 @@ public class VnPayServiceImpl implements VnPayService {
 
             String vnp_SecureHash = VnPayConfig.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
             String paymentUrl = vnPayConfig.getPayUrl() + "?" + query.toString() + "&vnp_SecureHash=" + vnp_SecureHash;
-            log.info("Generated VNPay deposit payment URL for bookingId {}: {}", booking.getId(), paymentUrl);
+            log.info("Generated VNPay deposit payment URL for bookingId {}", booking.getId());
             return paymentUrl;
         } catch (Exception e) {
             log.error("Failed to generate VNPay payment URL for bookingId: {}", booking.getId(), e);
@@ -118,7 +118,7 @@ public class VnPayServiceImpl implements VnPayService {
             String calculatedHash = VnPayConfig.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
             boolean matches = calculatedHash.equalsIgnoreCase(vnp_SecureHash);
             if (!matches) {
-                log.warn("VNPay signature mismatch: received={}, calculated={}, rawData={}", vnp_SecureHash, calculatedHash, hashData);
+                log.warn("VNPay signature mismatch: invalid signature received");
             }
             return matches;
         } catch (Exception e) {
@@ -127,4 +127,3 @@ public class VnPayServiceImpl implements VnPayService {
         }
     }
 }
-

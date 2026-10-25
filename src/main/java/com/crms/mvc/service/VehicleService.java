@@ -41,5 +41,9 @@ public interface VehicleService {
     /** Registration (inspection sticker) belongs to the vehicle, so it survives plate changes. */
     void updateRegistrationExpiry(Long id, LocalDate registrationExpiry);
 
+    List<Vehicle> findByVehicleTypeIdWithDetails(Long typeId);
+
+    List<Vehicle> findByStatusWithDetails(String status);
+
     void delete(Long id);
 }
