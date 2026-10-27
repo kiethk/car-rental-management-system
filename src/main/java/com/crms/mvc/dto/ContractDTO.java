@@ -1,6 +1,7 @@
 package com.crms.mvc.dto;
 
 import com.crms.mvc.entity.Contract;
+import com.crms.mvc.util.DateTimeUtils;
 
 import java.io.Serializable;
 import java.time.OffsetDateTime;
@@ -19,11 +20,11 @@ public class ContractDTO implements Serializable {
         ContractDTO dto = new ContractDTO();
         dto.setId(contract.getId());
         dto.setContractNumber(contract.getContractNumber());
-        dto.setAcceptedAt(contract.getAcceptedAt());
+        dto.setAcceptedAt(DateTimeUtils.toVietnamTime(contract.getAcceptedAt()));
         dto.setAcceptedIp(contract.getAcceptedIp());
         dto.setIssued(contract.isIssued());
-        dto.setIssuedAt(contract.getIssuedAt());
-        dto.setEmailedAt(contract.getEmailedAt());
+        dto.setIssuedAt(DateTimeUtils.toVietnamTime(contract.getIssuedAt()));
+        dto.setEmailedAt(DateTimeUtils.toVietnamTime(contract.getEmailedAt()));
         dto.setTerms(ContractTemplateDTO.fromEntity(contract.getTemplate()));
         return dto;
     }

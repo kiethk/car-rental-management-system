@@ -1,7 +1,7 @@
 package com.crms.mvc.controller;
 
 import com.crms.mvc.entity.Booking;
-import com.crms.mvc.repository.BookingRepository;
+import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.PaymentService;
 import com.crms.mvc.service.VnPayService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 @Controller
 public class VnPayController {
@@ -25,16 +25,15 @@ public class VnPayController {
 
     private final VnPayService vnPayService;
     private final PaymentService paymentService;
-    private final BookingRepository bookingRepository;
+    private final BookingService bookingService;
 
-    public VnPayController(VnPayService vnPayService, PaymentService paymentService, BookingRepository bookingRepository) {
+    public VnPayController(VnPayService vnPayService, PaymentService paymentService, BookingService bookingService) {
         this.vnPayService = vnPayService;
         this.paymentService = paymentService;
-        this.bookingRepository = bookingRepository;
+        this.bookingService = bookingService;
     }
 
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    @org.springframework.web.bind.annotation.RequestMapping(value = "/bookings/{id}/vnpay-payment", method = {org.springframework.web.bind.annotation.RequestMethod.POST, org.springframework.web.bind.annotation.RequestMethod.GET})
+    @PostMapping("/bookings/{id}/vnpay-payment")
     public String initiateVnPayPayment(@PathVariable("id") Long bookingId,
                                       HttpServletRequest request,
                                       HttpSession session,
@@ -44,7 +43,7 @@ public class VnPayController {
             return "redirect:/login";
         }
 
-        Booking booking = bookingRepository.findById(bookingId).orElse(null);
+        Booking booking = bookingService.findEntityById(bookingId).orElse(null);
         if (booking == null) {
             ra.addFlashAttribute("error", "Booking not found.");
             return "redirect:/bookings/my-bookings";
@@ -77,9 +76,13 @@ public class VnPayController {
     @GetMapping("/payment/vnpay-return")
     public String handleVnPayReturn(@RequestParam Map<String, String> allParams,
                                     RedirectAttributes ra) {
-        log.info("Received VNPay callback params: {}", allParams);
-
         String vnp_TxnRef = allParams.get("vnp_TxnRef");
+        String responseCode = allParams.get("vnp_ResponseCode");
+        String transactionNo = allParams.get("vnp_TransactionNo");
+        String amountStr = allParams.get("vnp_Amount");
+
+        log.info("Received VNPay callback: TxnRef={}, ResponseCode={}, TxnNo={}", vnp_TxnRef, responseCode, transactionNo);
+
         if (vnp_TxnRef == null || vnp_TxnRef.isEmpty()) {
             ra.addFlashAttribute("error", "Invalid VNPay payment response: missing transaction reference.");
             return "redirect:/";
@@ -102,15 +105,34 @@ public class VnPayController {
             return "redirect:/bookings/" + bookingId + "/pay-deposit";
         }
 
-        String responseCode = allParams.get("vnp_ResponseCode");
-        String transactionNo = allParams.get("vnp_TransactionNo");
-
         if ("00".equals(responseCode)) {
             try {
-                paymentService.processDeposit(bookingId);
+                Booking booking = bookingService.findEntityById(bookingId).orElse(null);
+                if (booking == null) {
+                    ra.addFlashAttribute("error", "Booking not found: " + bookingId);
+                    return "redirect:/";
+                }
+
+                if (!"pending_payment".equalsIgnoreCase(booking.getStatus()) && !"confirmed".equalsIgnoreCase(booking.getStatus())) {
+                    ra.addFlashAttribute("error", "Booking is not in pending_payment status (status: " + booking.getStatus() + ").");
+                    return "redirect:/bookings/" + bookingId;
+                }
+
+                // Verify returned amount (VNPay amount is in cents, multiplied by 100)
+                if (amountStr != null) {
+                    long returnedAmount = Long.parseLong(amountStr);
+                    long expectedAmount = booking.getDepositAmount().multiply(BigDecimal.valueOf(100)).longValue();
+                    if (returnedAmount != expectedAmount) {
+                        log.error("VNPay amount mismatch for booking {}: expected={}, received={}", bookingId, expectedAmount, returnedAmount);
+                        ra.addFlashAttribute("error", "Payment amount mismatch.");
+                        return "redirect:/bookings/" + bookingId + "/pay-deposit";
+                    }
+                }
+
+                paymentService.processDeposit(bookingId, transactionNo, "VNPAY");
                 log.info("Successfully processed deposit for booking {} via VNPay (Txn: {})", bookingId, transactionNo);
-                return "redirect:/bookings/" + bookingId + "/success?vnp_TxnRef=" + vnp_TxnRef + 
-                       (transactionNo != null ? "&vnp_TransactionNo=" + transactionNo : "");
+                return "redirect:/bookings/" + bookingId + "/success?vnp_TxnRef=" + vnp_TxnRef +
+                        (transactionNo != null ? "&vnp_TransactionNo=" + transactionNo : "");
             } catch (Exception e) {
                 log.error("Error finalizing deposit for booking {}", bookingId, e);
                 ra.addFlashAttribute("error", "Payment succeeded on VNPay but failed to update booking: " + e.getMessage());
@@ -125,4 +147,3 @@ public class VnPayController {
         }
     }
 }
-

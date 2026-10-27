@@ -3,7 +3,7 @@ package com.crms.mvc.controller;
 import com.crms.mvc.dto.LicensePlateOverviewDTO;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleInspection;
-import com.crms.mvc.repository.BookingRepository;
+import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.LicensePlateService;
 import com.crms.mvc.service.VehicleInspectionService;
 import com.crms.mvc.service.VehicleService;
@@ -19,16 +19,16 @@ public class AdminDashboardController {
     private final VehicleService vehicleService;
     private final VehicleInspectionService vehicleInspectionService;
     private final LicensePlateService licensePlateService;
-    private final BookingRepository bookingRepository;
+    private final BookingService bookingService;
 
     public AdminDashboardController(VehicleService vehicleService,
                                     VehicleInspectionService vehicleInspectionService,
                                     LicensePlateService licensePlateService,
-                                    BookingRepository bookingRepository) {
+                                    BookingService bookingService) {
         this.vehicleService = vehicleService;
         this.vehicleInspectionService = vehicleInspectionService;
         this.licensePlateService = licensePlateService;
-        this.bookingRepository = bookingRepository;
+        this.bookingService = bookingService;
     }
 
     @GetMapping({"/admin", "/admin/dashboard"})
@@ -44,7 +44,7 @@ public class AdminDashboardController {
         long passedInspections = inspections.stream().filter(i -> "passed".equalsIgnoreCase(i.getStatus())).count();
         long failedInspections = inspections.stream().filter(i -> "failed".equalsIgnoreCase(i.getStatus())).count();
 
-        long totalBookings = bookingRepository.count();
+        long totalBookings = bookingService.countTotalBookings();
 
         List<LicensePlateOverviewDTO> plates = licensePlateService.findAllOverviews();
         long expiringSoonCount = plates.stream().filter(p -> "EXPIRING_SOON".equals(p.getExpiryStatus())).count();

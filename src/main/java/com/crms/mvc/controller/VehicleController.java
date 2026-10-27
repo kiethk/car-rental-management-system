@@ -1,10 +1,9 @@
 package com.crms.mvc.controller;
 
-import com.crms.mvc.dto.VehicleDTO;
 import com.crms.mvc.dto.PhysicalCarItemDTO;
+import com.crms.mvc.dto.VehicleDTO;
 import com.crms.mvc.dto.VehicleSearchFilterDTO;
 import com.crms.mvc.entity.Vehicle;
-import com.crms.mvc.repository.VehicleRepository;
 import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.service.VehicleService;
 import com.crms.mvc.service.VehicleTypeService;
@@ -23,16 +22,13 @@ public class VehicleController {
 
     private final VehicleService vehicleService;
     private final VehicleTypeService vehicleTypeService;
-    private final VehicleRepository vehicleRepository;
     private final ContractTemplateService contractTemplateService;
 
     public VehicleController(VehicleService vehicleService,
                              VehicleTypeService vehicleTypeService,
-                             VehicleRepository vehicleRepository,
                              ContractTemplateService contractTemplateService) {
         this.vehicleService = vehicleService;
         this.vehicleTypeService = vehicleTypeService;
-        this.vehicleRepository = vehicleRepository;
         this.contractTemplateService = contractTemplateService;
     }
 
@@ -55,7 +51,7 @@ public class VehicleController {
         model.addAttribute("contractTerms", contractTemplateService.getActiveTemplate());
 
         if (vehicle.getVehicleTypeId() != null) {
-            List<Vehicle> cars = vehicleRepository.findByVehicleTypeIdWithDetails(vehicle.getVehicleTypeId());
+            List<Vehicle> cars = vehicleService.findByVehicleTypeIdWithDetails(vehicle.getVehicleTypeId());
             List<PhysicalCarItemDTO> physicalCars = cars.stream().map(v -> new PhysicalCarItemDTO(
                     v.getId(),
                     v.getLicensePlate() != null ? v.getLicensePlate().getPlate() : "Unassigned",

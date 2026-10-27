@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface VehicleInspectionRepository extends JpaRepository<VehicleInspection, Long> {
-    @Query("SELECT vi FROM VehicleInspection vi JOIN FETCH vi.vehicle v JOIN FETCH v.vehicleType vt LEFT JOIN FETCH v.licensePlate lp ORDER BY vi.scheduledAt DESC")
+    @Query("SELECT vi FROM VehicleInspection vi JOIN FETCH vi.vehicle v JOIN FETCH v.vehicleType vt LEFT JOIN FETCH v.currentPlates lp ORDER BY vi.scheduledAt DESC")
     List<VehicleInspection> findAllByOrderByScheduledAtDesc();
 
-    @Query("SELECT vi FROM VehicleInspection vi JOIN FETCH vi.vehicle v JOIN FETCH v.vehicleType vt LEFT JOIN FETCH v.licensePlate lp WHERE vi.id = :id")
+    @Query("SELECT vi FROM VehicleInspection vi JOIN FETCH vi.vehicle v JOIN FETCH v.vehicleType vt LEFT JOIN FETCH v.currentPlates lp WHERE vi.id = :id")
     Optional<VehicleInspection> findByIdWithDetails(@Param("id") Long id);
 
     List<VehicleInspection> findByVehicleIdOrderByScheduledAtDesc(Long vehicleId);

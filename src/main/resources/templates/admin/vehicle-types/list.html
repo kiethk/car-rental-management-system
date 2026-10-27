@@ -59,6 +59,23 @@
                 </div>
             </div>
 
+            <!-- Search + sort + page size -->
+            <form method="get" th:action="@{/admin/vehicle-types}" class="d-flex flex-wrap align-items-center mb-3" style="gap: 8px;">
+                <input type="search" name="keyword" th:value="${query.keyword}" class="form-control form-control-sm rounded-lg"
+                       style="max-width: 340px;" placeholder="Search model, brand or category..." aria-label="Search vehicle models">
+                <button type="submit" class="btn btn-navy btn-sm font-weight-bold rounded-lg px-3">Search</button>
+                <a th:if="${query.keyword != null}" th:href="@{/admin/vehicle-types}" class="small text-muted">Clear</a>
+
+                <span class="ml-md-auto small font-weight-bold text-muted">Sort</span>
+                <select name="sort" class="form-control form-control-sm rounded-lg" style="width: auto;" onchange="this.form.submit()" aria-label="Sort vehicle models">
+                    <option value="name_asc" th:selected="${query.sort == 'name_asc'}">Name A → Z</option>
+                    <option value="name_desc" th:selected="${query.sort == 'name_desc'}">Name Z → A</option>
+                </select>
+                <select name="size" class="form-control form-control-sm rounded-lg" style="width: auto;" onchange="this.form.submit()" aria-label="Models per page">
+                    <option th:each="n : ${query.pageSizes}" th:value="${n}" th:text="${n} + ' / page'" th:selected="${query.size == n}">10 / page</option>
+                </select>
+            </form>
+
             <!-- Table Card -->
             <div class="card border-0 shadow-sm rounded-xl overflow-hidden bg-white">
                 <div class="table-responsive">
@@ -110,15 +127,24 @@
                                            class="admin-btn btn-soft-primary">Edit</a>
                                         <form method="post" th:action="@{/admin/vehicle-types/{id}/delete(id=${vt.id})}" class="m-0"
                                               onsubmit="return confirm('Are you sure you want to delete this vehicle model? Deletion will be rejected if vehicles reference it.');">
+                                            <input type="hidden" name="returnTo" th:value="${listUrl}" />
                                             <button type="submit" class="admin-btn btn-soft-danger">Delete</button>
                                         </form>
                                     </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(vehicleTypes)}">
+                                <td colspan="8" class="text-center py-4 text-muted">
+                                    <span th:text="${query.keyword != null} ? 'No vehicle model matches your search.' : 'No vehicle models yet.'">No vehicle models yet.</span>
+                                    <a th:if="${query.keyword != null}" th:href="@{/admin/vehicle-types}" class="ml-1">Show all models</a>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            <div th:replace="~{fragments/pagination :: pager(${nav})}"></div>
         </div>
     </div>
 </main>

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -40,6 +41,7 @@ public class VehicleFormDTO {
     private Integer odometer = 0;
 
     @NotBlank(message = "Vehicle status cannot be blank")
+    @Pattern(regexp = "^(available|maintenance)$", message = "Vehicle status must be 'available' or 'maintenance'")
     private String status = "available";
 
     public VehicleFormDTO() {}
@@ -53,8 +55,8 @@ public class VehicleFormDTO {
         if (vehicle.getLicensePlate() != null) {
             dto.setPlate(vehicle.getLicensePlate().getPlate());
             dto.setProvince(vehicle.getLicensePlate().getProvince());
-            dto.setRegistrationExpiry(vehicle.getLicensePlate().getRegistrationExpiry());
         }
+        dto.setRegistrationExpiry(vehicle.getRegistrationExpiry());
         dto.setColor(vehicle.getColor());
         dto.setYear(vehicle.getYear());
         dto.setOdometer(vehicle.getOdometer());

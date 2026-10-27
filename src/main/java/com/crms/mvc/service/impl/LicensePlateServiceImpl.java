@@ -1,5 +1,7 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.dto.LicensePlateChangeDTO;
+import com.crms.mvc.dto.LicensePlateDTO;
 import com.crms.mvc.dto.LicensePlateOverviewDTO;
 import com.crms.mvc.entity.LicensePlate;
 import com.crms.mvc.entity.Vehicle;
@@ -9,9 +11,9 @@ import com.crms.mvc.service.LicensePlateService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 
 @Service
 @Transactional
@@ -21,7 +23,7 @@ public class LicensePlateServiceImpl implements LicensePlateService {
     private final VehicleRepository vehicleRepository;
 
     public LicensePlateServiceImpl(LicensePlateRepository licensePlateRepository,
-                                  VehicleRepository vehicleRepository) {
+                                   VehicleRepository vehicleRepository) {
         this.licensePlateRepository = licensePlateRepository;
         this.vehicleRepository = vehicleRepository;
     }
@@ -29,61 +31,67 @@ public class LicensePlateServiceImpl implements LicensePlateService {
     @Override
     @Transactional(readOnly = true)
     public List<LicensePlateOverviewDTO> findAllOverviews() {
-        List<LicensePlate> plates = licensePlateRepository.findAllByOrderByIdAsc();
-        return plates.stream().map(lp -> {
-            Optional<Vehicle> vOpt = vehicleRepository.findByLicensePlateId(lp.getId());
-            Long vehicleId = vOpt.map(Vehicle::getId).orElse(null);
-            String vehicleName = vOpt.map(v -> v.getVehicleType() != null 
-                    ? v.getVehicleType().getBrand() + " " + v.getVehicleType().getName()
-                    : "Unknown Model").orElse("Unassigned");
-            String vehicleStatus = vOpt.map(Vehicle::getStatus).orElse("unassigned");
-
+        return vehicleRepository.findAllWithDetails().stream().map(vehicle -> {
+            LicensePlate current = vehicle.getLicensePlate();
             return new LicensePlateOverviewDTO(
-                    lp.getId(),
-                    lp.getPlate(),
-                    lp.getProvince(),
-                    lp.getRegistrationExpiry(),
-                    vehicleId,
-                    vehicleName,
-                    vehicleStatus
-            );
+                    vehicle.getId(),
+                    vehicle.getVehicleType().getDisplayName(),
+                    vehicle.getStatus(),
+                    current != null ? current.getPlate() : null,
+                    current != null ? current.getProvince() : null,
+                    current != null ? current.getValidFrom() : null,
+                    vehicle.getRegistrationExpiry());
         }).toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<LicensePlate> findById(Long id) {
-        return licensePlateRepository.findById(id);
+    public List<LicensePlateDTO> findHistory(Long vehicleId) {
+        return licensePlateRepository.findByVehicleIdOrderByValidFromDesc(vehicleId).stream()
+                .map(LicensePlateDTO::fromEntity)
+                .toList();
     }
 
     @Override
-    public LicensePlate update(Long id, String province, LocalDate registrationExpiry) {
-        LicensePlate lp = licensePlateRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("License plate not found for ID: " + id));
-        if (province != null) {
-            lp.setProvince(province.trim());
+    public LicensePlateDTO changePlate(Long vehicleId, LicensePlateChangeDTO form) {
+        Vehicle vehicle = vehicleRepository.findByIdWithDetails(vehicleId)
+                .orElseThrow(() -> new NoSuchElementException("Vehicle not found: " + vehicleId));
+        LicensePlate current = vehicle.getLicensePlate();
+        String newPlate = form.getPlate().trim().toUpperCase();
+
+        if (current != null) {
+            if ("rented".equalsIgnoreCase(vehicle.getStatus())) {
+                throw new IllegalStateException("Cannot change the plate while the vehicle is rented out");
+            }
+            if (current.getPlate().equalsIgnoreCase(newPlate)) {
+                throw new IllegalArgumentException("Plate " + newPlate + " is already on this vehicle");
+            }
         }
-        if (registrationExpiry != null) {
-            lp.setRegistrationExpiry(registrationExpiry);
+        if (licensePlateRepository.existsByPlateIgnoreCase(newPlate)) {
+            throw new IllegalArgumentException("Plate " + newPlate
+                    + " has already been issued to a vehicle; a retired plate cannot be reused");
         }
-        return licensePlateRepository.save(lp);
+
+        OffsetDateTime now = OffsetDateTime.now();
+        if (current != null) {
+            current.setValidTo(now);
+            // Flush first: the database allows only one open-ended plate per vehicle at any moment.
+            licensePlateRepository.saveAndFlush(current);
+        }
+
+        LicensePlate next = new LicensePlate();
+        next.setVehicle(vehicle);
+        next.setPlate(newPlate);
+        next.setProvince(form.getProvince() != null && !form.getProvince().isBlank() ? form.getProvince().trim() : null);
+        next.setValidFrom(now);
+        LicensePlate saved = licensePlateRepository.save(next);
+        vehicle.setCurrentPlate(saved);
+        return LicensePlateDTO.fromEntity(saved);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<LicensePlate> findUnassignedPlates() {
-        return licensePlateRepository.findUnassignedPlates();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean isPlateExists(String plate, Long excludeId) {
-        if (plate == null || plate.isBlank()) return false;
-        String clean = plate.trim();
-        if (excludeId == null) {
-            return licensePlateRepository.existsByPlateIgnoreCase(clean);
-        } else {
-            return licensePlateRepository.existsByPlateIgnoreCaseAndIdNot(clean, excludeId);
-        }
+    public boolean isPlateExists(String plate) {
+        return plate != null && !plate.isBlank() && licensePlateRepository.existsByPlateIgnoreCase(plate.trim());
     }
 }

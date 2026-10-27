@@ -26,7 +26,6 @@ class VehicleControllerTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private VehicleService vehicleService;
     @MockitoBean private VehicleTypeService vehicleTypeService;
-    @MockitoBean private com.crms.mvc.repository.VehicleRepository vehicleRepository;
     @MockitoBean private ContractTemplateService contractTemplateService;
 
     private final VehicleDTO vehicle = new VehicleDTO(1L, "51A-123.45", "Toyota", "Vios", 2025, new BigDecimal("180000"), "available");

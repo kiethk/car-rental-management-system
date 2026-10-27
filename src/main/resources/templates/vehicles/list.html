@@ -75,7 +75,7 @@
                     <a th:href="@{/vehicles}" class="text-muted small text-decoration-none">Reset</a>
                 </div>
 
-                <form method="get" th:action="@{/vehicles}">
+                <form method="get" th:action="@{/vehicles}" id="filterForm">
                     <!-- Keyword search -->
                     <div class="form-group mb-3">
                         <label class="small font-weight-bold text-muted mb-1">Search Keyword</label>
@@ -125,17 +125,6 @@
                         </select>
                     </div>
 
-                    <!-- Sort By -->
-                    <div class="form-group mb-4">
-                        <label class="small font-weight-bold text-muted mb-1">Sort By</label>
-                        <select name="sortBy" class="form-control form-control-sm rounded-lg">
-                            <option value="price_asc" th:selected="${filter.sortBy == 'price_asc'}">Price: Low to High</option>
-                            <option value="price_desc" th:selected="${filter.sortBy == 'price_desc'}">Price: High to Low</option>
-                            <option value="year_desc" th:selected="${filter.sortBy == 'year_desc'}">Year: Newest</option>
-                            <option value="name_asc" th:selected="${filter.sortBy == 'name_asc'}">Name: A - Z</option>
-                        </select>
-                    </div>
-
                     <button type="submit" class="btn btn-navy btn-sm btn-block py-2 font-weight-bold shadow-sm rounded-lg">
                         Apply Filters
                     </button>
@@ -150,6 +139,17 @@
                 <div>
                     <h2 class="h5 font-weight-bold text-navy mb-0">Available Car Models</h2>
                     <span class="small text-muted">Showing <strong class="text-navy" th:text="${totalCount}">0</strong> car models found</span>
+                </div>
+                <!-- Sort: belongs to the filter form, so every filter already chosen is kept when the order changes -->
+                <div class="d-flex align-items-center" style="gap: 8px;">
+                    <label for="sortSelect" class="small font-weight-bold text-muted mb-0 text-nowrap">Sort by</label>
+                    <select id="sortSelect" name="sortBy" form="filterForm" class="form-control form-control-sm rounded-lg"
+                            style="width: auto;" onchange="document.getElementById('filterForm').submit()">
+                        <option value="price_asc" th:selected="${filter.sortBy == 'price_asc'}">Price: low to high</option>
+                        <option value="price_desc" th:selected="${filter.sortBy == 'price_desc'}">Price: high to low</option>
+                        <option value="name_asc" th:selected="${filter.sortBy == 'name_asc'}">Name: A → Z</option>
+                        <option value="name_desc" th:selected="${filter.sortBy == 'name_desc'}">Name: Z → A</option>
+                    </select>
                 </div>
             </div>
 

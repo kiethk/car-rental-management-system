@@ -1,9 +1,12 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.dto.PageNavDTO;
+import com.crms.mvc.dto.PageQueryDTO;
 import com.crms.mvc.dto.VehicleTypeFormDTO;
 import com.crms.mvc.entity.VehicleType;
 import com.crms.mvc.service.VehicleTypeService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -18,6 +21,8 @@ import java.util.Map;
 @RequestMapping("/admin/vehicle-types")
 public class AdminVehicleTypeController {
 
+    private static final String LIST_PATH = "/admin/vehicle-types";
+
     private final VehicleTypeService vehicleTypeService;
 
     public AdminVehicleTypeController(VehicleTypeService vehicleTypeService) {
@@ -25,15 +30,22 @@ public class AdminVehicleTypeController {
     }
 
     @GetMapping
-    public String list(Model model) {
-        List<VehicleType> types = vehicleTypeService.findAll();
+    public String list(@ModelAttribute("query") PageQueryDTO query,
+                       BindingResult ignoredBindingErrors, // a mistyped ?page=abc keeps the default instead of failing the page
+                       Model model) {
+        Page<VehicleType> page = vehicleTypeService.searchForAdmin(query);
+        // The service steps back to the last page when the requested one no longer exists
+        query.setPage(page.getNumber() + 1);
+
         Map<Long, Long> counts = new HashMap<>();
-        for (VehicleType vt : types) {
+        for (VehicleType vt : page.getContent()) {
             counts.put(vt.getId(), vehicleTypeService.countVehiclesOfType(vt.getId()));
         }
 
-        model.addAttribute("vehicleTypes", types);
+        model.addAttribute("vehicleTypes", page.getContent());
         model.addAttribute("vehicleCounts", counts);
+        model.addAttribute("nav", PageNavDTO.of(page, number -> query.urlForPage(LIST_PATH, number)));
+        model.addAttribute("listUrl", query.urlForPage(LIST_PATH, query.getPage()));
         model.addAttribute("activeNav", "vehicles");
         return "admin/vehicle-types/list";
     }
@@ -105,13 +117,18 @@ public class AdminVehicleTypeController {
     }
 
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable Long id, RedirectAttributes ra) {
+    public String delete(@PathVariable Long id,
+                         @RequestParam(value = "returnTo", required = false) String returnTo,
+                         RedirectAttributes ra) {
         try {
             vehicleTypeService.delete(id);
             ra.addFlashAttribute("success", "Vehicle model deleted ID: " + id);
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
         }
-        return "redirect:/admin/vehicle-types";
+        // Back to the list as the admin left it; only this controller's own list URLs are accepted
+        boolean ownList = returnTo != null && returnTo.startsWith(LIST_PATH)
+                && !returnTo.contains("//") && !returnTo.contains("\\");
+        return "redirect:" + (ownList ? returnTo : LIST_PATH);
     }
 }

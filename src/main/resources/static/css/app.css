@@ -1386,3 +1386,92 @@ a.admin-btn {
   text-decoration: underline;
   cursor: pointer;
 }
+
+
+/* Unified Status Badges (D4) */
+.crms-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.2rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.crms-status-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.crms-status-pill.status-pending_payment {
+  background-color: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
+}
+.crms-status-pill.status-pending_payment .crms-status-dot {
+  background-color: #d97706;
+  animation: pulse 1.5s infinite;
+}
+.crms-status-pill.status-confirmed {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+.crms-status-pill.status-confirmed .crms-status-dot {
+  background-color: #2563eb;
+}
+.crms-status-pill.status-active {
+  background-color: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+.crms-status-pill.status-active .crms-status-dot {
+  background-color: #059669;
+}
+.crms-status-pill.status-completed {
+  background-color: #f1f5f9;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+.crms-status-pill.status-completed .crms-status-dot {
+  background-color: #64748b;
+}
+.crms-status-pill.status-cancelled {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+.crms-status-pill.status-cancelled .crms-status-dot {
+  background-color: #dc2626;
+}
+
+/* Core Journey Shared Components (D1-D4) */
+.surface-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+.surface-card .card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 16px 0;
+}
+.plate-box {
+  border: 1.5px solid #1e293b;
+  border-radius: 5px;
+  padding: 2px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 12px;
+  background: #ffffff;
+  color: #0f172a;
+  display: inline-block;
+  letter-spacing: 0.02em;
+}

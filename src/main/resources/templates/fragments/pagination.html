@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+    Pagination bar for admin lists. The controller builds `nav` (PageNavDTO) with every link already
+    carrying the current search and sort, so this fragment only prints it.
+    Usage: <div th:replace="~{fragments/pagination :: pager(${nav})}"></div>
+-->
+<div th:fragment="pager(nav)" th:if="${nav.totalElements > 0}"
+     class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mt-3" style="gap: 8px;">
+    <span class="small text-muted">
+        Showing <strong class="text-navy" th:text="${nav.firstItem}">1</strong>–<strong class="text-navy" th:text="${nav.lastItem}">10</strong>
+        of <strong class="text-navy" th:text="${nav.totalElements}">80</strong>
+    </span>
+
+    <nav th:unless="${nav.singlePage}" aria-label="Pages">
+        <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" th:classappend="${nav.previousUrl == null} ? 'disabled'">
+                <a class="page-link" th:href="${nav.previousUrl != null ? nav.previousUrl : '#'}">Previous</a>
+            </li>
+            <th:block th:each="link : ${nav.links}">
+                <li th:if="${link.gap}" class="page-item disabled"><span class="page-link">…</span></li>
+                <li th:unless="${link.gap}" class="page-item" th:classappend="${link.current} ? 'active'">
+                    <a class="page-link" th:href="${link.url}" th:text="${link.number}">1</a>
+                </li>
+            </th:block>
+            <li class="page-item" th:classappend="${nav.nextUrl == null} ? 'disabled'">
+                <a class="page-link" th:href="${nav.nextUrl != null ? nav.nextUrl : '#'}">Next</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+</body>
+</html>

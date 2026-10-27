@@ -70,11 +70,11 @@ public class VehicleDTO {
         dto.setYear(vehicle.getYear());
         dto.setOdometer(vehicle.getOdometer());
         dto.setStatus(vehicle.getStatus());
+        dto.setRegistrationExpiry(vehicle.getRegistrationExpiry());
 
         if (vehicle.getLicensePlate() != null) {
             dto.setLicensePlate(vehicle.getLicensePlate().getPlate());
             dto.setProvince(vehicle.getLicensePlate().getProvince());
-            dto.setRegistrationExpiry(vehicle.getLicensePlate().getRegistrationExpiry());
         } else {
             dto.setLicensePlate("Unassigned");
         }
