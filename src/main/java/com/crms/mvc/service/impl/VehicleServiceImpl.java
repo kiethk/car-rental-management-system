@@ -1,19 +1,27 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.dto.AdminVehicleQueryDTO;
+import com.crms.mvc.dto.LicensePlateChangeDTO;
 import com.crms.mvc.dto.VehicleDTO;
 import com.crms.mvc.dto.VehicleFormDTO;
 import com.crms.mvc.dto.VehicleSearchFilterDTO;
-import com.crms.mvc.entity.LicensePlate;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleType;
 import com.crms.mvc.repository.*;
+import com.crms.mvc.service.LicensePlateService;
 import com.crms.mvc.service.VehicleService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -22,20 +30,20 @@ public class VehicleServiceImpl implements VehicleService {
 
     private final VehicleRepository vehicleRepository;
     private final VehicleTypeRepository vehicleTypeRepository;
-    private final LicensePlateRepository licensePlateRepository;
+    private final LicensePlateService licensePlateService;
     private final BookingRepository bookingRepository;
     private final VehicleInspectionRepository vehicleInspectionRepository;
     private final IssueRepository issueRepository;
 
     public VehicleServiceImpl(VehicleRepository vehicleRepository,
                               VehicleTypeRepository vehicleTypeRepository,
-                              LicensePlateRepository licensePlateRepository,
+                              LicensePlateService licensePlateService,
                               BookingRepository bookingRepository,
                               VehicleInspectionRepository vehicleInspectionRepository,
                               IssueRepository issueRepository) {
         this.vehicleRepository = vehicleRepository;
         this.vehicleTypeRepository = vehicleTypeRepository;
-        this.licensePlateRepository = licensePlateRepository;
+        this.licensePlateService = licensePlateService;
         this.bookingRepository = bookingRepository;
         this.vehicleInspectionRepository = vehicleInspectionRepository;
         this.issueRepository = issueRepository;
@@ -78,11 +86,14 @@ public class VehicleServiceImpl implements VehicleService {
                     .toList();
         }
 
-        // Sorting
+        // Sorting. Names are compared the way customers read them on the card: brand + model.
         String sortBy = (filter != null && filter.getSortBy() != null) ? filter.getSortBy() : "price_asc";
+        Comparator<com.crms.mvc.entity.VehicleType> byName =
+                Comparator.comparing(com.crms.mvc.entity.VehicleType::getDisplayName, String.CASE_INSENSITIVE_ORDER);
         Comparator<com.crms.mvc.entity.VehicleType> comparator = switch (sortBy) {
             case "price_desc" -> Comparator.comparing(com.crms.mvc.entity.VehicleType::getPricePerHour, Comparator.nullsLast(Comparator.reverseOrder()));
-            case "name_asc" -> Comparator.comparing(com.crms.mvc.entity.VehicleType::getName, String.CASE_INSENSITIVE_ORDER);
+            case "name_asc" -> byName;
+            case "name_desc" -> byName.reversed();
             default -> Comparator.comparing(com.crms.mvc.entity.VehicleType::getPricePerHour, Comparator.nullsLast(Comparator.naturalOrder()));
         };
 
@@ -107,6 +118,41 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     @Transactional(readOnly = true)
+    public Page<VehicleDTO> searchForAdmin(AdminVehicleQueryDTO query) {
+        Sort sort = adminSort(query.getSort());
+        String pattern = query.getLikePattern();
+
+        Page<Vehicle> page = vehicleRepository.searchForAdmin(query.getStatus(), pattern,
+                PageRequest.of(query.getPageIndex(), query.getSize(), sort));
+        if (page.isEmpty() && page.getTotalPages() > 0) {
+            // The requested page no longer exists (for example the last car on it was just deleted)
+            page = vehicleRepository.searchForAdmin(query.getStatus(), pattern,
+                    PageRequest.of(page.getTotalPages() - 1, query.getSize(), sort));
+        }
+        return page.map(VehicleDTO::fromEntity);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Long> countByStatus() {
+        Map<String, Long> counts = new HashMap<>();
+        vehicleRepository.countGroupedByStatus().forEach(row -> counts.put(row.getStatus(), row.getTotal()));
+        return counts;
+    }
+
+    /** Whitelist of sort keys; the id at the end keeps the order stable when names or plates are equal. */
+    private Sort adminSort(String sortKey) {
+        return switch (sortKey) {
+            case AdminVehicleQueryDTO.SORT_PLATE_ASC -> Sort.by(Sort.Order.asc("lp.plate").ignoreCase(), Sort.Order.asc("id"));
+            case AdminVehicleQueryDTO.SORT_NAME_DESC -> Sort.by(
+                    Sort.Order.desc("vt.brand").ignoreCase(), Sort.Order.desc("vt.name").ignoreCase(), Sort.Order.asc("id"));
+            default -> Sort.by(
+                    Sort.Order.asc("vt.brand").ignoreCase(), Sort.Order.asc("vt.name").ignoreCase(), Sort.Order.asc("id"));
+        };
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<Vehicle> findEntityById(Long id) {
         return vehicleRepository.findByIdWithDetails(id);
     }
@@ -116,40 +162,31 @@ public class VehicleServiceImpl implements VehicleService {
         VehicleType vt = vehicleTypeRepository.findById(dto.getVehicleTypeId())
                 .orElseThrow(() -> new IllegalArgumentException("Vehicle model not found with ID: " + dto.getVehicleTypeId()));
 
-        // Process 1:1 License Plate
         String cleanPlate = dto.getPlate().trim().toUpperCase();
-        LicensePlate plate;
-        Optional<LicensePlate> existingPlateOpt = licensePlateRepository.findByPlateIgnoreCase(cleanPlate);
-
-        if (existingPlateOpt.isPresent()) {
-            plate = existingPlateOpt.get();
-            if (vehicleRepository.existsByLicensePlateId(plate.getId())) {
-                throw new IllegalArgumentException("License plate " + cleanPlate + " is already assigned to another vehicle!");
-            }
-            if (dto.getProvince() != null && !dto.getProvince().isBlank()) {
-                plate.setProvince(dto.getProvince().trim());
-            }
-            if (dto.getRegistrationExpiry() != null) {
-                plate.setRegistrationExpiry(dto.getRegistrationExpiry());
-            }
-            plate = licensePlateRepository.save(plate);
-        } else {
-            plate = new LicensePlate();
-            plate.setPlate(cleanPlate);
-            plate.setProvince(dto.getProvince() != null ? dto.getProvince().trim() : null);
-            plate.setRegistrationExpiry(dto.getRegistrationExpiry());
-            plate = licensePlateRepository.save(plate);
+        if (licensePlateService.isPlateExists(cleanPlate)) {
+            throw new IllegalArgumentException("License plate " + cleanPlate
+                    + " has already been issued to a vehicle; a retired plate cannot be reused");
         }
 
         Vehicle vehicle = new Vehicle();
         vehicle.setVehicleType(vt);
-        vehicle.setLicensePlate(plate);
         vehicle.setColor(dto.getColor().trim());
         vehicle.setYear(dto.getYear());
         vehicle.setOdometer(dto.getOdometer() != null ? dto.getOdometer() : 0);
-        vehicle.setStatus(dto.getStatus() != null ? dto.getStatus().trim().toLowerCase() : "available");
+        vehicle.setRegistrationExpiry(dto.getRegistrationExpiry());
+        String status = dto.getStatus() != null ? dto.getStatus().trim().toLowerCase() : "available";
+        if (!"available".equals(status) && !"maintenance".equals(status)) {
+            throw new IllegalArgumentException("Invalid vehicle status: " + status + ". Allowed: 'available', 'maintenance'");
+        }
+        vehicle.setStatus(status);
+        Vehicle saved = vehicleRepository.save(vehicle);
 
-        return vehicleRepository.save(vehicle);
+        // First plate of the vehicle's history; later changes go through LicensePlateService.changePlate.
+        LicensePlateChangeDTO firstPlate = new LicensePlateChangeDTO();
+        firstPlate.setPlate(cleanPlate);
+        firstPlate.setProvince(dto.getProvince());
+        licensePlateService.changePlate(saved.getId(), firstPlate);
+        return saved;
     }
 
     @Override
@@ -170,36 +207,15 @@ public class VehicleServiceImpl implements VehicleService {
             throw new IllegalStateException("Cannot change status of vehicle while currently rented!");
         }
         if (dto.getStatus() != null) {
-            vehicle.setStatus(dto.getStatus().trim().toLowerCase());
-        }
-
-        // Update license plate info
-        String cleanPlate = dto.getPlate().trim().toUpperCase();
-        LicensePlate plate = vehicle.getLicensePlate();
-
-        if (plate == null) {
-            Optional<LicensePlate> existing = licensePlateRepository.findByPlateIgnoreCase(cleanPlate);
-            if (existing.isPresent() && vehicleRepository.existsByLicensePlateId(existing.get().getId())) {
-                throw new IllegalArgumentException("License plate " + cleanPlate + " already belongs to another vehicle!");
+            String newStatus = dto.getStatus().trim().toLowerCase();
+            if (!"available".equals(newStatus) && !"maintenance".equals(newStatus)) {
+                throw new IllegalArgumentException("Invalid vehicle status: " + newStatus + ". Allowed: 'available', 'maintenance'");
             }
-            plate = existing.orElseGet(() -> {
-                LicensePlate newPlate = new LicensePlate();
-                newPlate.setPlate(cleanPlate);
-                return newPlate;
-            });
-        } else if (!plate.getPlate().equalsIgnoreCase(cleanPlate)) {
-            if (licensePlateRepository.existsByPlateIgnoreCaseAndIdNot(cleanPlate, plate.getId())) {
-                throw new IllegalArgumentException("License plate " + cleanPlate + " already exists in the system!");
-            }
-            plate.setPlate(cleanPlate);
+            vehicle.setStatus(newStatus);
         }
 
-        plate.setProvince(dto.getProvince() != null ? dto.getProvince().trim() : null);
-        if (dto.getRegistrationExpiry() != null) {
-            plate.setRegistrationExpiry(dto.getRegistrationExpiry());
-        }
-        plate = licensePlateRepository.save(plate);
-        vehicle.setLicensePlate(plate);
+        // The plate is not edited here: changing it creates a new plate record (LicensePlateService.changePlate).
+        vehicle.setRegistrationExpiry(dto.getRegistrationExpiry());
 
         return vehicleRepository.save(vehicle);
     }
@@ -211,6 +227,10 @@ public class VehicleServiceImpl implements VehicleService {
 
         if ("rented".equalsIgnoreCase(vehicle.getStatus())) {
             throw new IllegalStateException("Cannot change status of vehicle while currently rented!");
+        }
+
+        if (newStatus == null || (!"available".equalsIgnoreCase(newStatus.trim()) && !"maintenance".equalsIgnoreCase(newStatus.trim()))) {
+            throw new IllegalArgumentException("Invalid vehicle status: " + newStatus + ". Only 'available' and 'maintenance' are allowed.");
         }
 
         vehicle.setStatus(newStatus.trim().toLowerCase());
@@ -226,6 +246,29 @@ public class VehicleServiceImpl implements VehicleService {
             vehicle.setOdometer(newOdometer);
             vehicleRepository.save(vehicle);
         }
+    }
+
+    @Override
+    public void updateRegistrationExpiry(Long id, LocalDate registrationExpiry) {
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with ID: " + id));
+        if (registrationExpiry == null) {
+            throw new IllegalArgumentException("Registration expiry date is required");
+        }
+        vehicle.setRegistrationExpiry(registrationExpiry);
+        vehicleRepository.save(vehicle);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Vehicle> findByVehicleTypeIdWithDetails(Long typeId) {
+        return vehicleRepository.findByVehicleTypeIdWithDetails(typeId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Vehicle> findByStatusWithDetails(String status) {
+        return vehicleRepository.findByStatusWithDetails(status);
     }
 
     @Override

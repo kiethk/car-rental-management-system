@@ -7,7 +7,9 @@ import com.crms.mvc.dto.VehicleTypeSearchResultDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleType;
-import com.crms.mvc.repository.VehicleTypeRepository;
+import com.crms.mvc.service.VehicleTypeService;
+import com.crms.mvc.service.PricingService;
+import com.crms.mvc.dto.PriceQuoteDTO;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.PaymentService;
 import com.crms.mvc.service.SlotService;
@@ -39,7 +41,8 @@ public class BookingController {
     private final BookingService bookingService;
     private final SlotService slotService;
     private final PaymentService paymentService;
-    private final VehicleTypeRepository vehicleTypeRepository;
+    private final VehicleTypeService vehicleTypeService;
+    private final PricingService pricingService;
     private final LicenseDocumentService licenseDocumentService;
     private final ContractTemplateService contractTemplateService;
 
@@ -47,15 +50,17 @@ public class BookingController {
             BookingService bookingService,
             SlotService slotService,
             PaymentService paymentService,
-            VehicleTypeRepository vehicleTypeRepository,
+            VehicleTypeService vehicleTypeService,
             LicenseDocumentService licenseDocumentService,
-            ContractTemplateService contractTemplateService) {
+            ContractTemplateService contractTemplateService,
+            PricingService pricingService) {
         this.bookingService = bookingService;
         this.slotService = slotService;
         this.paymentService = paymentService;
-        this.vehicleTypeRepository = vehicleTypeRepository;
+        this.vehicleTypeService = vehicleTypeService;
         this.licenseDocumentService = licenseDocumentService;
         this.contractTemplateService = contractTemplateService;
+        this.pricingService = pricingService;
     }
 
     // STEP 1 & 2: Choose rental schedule & filter available vehicle types
@@ -179,8 +184,8 @@ public class BookingController {
         model.addAttribute("durationDisplay", durationDisplay);
         model.addAttribute("results", results);
         model.addAttribute("allCount", results.size());
-        model.addAttribute("brands", vehicleTypeRepository.findDistinctBrands());
-        model.addAttribute("categories", vehicleTypeRepository.findDistinctCategories());
+        model.addAttribute("brands", vehicleTypeService.getDistinctBrands());
+        model.addAttribute("categories", vehicleTypeService.getDistinctCategories());
         return "bookings/search";
     }
 
@@ -201,7 +206,7 @@ public class BookingController {
             return "redirect:/login";
         }
 
-        VehicleType vt = vehicleTypeRepository.findById(vehicleTypeId).orElse(null);
+        VehicleType vt = vehicleTypeService.findById(vehicleTypeId).orElse(null);
         if (vt == null) {
             ra.addFlashAttribute("error", "Vehicle type not found.");
             return "redirect:/search";
@@ -243,14 +248,15 @@ public class BookingController {
             return "redirect:/search";
         }
 
-        long rentalHours = Math.max(1, Duration.between(startTime, endTime).toHours());
+        ContractTemplateDTO contractTerms = contractTemplateService.getActiveTemplate();
+        PriceQuoteDTO quote = pricingService.calculatePrice(startTime, endTime, vt.getPricePerHour(), contractTerms.getDepositRate(), BigDecimal.ZERO);
+        long rentalHours = quote.getRentalHours();
         long rentalDays = rentalHours / 24;
         long remainingHours = rentalHours % 24;
         String durationDisplay = (rentalDays > 0 ? (rentalDays + "d ") : "") + (remainingHours > 0 ? (remainingHours + "h") : (rentalDays == 0 ? "1h" : ""));
-        BigDecimal estimatedTotal = vt.getPricePerHour().multiply(BigDecimal.valueOf(rentalHours));
-        ContractTemplateDTO contractTerms = contractTemplateService.getActiveTemplate();
-        BigDecimal depositAmount = estimatedTotal.multiply(contractTerms.getDepositRate()).setScale(0, RoundingMode.HALF_UP);
-        BigDecimal remainingAmount = estimatedTotal.subtract(depositAmount);
+        BigDecimal estimatedTotal = quote.getTotalPrice();
+        BigDecimal depositAmount = quote.getDepositAmount();
+        BigDecimal remainingAmount = quote.getRemainingAmount();
 
         BookingCreateDTO form = new BookingCreateDTO();
         form.setVehicleTypeId(vehicleTypeId);

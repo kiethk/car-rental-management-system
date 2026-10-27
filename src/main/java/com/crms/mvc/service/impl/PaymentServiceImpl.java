@@ -36,6 +36,11 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Payment processDeposit(Long bookingId) {
+        return processDeposit(bookingId, null, "VNPAY");
+    }
+
+    @Override
+    public Payment processDeposit(Long bookingId, String transactionNo, String paymentMethod) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
 
@@ -56,8 +61,10 @@ public class PaymentServiceImpl implements PaymentService {
                     return p;
                 });
 
-        payment.setTransactionCode("TXN-DEP-" + bookingId + "-" + System.currentTimeMillis());
-        payment.setPaymentMethod("VIETQR");
+        payment.setTransactionCode(transactionNo != null && !transactionNo.isBlank()
+                ? transactionNo
+                : "TXN-DEP-" + bookingId + "-" + System.currentTimeMillis());
+        payment.setPaymentMethod(paymentMethod != null && !paymentMethod.isBlank() ? paymentMethod : "VNPAY");
         payment.setStatus("paid");
         payment.setPaidAt(OffsetDateTime.now());
         Payment saved = paymentRepository.save(payment);
@@ -88,16 +95,33 @@ public class PaymentServiceImpl implements PaymentService {
             bookingFeeService.recordFee(bookingId, "DAMAGE_COMPENSATION", additionalFine, "Incidental damage / compensation fee", null);
         }
 
-        BigDecimal remaining = booking.getTotalPrice().subtract(booking.getDepositAmount());
-        if (remaining.compareTo(BigDecimal.ZERO) < 0) remaining = BigDecimal.ZERO;
-        BigDecimal finalPaymentAmount = remaining.add(extra);
+        BigDecimal totalPriceWithFines = booking.getTotalPrice().add(extra);
 
+        // B8: Nếu tiền cọc lớn hơn tổng chi phí thực tế (kèm phạt nếu có) -> Hoàn trả phần chênh lệch (REFUND)
+        if (booking.getDepositAmount().compareTo(totalPriceWithFines) > 0) {
+            BigDecimal refundAmount = booking.getDepositAmount().subtract(totalPriceWithFines);
+            Payment refundPayment = new Payment();
+            refundPayment.setBooking(booking);
+            refundPayment.setPaymentType("REFUND");
+            refundPayment.setTransactionCode("TXN-REF-" + bookingId + "-" + System.currentTimeMillis());
+            refundPayment.setPaymentMethod("COUNTER");
+            refundPayment.setAmount(refundAmount);
+            refundPayment.setStatus("paid");
+            refundPayment.setPaidAt(OffsetDateTime.now());
+            paymentRepository.save(refundPayment);
+
+            booking.setStatus("completed");
+            bookingRepository.save(booking);
+            return refundPayment;
+        }
+
+        BigDecimal remaining = totalPriceWithFines.subtract(booking.getDepositAmount());
         Payment finalPayment = new Payment();
         finalPayment.setBooking(booking);
         finalPayment.setPaymentType("FINAL");
         finalPayment.setTransactionCode("TXN-FIN-" + bookingId + "-" + System.currentTimeMillis());
-        finalPayment.setPaymentMethod("VIETQR");
-        finalPayment.setAmount(finalPaymentAmount);
+        finalPayment.setPaymentMethod("COUNTER");
+        finalPayment.setAmount(remaining);
         finalPayment.setStatus("paid");
         finalPayment.setPaidAt(OffsetDateTime.now());
         paymentRepository.save(finalPayment);

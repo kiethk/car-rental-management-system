@@ -80,21 +80,7 @@
                                 <div class="flex items-center gap-2 mb-1">
                                     <h3 class="font-bold text-navy text-base" th:text="${b.vehicleTypeName}">Toyota Vios</h3>
                                     <!-- Status Pill -->
-                                    <span th:if="${b.status == 'pending_payment'}" class="text-xs font-semibold px-2.5 py-0.5 rounded-full border bg-amber-50 text-amber-700 border-amber-200">
-                                        ● Awaiting Payment
-                                    </span>
-                                    <span th:if="${b.status == 'confirmed'}" class="text-xs font-semibold px-2.5 py-0.5 rounded-full border bg-blue-50 text-blue-700 border-blue-200">
-                                        ● Confirmed
-                                    </span>
-                                    <span th:if="${b.status == 'active'}" class="text-xs font-semibold px-2.5 py-0.5 rounded-full border bg-green-50 text-green-700 border-green-200">
-                                        ● Active
-                                    </span>
-                                    <span th:if="${b.status == 'completed'}" class="text-xs font-semibold px-2.5 py-0.5 rounded-full border bg-surface text-muted-foreground border-border">
-                                        ● Completed
-                                    </span>
-                                    <span th:if="${b.status == 'cancelled'}" class="text-xs font-semibold px-2.5 py-0.5 rounded-full border bg-red-50 text-red-600 border-red-200">
-                                        ● Cancelled
-                                    </span>
+                                    <div th:replace="~{fragments/status-badge :: booking(status=${b.status})}"></div>
                                 </div>
 
                                 <div class="text-xs text-muted-foreground">

@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+    Unified status badge fragment
+    Usage: <div th:replace="~{fragments/status-badge :: booking(status=${b.status})}"></div>
+-->
+<span th:fragment="booking(status)" class="crms-status-pill" th:classappend="'status-' + ${status}">
+    <span class="crms-status-dot"></span>
+    <span th:if="${status == 'pending_payment'}">Awaiting Payment</span>
+    <span th:if="${status == 'confirmed'}">Confirmed</span>
+    <span th:if="${status == 'active'}">Active</span>
+    <span th:if="${status == 'completed'}">Completed</span>
+    <span th:if="${status == 'cancelled'}">Cancelled</span>
+</span>
+</body>
+</html>

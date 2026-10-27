@@ -365,28 +365,30 @@
         }
         .btn-download-contract {
             display: block;
-            margin-top: 12px;
-            padding: 8px 12px;
+            margin-top: 14px;
+            padding: 10px 16px;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
             text-align: center;
             color: #0f172a !important;
             text-decoration: none !important;
+            background-color: #ffffff;
+            transition: all 0.15s ease;
         }
         .btn-download-contract:hover {
             background-color: #f8fafc;
         }
         .agreement-terms-box {
             background-color: #f8fafc;
-            border: 1px solid #edf2f7;
-            border-radius: 6px;
-            padding: 9px 12px;
-            font-size: 11px;
-            color: #64748b;
-            line-height: 1.45;
-            margin-top: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px 20px;
+            font-size: 12px;
+            color: #475569;
+            line-height: 1.6;
+            margin-top: 14px;
         }
     </style>
 </head>
@@ -416,31 +418,7 @@
 
             <!-- Status Badge -->
             <div>
-                <span th:if="${booking.status == 'confirmed'}"
-                      class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                    Confirmed & Reserved
-                </span>
-                <span th:if="${booking.status == 'pending_payment'}"
-                      class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                    Awaiting Payment
-                </span>
-                <span th:if="${booking.status == 'active'}"
-                      class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200">
-                    <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
-                    Active (Handed Over)
-                </span>
-                <span th:if="${booking.status == 'completed'}"
-                      class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-                    <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
-                    Completed
-                </span>
-                <span th:if="${booking.status == 'cancelled'}"
-                      class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">
-                    <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                    Cancelled
-                </span>
+                <div th:replace="~{fragments/status-badge :: booking(status=${booking.status})}"></div>
             </div>
         </div>
 
