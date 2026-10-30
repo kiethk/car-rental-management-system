@@ -12,7 +12,6 @@ import com.crms.mvc.service.PricingService;
 import com.crms.mvc.dto.PriceQuoteDTO;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.PaymentService;
-import com.crms.mvc.service.SlotService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -39,7 +38,6 @@ import jakarta.servlet.http.HttpServletRequest;
 @Controller
 public class BookingController {
     private final BookingService bookingService;
-    private final SlotService slotService;
     private final PaymentService paymentService;
     private final VehicleTypeService vehicleTypeService;
     private final PricingService pricingService;
@@ -48,14 +46,12 @@ public class BookingController {
 
     public BookingController(
             BookingService bookingService,
-            SlotService slotService,
             PaymentService paymentService,
             VehicleTypeService vehicleTypeService,
             LicenseDocumentService licenseDocumentService,
             ContractTemplateService contractTemplateService,
             PricingService pricingService) {
         this.bookingService = bookingService;
-        this.slotService = slotService;
         this.paymentService = paymentService;
         this.vehicleTypeService = vehicleTypeService;
         this.licenseDocumentService = licenseDocumentService;
@@ -133,7 +129,7 @@ public class BookingController {
         }
 
         ZoneOffset offset = ZoneOffset.ofHours(7);
-        List<VehicleTypeSearchResultDTO> rawResults = slotService.searchAvailableVehicleTypes(
+        List<VehicleTypeSearchResultDTO> rawResults = bookingService.searchAvailableVehicleTypes(
                 startDateTime.atOffset(offset), endDateTime.atOffset(offset), category);
 
         // Filter by keyword, brand, transmission, seats, max price
@@ -240,7 +236,7 @@ public class BookingController {
         }
 
         ZoneOffset offset = ZoneOffset.ofHours(7);
-        List<Vehicle> availableCars = slotService.findAvailableVehiclesInTimeRange(
+        List<Vehicle> availableCars = bookingService.findAvailableVehiclesInTimeRange(
                 vehicleTypeId, startTime.atOffset(offset), endTime.atOffset(offset));
 
         if (availableCars.isEmpty()) {
@@ -330,25 +326,18 @@ public class BookingController {
 
         try {
             BookingDetailDTO detail = bookingService.getBookingDetail(bookingId, customerId);
+            if (!"pending_payment".equalsIgnoreCase(detail.getStatus())) {
+                if ("confirmed".equalsIgnoreCase(detail.getStatus())) {
+                    return "redirect:/bookings/" + bookingId + "/success";
+                }
+                ra.addFlashAttribute("error", "Đơn đặt xe không ở trạng thái chờ đặt cọc (Trạng thái hiện tại: " + detail.getStatus() + ").");
+                return "redirect:/bookings/" + bookingId;
+            }
             model.addAttribute("booking", detail);
             return "bookings/deposit";
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             return "redirect:/bookings/my-bookings";
-        }
-    }
-
-    @PostMapping("/bookings/{id}/pay-deposit")
-    public String processDeposit(@PathVariable("id") Long bookingId, HttpSession session, RedirectAttributes ra) {
-        Long customerId = (Long) session.getAttribute("customerId");
-        if (customerId == null) return "redirect:/login";
-
-        try {
-            paymentService.processDeposit(bookingId);
-            return "redirect:/bookings/" + bookingId + "/success";
-        } catch (Exception e) {
-            ra.addFlashAttribute("error", "Payment failed: " + e.getMessage());
-            return "redirect:/bookings/" + bookingId + "/pay-deposit";
         }
     }
 

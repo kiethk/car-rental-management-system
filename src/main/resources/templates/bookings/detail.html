@@ -1,396 +1,17 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Booking Detail — DriveNow</title>
+    <title>Chi tiết đơn đặt xe — DriveNow</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/drivenow.css}">
     <link rel="stylesheet" th:href="@{/css/app.css}">
-    <style>
-        .detail-page-container {
-            max-width: 1080px;
-            margin: 0 auto;
-            padding: 20px 16px 56px;
-        }
-        .back-link {
-            color: #64748b;
-            font-size: 13px;
-            font-weight: 500;
-            text-decoration: none !important;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 12px;
-            transition: color 0.15s ease;
-        }
-        .back-link:hover {
-            color: #0f172a;
-        }
-        .detail-heading-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .detail-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #0f172a;
-            letter-spacing: -0.02em;
-            line-height: 1.2;
-            margin: 0;
-        }
-        .detail-booked-at {
-            font-size: 12px;
-            color: #94a3b8;
-            margin-top: 2px;
-        }
-
-        /* 2-Column Grid Layout */
-        .detail-grid-layout {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-        @media (min-width: 900px) {
-            .detail-grid-layout {
-                grid-template-columns: 1.45fr 1fr;
-                gap: 20px;
-                align-items: start;
-            }
-        }
-
-        /* Standard Human-crafted Card (Clean, 10px radius, subtle border) */
-        .surface-card {
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-        }
-        .card-title {
-            font-size: 15px;
-            font-weight: 700;
-            color: #0f172a;
-            margin: 0 0 16px 0;
-        }
-
-        /* Vehicle Strip inside Card */
-        .vehicle-strip {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding-bottom: 18px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        .vehicle-img {
-            width: 108px;
-            height: 72px;
-            border-radius: 8px;
-            object-fit: cover;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            flex-shrink: 0;
-        }
-        .vehicle-cat {
-            font-size: 11px;
-            color: #94a3b8;
-            font-weight: 500;
-            text-transform: capitalize;
-        }
-        .vehicle-name {
-            font-size: 18px;
-            font-weight: 700;
-            color: #0f172a;
-            margin: 2px 0 6px 0;
-            line-height: 1.2;
-        }
-        .plate-box {
-            border: 1.5px solid #1e293b;
-            border-radius: 5px;
-            padding: 2px 10px;
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
-            font-size: 12px;
-            background: #ffffff;
-            color: #0f172a;
-            display: inline-block;
-            letter-spacing: 0.02em;
-        }
-
-        /* Timeline Area */
-        .timeline-wrap {
-            padding-top: 18px;
-        }
-        .timeline-item {
-            display: flex;
-            gap: 14px;
-            position: relative;
-        }
-        .timeline-time-col {
-            width: 85px;
-            flex-shrink: 0;
-        }
-        .time-val {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 18px;
-            font-weight: 700;
-            color: #0f172a;
-            line-height: 1.2;
-        }
-        .date-val {
-            font-size: 11px;
-            color: #94a3b8;
-            margin-top: 1px;
-        }
-        .timeline-axis {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 14px;
-            padding-top: 5px;
-        }
-        .dot-solid {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            background-color: #059669;
-        }
-        .dot-hollow {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            background-color: #ffffff;
-            border: 1.5px solid #059669;
-        }
-        .axis-line {
-            width: 1px;
-            border-left: 1.5px dashed #10b981;
-            height: 38px;
-            margin: 3px 0;
-        }
-        .timeline-content {
-            flex: 1;
-            padding-top: 1px;
-        }
-        .timeline-step-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: #0f172a;
-        }
-        .timeline-step-desc {
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 2px;
-            line-height: 1.4;
-        }
-
-        /* Payment Ledger Card */
-        .ledger-box {
-            background-color: #f8fafc;
-            border: 1px solid #edf2f7;
-            border-radius: 8px;
-            padding: 10px 14px;
-            overflow-x: auto;
-        }
-        .ledger-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-            text-align: left;
-        }
-        .ledger-table th {
-            color: #94a3b8;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            padding: 6px 10px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .ledger-table td {
-            padding: 10px;
-            vertical-align: middle;
-        }
-        .txn-code {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            color: #64748b;
-        }
-        .status-pill-paid {
-            background-color: #ecfdf5;
-            color: #047857;
-            border: 1px solid #a7f3d0;
-            border-radius: 4px;
-            padding: 2px 7px;
-            font-size: 11px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-        }
-
-        /* Right Column: Cost Summary */
-        .cost-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 13px;
-            color: #475569;
-            margin-bottom: 10px;
-        }
-        .cost-total-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-bottom: 14px;
-            padding-top: 6px;
-        }
-        .cost-total-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: #0f172a;
-        }
-        .cost-total-val {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 18px;
-            font-weight: 700;
-            color: #0f172a;
-        }
-        .deposit-amber-box {
-            background-color: #fffbeb;
-            border: 1px solid #fde68a;
-            border-radius: 8px;
-            padding: 11px 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        .deposit-box-label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #92400e;
-        }
-        .deposit-box-sub {
-            font-size: 10px;
-            color: #b45309;
-            margin-top: 1px;
-        }
-        .deposit-box-val {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 16px;
-            font-weight: 700;
-            color: #92400e;
-        }
-        .btn-cancel {
-            width: 100%;
-            background-color: #ffffff !important;
-            color: #dc2626 !important;
-            border: 1px solid #fecaca !important;
-            border-radius: 8px;
-            padding: 9px 14px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            text-align: center;
-        }
-        .btn-cancel:hover {
-            background-color: #fef2f2 !important;
-            border-color: #fca5a5 !important;
-        }
-        .btn-pay-now {
-            width: 100%;
-            background-color: #ea580c !important;
-            color: #ffffff !important;
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 13px;
-            font-weight: 600;
-            text-decoration: none !important;
-            display: block;
-            text-align: center;
-            margin-bottom: 8px;
-            transition: all 0.15s ease;
-        }
-        .btn-pay-now:hover {
-            background-color: #c2410c !important;
-        }
-
-        /* Right Column: Rental Agreement */
-        .agreement-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
-        .agreement-meta-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            margin-bottom: 8px;
-        }
-        .agreement-meta-label {
-            color: #64748b;
-        }
-        .agreement-meta-val {
-            font-weight: 600;
-            color: #0f172a;
-        }
-        .status-pill-pending {
-            background-color: #fffbeb;
-            color: #b45309;
-            border: 1px solid #fde68a;
-            border-radius: 4px;
-            padding: 2px 7px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-        .status-pill-cancelled {
-            background-color: #fef2f2;
-            color: #b91c1c;
-            border: 1px solid #fecaca;
-            border-radius: 4px;
-            padding: 2px 7px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-        .btn-download-contract {
-            display: block;
-            margin-top: 14px;
-            padding: 10px 16px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            text-align: center;
-            color: #0f172a !important;
-            text-decoration: none !important;
-            background-color: #ffffff;
-            transition: all 0.15s ease;
-        }
-        .btn-download-contract:hover {
-            background-color: #f8fafc;
-        }
-        .agreement-terms-box {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 16px 20px;
-            font-size: 12px;
-            color: #475569;
-            line-height: 1.6;
-            margin-top: 14px;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/modules/booking.css}" />
+    
 </head>
 <body class="bg-surface text-navy min-h-screen flex flex-col font-sans">
 
@@ -399,20 +20,20 @@
 <main class="flex-1">
     <div class="detail-page-container">
 
-        <!-- Back to My Bookings -->
+        <!-- Quay lại danh sách chuyến đi -->
         <a th:href="@{/bookings/my-bookings}" class="back-link">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-            Back to My Bookings
+            Quay lại chuyến đi của tôi
         </a>
 
         <!-- Title & Status Header -->
         <div class="detail-heading-row">
             <div>
                 <h1 class="detail-title">
-                    Booking <span class="font-mono" th:text="'#' + ${booking.id}">#12</span>
+                    Đơn đặt xe <span class="font-mono" th:text="'#' + ${booking.id}">#12</span>
                 </h1>
                 <div class="detail-booked-at">
-                    Booked on <span th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}">23/10/2026 04:00</span>
+                    Thời gian đặt: <span th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}">23/10/2026 04:00</span>
                 </div>
             </div>
 
@@ -430,7 +51,7 @@
 
                 <!-- Card 1: Vehicle & Schedule -->
                 <div class="surface-card">
-                    <h2 class="card-title">Vehicle & schedule</h2>
+                    <h2 class="card-title">Phương tiện & Lịch trình di chuyển</h2>
 
                     <!-- Vehicle Strip -->
                     <div class="vehicle-strip">
@@ -439,9 +60,7 @@
                              class="vehicle-img"
                              onerror="this.onerror=null; this.src='/images/car-rental-logo.svg';">
                         <div>
-                            <div class="vehicle-cat" th:text="${booking.vehicleCategory + ' · ' + booking.seats + ' Seats'}">
-                                Sedan · 5 Seats
-                            </div>
+                            <div class="vehicle-cat" th:text="${booking.vehicleCategory + ' · ' + booking.seats + ' chỗ'}">Sedan · 5 chỗ</div>
                             <h3 class="vehicle-name" th:text="${booking.vehicleTypeName}">
                                 Accent 2024
                             </h3>
@@ -464,8 +83,8 @@
                                 <div class="axis-line"></div>
                             </div>
                             <div class="timeline-content">
-                                <div class="timeline-step-title">Pickup</div>
-                                <div class="timeline-step-desc">Warehouse: 123 Dinh Bo Linh St, Ward 26, Binh Thanh, HCMC</div>
+                                <div class="timeline-step-title">Thời gian nhận xe</div>
+                                <div class="timeline-step-desc">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</div>
                             </div>
                         </div>
 
@@ -479,10 +98,32 @@
                                 <span class="dot-hollow"></span>
                             </div>
                             <div class="timeline-content">
-                                <div class="timeline-step-title">Scheduled return</div>
+                                <div class="timeline-step-title">Thời gian trả xe dự kiến</div>
                                 <div class="timeline-step-desc" th:with="diffHours=${T(java.time.Duration).between(booking.pickupTime, booking.scheduledEndTime).toHours()}">
-                                    <span th:text="${diffHours + ' hours after pickup'}">9 hours after pickup</span>
+                                    <span th:text="${diffHours + ' giờ kể từ khi nhận xe'}">9 giờ kể từ khi nhận xe</span>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Station & Staff Assistance -->
+                <div class="surface-card">
+                    <h2 class="card-title">Trạm nhận xe & Nhân viên bàn giao</h2>
+                    <div style="display: flex; gap: 20px; align-items: flex-start; margin-top: 12px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 250px;">
+                            <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px;">Trạm nhận xe</div>
+                            <div style="font-size: 14px; font-weight: 600; color: #0f172a;" th:text="${booking.stationAddress}">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Mở cửa hàng ngày: 07:00 - 22:00</div>
+                        </div>
+                        <div style="flex: 1; min-width: 250px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px;">
+                            <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px;">Nhân viên phụ trách giao nhận xe</div>
+                            <div style="font-size: 15px; font-weight: 700; color: #002B49;" th:text="${booking.staffName}">Support Staff</div>
+                            <div style="font-size: 13px; color: #334155; margin-top: 4px;">
+                                <span>📞 Hotline / Zalo: </span><strong th:text="${booking.staffPhone}">0977777777</strong>
+                            </div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 2px;" th:if="${booking.staffEmail != null}">
+                                <span>✉️ Email: </span><span th:text="${booking.staffEmail}">staff@crms.com</span>
                             </div>
                         </div>
                     </div>
@@ -490,16 +131,16 @@
 
                 <!-- Card 2: Payment Ledger -->
                 <div class="surface-card">
-                    <h2 class="card-title">Payment ledger</h2>
+                    <h2 class="card-title">Lịch sử giao dịch thanh toán</h2>
 
                     <div class="ledger-box">
                         <table class="ledger-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 30%;">Transaction</th>
-                                    <th style="width: 30%;">Type · Method</th>
-                                    <th style="width: 22%;">Amount</th>
-                                    <th style="width: 18%;">Status</th>
+                                    <th style="width: 30%;">Mã giao dịch</th>
+                                    <th style="width: 30%;">Loại giao dịch · Kênh</th>
+                                    <th style="width: 22%;">Số tiền</th>
+                                    <th style="width: 18%;">Trạng thái</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -525,7 +166,7 @@
                                     </td>
                                     <td>
                                         <span th:if="${p.status == 'paid'}" class="status-pill-paid">
-                                            ✓ Paid
+                                            ✓ Đã thanh toán
                                         </span>
                                         <span th:if="${p.status != 'paid'}"
                                               class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200"
@@ -536,7 +177,7 @@
                                 </tr>
                                 <tr th:if="${booking.payments == null or booking.payments.isEmpty()}">
                                     <td colspan="4" style="text-align: center; color: #94a3b8; padding: 16px;">
-                                        No payment records recorded yet.
+                                        Chưa ghi nhận bản ghi giao dịch nào.
                                     </td>
                                 </tr>
                             </tbody>
@@ -551,17 +192,17 @@
 
                 <!-- Card 1: Cost Summary -->
                 <div class="surface-card">
-                    <h2 class="card-title">Cost summary</h2>
+                    <h2 class="card-title">Tóm tắt chi phí</h2>
 
                     <div class="cost-row">
-                        <span>Hourly rate</span>
+                        <span>Đơn giá theo giờ</span>
                         <span style="font-family: 'JetBrains Mono', monospace; font-weight: 500; color: #0f172a;">
                             <span th:text="${#numbers.formatDecimal(booking.pricePerHour, 0, 'COMMA', 0, 'POINT')}">160,000</span> đ/h
                         </span>
                     </div>
 
                     <div class="cost-total-row">
-                        <span class="cost-total-label">Total rental fee</span>
+                        <span class="cost-total-label">Tổng tiền thuê dự kiến</span>
                         <span class="cost-total-val">
                             <span th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT')}">1,440,000</span> đ
                         </span>
@@ -570,8 +211,8 @@
                     <!-- Amber Security Deposit Box -->
                     <div class="deposit-amber-box">
                         <div>
-                            <div class="deposit-box-label">Security deposit</div>
-                            <div class="deposit-box-sub">Refundable on return</div>
+                            <div class="deposit-box-label">Tiền cọc giữ xe</div>
+                            <div class="deposit-box-sub">Hoàn cọc khi kết thúc hợp đồng</div>
                         </div>
                         <div class="deposit-box-val">
                             <span th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}">720,000</span> đ
@@ -582,15 +223,15 @@
                     <a th:if="${booking.status == 'pending_payment'}"
                        th:href="@{/bookings/{id}/pay-deposit(id=${booking.id})}"
                        class="btn-pay-now">
-                        Pay Deposit Now →
+                        Thanh toán cọc ngay →
                     </a>
 
                     <!-- Cancel Booking Button -->
                     <form th:if="${booking.status == 'pending_payment' or booking.status == 'confirmed'}"
                           th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post"
-                          onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                          onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn đặt xe này?');">
                         <button type="submit" class="btn-cancel">
-                            Cancel booking
+                            Hủy đơn đặt xe
                         </button>
                     </form>
                 </div>
@@ -599,7 +240,7 @@
                 <div class="surface-card" th:if="${booking.contract != null}">
                     <div class="agreement-header">
                         <div>
-                            <h2 class="card-title" style="margin-bottom: 2px;">Rental agreement</h2>
+                            <h2 class="card-title" style="margin-bottom: 2px;">Hợp đồng thuê xe tự lái</h2>
                             <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #94a3b8;"
                                  th:text="${booking.contract.contractNumber}">
                                 CTR-20261023-0012
@@ -607,24 +248,24 @@
                         </div>
                         <div>
                             <!-- Validity follows the booking status; contracts have no separate status -->
-                            <span th:if="${booking.status == 'pending_payment'}" class="status-pill-pending">Awaiting deposit</span>
-                            <span th:if="${booking.status == 'cancelled'}" class="status-pill-cancelled">Cancelled</span>
-                            <span th:if="${booking.status != 'pending_payment' and booking.status != 'cancelled'}" class="status-pill-paid">✓ In effect</span>
+                            <span th:if="${booking.status == 'pending_payment'}" class="status-pill-pending">Chờ thanh toán cọc</span>
+                            <span th:if="${booking.status == 'cancelled'}" class="status-pill-cancelled">Đã hủy</span>
+                            <span th:if="${booking.status != 'pending_payment' and booking.status != 'cancelled'}" class="status-pill-paid">✓ Đang có hiệu lực</span>
                         </div>
                     </div>
 
                     <div class="agreement-meta-row">
-                        <span class="agreement-meta-label">Accepted at</span>
+                        <span class="agreement-meta-label">Ký điện tử lúc</span>
                         <span class="agreement-meta-val"
                               th:text="${#temporals.format(booking.contract.acceptedAt, 'dd/MM/yyyy HH:mm')}">23/10/2026 04:00</span>
                     </div>
                     <div class="agreement-meta-row">
-                        <span class="agreement-meta-label">Deposit / free cancellation</span>
+                        <span class="agreement-meta-label">Cọc / Miễn phí hủy</span>
                         <span data-policy="deposit cancellation" class="agreement-meta-val"
-                              th:text="${booking.contract.terms.depositPercent} + '% / ' + ${booking.contract.terms.freeCancellationHours} + 'h before pickup'">50% / 72h before pickup</span>
+                              th:text="${booking.contract.terms.depositPercent} + '% / ' + ${booking.contract.terms.freeCancellationHours} + 'h trước giờ nhận'">50% / 72h before pickup</span>
                     </div>
                     <div class="agreement-meta-row">
-                        <span class="agreement-meta-label">Late return</span>
+                        <span class="agreement-meta-label">Phí quá hạn trả xe</span>
                         <span data-policy="lateReturn" class="agreement-meta-val"
                               th:text="${booking.contract.terms.lateFeePercent} + '% of hourly rate'">200% of hourly rate</span>
                     </div>
@@ -635,11 +276,11 @@
 
                     <a th:if="${booking.contract.issued}" th:href="@{/bookings/{id}/contract(id=${booking.id})}"
                        target="_blank" rel="noopener" class="btn-download-contract">
-                        Download contract (PDF)
+                        Tải hợp đồng thuê xe (PDF)
                     </a>
                     <div th:if="${!booking.contract.issued and booking.status != 'pending_payment' and booking.status != 'cancelled'}"
                          class="agreement-meta-label" style="margin-top: 10px;">
-                        The PDF contract is being prepared.
+                        Hệ thống đang chuẩn bị bản hợp đồng PDF.
                     </div>
                 </div>
 

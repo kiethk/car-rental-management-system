@@ -11,16 +11,16 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer", "promotion", "vehicle.vehicleType"})
+    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer", "promotion", "vehicle.vehicleType", "employee"})
     Optional<Booking> findById(Long id);
 
-    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer"})
+    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer", "employee"})
     List<Booking> findByCustomerIdOrderByCreatedAtDesc(Long customerId);
 
-    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer"})
+    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer", "employee"})
     List<Booking> findAllByOrderByCreatedAtDesc();
 
-    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer"})
+    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer", "employee"})
     List<Booking> findByStatusOrderByCreatedAtDesc(String status);
 
     long countByVehicleId(Long vehicleId);
