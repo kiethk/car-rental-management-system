@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Booking Detail — DriveNow</title>
+    <title>Chi tiết đơn đặt xe — DriveNow</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,9 +12,9 @@
     <link rel="stylesheet" th:href="@{/css/app.css}">
     <style>
         .detail-page-container {
-            max-width: 1080px;
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 20px 16px 56px;
+            padding: 24px 1.5rem 56px;
         }
         .back-link {
             color: #64748b;
@@ -56,12 +56,12 @@
         .detail-grid-layout {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 20px;
+            gap: 24px;
         }
-        @media (min-width: 900px) {
+        @media (min-width: 992px) {
             .detail-grid-layout {
-                grid-template-columns: 1.45fr 1fr;
-                gap: 20px;
+                grid-template-columns: 1.5fr 1fr;
+                gap: 32px;
                 align-items: start;
             }
         }
@@ -399,20 +399,20 @@
 <main class="flex-1">
     <div class="detail-page-container">
 
-        <!-- Back to My Bookings -->
+        <!-- Quay lại danh sách chuyến đi -->
         <a th:href="@{/bookings/my-bookings}" class="back-link">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-            Back to My Bookings
+            Quay lại chuyến đi của tôi
         </a>
 
         <!-- Title & Status Header -->
         <div class="detail-heading-row">
             <div>
                 <h1 class="detail-title">
-                    Booking <span class="font-mono" th:text="'#' + ${booking.id}">#12</span>
+                    Đơn đặt xe <span class="font-mono" th:text="'#' + ${booking.id}">#12</span>
                 </h1>
                 <div class="detail-booked-at">
-                    Booked on <span th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}">23/10/2026 04:00</span>
+                    Thời gian đặt: <span th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}">23/10/2026 04:00</span>
                 </div>
             </div>
 
@@ -430,7 +430,7 @@
 
                 <!-- Card 1: Vehicle & Schedule -->
                 <div class="surface-card">
-                    <h2 class="card-title">Vehicle & schedule</h2>
+                    <h2 class="card-title">Phương tiện & Lịch trình di chuyển</h2>
 
                     <!-- Vehicle Strip -->
                     <div class="vehicle-strip">
@@ -439,9 +439,7 @@
                              class="vehicle-img"
                              onerror="this.onerror=null; this.src='/images/car-rental-logo.svg';">
                         <div>
-                            <div class="vehicle-cat" th:text="${booking.vehicleCategory + ' · ' + booking.seats + ' Seats'}">
-                                Sedan · 5 Seats
-                            </div>
+                            <div class="vehicle-cat" th:text="${booking.vehicleCategory + ' · ' + booking.seats + ' chỗ'}">Sedan · 5 chỗ</div>
                             <h3 class="vehicle-name" th:text="${booking.vehicleTypeName}">
                                 Accent 2024
                             </h3>
@@ -464,8 +462,8 @@
                                 <div class="axis-line"></div>
                             </div>
                             <div class="timeline-content">
-                                <div class="timeline-step-title">Pickup</div>
-                                <div class="timeline-step-desc">Warehouse: 123 Dinh Bo Linh St, Ward 26, Binh Thanh, HCMC</div>
+                                <div class="timeline-step-title">Thời gian nhận xe</div>
+                                <div class="timeline-step-desc">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</div>
                             </div>
                         </div>
 
@@ -479,10 +477,32 @@
                                 <span class="dot-hollow"></span>
                             </div>
                             <div class="timeline-content">
-                                <div class="timeline-step-title">Scheduled return</div>
+                                <div class="timeline-step-title">Thời gian trả xe dự kiến</div>
                                 <div class="timeline-step-desc" th:with="diffHours=${T(java.time.Duration).between(booking.pickupTime, booking.scheduledEndTime).toHours()}">
-                                    <span th:text="${diffHours + ' hours after pickup'}">9 hours after pickup</span>
+                                    <span th:text="${diffHours + ' giờ kể từ khi nhận xe'}">9 giờ kể từ khi nhận xe</span>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Station & Staff Assistance -->
+                <div class="surface-card">
+                    <h2 class="card-title">Trạm nhận xe & Nhân viên bàn giao</h2>
+                    <div style="display: flex; gap: 20px; align-items: flex-start; margin-top: 12px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 250px;">
+                            <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px;">Trạm nhận xe</div>
+                            <div style="font-size: 14px; font-weight: 600; color: #0f172a;" th:text="${booking.stationAddress}">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Mở cửa hàng ngày: 07:00 - 22:00</div>
+                        </div>
+                        <div style="flex: 1; min-width: 250px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px;">
+                            <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px;">Nhân viên phụ trách giao nhận xe</div>
+                            <div style="font-size: 15px; font-weight: 700; color: #002B49;" th:text="${booking.staffName}">Support Staff</div>
+                            <div style="font-size: 13px; color: #334155; margin-top: 4px;">
+                                <span>📞 Hotline / Zalo: </span><strong th:text="${booking.staffPhone}">0977777777</strong>
+                            </div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 2px;" th:if="${booking.staffEmail != null}">
+                                <span>✉️ Email: </span><span th:text="${booking.staffEmail}">staff@crms.com</span>
                             </div>
                         </div>
                     </div>
@@ -490,16 +510,16 @@
 
                 <!-- Card 2: Payment Ledger -->
                 <div class="surface-card">
-                    <h2 class="card-title">Payment ledger</h2>
+                    <h2 class="card-title">Lịch sử giao dịch thanh toán</h2>
 
                     <div class="ledger-box">
                         <table class="ledger-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 30%;">Transaction</th>
-                                    <th style="width: 30%;">Type · Method</th>
-                                    <th style="width: 22%;">Amount</th>
-                                    <th style="width: 18%;">Status</th>
+                                    <th style="width: 30%;">Mã giao dịch</th>
+                                    <th style="width: 30%;">Loại giao dịch · Kênh</th>
+                                    <th style="width: 22%;">Số tiền</th>
+                                    <th style="width: 18%;">Trạng thái</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -525,7 +545,7 @@
                                     </td>
                                     <td>
                                         <span th:if="${p.status == 'paid'}" class="status-pill-paid">
-                                            ✓ Paid
+                                            ✓ Đã thanh toán
                                         </span>
                                         <span th:if="${p.status != 'paid'}"
                                               class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200"
@@ -536,7 +556,7 @@
                                 </tr>
                                 <tr th:if="${booking.payments == null or booking.payments.isEmpty()}">
                                     <td colspan="4" style="text-align: center; color: #94a3b8; padding: 16px;">
-                                        No payment records recorded yet.
+                                        Chưa ghi nhận bản ghi giao dịch nào.
                                     </td>
                                 </tr>
                             </tbody>
@@ -551,17 +571,17 @@
 
                 <!-- Card 1: Cost Summary -->
                 <div class="surface-card">
-                    <h2 class="card-title">Cost summary</h2>
+                    <h2 class="card-title">Tóm tắt chi phí</h2>
 
                     <div class="cost-row">
-                        <span>Hourly rate</span>
+                        <span>Đơn giá theo giờ</span>
                         <span style="font-family: 'JetBrains Mono', monospace; font-weight: 500; color: #0f172a;">
                             <span th:text="${#numbers.formatDecimal(booking.pricePerHour, 0, 'COMMA', 0, 'POINT')}">160,000</span> đ/h
                         </span>
                     </div>
 
                     <div class="cost-total-row">
-                        <span class="cost-total-label">Total rental fee</span>
+                        <span class="cost-total-label">Tổng tiền thuê dự kiến</span>
                         <span class="cost-total-val">
                             <span th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT')}">1,440,000</span> đ
                         </span>
@@ -570,8 +590,8 @@
                     <!-- Amber Security Deposit Box -->
                     <div class="deposit-amber-box">
                         <div>
-                            <div class="deposit-box-label">Security deposit</div>
-                            <div class="deposit-box-sub">Refundable on return</div>
+                            <div class="deposit-box-label">Tiền cọc giữ xe</div>
+                            <div class="deposit-box-sub">Hoàn cọc khi kết thúc hợp đồng</div>
                         </div>
                         <div class="deposit-box-val">
                             <span th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}">720,000</span> đ
@@ -582,15 +602,15 @@
                     <a th:if="${booking.status == 'pending_payment'}"
                        th:href="@{/bookings/{id}/pay-deposit(id=${booking.id})}"
                        class="btn-pay-now">
-                        Pay Deposit Now →
+                        Thanh toán cọc ngay →
                     </a>
 
                     <!-- Cancel Booking Button -->
                     <form th:if="${booking.status == 'pending_payment' or booking.status == 'confirmed'}"
                           th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post"
-                          onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                          onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn đặt xe này?');">
                         <button type="submit" class="btn-cancel">
-                            Cancel booking
+                            Hủy đơn đặt xe
                         </button>
                     </form>
                 </div>
@@ -599,7 +619,7 @@
                 <div class="surface-card" th:if="${booking.contract != null}">
                     <div class="agreement-header">
                         <div>
-                            <h2 class="card-title" style="margin-bottom: 2px;">Rental agreement</h2>
+                            <h2 class="card-title" style="margin-bottom: 2px;">Hợp đồng thuê xe tự lái</h2>
                             <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #94a3b8;"
                                  th:text="${booking.contract.contractNumber}">
                                 CTR-20261023-0012
@@ -607,24 +627,24 @@
                         </div>
                         <div>
                             <!-- Validity follows the booking status; contracts have no separate status -->
-                            <span th:if="${booking.status == 'pending_payment'}" class="status-pill-pending">Awaiting deposit</span>
-                            <span th:if="${booking.status == 'cancelled'}" class="status-pill-cancelled">Cancelled</span>
-                            <span th:if="${booking.status != 'pending_payment' and booking.status != 'cancelled'}" class="status-pill-paid">✓ In effect</span>
+                            <span th:if="${booking.status == 'pending_payment'}" class="status-pill-pending">Chờ thanh toán cọc</span>
+                            <span th:if="${booking.status == 'cancelled'}" class="status-pill-cancelled">Đã hủy</span>
+                            <span th:if="${booking.status != 'pending_payment' and booking.status != 'cancelled'}" class="status-pill-paid">✓ Đang có hiệu lực</span>
                         </div>
                     </div>
 
                     <div class="agreement-meta-row">
-                        <span class="agreement-meta-label">Accepted at</span>
+                        <span class="agreement-meta-label">Ký điện tử lúc</span>
                         <span class="agreement-meta-val"
                               th:text="${#temporals.format(booking.contract.acceptedAt, 'dd/MM/yyyy HH:mm')}">23/10/2026 04:00</span>
                     </div>
                     <div class="agreement-meta-row">
-                        <span class="agreement-meta-label">Deposit / free cancellation</span>
+                        <span class="agreement-meta-label">Cọc / Miễn phí hủy</span>
                         <span data-policy="deposit cancellation" class="agreement-meta-val"
-                              th:text="${booking.contract.terms.depositPercent} + '% / ' + ${booking.contract.terms.freeCancellationHours} + 'h before pickup'">50% / 72h before pickup</span>
+                              th:text="${booking.contract.terms.depositPercent} + '% / ' + ${booking.contract.terms.freeCancellationHours} + 'h trước giờ nhận'">50% / 72h before pickup</span>
                     </div>
                     <div class="agreement-meta-row">
-                        <span class="agreement-meta-label">Late return</span>
+                        <span class="agreement-meta-label">Phí quá hạn trả xe</span>
                         <span data-policy="lateReturn" class="agreement-meta-val"
                               th:text="${booking.contract.terms.lateFeePercent} + '% of hourly rate'">200% of hourly rate</span>
                     </div>
@@ -635,11 +655,11 @@
 
                     <a th:if="${booking.contract.issued}" th:href="@{/bookings/{id}/contract(id=${booking.id})}"
                        target="_blank" rel="noopener" class="btn-download-contract">
-                        Download contract (PDF)
+                        Tải hợp đồng thuê xe (PDF)
                     </a>
                     <div th:if="${!booking.contract.issued and booking.status != 'pending_payment' and booking.status != 'cancelled'}"
                          class="agreement-meta-label" style="margin-top: 10px;">
-                        The PDF contract is being prepared.
+                        Hệ thống đang chuẩn bị bản hợp đồng PDF.
                     </div>
                 </div>
 

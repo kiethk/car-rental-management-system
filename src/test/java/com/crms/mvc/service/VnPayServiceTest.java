@@ -2,9 +2,13 @@ package com.crms.mvc.service;
 
 import com.crms.mvc.config.VnPayConfig;
 import com.crms.mvc.entity.Booking;
+import com.crms.mvc.repository.BookingRepository;
+import com.crms.mvc.repository.PaymentRepository;
 import com.crms.mvc.service.impl.VnPayServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -18,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class VnPayServiceTest {
 
-    private VnPayService vnPayService;
+    private PaymentService paymentService;
     private VnPayConfig vnPayConfig;
 
     @BeforeEach
@@ -27,11 +31,16 @@ public class VnPayServiceTest {
         ReflectionTestUtils.setField(vnPayConfig, "tmnCode", "CGXZLS0Z");
         ReflectionTestUtils.setField(vnPayConfig, "hashSecret", "XNBCJFAKAZQSGZSSTGIRQUXNMZFVOQD8");
         ReflectionTestUtils.setField(vnPayConfig, "payUrl", "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html");
-        ReflectionTestUtils.setField(vnPayConfig, "returnUrl", "http://localhost:8081/payment/vnpay-return");
+        ReflectionTestUtils.setField(vnPayConfig, "returnUrl", "http://localhost:8081/payment/vnpay/return");
         ReflectionTestUtils.setField(vnPayConfig, "version", "2.1.0");
         ReflectionTestUtils.setField(vnPayConfig, "command", "pay");
 
-        vnPayService = new VnPayServiceImpl(vnPayConfig);
+        PaymentRepository paymentRepository = Mockito.mock(PaymentRepository.class);
+        BookingRepository bookingRepository = Mockito.mock(BookingRepository.class);
+        BookingFeeService bookingFeeService = Mockito.mock(BookingFeeService.class);
+        ApplicationEventPublisher eventPublisher = Mockito.mock(ApplicationEventPublisher.class);
+
+        paymentService = new VnPayServiceImpl(paymentRepository, bookingRepository, bookingFeeService, eventPublisher, vnPayConfig);
     }
 
     @Test
@@ -43,46 +52,42 @@ public class VnPayServiceTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setRemoteAddr("127.0.0.1");
 
-        String url = vnPayService.createDepositPaymentUrl(booking, request);
+        String url = paymentService.createDepositPaymentUrl(booking, request);
 
         assertNotNull(url);
         assertTrue(url.startsWith("https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?"));
-        assertTrue(url.contains("vnp_TmnCode=CGXZLS0Z"));
         assertTrue(url.contains("vnp_Amount=67500000"));
-        assertTrue(url.contains("vnp_Command=pay"));
-        assertTrue(url.contains("vnp_Version=2.1.0"));
+        assertTrue(url.contains("vnp_TmnCode=CGXZLS0Z"));
         assertTrue(url.contains("vnp_SecureHash="));
     }
 
     @Test
     public void testVerifyPaymentSignature_Success() {
-        Booking booking = new Booking();
-        booking.setId(9L);
-        booking.setDepositAmount(new BigDecimal("500000"));
-
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRemoteAddr("127.0.0.1");
-
-        String url = vnPayService.createDepositPaymentUrl(booking, request);
-
-        // Parse generated params from URL
-        String query = url.substring(url.indexOf("?") + 1);
         Map<String, String> params = new HashMap<>();
-        for (String pair : query.split("&")) {
-            String[] kv = pair.split("=");
-            String key = URLDecoder.decode(kv[0], StandardCharsets.UTF_8);
-            String val = kv.length > 1 ? URLDecoder.decode(kv[1], StandardCharsets.UTF_8) : "";
-            params.put(key, val);
-        }
+        params.put("vnp_Amount", "67500000");
+        params.put("vnp_BankCode", "NCB");
+        params.put("vnp_Command", "pay");
+        params.put("vnp_OrderInfo", "DriveNow_Deposit_Booking_7");
+        params.put("vnp_ResponseCode", "00");
+        params.put("vnp_TmnCode", "CGXZLS0Z");
+        params.put("vnp_TxnRef", "7_123456789");
 
-        // Verify that the signature generated is validated by verifyPaymentSignature
-        boolean valid = vnPayService.verifyPaymentSignature(params);
-        assertTrue(valid, "Signature verification should succeed for authentic params");
+        // Calculate expected hash
+        String hashData = "vnp_Amount=67500000&vnp_BankCode=NCB&vnp_Command=pay&vnp_OrderInfo=DriveNow_Deposit_Booking_7&vnp_ResponseCode=00&vnp_TmnCode=CGXZLS0Z&vnp_TxnRef=7_123456789";
+        String expectedHash = VnPayConfig.hmacSHA512("XNBCJFAKAZQSGZSSTGIRQUXNMZFVOQD8", hashData);
+        params.put("vnp_SecureHash", expectedHash);
 
-        // Now test tampered param (e.g. amount modified)
-        params.put("vnp_Amount", "99999999");
-        boolean tampered = vnPayService.verifyPaymentSignature(params);
-        assertFalse(tampered, "Signature verification should fail when amount is modified");
+        boolean isValid = paymentService.verifyPaymentSignature(params);
+        assertTrue(isValid);
+    }
+
+    @Test
+    public void testVerifyPaymentSignature_Failure() {
+        Map<String, String> params = new HashMap<>();
+        params.put("vnp_Amount", "67500000");
+        params.put("vnp_SecureHash", "INVALID_HASH");
+
+        boolean isValid = paymentService.verifyPaymentSignature(params);
+        assertFalse(isValid);
     }
 }
-

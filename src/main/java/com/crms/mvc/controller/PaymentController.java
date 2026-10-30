@@ -3,7 +3,6 @@ package com.crms.mvc.controller;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.PaymentService;
-import com.crms.mvc.service.VnPayService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
@@ -19,25 +18,24 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 @Controller
-public class VnPayController {
+public class PaymentController {
 
-    private static final Logger log = LoggerFactory.getLogger(VnPayController.class);
+    private static final Logger log = LoggerFactory.getLogger(PaymentController.class);
 
-    private final VnPayService vnPayService;
     private final PaymentService paymentService;
     private final BookingService bookingService;
 
-    public VnPayController(VnPayService vnPayService, PaymentService paymentService, BookingService bookingService) {
-        this.vnPayService = vnPayService;
+    public PaymentController(PaymentService paymentService, BookingService bookingService) {
         this.paymentService = paymentService;
         this.bookingService = bookingService;
     }
 
-    @PostMapping("/bookings/{id}/vnpay-payment")
-    public String initiateVnPayPayment(@PathVariable("id") Long bookingId,
-                                      HttpServletRequest request,
-                                      HttpSession session,
-                                      RedirectAttributes ra) {
+    @PostMapping("/bookings/{id}/pay-deposit")
+    public String initiateDepositPayment(@PathVariable("id") Long bookingId,
+                                         @RequestParam(value = "method", defaultValue = "VNPAY") String method,
+                                         HttpServletRequest request,
+                                         HttpSession session,
+                                         RedirectAttributes ra) {
         Long customerId = (Long) session.getAttribute("customerId");
         if (customerId == null) {
             return "redirect:/login";
@@ -59,32 +57,42 @@ public class VnPayController {
         }
 
         if (!"pending_payment".equalsIgnoreCase(booking.getStatus())) {
-            ra.addFlashAttribute("error", "Booking status does not allow deposit payment (status: " + booking.getStatus() + ").");
+            ra.addFlashAttribute("error", "Đơn đặt xe không ở trạng thái chờ đặt cọc (Trạng thái hiện tại: " + booking.getStatus() + ").");
+            return "redirect:/bookings/" + bookingId;
+        }
+
+        // Hạn chót 15 phút: tự động hủy đơn và chặn thanh toán nếu quá 15 phút
+        if (booking.getCreatedAt() != null && booking.getCreatedAt().plusMinutes(15).isBefore(java.time.OffsetDateTime.now())) {
+            bookingService.cancelBooking(bookingId, customerId);
+            ra.addFlashAttribute("error", "Đơn đặt xe đã hết hạn thanh toán cọc sau 15 phút và đã tự động hủy.");
             return "redirect:/bookings/" + bookingId;
         }
 
         try {
-            String paymentUrl = vnPayService.createDepositPaymentUrl(booking, request);
+            String paymentUrl = paymentService.createDepositPaymentUrl(booking, request);
             return "redirect:" + paymentUrl;
         } catch (Exception e) {
-            log.error("Failed to initiate VNPay payment for booking {}", bookingId, e);
-            ra.addFlashAttribute("error", "Could not connect to VNPay gateway: " + e.getMessage());
+            log.error("Failed to initiate payment for booking {}", bookingId, e);
+            ra.addFlashAttribute("error", "Could not connect to payment gateway: " + e.getMessage());
             return "redirect:/bookings/" + bookingId + "/pay-deposit";
         }
     }
 
-    @GetMapping("/payment/vnpay-return")
-    public String handleVnPayReturn(@RequestParam Map<String, String> allParams,
-                                    RedirectAttributes ra) {
+    @GetMapping("/payment/{gateway}/return")
+    public String handlePaymentReturn(@PathVariable("gateway") String gatewayPath,
+                                      @RequestParam Map<String, String> allParams,
+                                      RedirectAttributes ra) {
+        String gateway = (gatewayPath != null && !gatewayPath.isBlank()) ? gatewayPath.toUpperCase() : "VNPAY";
+
         String vnp_TxnRef = allParams.get("vnp_TxnRef");
         String responseCode = allParams.get("vnp_ResponseCode");
         String transactionNo = allParams.get("vnp_TransactionNo");
         String amountStr = allParams.get("vnp_Amount");
 
-        log.info("Received VNPay callback: TxnRef={}, ResponseCode={}, TxnNo={}", vnp_TxnRef, responseCode, transactionNo);
+        log.info("Received {} callback: TxnRef={}, ResponseCode={}, TxnNo={}", gateway, vnp_TxnRef, responseCode, transactionNo);
 
         if (vnp_TxnRef == null || vnp_TxnRef.isEmpty()) {
-            ra.addFlashAttribute("error", "Invalid VNPay payment response: missing transaction reference.");
+            ra.addFlashAttribute("error", "Invalid payment response: missing transaction reference.");
             return "redirect:/";
         }
 
@@ -98,9 +106,9 @@ public class VnPayController {
             return "redirect:/";
         }
 
-        boolean isValidSignature = vnPayService.verifyPaymentSignature(allParams);
+        boolean isValidSignature = paymentService.verifyPaymentSignature(allParams);
         if (!isValidSignature) {
-            log.error("VNPay signature verification failed for vnp_TxnRef: {}", vnp_TxnRef);
+            log.error("{} signature verification failed for TxnRef: {}", gateway, vnp_TxnRef);
             ra.addFlashAttribute("error", "Payment verification failed: invalid digital signature.");
             return "redirect:/bookings/" + bookingId + "/pay-deposit";
         }
@@ -118,32 +126,33 @@ public class VnPayController {
                     return "redirect:/bookings/" + bookingId;
                 }
 
-                // Verify returned amount (VNPay amount is in cents, multiplied by 100)
+                // Verify returned amount (amount is in cents, multiplied by 100)
                 if (amountStr != null) {
                     long returnedAmount = Long.parseLong(amountStr);
                     long expectedAmount = booking.getDepositAmount().multiply(BigDecimal.valueOf(100)).longValue();
                     if (returnedAmount != expectedAmount) {
-                        log.error("VNPay amount mismatch for booking {}: expected={}, received={}", bookingId, expectedAmount, returnedAmount);
+                        log.error("Payment amount mismatch for booking {}: expected={}, received={}", bookingId, expectedAmount, returnedAmount);
                         ra.addFlashAttribute("error", "Payment amount mismatch.");
                         return "redirect:/bookings/" + bookingId + "/pay-deposit";
                     }
                 }
 
-                paymentService.processDeposit(bookingId, transactionNo, "VNPAY");
-                log.info("Successfully processed deposit for booking {} via VNPay (Txn: {})", bookingId, transactionNo);
+                paymentService.processDeposit(bookingId, transactionNo, gateway);
+                log.info("Successfully processed deposit for booking {} via {} (Txn: {})", bookingId, gateway, transactionNo);
                 return "redirect:/bookings/" + bookingId + "/success?vnp_TxnRef=" + vnp_TxnRef +
                         (transactionNo != null ? "&vnp_TransactionNo=" + transactionNo : "");
             } catch (Exception e) {
                 log.error("Error finalizing deposit for booking {}", bookingId, e);
-                ra.addFlashAttribute("error", "Payment succeeded on VNPay but failed to update booking: " + e.getMessage());
+                ra.addFlashAttribute("error", "Payment succeeded on gateway but failed to update booking: " + e.getMessage());
                 return "redirect:/bookings/" + bookingId + "/pay-deposit";
             }
         } else if ("24".equals(responseCode)) {
-            ra.addFlashAttribute("error", "VNPay payment was cancelled. You can try again or select another payment method.");
+            ra.addFlashAttribute("error", "Payment was cancelled. You can try again or select another payment method.");
             return "redirect:/bookings/" + bookingId + "/pay-deposit";
         } else {
-            ra.addFlashAttribute("error", "VNPay payment failed (Code " + responseCode + "). Please try again.");
+            ra.addFlashAttribute("error", "Payment failed (Code " + responseCode + "). Please try again.");
             return "redirect:/bookings/" + bookingId + "/pay-deposit";
         }
     }
 }
+

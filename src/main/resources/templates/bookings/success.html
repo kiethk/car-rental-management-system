@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Booking Confirmed — DriveNow</title>
+        <title>Đặt xe & Thanh toán thành công — DriveNow</title>
         <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,9 +15,9 @@
         <link rel="stylesheet" th:href="@{/css/app.css}" />
         <style>
             .success-page-container {
-                max-width: 1140px;
+                max-width: 1280px;
                 margin: 0 auto;
-                padding: 24px 20px 64px;
+                padding: 24px 1.5rem 56px;
             }
             .stepper-wrap {
                 display: flex;
@@ -93,8 +93,8 @@
                 margin-bottom: 8px;
             }
             .check-circle-icon {
-                width: 44px;
-                height: 44px;
+                width: 36px;
+                height: 36px;
                 border-radius: 50%;
                 background-color: #047857;
                 color: #ffffff;
@@ -102,14 +102,13 @@
                 align-items: center;
                 justify-content: center;
                 flex-shrink: 0;
-                box-shadow: 0 2px 8px rgba(4, 120, 87, 0.25);
             }
             .heading-title {
-                font-size: 32px;
-                font-weight: 800;
+                font-size: 24px;
+                font-weight: 700;
                 color: #0f172a;
-                letter-spacing: -0.03em;
-                line-height: 1.15;
+                letter-spacing: -0.02em;
+                line-height: 1.2;
                 margin: 0;
             }
             .heading-subtitle {
@@ -159,8 +158,8 @@
             }
             @media (min-width: 992px) {
                 .success-grid-layout {
-                    grid-template-columns: 1.55fr 1fr;
-                    gap: 28px;
+                    grid-template-columns: 1.5fr 1fr;
+                    gap: 32px;
                     align-items: start;
                 }
             }
@@ -168,7 +167,7 @@
             .surface-card {
                 background-color: #ffffff;
                 border: 1px solid #e2e8f0;
-                border-radius: 18px;
+                border-radius: 10px;
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
                 overflow: hidden;
             }
@@ -178,10 +177,10 @@
                 padding: 24px 28px;
             }
             .card-header-title {
-                font-size: 18px;
+                font-size: 15px;
                 font-weight: 700;
                 color: #0f172a;
-                margin: 0 0 24px 0;
+                margin: 0 0 16px 0;
             }
             .timeline-item {
                 display: flex;
@@ -263,7 +262,7 @@
             .before-you-go {
                 background-color: #fdfaf3;
                 border: 1px solid #fed7aa;
-                border-radius: 14px;
+                border-radius: 12px;
                 padding: 18px 20px;
                 margin-top: 24px;
             }
@@ -290,12 +289,15 @@
                 align-items: flex-start;
                 gap: 10px;
             }
-            .check-square {
-                width: 16px;
-                height: 16px;
-                border: 2px solid #b45309;
-                border-radius: 4px;
-                margin-top: 2px;
+            .notice-icon-box {
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                background-color: #fef3c7;
+                color: #b45309;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 flex-shrink: 0;
             }
             .check-bold {
@@ -484,18 +486,33 @@
                 <!-- Top Navigation Bar & Stepper -->
                 <div class="stepper-wrap">
                     <a th:href="@{/bookings/my-bookings}" class="stepper-link">
-                        <span style="font-size: 14px">←</span> My Bookings
+                        <span style="font-size: 14px">←</span> Chuyến đi của tôi
                     </a>
 
                     <!-- Stepper Progress Bar -->
-                    <div class="stepper-steps">
-                        <span><span class="step-dot">✓</span> Schedule</span>
-                        <span class="step-divider">—</span>
-                        <span><span class="step-dot">✓</span> Review</span>
-                        <span class="step-divider">—</span>
-                        <span><span class="step-dot">✓</span> Deposit</span>
-                        <span class="step-divider">—</span>
-                        <span class="step-confirmed-badge">Confirmed</span>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="inline-flex items-center gap-1 text-slate-500 font-medium">
+                            <svg class="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg> Lịch trình
+                        </span>
+                        <span class="text-slate-300">→</span>
+                        <span class="inline-flex items-center gap-1 text-slate-500 font-medium">
+                            <svg class="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg> Kiểm tra & Xác nhận
+                        </span>
+                        <span class="text-slate-300">→</span>
+                        <span class="inline-flex items-center gap-1 text-slate-500 font-medium">
+                            <svg class="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg> Đặt cọc
+                        </span>
+                        <span class="text-slate-300">→</span>
+                        <span class="inline-flex items-center gap-1.5 font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            Đã xác nhận cọc
+                        </span>
                     </div>
                 </div>
 
@@ -517,15 +534,7 @@
                                     <polyline points="20 6 9 17 4 12" />
                                 </svg>
                             </div>
-                            <h1 class="heading-title">Booking confirmed</h1>
-                        </div>
-                    </div>
-
-                    <!-- Booking & VNPay Ref Badges -->
-                    <div class="ref-badges-group">
-                        <div class="ref-card">
-                            <div class="ref-card-label">Booking</div>
-                            <div class="ref-card-val" th:text="'#' + ${booking.id}">#11</div>
+                            <h1 class="heading-title">Đặt xe & Thanh toán cọc thành công!</h1>
                         </div>
                     </div>
                 </div>
@@ -537,7 +546,7 @@
                         <!-- Trip Card -->
                         <div class="surface-card">
                             <div class="trip-card-content">
-                                <h2 class="card-header-title">Your trip</h2>
+                                <h2 class="card-header-title">Hành trình chuyến đi</h2>
 
                                 <!-- Vertical Timeline -->
                                 <div style="margin-bottom: 24px">
@@ -562,8 +571,8 @@
                                             <div class="axis-line"></div>
                                         </div>
                                         <div class="timeline-content">
-                                            <div class="timeline-title">Pick up at Central Depot</div>
-                                            <div class="timeline-desc">120 Trường Chinh, Ward 12, Tân Bình</div>
+                                            <div class="timeline-title">Nhận xe tại trạm bãi</div>
+                                            <div class="timeline-desc">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</div>
                                             <div
                                                 class="duration-tag"
                                                 th:with="diffHours=${T(java.time.Duration).between(booking.pickupTime, booking.scheduledEndTime).toHours()}"
@@ -579,7 +588,7 @@
                                                     <circle cx="12" cy="12" r="10" />
                                                     <polyline points="12 6 12 12 16 14" />
                                                 </svg>
-                                                <span th:text="${diffHours + ' hours rental'}">9 hours rental</span>
+                                                <span th:text="${diffHours + ' giờ thuê xe'}">9 giờ thuê xe</span>
                                             </div>
                                         </div>
                                     </div>
@@ -604,15 +613,15 @@
                                             <span class="dot-hollow"></span>
                                         </div>
                                         <div class="timeline-content">
-                                            <div class="timeline-title">Return to Central Depot</div>
+                                            <div class="timeline-title">Trả xe tại trạm bãi</div>
                                             <div class="timeline-desc">
-                                                Same hub · pay the remaining
+                                                Cùng điểm nhận · thanh toán số tiền còn lại
                                                 <span
                                                     style="font-weight: 600; color: #0f172a"
                                                     th:text="${#numbers.formatDecimal(booking.totalPrice - booking.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"
                                                     >675,000 đ</span
                                                 >
-                                                on return
+                                                khi kết thúc chuyến đi
                                             </div>
                                         </div>
                                     </div>
@@ -620,37 +629,58 @@
 
                                 <!-- Before You Go Notice Box -->
                                 <div class="before-you-go">
-                                    <div class="before-title">Before you go</div>
-                                    <div class="checklist-grid">
-                                        <div class="check-item">
-                                            <span class="check-square"></span>
-                                            <div>
-                                                <div class="check-bold">Arrive 10–15 minutes early</div>
-                                                <div class="check-sub">Before the scheduled pickup time</div>
-                                            </div>
+                                    <div class="before-title">
+                                        <svg class="w-4 h-4 text-amber-600 inline-block mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <line x1="12" y1="8" x2="12" y2="12" />
+                                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                                        </svg>
+                                        Lưu ý trước giờ nhận xe
+                                    </div>
+                                    <div class="space-y-2 mt-2">
+                                        <div class="flex items-start gap-2.5 text-xs text-slate-700">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0"></span>
+                                            <div><strong>Đến sớm 10–15 phút:</strong> So với giờ hẹn để đối chiếu biên bản bàn giao xe.</div>
                                         </div>
-                                        <div class="check-item">
-                                            <span class="check-square"></span>
-                                            <div>
-                                                <div class="check-bold">Bring your documents</div>
-                                                <div class="check-sub">Citizen ID card + driver license</div>
-                                            </div>
+                                        <div class="flex items-start gap-2.5 text-xs text-slate-700">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0"></span>
+                                            <div><strong>Mang theo giấy tờ tùy thân gốc:</strong> Bản gốc CCCD và Giấy phép lái xe (GPLX).</div>
                                         </div>
                                     </div>
-                                    <div class="hotline-row">
-                                        <span
-                                            >24/7 Roadside hotline
-                                            <strong style="color: #0f172a; margin-left: 4px">1800 6868</strong></span
-                                        >
+                                </div>
+
+                                <!-- Station & Contact Staff Notice Box -->
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; margin-top: 16px; margin-bottom: 16px;">
+                                    <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 6px;">Trạm nhận xe & Nhân viên bàn giao</div>
+                                    <div style="font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 8px;">
+                                        📍 <span th:text="${booking.stationAddress}">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</span>
                                     </div>
+                                    <div style="font-size: 13px; color: #334155;">
+                                        👤 <span>Nhân viên bàn giao: </span><strong th:text="${booking.staffName}">Support Staff</strong>
+                                        <span style="margin: 0 6px;">•</span>
+                                        📞 <span>Số điện thoại: </span><strong style="color: #002B49;" th:text="${booking.staffPhone}">0977777777</strong>
+                                    </div>
+                                </div>
+
+                                <div class="hotline-row">
+                                    <span>Tổng đài cứu hộ khẩn cấp 24/7:
+                                        <strong style="color: #0f172a; margin-left: 4px">1800 6868</strong>
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Navigation Action Buttons -->
                         <div class="action-buttons-wrap">
-                            <a th:href="@{/bookings/{id}(id=${booking.id})}" class="btn-view-details"> View details </a>
-                            <a th:href="@{/}" class="btn-back-home"> Back to Home </a>
+                            <a th:href="@{/bookings/{id}(id=${booking.id})}" class="btn-navy px-5 py-2.5 rounded-lg text-sm font-bold shadow-xs inline-flex items-center gap-2 text-decoration-none">
+                                <span>Xem chi tiết đơn</span>
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                </svg>
+                            </a>
+                            <a th:href="@{/}" class="btn-outline-shadcn px-5 py-2.5 rounded-lg text-sm font-semibold inline-flex items-center text-decoration-none">
+                                Về trang chủ
+                            </a>
                         </div>
                     </div>
 
@@ -689,7 +719,7 @@
                         <!-- Payment Breakdown Card -->
                         <div class="surface-card">
                             <div class="payment-card-content">
-                                <h2 class="card-header-title" style="margin-bottom: 0">Payment</h2>
+                                <h2 class="card-header-title" style="margin-bottom: 0">Tình trạng thanh toán</h2>
 
                                 <!-- 50% Progress Bar -->
                                 <div class="payment-progress-bar">
@@ -710,7 +740,7 @@
                                             >
                                                 <polyline points="20 6 9 17 4 12" />
                                             </svg>
-                                            <th:block data-policy="deposit" th:text="'Deposit paid (' + ${booking.contract?.terms?.depositPercent} + '%, VNPay)'">Deposit paid (50%, VNPay)</th:block>
+                                            <th:block data-policy="deposit" th:text="'Đã thanh toán cọc (' + ${booking.contract?.terms?.depositPercent} + '%, VNPay)'">Đã thanh toán cọc (50%, VNPay)</th:block>
                                         </span>
                                         <span class="payment-val-green">
                                             <span
@@ -722,7 +752,7 @@
                                     </div>
 
                                     <div class="payment-row">
-                                        <span>Due on return</span>
+                                        <span>Thanh toán khi trả xe</span>
                                         <span class="payment-val-dark">
                                             <span
                                                 th:text="${#numbers.formatDecimal(booking.totalPrice - booking.depositAmount, 0, 'COMMA', 0, 'POINT')}"
@@ -734,7 +764,7 @@
 
                                     <!-- Total Rental Cost -->
                                     <div class="payment-total-row">
-                                        <span class="payment-total-label">Total rental cost</span>
+                                        <span class="payment-total-label">Tổng chi phí thuê dự kiến</span>
                                         <div class="payment-total-val">
                                             <span
                                                 th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT')}"
