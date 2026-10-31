@@ -21,7 +21,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import com.crms.mvc.entity.Booking;
+import com.crms.mvc.entity.Customer;
+import com.crms.mvc.dto.BookingCancelDTO;
+import com.crms.mvc.dto.ContractTemplateDTO;
+
 import java.util.Optional;
 import java.util.Set;
 
@@ -35,6 +42,12 @@ class BookingServiceSchedulingAndValidationTest {
 
     @Mock
     private BookingRepository bookingRepository;
+
+    @Mock
+    private PaymentService paymentService;
+
+    @Mock
+    private ContractService contractService;
 
     @InjectMocks
     private BookingServiceImpl bookingService;
@@ -142,5 +155,101 @@ class BookingServiceSchedulingAndValidationTest {
         vehicleService.updateStatus(10L, "maintenance");
         assertThat(vehicle.getStatus()).isEqualTo("maintenance");
         verify(vehicleRepository, times(1)).save(vehicle);
+    }
+
+    @Test
+    @DisplayName("Cancel confirmed booking > 72h before pickup creates pending refund")
+    void testCancelConfirmedBookingEligibleForRefund() {
+        Long bookingId = 100L;
+        Long customerId = 1L;
+
+        Customer customer = new Customer();
+        customer.setId(customerId);
+
+        Booking booking = new Booking();
+        booking.setId(bookingId);
+        booking.setCustomer(customer);
+        booking.setStatus("confirmed");
+        booking.setDepositAmount(new BigDecimal("500000"));
+        booking.setPickupTime(OffsetDateTime.now(ZoneOffset.ofHours(7)).plusDays(5));
+
+        when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
+
+        ContractTemplateDTO terms = new ContractTemplateDTO();
+        terms.setFreeCancellationHours(72);
+        when(contractService.getTermsOfBooking(bookingId)).thenReturn(terms);
+
+        BookingCancelDTO dto = new BookingCancelDTO();
+        dto.setBankCode("VCB");
+        dto.setAccountNumber("0123456789");
+        dto.setAccountHolder("NGUYEN VAN A");
+
+        boolean refundCreated = bookingService.cancelBooking(bookingId, customerId, dto);
+
+        assertThat(refundCreated).isTrue();
+        assertThat(booking.getStatus()).isEqualTo("cancelled");
+        verify(paymentService, times(1)).createPendingRefund(bookingId, new BigDecimal("500000"), "VCB", "0123456789", "NGUYEN VAN A");
+        verify(bookingRepository, times(1)).save(booking);
+    }
+
+    @Test
+    @DisplayName("Cancel confirmed booking < 72h before pickup does not create refund")
+    void testCancelConfirmedBookingIneligibleForRefund() {
+        Long bookingId = 101L;
+        Long customerId = 1L;
+
+        Customer customer = new Customer();
+        customer.setId(customerId);
+
+        Booking booking = new Booking();
+        booking.setId(bookingId);
+        booking.setCustomer(customer);
+        booking.setStatus("confirmed");
+        booking.setDepositAmount(new BigDecimal("500000"));
+        booking.setPickupTime(OffsetDateTime.now(ZoneOffset.ofHours(7)).plusHours(10)); // < 72h
+
+        when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
+
+        ContractTemplateDTO terms = new ContractTemplateDTO();
+        terms.setFreeCancellationHours(72);
+        when(contractService.getTermsOfBooking(bookingId)).thenReturn(terms);
+
+        BookingCancelDTO dto = new BookingCancelDTO();
+        dto.setBankCode("VCB");
+        dto.setAccountNumber("0123456789");
+        dto.setAccountHolder("NGUYEN VAN A");
+
+        boolean refundCreated = bookingService.cancelBooking(bookingId, customerId, dto);
+
+        assertThat(refundCreated).isFalse();
+        assertThat(booking.getStatus()).isEqualTo("cancelled");
+        verify(paymentService, never()).createPendingRefund(any(), any(), any(), any(), any());
+        verify(bookingRepository, times(1)).save(booking);
+    }
+
+    @Test
+    @DisplayName("Cancel pending_payment booking cancels without refund")
+    void testCancelPendingPaymentBooking() {
+        Long bookingId = 102L;
+        Long customerId = 1L;
+
+        Customer customer = new Customer();
+        customer.setId(customerId);
+
+        Booking booking = new Booking();
+        booking.setId(bookingId);
+        booking.setCustomer(customer);
+        booking.setStatus("pending_payment");
+        booking.setDepositAmount(new BigDecimal("500000"));
+        booking.setPickupTime(OffsetDateTime.now(ZoneOffset.ofHours(7)).plusDays(5));
+
+        when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
+
+        boolean refundCreated = bookingService.cancelBooking(bookingId, customerId, null);
+
+        assertThat(refundCreated).isFalse();
+        assertThat(booking.getStatus()).isEqualTo("cancelled");
+        verify(paymentService, never()).createPendingRefund(any(), any(), any(), any(), any());
+        verify(bookingRepository, times(1)).save(booking);
     }
 }

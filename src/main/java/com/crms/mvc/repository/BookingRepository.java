@@ -23,6 +23,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer", "employee"})
     List<Booking> findByStatusOrderByCreatedAtDesc(String status);
 
+    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer", "employee"})
+    @Query("SELECT DISTINCT b FROM Booking b, Payment p WHERE p.booking = b AND p.paymentType = 'REFUND' AND p.status = 'pending' ORDER BY b.createdAt DESC")
+    List<Booking> findBookingsWithPendingRefund();
+
     long countByVehicleId(Long vehicleId);
 
     @Query("SELECT b.vehicle.id FROM Booking b WHERE b.vehicle IS NOT NULL " +

@@ -16,6 +16,8 @@ public class BookingSummaryDTO implements Serializable {
     private String customerName;
     private String imageUrl;
     private String vehicleCategory;
+    private boolean hasPendingRefund;
+    private BigDecimal refundAmount;
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
@@ -49,5 +51,12 @@ public class BookingSummaryDTO implements Serializable {
 
     public String getCustomerName() { return customerName; }
     public void setCustomerName(String customerName) { this.customerName = customerName; }
+
+    public boolean isHasPendingRefund() { return hasPendingRefund; }
+    public boolean getHasPendingRefund() { return hasPendingRefund; }
+    public void setHasPendingRefund(boolean hasPendingRefund) { this.hasPendingRefund = hasPendingRefund; }
+
+    public BigDecimal getRefundAmount() { return refundAmount; }
+    public void setRefundAmount(BigDecimal refundAmount) { this.refundAmount = refundAmount; }
 }
 

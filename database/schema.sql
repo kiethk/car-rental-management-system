@@ -141,7 +141,6 @@ CREATE TABLE bookings (
     pickup_time TIMESTAMP WITH TIME ZONE NOT NULL,
     scheduled_end_time TIMESTAMP WITH TIME ZONE NOT NULL,
     actual_return_time TIMESTAMP WITH TIME ZONE,
-    late_fee NUMERIC(14,2) NOT NULL DEFAULT 0.00,
     total_price NUMERIC(14,2) NOT NULL,
     status VARCHAR(30) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -149,11 +148,9 @@ CREATE TABLE bookings (
     price_per_hour NUMERIC(14,2) NOT NULL,
     deposit_amount NUMERIC(14,2) NOT NULL,
     discount_amount NUMERIC(14,2) NOT NULL,
-    -- Plate text copied when the contract is issued and again at handover, so later plate changes never rewrite history.
-    license_plate VARCHAR(20),
     CHECK (pickup_time < scheduled_end_time),
     CHECK (status IN ('pending_payment','confirmed','active','completed','cancelled')),
-    CHECK (total_price >= 0 AND price_per_hour >= 0 AND deposit_amount >= 0 AND discount_amount >= 0 AND late_fee >= 0)
+    CHECK (total_price >= 0 AND price_per_hour >= 0 AND deposit_amount >= 0 AND discount_amount >= 0)
 );
 
 -- One row = one immutable version of the rental terms. Only DRAFT rows may be edited.

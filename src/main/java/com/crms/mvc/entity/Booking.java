@@ -41,8 +41,6 @@ public class Booking {
     @Column(name = "actual_return_time")
     private OffsetDateTime actualReturnTime;
 
-    @Column(name = "late_fee", nullable = false, precision = 14, scale = 2)
-    private BigDecimal lateFee;
 
     @Column(name = "total_price", nullable = false, precision = 14, scale = 2)
     private BigDecimal totalPrice;
@@ -65,9 +63,6 @@ public class Booking {
     @Column(name = "discount_amount", nullable = false, precision = 14, scale = 2)
     private BigDecimal discountAmount;
 
-    /** Plate text copied from the vehicle at contract issue and at handover; later plate changes do not touch it. */
-    @Column(name = "license_plate", length = 20)
-    private String licensePlate;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -96,8 +91,6 @@ public class Booking {
     public OffsetDateTime getActualReturnTime() { return actualReturnTime; }
     public void setActualReturnTime(OffsetDateTime actualReturnTime) { this.actualReturnTime = actualReturnTime; }
 
-    public BigDecimal getLateFee() { return lateFee; }
-    public void setLateFee(BigDecimal lateFee) { this.lateFee = lateFee; }
 
     public BigDecimal getTotalPrice() { return totalPrice; }
     public void setTotalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; }
@@ -120,6 +113,4 @@ public class Booking {
     public BigDecimal getDiscountAmount() { return discountAmount; }
     public void setDiscountAmount(BigDecimal discountAmount) { this.discountAmount = discountAmount; }
 
-    public String getLicensePlate() { return licensePlate; }
-    public void setLicensePlate(String licensePlate) { this.licensePlate = licensePlate; }
 }

@@ -16,6 +16,7 @@ public interface BookingService {
     BookingDetailDTO getBookingDetailForAdmin(Long bookingId);
     List<BookingSummaryDTO> getAllBookings(String status);
     void cancelBooking(Long bookingId, Long customerId);
+    boolean cancelBooking(Long bookingId, Long customerId, BookingCancelDTO dto);
     void assignVehicle(Long bookingId, Long vehicleId);
     void checkIn(Long bookingId, Long employeeId);
     void checkOut(Long bookingId, Long employeeId, CheckOutDTO dto);
