@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
@@ -49,10 +48,7 @@ public class VnPayServiceTest {
         booking.setId(7L);
         booking.setDepositAmount(new BigDecimal("675000"));
 
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRemoteAddr("127.0.0.1");
-
-        String url = paymentService.createDepositPaymentUrl(booking, request);
+        String url = paymentService.createDepositPaymentUrl(booking, "127.0.0.1");
 
         assertNotNull(url);
         assertTrue(url.startsWith("https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?"));

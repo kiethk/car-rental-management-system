@@ -8,7 +8,6 @@ import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.PaymentRepository;
 import com.crms.mvc.service.BookingFeeService;
 import com.crms.mvc.service.PaymentService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -48,7 +47,7 @@ public class VnPayServiceImpl implements PaymentService {
 
     @Override
     @Transactional(readOnly = true)
-    public String createDepositPaymentUrl(Booking booking, HttpServletRequest request) {
+    public String createDepositPaymentUrl(Booking booking, String clientIp) {
         long amountInCents = booking.getDepositAmount().multiply(new BigDecimal(100)).longValue();
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -59,7 +58,7 @@ public class VnPayServiceImpl implements PaymentService {
         String vnp_ExpireDate = formatter.format(cld.getTime());
 
         String vnp_TxnRef = booking.getId() + "_" + System.currentTimeMillis();
-        String vnp_IpAddr = VnPayConfig.getIpAddress(request);
+        String vnp_IpAddr = (clientIp != null && !clientIp.isBlank()) ? clientIp : "127.0.0.1";
 
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnPayConfig.getVersion());
@@ -107,15 +106,15 @@ public class VnPayServiceImpl implements PaymentService {
 
     @Override
     @Transactional(readOnly = true)
-    public boolean verifyPaymentSignature(Map<String, String> vnpParams) {
-        String vnp_SecureHash = vnpParams.get("vnp_SecureHash");
+    public boolean verifyPaymentSignature(Map<String, String> queryParams) {
+        String vnp_SecureHash = queryParams.get("vnp_SecureHash");
         if (vnp_SecureHash == null || vnp_SecureHash.trim().isEmpty()) {
             log.warn("VNPay signature verification failed: missing vnp_SecureHash");
             return false;
         }
 
         Map<String, String> fields = new HashMap<>();
-        for (Map.Entry<String, String> entry : vnpParams.entrySet()) {
+        for (Map.Entry<String, String> entry : queryParams.entrySet()) {
             String key = entry.getKey();
             String val = entry.getValue();
             if (key != null && key.startsWith("vnp_") && !key.equals("vnp_SecureHash") && !key.equals("vnp_SecureHashType")) {

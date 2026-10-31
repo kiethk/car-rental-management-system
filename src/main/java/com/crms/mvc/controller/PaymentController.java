@@ -1,5 +1,6 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.config.VnPayConfig;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.PaymentService;
@@ -69,7 +70,8 @@ public class PaymentController {
         }
 
         try {
-            String paymentUrl = paymentService.createDepositPaymentUrl(booking, request);
+            String clientIp = VnPayConfig.getIpAddress(request);
+            String paymentUrl = paymentService.createDepositPaymentUrl(booking, clientIp);
             return "redirect:" + paymentUrl;
         } catch (Exception e) {
             log.error("Failed to initiate payment for booking {}", bookingId, e);
