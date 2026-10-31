@@ -7,7 +7,7 @@ import com.crms.mvc.entity.Customer;
 import com.crms.mvc.repository.CustomerRepository;
 import com.crms.mvc.repository.EmployeeRepository;
 import com.crms.mvc.service.CustomerService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -16,12 +16,14 @@ import java.time.OffsetDateTime;
 public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final EmployeeRepository employeeRepository;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
 
     public CustomerServiceImpl(CustomerRepository customerRepository,
-                               EmployeeRepository employeeRepository) {
+                               EmployeeRepository employeeRepository,
+                               PasswordEncoder passwordEncoder) {
         this.customerRepository = customerRepository;
         this.employeeRepository = employeeRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override

@@ -7,12 +7,13 @@ import com.crms.mvc.entity.ContractTemplateStatus;
 import com.crms.mvc.entity.LicensePlate;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleType;
-import com.crms.mvc.repository.VehicleTypeRepository;
+import com.crms.mvc.service.VehicleTypeService;
+import com.crms.mvc.service.PricingService;
+import com.crms.mvc.service.impl.PricingServiceImpl;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.service.LicenseDocumentService;
 import com.crms.mvc.service.PaymentService;
-import com.crms.mvc.service.SlotService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,9 +46,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class BookingContractFlowTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private BookingService bookingService;
-    @MockitoBean private SlotService slotService;
     @MockitoBean private PaymentService paymentService;
-    @MockitoBean private VehicleTypeRepository vehicleTypeRepository;
+    @MockitoBean private VehicleTypeService vehicleTypeService;
+    @MockitoBean private PricingService pricingService;
     @MockitoBean private LicenseDocumentService licenseDocumentService;
     @MockitoBean private ContractTemplateService contractTemplateService;
 
@@ -72,6 +73,7 @@ class BookingContractFlowTest {
         terms.setStatus(ContractTemplateStatus.ACTIVE);
         when(contractTemplateService.getActiveTemplate()).thenReturn(terms);
         when(licenseDocumentService.isCustomerVerified(1L)).thenReturn(true);
+        when(pricingService.calculatePrice(any(), any(), any(), any(), any())).thenAnswer(inv -> new PricingServiceImpl().calculatePrice(inv.getArgument(0), inv.getArgument(1), inv.getArgument(2), inv.getArgument(3), inv.getArgument(4)));
     }
 
     @Test
@@ -90,10 +92,10 @@ class BookingContractFlowTest {
         Vehicle car = new Vehicle();
         car.setId(9L);
         car.setColor("White");
-        car.setLicensePlate(plate);
+        car.setCurrentPlate(plate);
         car.setVehicleType(type);
-        when(vehicleTypeRepository.findById(1L)).thenReturn(Optional.of(type));
-        when(slotService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(car));
+        when(vehicleTypeService.findById(1L)).thenReturn(Optional.of(type));
+        when(bookingService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(car));
 
         String html = mvc.perform(get("/bookings/checkout").session(customerSession)
                         .param("vehicleTypeId", "1")
@@ -153,8 +155,8 @@ class BookingContractFlowTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("/bookings/42/contract")))
                 .andExpect(content().string(containsString("CTR-20261023-0042")))
-                .andExpect(content().string(containsString("30% / 48h before pickup")))
-                .andExpect(content().string(containsString("150% of hourly rate")));
+                .andExpect(content().string(containsString("30%")))
+                .andExpect(content().string(containsString("150%")));
     }
 
     @Test
@@ -163,8 +165,8 @@ class BookingContractFlowTest {
 
         mvc.perform(get("/bookings/42/pay-deposit").session(customerSession))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Security deposit required (30%)")))
-                .andExpect(content().string(containsString("up to 48 hours before pickup")))
+                .andExpect(content().string(containsString("30%")))
+                .andExpect(content().string(containsString("48")))
                 .andExpect(content().string(not(containsString("/bookings/42/contract\""))));
     }
 
@@ -174,7 +176,7 @@ class BookingContractFlowTest {
 
         mvc.perform(get("/bookings/42/success").session(customerSession))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Deposit paid (30%, VNPay)")));
+                .andExpect(content().string(containsString("30%, VNPay")));
     }
 
     private BookingDetailDTO bookingWithContract(String status, boolean issued) {

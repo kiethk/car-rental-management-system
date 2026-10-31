@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Deposit Payment — DriveNow</title>
+        <title>Thanh toán tiền cọc giữ xe — DriveNow</title>
         <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,565 +13,8 @@
         />
         <link rel="stylesheet" th:href="@{/css/drivenow.css}" />
         <link rel="stylesheet" th:href="@{/css/app.css}" />
-        <style>
-            .deposit-page-container {
-                max-width: 1080px;
-                margin: 0 auto;
-                padding: 20px 16px 56px;
-            }
-
-            /* Top Bar */
-            .deposit-top-bar {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 24px;
-                flex-wrap: wrap;
-                gap: 12px;
-            }
-            .breadcrumb-group {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-            .breadcrumb-back {
-                color: #64748b;
-                font-size: 13px;
-                font-weight: 500;
-                text-decoration: none !important;
-                transition: color 0.15s ease;
-            }
-            .breadcrumb-back:hover {
-                color: #0f172a;
-            }
-            .breadcrumb-sep {
-                color: #cbd5e1;
-                font-size: 13px;
-            }
-            .page-title {
-                font-size: 18px;
-                font-weight: 700;
-                color: #0f172a;
-                margin: 0;
-                letter-spacing: -0.01em;
-            }
-
-            /* Stepper */
-            .stepper-steps {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-size: 12px;
-                font-weight: 500;
-                color: #64748b;
-            }
-            .step-done {
-                color: #047857;
-                font-weight: 600;
-                display: inline-flex;
-                align-items: center;
-                gap: 4px;
-            }
-            .step-active-pill {
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                background-color: #ecfdf5;
-                color: #047857;
-                font-weight: 700;
-                padding: 3px 10px;
-                border-radius: 9999px;
-                border: 1px solid #a7f3d0;
-            }
-
-            /* 2-Column Grid Layout */
-            .deposit-grid-layout {
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            @media (min-width: 900px) {
-                .deposit-grid-layout {
-                    grid-template-columns: 1.45fr 1fr;
-                    gap: 20px;
-                    align-items: start;
-                }
-            }
-
-            /* Cards Standard Styling (Harmonious with detail.html) */
-            .surface-card {
-                background-color: #ffffff;
-                border: 1px solid #e2e8f0;
-                border-radius: 10px;
-                padding: 20px;
-                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-            }
-            .card-header-row {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 4px;
-            }
-            .card-title {
-                font-size: 16px;
-                font-weight: 700;
-                color: #0f172a;
-                margin: 0;
-            }
-            .card-subtitle {
-                font-size: 12px;
-                color: #64748b;
-                margin: 2px 0 16px 0;
-            }
-
-            /* Holding Vehicle Badge */
-            .holding-badge {
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                font-size: 11px;
-                font-weight: 600;
-                background-color: #fffbeb;
-                color: #92400e;
-                border: 1px solid #fde68a;
-                padding: 3px 10px;
-                border-radius: 9999px;
-            }
-            .pulse-dot {
-                width: 6px;
-                height: 6px;
-                border-radius: 50%;
-                background-color: #d97706;
-                animation: pulse 1.5s infinite;
-            }
-            @keyframes pulse {
-                0%,
-                100% {
-                    opacity: 1;
-                }
-                50% {
-                    opacity: 0.4;
-                }
-            }
-
-            /* Payment Method Card */
-            .method-card {
-                border: 1.5px solid #0f172a;
-                border-radius: 9px;
-                padding: 16px;
-                background-color: #f8fafc;
-                margin-bottom: 16px;
-            }
-            .method-top {
-                display: flex;
-                align-items: flex-start;
-                gap: 12px;
-            }
-            .method-radio {
-                margin-top: 3px;
-                accent-color: #0f172a;
-                width: 16px;
-                height: 16px;
-            }
-            .method-info {
-                flex: 1;
-            }
-            .method-title-line {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                flex-wrap: wrap;
-                gap: 6px;
-                margin-bottom: 4px;
-            }
-            .method-name-wrap {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-            .method-name {
-                font-size: 14px;
-                font-weight: 700;
-                color: #0f172a;
-            }
-            .vnpay-badge {
-                background-color: #ffffff;
-                border: 1px solid #e2e8f0;
-                border-radius: 4px;
-                padding: 2px 6px;
-                font-size: 10px;
-                font-weight: 800;
-                display: inline-flex;
-                letter-spacing: -0.02em;
-            }
-            .badge-verified {
-                background-color: #ecfdf5;
-                color: #047857;
-                border: 1px solid #a7f3d0;
-                border-radius: 4px;
-                padding: 2px 7px;
-                font-size: 10px;
-                font-weight: 700;
-            }
-            .method-desc {
-                font-size: 12px;
-                color: #64748b;
-                line-height: 1.45;
-                margin: 4px 0 10px 0;
-            }
-            .channels-strip {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 6px;
-                padding-top: 10px;
-                border-top: 1px solid #e2e8f0;
-            }
-            .channel-pill {
-                background-color: #ffffff;
-                border: 1px solid #cbd5e1;
-                border-radius: 5px;
-                padding: 3px 8px;
-                font-size: 11px;
-                font-weight: 500;
-                color: #334155;
-                display: inline-flex;
-                align-items: center;
-                gap: 4px;
-            }
-
-            /* Deposit Amount Row */
-            .deposit-row-box {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 14px 16px;
-                background-color: #ffffff;
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                margin-bottom: 16px;
-            }
-            .deposit-label-main {
-                font-size: 12px;
-                font-weight: 600;
-                color: #475569;
-            }
-            .deposit-label-sub {
-                font-size: 11px;
-                color: #94a3b8;
-                margin-top: 2px;
-            }
-            .deposit-val-large {
-                font-family: "JetBrains Mono", monospace;
-                font-size: 22px;
-                font-weight: 800;
-                color: #0f172a;
-            }
-
-            /* Sandbox Test Credentials Box */
-            .sandbox-box {
-                background-color: #fef7ee;
-                border: 1px solid #fed7aa;
-                border-radius: 8px;
-                padding: 14px 16px;
-                margin-bottom: 20px;
-            }
-            .sandbox-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding-bottom: 10px;
-                border-bottom: 1px solid #fed7aa;
-                margin-bottom: 10px;
-            }
-            .sandbox-title-wrap {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            }
-            .demo-pill {
-                background-color: #9a3412;
-                color: #ffffff;
-                font-size: 9px;
-                font-weight: 800;
-                padding: 2px 5px;
-                border-radius: 4px;
-                letter-spacing: 0.05em;
-            }
-            .sandbox-title {
-                font-size: 12px;
-                font-weight: 700;
-                color: #9a3412;
-            }
-            .btn-copy-card {
-                background-color: #ffffff;
-                border: 1px solid #fed7aa;
-                color: #9a3412;
-                font-size: 11px;
-                font-weight: 600;
-                padding: 4px 10px;
-                border-radius: 5px;
-                cursor: pointer;
-                display: inline-flex;
-                align-items: center;
-                gap: 4px;
-                transition: all 0.15s ease;
-            }
-            .btn-copy-card:hover {
-                background-color: #fffbeb;
-                border-color: #f59e0b;
-            }
-            .sandbox-grid {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px 14px;
-            }
-            @media (min-width: 600px) {
-                .sandbox-grid {
-                    grid-template-columns: repeat(4, 1fr);
-                }
-            }
-            .sandbox-col-label {
-                font-size: 10px;
-                color: #94a3b8;
-                font-weight: 500;
-            }
-            .sandbox-col-val {
-                font-family: "JetBrains Mono", monospace;
-                font-size: 12px;
-                font-weight: 700;
-                color: #0f172a;
-                margin-top: 1px;
-            }
-
-            /* Action Button */
-            .btn-submit-vnpay {
-                width: 100%;
-                background-color: #0f172a !important;
-                color: #ffffff !important;
-                border: 1px solid #0f172a !important;
-                border-radius: 8px;
-                padding: 12px 18px;
-                font-size: 14px;
-                font-weight: 700;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 8px;
-                transition: all 0.15s ease;
-                box-shadow: 0 1px 2px rgba(15, 23, 42, 0.1);
-            }
-            .btn-submit-vnpay:hover {
-                background-color: #1e293b !important;
-                border-color: #1e293b !important;
-                box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
-            }
-            .pay-later-link {
-                display: block;
-                text-align: center;
-                margin-top: 10px;
-                color: #64748b;
-                font-size: 12px;
-                text-decoration: none !important;
-                transition: color 0.15s ease;
-            }
-            .pay-later-link:hover {
-                color: #0f172a;
-            }
-
-            /* Trust Strip */
-            .trust-strip {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: 16px;
-                margin-top: 20px;
-                padding-top: 16px;
-                border-top: 1px solid #f1f5f9;
-                font-size: 11px;
-                color: #64748b;
-                flex-wrap: wrap;
-            }
-
-            /* Right Column Cards */
-            .sidebar-cards-wrap {
-                display: flex;
-                flex-direction: column;
-                gap: 20px;
-            }
-            .vehicle-summary-top {
-                display: flex;
-                align-items: center;
-                gap: 14px;
-                padding-bottom: 14px;
-                border-bottom: 1px solid #f1f5f9;
-            }
-            .sidebar-vehicle-img {
-                width: 96px;
-                height: 64px;
-                border-radius: 8px;
-                object-fit: cover;
-                background: #f8fafc;
-                border: 1px solid #e2e8f0;
-                flex-shrink: 0;
-            }
-            .sidebar-car-meta {
-                font-size: 11px;
-                color: #94a3b8;
-            }
-            .sidebar-car-name {
-                font-size: 16px;
-                font-weight: 700;
-                color: #0f172a;
-                margin: 2px 0 4px 0;
-                line-height: 1.2;
-            }
-            .plate-box {
-                border: 1.5px solid #1e293b;
-                border-radius: 5px;
-                padding: 2px 8px;
-                font-family: "JetBrains Mono", monospace;
-                font-weight: 700;
-                font-size: 11px;
-                background: #ffffff;
-                color: #0f172a;
-                display: inline-block;
-            }
-
-            /* Timeline in Right Card */
-            .sidebar-timeline {
-                padding-top: 14px;
-            }
-            .sb-timeline-item {
-                display: flex;
-                gap: 12px;
-                align-items: flex-start;
-            }
-            .sb-time-col {
-                width: 75px;
-                flex-shrink: 0;
-            }
-            .sb-time {
-                font-family: "JetBrains Mono", monospace;
-                font-size: 14px;
-                font-weight: 700;
-                color: #0f172a;
-            }
-            .sb-date {
-                font-size: 10px;
-                color: #94a3b8;
-            }
-            .sb-axis {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                width: 12px;
-                padding-top: 3px;
-            }
-            .sb-dot-solid {
-                width: 8px;
-                height: 8px;
-                border-radius: 50%;
-                background-color: #059669;
-            }
-            .sb-dot-hollow {
-                width: 8px;
-                height: 8px;
-                border-radius: 50%;
-                background-color: #ffffff;
-                border: 1.5px solid #059669;
-            }
-            .sb-line {
-                width: 1px;
-                border-left: 1.5px dashed #10b981;
-                height: 28px;
-                margin: 2px 0;
-            }
-            .sb-info-title {
-                font-size: 12px;
-                font-weight: 600;
-                color: #0f172a;
-            }
-            .sb-info-sub {
-                font-size: 11px;
-                color: #64748b;
-            }
-
-            /* Pricing Card */
-            .cost-row {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 12px;
-            }
-            .cost-label {
-                font-size: 13px;
-                color: #475569;
-            }
-            .cost-val {
-                font-family: "JetBrains Mono", monospace;
-                font-size: 16px;
-                font-weight: 700;
-                color: #0f172a;
-            }
-            .deposit-highlight-card {
-                background-color: #ecfdf5;
-                border: 1px solid #bbf7d0;
-                border-radius: 8px;
-                padding: 12px 14px;
-                margin-bottom: 16px;
-            }
-            .dh-top {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .dh-title-wrap {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            }
-            .dh-title {
-                font-size: 12px;
-                font-weight: 700;
-                color: #065f46;
-            }
-            .badge-pct {
-                background-color: #059669;
-                color: #ffffff;
-                font-size: 9px;
-                font-weight: 800;
-                padding: 1px 5px;
-                border-radius: 3px;
-            }
-            .dh-val {
-                font-family: "JetBrains Mono", monospace;
-                font-size: 18px;
-                font-weight: 800;
-                color: #065f46;
-            }
-            .dh-sub-row {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-top: 8px;
-                padding-top: 8px;
-                border-top: 1px solid #d1fae5;
-                font-size: 11px;
-                color: #047857;
-            }
-            .perks-list {
-                space-y: 6px;
-                font-size: 11px;
-                color: #64748b;
-            }
-            .perk-item {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                margin-bottom: 6px;
-            }
-        </style>
+        <link rel="stylesheet" th:href="@{/css/modules/booking.css}" />
+        
     </head>
     <body class="bg-surface text-navy min-h-screen flex flex-col font-sans">
         <div th:replace="~{fragments/header :: header}"></div>
@@ -581,9 +24,9 @@
                 <!-- Top Bar: Navigation & Stepper -->
                 <div class="deposit-top-bar">
                     <div class="breadcrumb-group">
-                        <a th:href="@{/bookings/my-bookings}" class="breadcrumb-back"> ← My Bookings </a>
+                        <a th:href="@{/bookings/my-bookings}" class="breadcrumb-back"> ← Chuyến đi của tôi </a>
                         <span class="breadcrumb-sep">/</span>
-                        <h1 class="page-title">Deposit Payment</h1>
+                        <h1 class="page-title">Thanh toán tiền cọc giữ xe</h1>
                     </div>
 
                     <!-- 3-Step Stepper -->
@@ -597,10 +40,9 @@
                                 stroke-width="2.5"
                             >
                                 <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                            Schedule
+                            </svg> Lịch trình
                         </span>
-                        <span style="color: #cbd5e1">—</span>
+                        <span class="text-slate-300">→</span>
                         <span class="step-done">
                             <svg
                                 class="w-3.5 h-3.5 text-emerald-600"
@@ -610,11 +52,10 @@
                                 stroke-width="2.5"
                             >
                                 <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                            Review
+                            </svg> Kiểm tra & Xác nhận
                         </span>
-                        <span style="color: #cbd5e1">—</span>
-                        <span class="step-active-pill"> Deposit </span>
+                        <span class="text-slate-300">→</span>
+                        <span class="inline-flex items-center gap-1.5 font-bold text-slate-900 bg-slate-100 px-3 py-1 rounded-full border border-slate-300"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Đặt cọc</span>
                     </div>
                 </div>
 
@@ -624,11 +65,11 @@
                     <div class="surface-card">
                         <!-- Title & Holding Timer -->
                         <div class="card-header-row">
-                            <h2 class="card-title">Select payment method</h2>
+                            <h2 class="card-title">Chọn phương thức thanh toán</h2>
                             <div class="holding-badge">
                                 <span class="pulse-dot"></span>
                                 <span
-                                    >Holding vehicle · <strong id="depositTimer" class="font-mono">14:43</strong></span
+                                    >Đang giữ chỗ xe · <strong id="depositTimer" class="font-mono" th:data-created-at="${booking.createdAt}" th:data-expires-at="${booking.createdAt != null ? booking.createdAt.plusMinutes(15) : ''}">15:00</strong></span
                                 >
                             </div>
                         </div>
@@ -640,37 +81,22 @@
                                 <div class="method-info">
                                     <div class="method-title-line">
                                         <div class="method-name-wrap">
-                                            <span class="method-name">VNPay payment gateway</span>
+                                            <span class="method-name">Cổng thanh toán điện tử VNPay</span>
                                             <span class="vnpay-badge">
                                                 <span style="color: #005baa">VN</span
                                                 ><span style="color: #ed1c24">PAY</span>
                                             </span>
                                         </div>
-                                        <span class="badge-verified">Instant verification</span>
                                     </div>
 
                                     <div class="channels-strip">
                                         <span class="channel-pill">
-                                            <strong style="color: #005baa">VNPAY-QR</strong> Mobile app
+                                            <strong style="color: #005baa">VNPAY-QR</strong> Ứng dụng ngân hàng
                                         </span>
-                                        <span class="channel-pill">40+ domestic ATM cards</span>
+                                        <span class="channel-pill">40+ ngân hàng nội địa (ATM)</span>
                                         <span class="channel-pill">Visa · Mastercard · JCB</span>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Deposit Amount Summary Strip -->
-                        <div class="deposit-row-box">
-                            <div>
-                                <div data-policy="deposit" class="deposit-label-main" th:text="'Security deposit required (' + ${booking.contract?.terms?.depositPercent} + '%)'">Security deposit required (50%)</div>
-                                <div class="deposit-label-sub">Remaining balance will be settled at vehicle return</div>
-                            </div>
-                            <div
-                                class="deposit-val-large"
-                                th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"
-                            >
-                                720,000 đ
                             </div>
                         </div>
 
@@ -679,7 +105,7 @@
                             <div class="sandbox-header">
                                 <div class="sandbox-title-wrap">
                                     <span class="demo-pill">DEMO</span>
-                                    <span class="sandbox-title">Test credentials</span>
+                                    <span class="sandbox-title">Thông tin thẻ thử nghiệm (Sandbox)</span>
                                 </div>
                                 <button
                                     type="button"
@@ -696,47 +122,41 @@
                                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                                     </svg>
-                                    <span>Copy card number</span>
+                                    <span>Sao chép số thẻ</span>
                                 </button>
                             </div>
                             <div class="sandbox-grid">
                                 <div>
-                                    <div class="sandbox-col-label">Bank</div>
-                                    <div class="sandbox-col-val">NCB Bank</div>
+                                    <div class="sandbox-col-label">Ngân hàng</div>
+                                    <div class="sandbox-col-val">Ngân hàng Quốc Dân (NCB)</div>
                                 </div>
                                 <div>
-                                    <div class="sandbox-col-label">Card number</div>
+                                    <div class="sandbox-col-label">Số thẻ</div>
                                     <div class="sandbox-col-val">9704 1985 2619 1432 198</div>
                                 </div>
                                 <div>
-                                    <div class="sandbox-col-label">Cardholder / Exp</div>
+                                    <div class="sandbox-col-label">Chủ thẻ / Hết hạn</div>
                                     <div class="sandbox-col-val" style="font-weight: 600">NGUYEN VAN A · 07/15</div>
                                 </div>
                                 <div>
-                                    <div class="sandbox-col-label">Test OTP</div>
+                                    <div class="sandbox-col-label">Mã OTP test</div>
                                     <div class="sandbox-col-val" style="color: #059669">123456</div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Submit Button -->
-                        <form th:action="@{/bookings/{id}/vnpay-payment(id=${booking.id})}" method="post">
-                            <button type="submit" class="btn-submit-vnpay">
-                                <span>Proceed to VNPay payment</span>
+                        <form th:action="@{/bookings/{id}/pay-deposit(id=${booking.id})}" method="post">
+                            <input type="hidden" name="method" value="VNPAY">
+                            <button type="submit" id="submitPaymentBtn" class="btn-submit-vnpay">
+                                <span>Chuyển đến cổng thanh toán VNPay</span>
                                 <span>→</span>
                             </button>
                         </form>
 
                         <a th:href="@{/bookings/my-bookings}" class="pay-later-link">
-                            Pay later (return to My Bookings)
+                            Thanh toán sau (Quay lại danh sách chuyến đi của tôi)
                         </a>
-
-                        <!-- Trust Strip -->
-                        <div class="trust-strip">
-                            <span>✓ 256-bit SSL encrypted</span>
-                            <span>✓ Instant confirmation</span>
-                            <span>✓ PCI-DSS compliant gateway</span>
-                        </div>
                     </div>
 
                     <!-- Right Column: Reservation Summary & Pricing -->
@@ -744,7 +164,7 @@
                         <!-- Card 1: Reservation Summary (Vehicle + Integrated Timeline) -->
                         <div class="surface-card">
                             <div class="card-header-row" style="margin-bottom: 14px">
-                                <h2 class="card-title">Reservation summary</h2>
+                                <h2 class="card-title">Tóm tắt đơn đặt xe</h2>
                                 <span
                                     class="plate-box"
                                     style="font-size: 11px; padding: 1px 7px"
@@ -804,8 +224,8 @@
                                         <div class="sb-line"></div>
                                     </div>
                                     <div style="flex: 1">
-                                        <div class="sb-info-title">Pickup</div>
-                                        <div class="sb-info-sub">Central Depot</div>
+                                        <div class="sb-info-title">Thời gian nhận xe</div>
+                                        <div class="sb-info-sub">Kho bãi DriveNow</div>
                                     </div>
                                 </div>
 
@@ -829,12 +249,12 @@
                                         <span class="sb-dot-hollow"></span>
                                     </div>
                                     <div style="flex: 1">
-                                        <div class="sb-info-title">Return</div>
+                                        <div class="sb-info-title">Thời gian trả xe</div>
                                         <div
                                             class="sb-info-sub"
                                             th:with="diffHours=${T(java.time.Duration).between(booking.pickupTime, booking.scheduledEndTime).toHours()}"
                                         >
-                                            <span th:text="${diffHours + ' hours rental'}">9 hours rental</span>
+                                            <span th:text="${diffHours + ' giờ thuê'}">9 giờ thuê</span>
                                         </div>
                                     </div>
                                 </div>
@@ -845,7 +265,7 @@
                         <div class="surface-card">
                             <!-- Total Rental Fee -->
                             <div class="cost-row">
-                                <span class="cost-label">Total rental fee</span>
+                                <span class="cost-label">Tổng tiền thuê dự kiến</span>
                                 <span
                                     class="cost-val"
                                     th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"
@@ -858,7 +278,7 @@
                             <div class="deposit-highlight-card">
                                 <div class="dh-top">
                                     <div class="dh-title-wrap">
-                                        <span class="dh-title">Deposit due now</span>
+                                        <span class="dh-title">Tiền cọc giữ xe cần trả ngay</span>
                                         <span data-policy="deposit" class="badge-pct" th:text="${booking.contract?.terms?.depositPercent} + '%'">50%</span>
                                     </div>
                                     <div
@@ -869,7 +289,7 @@
                                     </div>
                                 </div>
                                 <div class="dh-sub-row">
-                                    <span>Remaining balance on return</span>
+                                    <span>Tiền thuê còn lại (thanh toán khi trả xe)</span>
                                     <span
                                         style="font-family: &quot;JetBrains Mono&quot;, monospace; font-weight: 700"
                                         th:text="${#numbers.formatDecimal(booking.totalPrice - booking.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"
@@ -878,22 +298,8 @@
                                     </span>
                                 </div>
                             </div>
-
-                            <!-- Perks List -->
-                            <div class="perks-list">
-                                <div class="perk-item">
-                                    <span style="color: #059669; font-weight: 700">✓</span>
-                                    <span>100% Bao Viet Insurance coverage</span>
-                                </div>
-                                <div class="perk-item">
-                                    <span style="color: #059669; font-weight: 700">✓</span>
-                                    <span>Central Depot Hub: 120 Trường Chinh, Tân Bình</span>
-                                </div>
-                                <div class="perk-item">
-                                    <span style="color: #059669; font-weight: 700">✓</span>
-                                    <span data-policy="cancellation" th:text="'Free cancellation up to ' + ${booking.contract?.terms?.freeCancellationHours} + ' hours before pickup'">Free cancellation up to 72 hours before pickup</span>
-                                </div>
-                            </div>
+                            <!-- Hidden policy field for contract validation -->
+                            <input type="hidden" name="freeCancellationHours" th:value="${booking.contract?.terms?.freeCancellationHours}" />
                         </div>
                     </div>
                 </div>
@@ -902,7 +308,7 @@
 
         <div th:replace="~{fragments/footer :: footer}"></div>
 
-        <script>
+        <script th:inline="javascript">
             // 1-Click Copy Helper
             function copyToClipboard(text, btn) {
                 if (!navigator.clipboard) {
@@ -926,31 +332,64 @@
                 <svg class="w-3 h-3 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <polyline points="20 6 9 17 4 12"/>
                 </svg>
-                <span style="color: #059669; font-weight: 700;">Copied!</span>
+                <span style="color: #059669; font-weight: 700;">Đã chép!</span>
             `;
                 setTimeout(() => {
                     btn.innerHTML = originalHTML;
                 }, 1500);
             }
 
-            // 15-Minute Countdown Timer
-            let timeLeft = 14 * 60 + 43;
-            const timerEl = document.getElementById("depositTimer");
-            if (timerEl) {
-                const timerInterval = setInterval(() => {
-                    timeLeft--;
-                    if (timeLeft <= 0) {
-                        clearInterval(timerInterval);
-                        timerEl.textContent = "00:00";
-                        return;
-                    }
-                    const m = Math.floor(timeLeft / 60)
-                        .toString()
-                        .padStart(2, "0");
-                    const s = (timeLeft % 60).toString().padStart(2, "0");
+            // Dynamic 15-Minute Countdown Timer based on booking.createdAt
+            (function () {
+                const timerEl = document.getElementById("depositTimer");
+                const submitBtn = document.getElementById("submitPaymentBtn");
+                if (!timerEl) return;
+
+                const expiresAtStr = timerEl.getAttribute("data-expires-at");
+                const createdAtStr = timerEl.getAttribute("data-created-at");
+                let targetEpoch;
+
+                if (expiresAtStr && expiresAtStr.trim() !== "") {
+                    targetEpoch = new Date(expiresAtStr).getTime();
+                } else if (createdAtStr && createdAtStr.trim() !== "") {
+                    targetEpoch = new Date(createdAtStr).getTime() + 15 * 60 * 1000;
+                } else {
+                    targetEpoch = Date.now() + 15 * 60 * 1000;
+                }
+
+                function updateCountdown() {
+                    const remainingSec = Math.max(0, Math.floor((targetEpoch - Date.now()) / 1000));
+                    const m = Math.floor(remainingSec / 60).toString().padStart(2, "0");
+                    const s = (remainingSec % 60).toString().padStart(2, "0");
                     timerEl.textContent = `${m}:${s}`;
-                }, 1000);
-            }
+
+                    if (remainingSec <= 0) {
+                        timerEl.textContent = "00:00 (Hết hạn)";
+                        const holdingBadge = timerEl.closest(".holding-badge");
+                        if (holdingBadge) {
+                            holdingBadge.style.backgroundColor = "#fef2f2";
+                            holdingBadge.style.color = "#dc2626";
+                            holdingBadge.style.borderColor = "#fecaca";
+                        }
+                        if (submitBtn) {
+                            submitBtn.disabled = true;
+                            submitBtn.style.opacity = "0.5";
+                            submitBtn.style.cursor = "not-allowed";
+                            submitBtn.innerHTML = "<span>Đơn đặt xe đã hết hạn thanh toán (Quá 15 phút)</span>";
+                        }
+                        return false;
+                    }
+                    return true;
+                }
+
+                if (updateCountdown()) {
+                    const intervalId = setInterval(() => {
+                        if (!updateCountdown()) {
+                            clearInterval(intervalId);
+                        }
+                    }, 1000);
+                }
+            })();
         </script>
     </body>
 </html>

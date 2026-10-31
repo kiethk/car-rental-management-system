@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
     <body>
         <!-- Reusable Rental Schedule Search Component (shadcn/ui Calendar With Presets) -->
         <div th:fragment="rentalSearchForm(title, buttonText, formId)" class="w-full">
@@ -47,7 +47,7 @@
                 <!-- Card Header -->
                 <div class="px-6 py-4 border-border/80">
                     <h2 class="text-base font-bold text-slate-900 tracking-tight" th:text="${title}">
-                        Select Rental Schedule
+                        Lựa chọn lịch trình thuê xe
                     </h2>
                 </div>
 
@@ -58,9 +58,9 @@
                         <div class="rounded-xl border border-border/80 bg-surface/50 p-4 space-y-3.5">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                                    Pickup Schedule
+                                    Lịch trình nhận xe
                                 </span>
-                                <span class="text-[11px] font-medium text-muted-foreground">Earliest: 06:00</span>
+                                <span class="text-[11px] font-medium text-muted-foreground">Sớm nhất: 06:00</span>
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -85,7 +85,7 @@
                                                 <line x1="3" y1="10" x2="21" y2="10" />
                                             </svg>
                                             <span id="pickup-date-display" class="font-medium text-slate-800 truncate"
-                                                >Oct 22, 2026</span
+                                                >22 Th10, 2026</span
                                             >
                                         </div>
                                         <svg
@@ -110,7 +110,7 @@
                                                 type="button"
                                                 id="pickup-cal-prev"
                                                 class="cal-nav-btn"
-                                                aria-label="Previous month"
+                                                aria-label="Tháng trước"
                                             >
                                                 <svg
                                                     class="w-4 h-4"
@@ -122,12 +122,12 @@
                                                     <path d="m15 18-6-6 6-6" />
                                                 </svg>
                                             </button>
-                                            <span id="pickup-cal-month-year" class="cal-dark-title">October 2026</span>
+                                            <span id="pickup-cal-month-year" class="cal-dark-title">Tháng 10 2026</span>
                                             <button
                                                 type="button"
                                                 id="pickup-cal-next"
                                                 class="cal-nav-btn"
-                                                aria-label="Next month"
+                                                aria-label="Tháng sau"
                                             >
                                                 <svg
                                                     class="w-4 h-4"
@@ -143,8 +143,8 @@
 
                                         <!-- Weekday Headers -->
                                         <div class="cal-dark-weekdays">
-                                            <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span
-                                            ><span>Fr</span><span>Sa</span>
+                                            <span>CN</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span
+                                            ><span>T6</span><span>T7</span>
                                         </div>
 
                                         <!-- 6-week Days Grid (42 cells) -->
@@ -160,21 +160,21 @@
                                                     class="pickup-preset-btn cal-preset-btn"
                                                     data-days="0"
                                                 >
-                                                    Today
+                                                    Hôm nay
                                                 </button>
                                                 <button
                                                     type="button"
                                                     class="pickup-preset-btn cal-preset-btn"
                                                     data-days="1"
                                                 >
-                                                    Tomorrow
+                                                    Ngày mai
                                                 </button>
                                                 <button
                                                     type="button"
                                                     class="pickup-preset-btn cal-preset-btn"
                                                     data-days="3"
                                                 >
-                                                    In 3 days
+                                                    Sau 3 ngày
                                                 </button>
                                             </div>
                                             <div class="cal-preset-row">
@@ -183,14 +183,14 @@
                                                     class="pickup-preset-btn cal-preset-btn"
                                                     data-days="7"
                                                 >
-                                                    In a week
+                                                    Sau 1 tuần
                                                 </button>
                                                 <button
                                                     type="button"
                                                     class="pickup-preset-btn cal-preset-btn"
                                                     data-days="14"
                                                 >
-                                                    In 2 weeks
+                                                    Sau 2 tuần
                                                 </button>
                                             </div>
                                         </div>
@@ -245,9 +245,9 @@
                         <div class="rounded-xl border border-border/80 bg-surface/50 p-4 space-y-3.5">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                                    Return Schedule
+                                    Lịch trình trả xe
                                 </span>
-                                <span class="text-[11px] font-medium text-muted-foreground">Latest: 22:00</span>
+                                <span class="text-[11px] font-medium text-muted-foreground">Muộn nhất: 22:00</span>
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -272,7 +272,7 @@
                                                 <line x1="3" y1="10" x2="21" y2="10" />
                                             </svg>
                                             <span id="return-date-display" class="font-medium text-slate-800 truncate"
-                                                >Oct 22, 2026</span
+                                                >22 Th10, 2026</span
                                             >
                                         </div>
                                         <svg
@@ -297,7 +297,7 @@
                                                 type="button"
                                                 id="return-cal-prev"
                                                 class="cal-nav-btn"
-                                                aria-label="Previous month"
+                                                aria-label="Tháng trước"
                                             >
                                                 <svg
                                                     class="w-4 h-4"
@@ -309,12 +309,12 @@
                                                     <path d="m15 18-6-6 6-6" />
                                                 </svg>
                                             </button>
-                                            <span id="return-cal-month-year" class="cal-dark-title">October 2026</span>
+                                            <span id="return-cal-month-year" class="cal-dark-title">Tháng 10 2026</span>
                                             <button
                                                 type="button"
                                                 id="return-cal-next"
                                                 class="cal-nav-btn"
-                                                aria-label="Next month"
+                                                aria-label="Tháng sau"
                                             >
                                                 <svg
                                                     class="w-4 h-4"
@@ -330,8 +330,8 @@
 
                                         <!-- Weekday Headers -->
                                         <div class="cal-dark-weekdays">
-                                            <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span
-                                            ><span>Fr</span><span>Sa</span>
+                                            <span>CN</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span
+                                            ><span>T6</span><span>T7</span>
                                         </div>
 
                                         <!-- 6-week Days Grid (42 cells) -->
@@ -347,21 +347,21 @@
                                                     class="return-preset-btn cal-preset-btn"
                                                     data-add-days="0"
                                                 >
-                                                    Same day
+                                                    Trong ngày
                                                 </button>
                                                 <button
                                                     type="button"
                                                     class="return-preset-btn cal-preset-btn"
                                                     data-add-days="1"
                                                 >
-                                                    Tomorrow (+1d)
+                                                    Ngày mai (+1 ngày)
                                                 </button>
                                                 <button
                                                     type="button"
                                                     class="return-preset-btn cal-preset-btn"
                                                     data-add-days="3"
                                                 >
-                                                    In 3 days
+                                                    Sau 3 ngày
                                                 </button>
                                             </div>
                                             <div class="cal-preset-row">
@@ -370,14 +370,14 @@
                                                     class="return-preset-btn cal-preset-btn"
                                                     data-add-days="7"
                                                 >
-                                                    In a week
+                                                    Sau 1 tuần
                                                 </button>
                                                 <button
                                                     type="button"
                                                     class="return-preset-btn cal-preset-btn"
                                                     data-add-days="14"
                                                 >
-                                                    In 2 weeks
+                                                    Sau 2 tuần
                                                 </button>
                                             </div>
                                         </div>
@@ -451,7 +451,7 @@
                         </div>
                         <div>
                             <span class="font-bold text-slate-900 text-sm block" id="rental-itinerary"
-                                >Thu, 22 Oct 09:00 → Thu, 22 Oct 18:00 (9h)</span
+                                >Thứ 5, 22 Th10 09:00 → Thứ 5, 22 Th10 18:00 (9 giờ)</span
                             >
                         </div>
                     </div>
@@ -461,8 +461,8 @@
                         id="rental-search-btn"
                         class="w-full sm:w-auto btn-navy font-semibold px-6 py-2.5 rounded-lg shadow-sm hover:shadow group text-sm flex items-center justify-center gap-2"
                     >
-                        <span id="rental-search-btn-text" th:text="${buttonText != null ? buttonText : 'Search Cars'}"
-                            >Search Cars</span
+                        <span id="rental-search-btn-text" th:text="${buttonText != null ? buttonText : 'Tìm kiếm xe'}"
+                            >Tìm kiếm xe</span
                         >
                         <svg
                             class="w-4 h-4 group-hover:translate-x-1 transition-transform"
@@ -513,34 +513,34 @@
                         const returnHourPopover = document.getElementById("return-hour-popover");
 
                         const monthNames = [
-                            "January",
-                            "February",
-                            "March",
-                            "April",
-                            "May",
-                            "June",
-                            "July",
-                            "August",
-                            "September",
-                            "October",
-                            "November",
-                            "December",
+                            "Tháng 1",
+                            "Tháng 2",
+                            "Tháng 3",
+                            "Tháng 4",
+                            "Tháng 5",
+                            "Tháng 6",
+                            "Tháng 7",
+                            "Tháng 8",
+                            "Tháng 9",
+                            "Tháng 10",
+                            "Tháng 11",
+                            "Tháng 12",
                         ];
                         const shortMonthNames = [
-                            "Jan",
-                            "Feb",
-                            "Mar",
-                            "Apr",
-                            "May",
-                            "Jun",
-                            "Jul",
-                            "Aug",
-                            "Sep",
-                            "Oct",
-                            "Nov",
-                            "Dec",
+                            "Th01",
+                            "Th02",
+                            "Th03",
+                            "Th04",
+                            "Th05",
+                            "Th06",
+                            "Th07",
+                            "Th08",
+                            "Th09",
+                            "Th10",
+                            "Th11",
+                            "Th12",
                         ];
-                        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                        const dayNames = ["CN", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
 
                         const hoursList = [
                             "06:00",
@@ -824,7 +824,7 @@
                                     shortMonthNames[eD.getMonth()] +
                                     " " +
                                     eTime;
-                                itineraryText.textContent = sTxt + " → " + eTxt + " (" + totalHours + "h)";
+                                itineraryText.textContent = sTxt + " → " + eTxt + " (" + totalHours + " giờ)";
                             }
 
                             // Update preset buttons state in both calendars

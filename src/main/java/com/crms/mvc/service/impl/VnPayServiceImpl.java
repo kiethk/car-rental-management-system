@@ -2,30 +2,52 @@ package com.crms.mvc.service.impl;
 
 import com.crms.mvc.config.VnPayConfig;
 import com.crms.mvc.entity.Booking;
-import com.crms.mvc.service.VnPayService;
+import com.crms.mvc.entity.Payment;
+import com.crms.mvc.event.DepositConfirmedEvent;
+import com.crms.mvc.repository.BookingRepository;
+import com.crms.mvc.repository.PaymentRepository;
+import com.crms.mvc.service.BookingFeeService;
+import com.crms.mvc.service.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 @Service
-public class VnPayServiceImpl implements VnPayService {
+@Transactional
+public class VnPayServiceImpl implements PaymentService {
 
     private static final Logger log = LoggerFactory.getLogger(VnPayServiceImpl.class);
 
+    private final PaymentRepository paymentRepository;
+    private final BookingRepository bookingRepository;
+    private final BookingFeeService bookingFeeService;
+    private final ApplicationEventPublisher eventPublisher;
     private final VnPayConfig vnPayConfig;
 
-    public VnPayServiceImpl(VnPayConfig vnPayConfig) {
+    public VnPayServiceImpl(PaymentRepository paymentRepository,
+                            BookingRepository bookingRepository,
+                            BookingFeeService bookingFeeService,
+                            ApplicationEventPublisher eventPublisher,
+                            VnPayConfig vnPayConfig) {
+        this.paymentRepository = paymentRepository;
+        this.bookingRepository = bookingRepository;
+        this.bookingFeeService = bookingFeeService;
+        this.eventPublisher = eventPublisher;
         this.vnPayConfig = vnPayConfig;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public String createDepositPaymentUrl(Booking booking, HttpServletRequest request) {
         long amountInCents = booking.getDepositAmount().multiply(new BigDecimal(100)).longValue();
 
@@ -75,7 +97,7 @@ public class VnPayServiceImpl implements VnPayService {
 
             String vnp_SecureHash = VnPayConfig.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
             String paymentUrl = vnPayConfig.getPayUrl() + "?" + query.toString() + "&vnp_SecureHash=" + vnp_SecureHash;
-            log.info("Generated VNPay deposit payment URL for bookingId {}: {}", booking.getId(), paymentUrl);
+            log.info("Generated VNPay deposit payment URL for bookingId {}", booking.getId());
             return paymentUrl;
         } catch (Exception e) {
             log.error("Failed to generate VNPay payment URL for bookingId: {}", booking.getId(), e);
@@ -84,6 +106,7 @@ public class VnPayServiceImpl implements VnPayService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean verifyPaymentSignature(Map<String, String> vnpParams) {
         String vnp_SecureHash = vnpParams.get("vnp_SecureHash");
         if (vnp_SecureHash == null || vnp_SecureHash.trim().isEmpty()) {
@@ -118,7 +141,7 @@ public class VnPayServiceImpl implements VnPayService {
             String calculatedHash = VnPayConfig.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
             boolean matches = calculatedHash.equalsIgnoreCase(vnp_SecureHash);
             if (!matches) {
-                log.warn("VNPay signature mismatch: received={}, calculated={}, rawData={}", vnp_SecureHash, calculatedHash, hashData);
+                log.warn("VNPay signature mismatch: invalid signature received");
             }
             return matches;
         } catch (Exception e) {
@@ -126,5 +149,98 @@ public class VnPayServiceImpl implements VnPayService {
             return false;
         }
     }
-}
 
+    @Override
+    public Payment processDeposit(Long bookingId) {
+        return processDeposit(bookingId, null, "VNPAY");
+    }
+
+    @Override
+    public Payment processDeposit(Long bookingId, String transactionNo, String paymentMethod) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
+
+        if ("confirmed".equalsIgnoreCase(booking.getStatus())) {
+            return paymentRepository.findByBookingIdAndPaymentType(bookingId, "DEPOSIT").orElse(null);
+        }
+
+        Payment payment = new Payment();
+        payment.setBooking(booking);
+        payment.setPaymentType("DEPOSIT");
+        payment.setTransactionCode(transactionNo != null ? transactionNo : "TXN-DEP-" + bookingId + "-" + System.currentTimeMillis());
+        payment.setPaymentMethod(paymentMethod != null ? paymentMethod : "VNPAY");
+        payment.setAmount(booking.getDepositAmount());
+        payment.setStatus("paid");
+        payment.setPaidAt(OffsetDateTime.now());
+        paymentRepository.save(payment);
+
+        booking.setStatus("confirmed");
+        bookingRepository.save(booking);
+
+        eventPublisher.publishEvent(new DepositConfirmedEvent(bookingId));
+
+        return payment;
+    }
+
+    @Override
+    public Payment processSettlement(Long bookingId, BigDecimal lateFee, BigDecimal additionalFine) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
+
+        BigDecimal initialDeposit = booking.getDepositAmount() != null ? booking.getDepositAmount() : BigDecimal.ZERO;
+        BigDecimal rentAmount = booking.getTotalPrice() != null ? booking.getTotalPrice() : BigDecimal.ZERO;
+
+        BigDecimal safeLateFee = lateFee != null ? lateFee : BigDecimal.ZERO;
+        BigDecimal safeFine = additionalFine != null ? additionalFine : BigDecimal.ZERO;
+
+        if (safeLateFee.compareTo(BigDecimal.ZERO) > 0) {
+            bookingFeeService.recordFee(bookingId, "LATE_FEE", safeLateFee, "Late return fee", null);
+        }
+        if (safeFine.compareTo(BigDecimal.ZERO) > 0) {
+            bookingFeeService.recordFee(bookingId, "DAMAGE_COMPENSATION", safeFine, "Fine for issues during trip", null);
+        }
+
+        booking.setLateFee(safeLateFee);
+
+        BigDecimal totalPayable = rentAmount.add(safeLateFee).add(safeFine);
+        BigDecimal remaining = totalPayable.subtract(initialDeposit);
+
+        if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
+            BigDecimal refundAmount = remaining.abs();
+            Payment refundPayment = new Payment();
+            refundPayment.setBooking(booking);
+            refundPayment.setPaymentType("REFUND");
+            refundPayment.setAmount(refundAmount);
+            refundPayment.setStatus("paid");
+            refundPayment.setPaymentMethod("VNPAY");
+            refundPayment.setTransactionCode("REFUND-" + bookingId + "-" + System.currentTimeMillis());
+            refundPayment.setPaidAt(OffsetDateTime.now());
+            paymentRepository.save(refundPayment);
+
+            booking.setTotalPrice(totalPayable);
+            bookingRepository.save(booking);
+            return refundPayment;
+        }
+
+        Payment finalPayment = new Payment();
+        finalPayment.setBooking(booking);
+        finalPayment.setPaymentType("FINAL");
+        finalPayment.setAmount(remaining);
+        finalPayment.setStatus("paid");
+        finalPayment.setPaymentMethod("VNPAY");
+        finalPayment.setTransactionCode("FINAL-" + bookingId + "-" + System.currentTimeMillis());
+        finalPayment.setPaidAt(OffsetDateTime.now());
+        paymentRepository.save(finalPayment);
+
+        booking.setTotalPrice(totalPayable);
+        bookingRepository.save(booking);
+
+        return finalPayment;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Payment> getPaymentsByBooking(Long bookingId) {
+        return paymentRepository.findByBookingIdOrderByPaidAtAsc(bookingId);
+    }
+}

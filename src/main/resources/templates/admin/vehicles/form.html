@@ -37,7 +37,7 @@
                             th:text="${vehicleForm.id != null ? 'Edit Vehicle #' + vehicleForm.id : 'Add New Car'}">
                             Add New Vehicle
                         </h1>
-                        <p class="text-muted small mb-0">Configure physical car specifications and assigned legal license plate (Strict 1:1 relationship).</p>
+                        <p class="text-muted small mb-0">Configure physical car specifications. A car keeps every plate it has had; the plate on the car now is the one without an end date.</p>
                     </div>
                     <a th:href="@{/admin/vehicles}" class="btn btn-outline-secondary btn-sm rounded-lg">
                         Back to Cars
@@ -100,13 +100,15 @@
                         </div>
                     </div>
 
-                    <!-- SECTION 2: LICENSE PLATE & REGISTRATION (1:1) -->
+                    <!-- SECTION 2: LICENSE PLATE & REGISTRATION -->
                     <div class="p-3 bg-surface rounded-xl border mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="h6 font-weight-bold text-navy text-uppercase mb-0" style="letter-spacing: 0.05em;">
                                 2. License Plate & Registration
                             </h5>
-                            <span class="badge badge-light border text-muted">1:1 Vehicle Attachment</span>
+                            <a th:if="${vehicleForm.id != null}" th:href="@{/admin/license-plates/vehicle/{id}(id=${vehicleForm.id})}"
+                               class="btn btn-outline-secondary btn-sm rounded-lg">Change plate / history</a>
+                            <span th:if="${vehicleForm.id == null}" class="badge badge-light border text-muted">First plate of this car</span>
                         </div>
 
 
@@ -115,7 +117,8 @@
                             <div class="col-md-4 form-group mb-3">
                                 <label class="font-weight-bold small text-navy mb-1">Plate Number <span class="text-danger">*</span></label>
                                 <input type="text" id="plateInput" th:field="*{plate}" class="form-control rounded-lg font-weight-bold text-uppercase"
-                                       placeholder="e.g. 51K-987.65" required>
+                                       placeholder="e.g. 51K-987.65" required th:readonly="${vehicleForm.id != null}">
+                                <small th:if="${vehicleForm.id != null}" class="text-muted" style="font-size: 11px;">To put a different plate on this car use "Change plate / history" so the old plate stays in the record.</small>
                                 <small class="text-danger" th:if="${#fields.hasErrors('plate')}" th:errors="*{plate}"></small>
                             </div>
 
@@ -123,14 +126,14 @@
                             <div class="col-md-4 form-group mb-3">
                                 <label class="font-weight-bold small text-navy mb-1">Registration City / Province</label>
                                 <input type="text" id="provinceInput" th:field="*{province}" class="form-control rounded-lg"
-                                       placeholder="e.g. Ho Chi Minh City, Hanoi...">
+                                       placeholder="e.g. Ho Chi Minh City, Hanoi..." th:readonly="${vehicleForm.id != null}">
                             </div>
 
                             <!-- Expiry date -->
                             <div class="col-md-4 form-group mb-3">
                                 <label class="font-weight-bold small text-navy mb-1">Registration Expiry Date</label>
                                 <input type="date" id="expiryInput" th:field="*{registrationExpiry}" class="form-control rounded-lg">
-                                <small class="text-muted" style="font-size: 11px;">As indicated on vehicle inspection windshield sticker</small>
+                                <small class="text-muted" style="font-size: 11px;">Inspection sticker of the car; it does not change when the plate changes</small>
                             </div>
                         </div>
                     </div>
@@ -138,7 +141,7 @@
                     <div class="d-flex justify-content-end gap-2 pt-3 border-top">
                         <a th:href="@{/admin/vehicles}" class="btn btn-light px-4 rounded-lg">Cancel</a>
                         <button type="submit" class="btn btn-navy font-weight-bold px-4 rounded-lg shadow-sm">
-                            Save Vehicle & License Plate
+                            Save Vehicle
                         </button>
                     </div>
                 </form>
