@@ -19,8 +19,10 @@ import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -151,7 +153,6 @@ public class BookingServiceImpl implements BookingService {
         booking.setPricePerHour(type.getPricePerHour());
         booking.setDepositAmount(quote.getDepositAmount());
         booking.setDiscountAmount(quote.getDiscountAmount());
-        booking.setLateFee(BigDecimal.ZERO);
         booking.setTotalPrice(quote.getTotalPrice());
         booking.setStatus("pending_payment");
         booking.setCreatedAt(OffsetDateTime.now());
@@ -227,30 +228,54 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional(readOnly = true)
     public List<BookingSummaryDTO> getAllBookings(String status) {
-        List<Booking> list = (status == null || status.isBlank() || "all".equalsIgnoreCase(status.trim()))
-                ? bookingRepository.findAllByOrderByCreatedAtDesc()
-                : bookingRepository.findByStatusOrderByCreatedAtDesc(status.trim());
+        List<Long> pendingRefundBookingIds = paymentService.getPendingRefundBookingIds();
+        Set<Long> pendingRefundSet = new HashSet<>(pendingRefundBookingIds);
+
+        List<Booking> list;
+        if ("refund".equalsIgnoreCase(status) || "refunds".equalsIgnoreCase(status) || "pending_refund".equalsIgnoreCase(status)) {
+            list = bookingRepository.findBookingsWithPendingRefund();
+        } else if (status == null || status.isBlank() || "all".equalsIgnoreCase(status.trim())) {
+            list = bookingRepository.findAllByOrderByCreatedAtDesc();
+        } else {
+            list = bookingRepository.findByStatusOrderByCreatedAtDesc(status.trim());
+        }
 
         return list.stream().map(b -> {
             BookingSummaryDTO s = new BookingSummaryDTO();
             s.setId(b.getId());
-            VehicleType vt = b.getSlot().getVehicleType();
-            s.setVehicleTypeName(vt.getName());
-            s.setVehicleCategory(vt.getCategory());
-            s.setImageUrl(resolveImageUrl(vt));
+            VehicleType vt = (b.getSlot() != null) ? b.getSlot().getVehicleType() : null;
+            if (vt != null) {
+                s.setVehicleTypeName(vt.getName());
+                s.setVehicleCategory(vt.getCategory());
+                s.setImageUrl(resolveImageUrl(vt));
+            } else {
+                s.setVehicleTypeName("Phương tiện DriveNow");
+            }
             s.setLicensePlate(resolvePlate(b));
             s.setPickupTime(DateTimeUtils.toVietnamTime(b.getPickupTime()));
             s.setScheduledEndTime(DateTimeUtils.toVietnamTime(b.getScheduledEndTime()));
             s.setTotalPrice(b.getTotalPrice());
             s.setDepositAmount(b.getDepositAmount());
-            s.setStatus(b.getStatus());
+            boolean isPendingRefund = pendingRefundSet.contains(b.getId());
+            s.setStatus(isPendingRefund ? "pending_refund" : b.getStatus());
             s.setCustomerName(b.getCustomer() != null ? b.getCustomer().getName() : null);
+            if (isPendingRefund) {
+                s.setHasPendingRefund(true);
+                s.setRefundAmount(b.getDepositAmount());
+            }
             return s;
         }).toList();
     }
 
     @Override
+    @Transactional
     public void cancelBooking(Long bookingId, Long customerId) {
+        cancelBooking(bookingId, customerId, null);
+    }
+
+    @Override
+    @Transactional
+    public boolean cancelBooking(Long bookingId, Long customerId, BookingCancelDTO dto) {
         Booking b = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
         if (customerId != null && !b.getCustomer().getId().equals(customerId)) {
@@ -260,30 +285,32 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalStateException("Cannot cancel booking in status: " + b.getStatus());
         }
 
+        boolean refundEligible = false;
         // B7 + B16: Hoàn cọc 100% nếu hủy trước mốc freeCancellationHours theo hợp đồng khách đã đồng ý
         if ("confirmed".equalsIgnoreCase(b.getStatus())) {
+            int freeHours = 72;
             try {
                 ContractTemplateDTO terms = contractService.getTermsOfBooking(bookingId);
-                int freeHours = terms.getFreeCancellationHours();
-                OffsetDateTime cancelDeadline = b.getPickupTime().minusHours(freeHours);
-                if (!OffsetDateTime.now().isAfter(cancelDeadline)) {
-                    Payment refund = new Payment();
-                    refund.setBooking(b);
-                    refund.setPaymentType("REFUND");
-                    refund.setAmount(b.getDepositAmount());
-                    refund.setPaymentMethod("VNPAY");
-                    refund.setTransactionCode("TXN-REF-" + bookingId + "-" + System.currentTimeMillis());
-                    refund.setStatus("paid");
-                    refund.setPaidAt(OffsetDateTime.now());
-                    paymentService.getPaymentsByBooking(bookingId); // touch collection
+                if (terms != null && terms.getFreeCancellationHours() > 0) {
+                    freeHours = terms.getFreeCancellationHours();
                 }
             } catch (Exception ignored) {
+            }
+
+            OffsetDateTime cancelDeadline = b.getPickupTime().minusHours(freeHours);
+            if (!OffsetDateTime.now().isAfter(cancelDeadline)) {
+                String bank = (dto != null && dto.getBankCode() != null && !dto.getBankCode().isBlank()) ? dto.getBankCode().trim() : "BANK";
+                String acc = (dto != null && dto.getAccountNumber() != null && !dto.getAccountNumber().isBlank()) ? dto.getAccountNumber().trim() : "";
+                String holder = (dto != null && dto.getAccountHolder() != null && !dto.getAccountHolder().isBlank()) ? dto.getAccountHolder().trim().toUpperCase() : "";
+                paymentService.createPendingRefund(bookingId, b.getDepositAmount(), bank, acc, holder);
+                refundEligible = true;
             }
         }
 
         b.setStatus("cancelled");
         b.setCancelledAt(OffsetDateTime.now());
         bookingRepository.save(b);
+        return refundEligible;
     }
 
     @Override
@@ -328,10 +355,7 @@ public class BookingServiceImpl implements BookingService {
         b.setStatus("active");
         b.setEmployee(emp);
         b.getVehicle().setStatus("rented");
-        // Handover: record the plate that is physically on the car right now
-        if (b.getVehicle().getLicensePlate() != null) {
-            b.setLicensePlate(b.getVehicle().getLicensePlate().getPlate());
-        }
+
 
         vehicleRepository.save(b.getVehicle());
         bookingRepository.save(b);
@@ -394,7 +418,6 @@ public class BookingServiceImpl implements BookingService {
         d.setPricePerHour(b.getPricePerHour());
         d.setDepositAmount(b.getDepositAmount());
         d.setDiscountAmount(b.getDiscountAmount());
-        d.setLateFee(b.getLateFee());
         d.setTotalPrice(b.getTotalPrice());
         d.setPromotionCode(b.getPromotion() != null ? b.getPromotion().getCode() : null);
 
@@ -420,6 +443,7 @@ public class BookingServiceImpl implements BookingService {
 
         List<BookingFee> fees = bookingFeeService.getFeesByBooking(b.getId());
         List<BookingDetailDTO.BookingFeeDTO> feeDtos = new ArrayList<>();
+        BigDecimal lateFeeTotal = BigDecimal.ZERO;
         for (BookingFee fee : fees) {
             BookingDetailDTO.BookingFeeDTO fd = new BookingDetailDTO.BookingFeeDTO();
             fd.setId(fee.getId());
@@ -429,8 +453,12 @@ public class BookingServiceImpl implements BookingService {
             fd.setIssueId(fee.getIssue() != null ? fee.getIssue().getId() : null);
             fd.setCreatedAt(fee.getCreatedAt());
             feeDtos.add(fd);
+            if ("LATE_FEE".equalsIgnoreCase(fee.getFeeType())) {
+                lateFeeTotal = lateFeeTotal.add(fee.getAmount());
+            }
         }
         d.setFees(feeDtos);
+        d.setLateFee(lateFeeTotal);
 
         if (b.getEmployee() != null) {
             d.setStaffId(b.getEmployee().getId());
@@ -447,11 +475,8 @@ public class BookingServiceImpl implements BookingService {
         return d;
     }
 
-    /** The plate recorded on the booking wins; before that the vehicle's current plate is shown. */
+    /** Lấy biển số trực tiếp từ xe vật lý được gán cho đơn đặt xe */
     private String resolvePlate(Booking b) {
-        if (b.getLicensePlate() != null) {
-            return b.getLicensePlate();
-        }
         if (b.getVehicle() == null) {
             return "Unassigned";
         }

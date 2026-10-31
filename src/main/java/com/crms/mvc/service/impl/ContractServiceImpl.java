@@ -106,7 +106,6 @@ public class ContractServiceImpl implements ContractService {
         byte[] pdf;
         if (!contract.isIssued()) {
             contract.setIssuedAt(OffsetDateTime.now());
-            recordPlateOnBooking(contract.getBooking());
             document = buildDocument(contract);
             pdf = contractDocumentGenerator.generatePdf(document);
             contract.setFileName(fileUploadService.saveContractPdf(contract.getContractNumber(), pdf));
@@ -155,13 +154,7 @@ public class ContractServiceImpl implements ContractService {
                 .orElseThrow(() -> new NoSuchElementException("Contract not found for booking: " + bookingId));
     }
 
-    /** Copies the vehicle's current plate onto the booking so the contract keeps it even if the plate changes later. */
-    private void recordPlateOnBooking(Booking booking) {
-        Vehicle vehicle = booking.getVehicle();
-        if (vehicle != null && vehicle.getLicensePlate() != null) {
-            booking.setLicensePlate(vehicle.getLicensePlate().getPlate());
-        }
-    }
+
 
     private byte[] readIssuedPdf(Contract contract) {
         try {
@@ -196,7 +189,7 @@ public class ContractServiceImpl implements ContractService {
         doc.setTransmission(type.getTransmission());
         doc.setFuelType(type.getFuelType());
         if (vehicle != null) {
-            doc.setLicensePlate(booking.getLicensePlate());
+            doc.setLicensePlate(vehicle.getLicensePlate() != null ? vehicle.getLicensePlate().getPlate() : null);
             doc.setVehicleColor(vehicle.getColor());
             doc.setVehicleYear(vehicle.getYear());
         }

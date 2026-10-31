@@ -146,32 +146,44 @@
                             <tbody>
                                 <tr th:each="p : ${booking.payments}">
                                     <td>
-                                        <div class="txn-code" th:text="${p.transactionCode != null ? p.transactionCode : ('TXN-DEP-' + booking.id + '-' + p.id)}">
+                                        <div class="txn-code" th:text="${p.transactionCode != null ? p.transactionCode : ('TXN-' + p.paymentType + '-' + booking.id + '-' + p.id)}">
                                             TXN-DEP-12-1792726251436
                                         </div>
                                     </td>
                                     <td>
-                                        <div style="font-weight: 600; color: #0f172a; text-transform: capitalize;" th:text="${#strings.toLowerCase(p.paymentType)}">
+                                        <div style="font-weight: 600; color: #0f172a;" th:text="${p.paymentType == 'REFUND' ? 'Hoàn tiền cọc' : (p.paymentType == 'DEPOSIT' ? 'Đặt cọc' : p.paymentType)}">
                                             Deposit
                                         </div>
                                         <div style="font-size: 11px; color: #94a3b8; margin-top: 1px;">
-                                            <span th:text="${p.paymentMethod != null ? p.paymentMethod : 'VIETQR'}">VIETQR</span> · 
-                                            <span th:text="${p.paidAt != null ? #temporals.format(p.paidAt, 'dd/MM/yyyy HH:mm') : 'Pending'}">23/10/2026 04:00</span>
+                                            <span th:text="${p.paymentMethod != null ? p.paymentMethod : 'BANK_TRANSFER'}">VIETQR</span> · 
+                                            <span th:text="${p.paidAt != null ? #temporals.format(p.paidAt, 'dd/MM/yyyy HH:mm') : (p.paymentType == 'REFUND' ? 'Chờ hoàn tiền' : 'Chờ thanh toán')}">23/10/2026 04:00</span>
                                         </div>
                                     </td>
                                     <td>
-                                        <div style="font-family: 'JetBrains Mono', monospace; font-weight: 600; color: #0f172a;">
-                                            <span th:text="${#numbers.formatDecimal(p.amount, 0, 'COMMA', 0, 'POINT')}">720,000</span> đ
+                                        <div style="font-family: 'JetBrains Mono', monospace; font-weight: 600;"
+                                             th:styleappend="${p.paymentType == 'REFUND' ? 'color: #059669;' : 'color: #0f172a;'}">
+                                            <span th:text="${(p.paymentType == 'REFUND' ? '+' : '') + #numbers.formatDecimal(p.amount, 0, 'COMMA', 0, 'POINT')}">720,000</span> đ
                                         </div>
                                     </td>
                                     <td>
-                                        <span th:if="${p.status == 'paid'}" class="status-pill-paid">
+                                        <span th:if="${p.status == 'paid' and p.paymentType == 'REFUND'}" class="status-pill-paid" style="background: #ecfdf5; color: #047857; border-color: #a7f3d0;">
+                                            ✓ Đã hoàn cọc
+                                        </span>
+                                        <span th:if="${p.status == 'paid' and p.paymentType != 'REFUND'}" class="status-pill-paid">
                                             ✓ Đã thanh toán
                                         </span>
-                                        <span th:if="${p.status != 'paid'}"
-                                              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200"
+                                        <span th:if="${p.status == 'pending' and p.paymentType == 'REFUND'}"
+                                              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300">
+                                            ⏳ Đang xử lý hoàn cọc
+                                        </span>
+                                        <span th:if="${p.status == 'pending' and p.paymentType != 'REFUND'}"
+                                              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                            Chờ thanh toán
+                                        </span>
+                                        <span th:if="${p.status != 'paid' and p.status != 'pending'}"
+                                              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200"
                                               th:text="${p.status}">
-                                            Pending
+                                            Failed
                                         </span>
                                     </td>
                                 </tr>
@@ -227,13 +239,19 @@
                     </a>
 
                     <!-- Cancel Booking Button -->
-                    <form th:if="${booking.status == 'pending_payment' or booking.status == 'confirmed'}"
-                          th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post"
-                          onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn đặt xe này?');">
-                        <button type="submit" class="btn-cancel">
+                    <div th:if="${booking.status == 'pending_payment'}">
+                        <form th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post"
+                              onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn đặt xe này?');">
+                            <button type="submit" class="btn-cancel">
+                                Hủy đơn đặt xe
+                            </button>
+                        </form>
+                    </div>
+                    <div th:if="${booking.status == 'confirmed'}">
+                        <button type="button" class="btn-cancel" onclick="openCancelModal()">
                             Hủy đơn đặt xe
                         </button>
-                    </form>
+                    </div>
                 </div>
 
                 <!-- Card 2: Rental Agreement (clickwrap evidence + issued PDF) -->
@@ -287,6 +305,108 @@
             </div>
 
         </div>
+
+
+        <!-- Modal Hủy đơn & Yêu cầu hoàn cọc -->
+        <div id="cancelModalBackdrop" class="cancel-modal-backdrop hidden" th:if="${booking.status == 'confirmed'}">
+            <div class="cancel-modal-box">
+                <div class="cancel-modal-header">
+                    <h3 class="cancel-modal-title">
+                        <svg style="width: 20px; height: 20px; color: #dc2626;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        Xác nhận hủy đơn đặt xe
+                    </h3>
+                    <button type="button" class="cancel-modal-close" onclick="closeCancelModal()">&times;</button>
+                </div>
+
+                <form th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post" th:object="${cancelForm}">
+                    <div class="cancel-modal-body">
+                        <!-- If eligible for refund -->
+                        <div th:if="${refundEligible}">
+                            <div class="modal-alert-green">
+                                <svg style="width: 20px; height: 20px; flex-shrink: 0; color: #059669;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <div>
+                                    <strong>Đủ điều kiện hoàn 100% tiền cọc!</strong><br/>
+                                    Bạn đang hủy trước thời hạn quy định (trước <span th:text="${cancelDeadline != null ? #temporals.format(cancelDeadline, 'dd/MM/yyyy HH:mm') : '72h'}">72h</span>).
+                                    Số tiền cọc <strong><span th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}">500,000</span> đ</strong> sẽ được hoàn lại vào tài khoản ngân hàng trong vòng 24h làm việc.
+                                </div>
+                            </div>
+
+                            <p style="font-size: 13px; color: #64748b; margin-bottom: 14px;">Vui lòng nhập chính xác thông tin tài khoản ngân hàng của bạn:</p>
+
+                            <div class="form-group-custom">
+                                <label for="bankCode">Ngân hàng thụ hưởng *</label>
+                                <select id="bankCode" name="bankCode" class="form-control-custom" required>
+                                    <option value="VCB">Vietcombank (VCB)</option>
+                                    <option value="MB">MBBank (MB)</option>
+                                    <option value="TCB">Techcombank (TCB)</option>
+                                    <option value="ACB">ACB - Á Châu</option>
+                                    <option value="BIDV">BIDV</option>
+                                    <option value="CTG">VietinBank (CTG)</option>
+                                    <option value="VPB">VPBank</option>
+                                    <option value="TPB">TPBank</option>
+                                    <option value="AGR">Agribank</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group-custom">
+                                <label for="accountNumber">Số tài khoản thụ hưởng *</label>
+                                <input type="text" id="accountNumber" name="accountNumber" class="form-control-custom"
+                                       placeholder="VD: 1012345678" required pattern="[0-9A-Za-z]{6,25}" />
+                            </div>
+
+                            <div class="form-group-custom">
+                                <label for="accountHolder">Họ và tên chủ tài khoản *</label>
+                                <input type="text" id="accountHolder" name="accountHolder" class="form-control-custom"
+                                       style="text-transform: uppercase;" placeholder="VD: NGUYEN VAN A" required />
+                            </div>
+                        </div>
+
+                        <!-- If ineligible for refund (< 72h) -->
+                        <div th:unless="${refundEligible}">
+                            <div class="modal-alert-amber">
+                                <svg style="width: 20px; height: 20px; flex-shrink: 0; color: #d97706;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                                <div>
+                                    <strong>Không được hoàn tiền cọc!</strong><br/>
+                                    Theo điều khoản hợp đồng đã ký kết, bạn cần hủy trước ít nhất <strong th:text="${freeCancellationHours}">72</strong> giờ trước giờ nhận xe để được hoàn cọc.
+                                    Do bạn hủy trong vòng 72 giờ, tiền cọc <strong><span th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}">500,000</span> đ</strong> sẽ không được hoàn lại.
+                                </div>
+                            </div>
+                            <p style="font-size: 13px; color: #475569;">Bạn vẫn có thể hủy chuyến nếu không còn nhu cầu sử dụng phương tiện.</p>
+                        </div>
+
+                        <div class="form-group-custom" style="margin-top: 14px;">
+                            <label for="cancelReason">Lý do hủy đơn (tùy chọn)</label>
+                            <textarea id="cancelReason" name="reason" rows="2" class="form-control-custom" placeholder="Thay đổi lịch trình, việc đột xuất..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="cancel-modal-footer">
+                        <button type="button" class="modal-btn-dismiss" onclick="closeCancelModal()">Đóng</button>
+                        <button type="submit" class="modal-btn-confirm"
+                                th:text="${refundEligible ? 'Xác nhận hủy & Yêu cầu hoàn cọc' : 'Xác nhận hủy đơn'}">
+                            Xác nhận hủy
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+        function openCancelModal() {
+            const modal = document.getElementById('cancelModalBackdrop');
+            if (modal) modal.classList.remove('hidden');
+        }
+        function closeCancelModal() {
+            const modal = document.getElementById('cancelModalBackdrop');
+            if (modal) modal.classList.add('hidden');
+        }
+        </script>
 
     </div>
 </main>

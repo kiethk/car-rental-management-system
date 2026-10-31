@@ -4,6 +4,7 @@ import com.crms.mvc.config.VnPayConfig;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.event.DepositConfirmedEvent;
+import com.crms.mvc.event.RefundCompletedEvent;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.PaymentRepository;
 import com.crms.mvc.service.BookingFeeService;
@@ -34,10 +35,10 @@ public class VnPayServiceImpl implements PaymentService {
     private final VnPayConfig vnPayConfig;
 
     public VnPayServiceImpl(PaymentRepository paymentRepository,
-                            BookingRepository bookingRepository,
-                            BookingFeeService bookingFeeService,
-                            ApplicationEventPublisher eventPublisher,
-                            VnPayConfig vnPayConfig) {
+            BookingRepository bookingRepository,
+            BookingFeeService bookingFeeService,
+            ApplicationEventPublisher eventPublisher,
+            VnPayConfig vnPayConfig) {
         this.paymentRepository = paymentRepository;
         this.bookingRepository = bookingRepository;
         this.bookingFeeService = bookingFeeService;
@@ -89,8 +90,10 @@ public class VnPayServiceImpl implements PaymentService {
                         hashData.append('&');
                         query.append('&');
                     }
-                    hashData.append(fieldName).append('=').append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
-                    query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString())).append('=').append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                    hashData.append(fieldName).append('=')
+                            .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                    query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString())).append('=')
+                            .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
                 }
             }
 
@@ -117,7 +120,8 @@ public class VnPayServiceImpl implements PaymentService {
         for (Map.Entry<String, String> entry : queryParams.entrySet()) {
             String key = entry.getKey();
             String val = entry.getValue();
-            if (key != null && key.startsWith("vnp_") && !key.equals("vnp_SecureHash") && !key.equals("vnp_SecureHashType")) {
+            if (key != null && key.startsWith("vnp_") && !key.equals("vnp_SecureHash")
+                    && !key.equals("vnp_SecureHashType")) {
                 if (val != null && !val.trim().isEmpty()) {
                     fields.put(key, val);
                 }
@@ -134,7 +138,8 @@ public class VnPayServiceImpl implements PaymentService {
                 if (hashData.length() > 0) {
                     hashData.append('&');
                 }
-                hashData.append(fieldName).append('=').append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                hashData.append(fieldName).append('=')
+                        .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
             }
 
             String calculatedHash = VnPayConfig.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
@@ -166,7 +171,8 @@ public class VnPayServiceImpl implements PaymentService {
         Payment payment = new Payment();
         payment.setBooking(booking);
         payment.setPaymentType("DEPOSIT");
-        payment.setTransactionCode(transactionNo != null ? transactionNo : "TXN-DEP-" + bookingId + "-" + System.currentTimeMillis());
+        payment.setTransactionCode(
+                transactionNo != null ? transactionNo : "TXN-DEP-" + bookingId + "-" + System.currentTimeMillis());
         payment.setPaymentMethod(paymentMethod != null ? paymentMethod : "VNPAY");
         payment.setAmount(booking.getDepositAmount());
         payment.setStatus("paid");
@@ -196,10 +202,10 @@ public class VnPayServiceImpl implements PaymentService {
             bookingFeeService.recordFee(bookingId, "LATE_FEE", safeLateFee, "Late return fee", null);
         }
         if (safeFine.compareTo(BigDecimal.ZERO) > 0) {
-            bookingFeeService.recordFee(bookingId, "DAMAGE_COMPENSATION", safeFine, "Fine for issues during trip", null);
+            bookingFeeService.recordFee(bookingId, "DAMAGE_COMPENSATION", safeFine, "Fine for issues during trip",
+                    null);
         }
 
-        booking.setLateFee(safeLateFee);
 
         BigDecimal totalPayable = rentAmount.add(safeLateFee).add(safeFine);
         BigDecimal remaining = totalPayable.subtract(initialDeposit);
@@ -241,5 +247,81 @@ public class VnPayServiceImpl implements PaymentService {
     @Transactional(readOnly = true)
     public List<Payment> getPaymentsByBooking(Long bookingId) {
         return paymentRepository.findByBookingIdOrderByPaidAtAsc(bookingId);
+    }
+
+    @Override
+    @Transactional
+    public Payment createPendingRefund(Long bookingId, BigDecimal amount, String bankCode, String accountNumber,
+            String accountHolder) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
+
+        Payment refund = new Payment();
+        refund.setBooking(booking);
+        refund.setPaymentType("REFUND");
+        refund.setAmount(amount != null ? amount
+                : (booking.getDepositAmount() != null ? booking.getDepositAmount() : BigDecimal.ZERO));
+        refund.setPaymentMethod("BANK_TRANSFER");
+        refund.setStatus("pending");
+
+        String cleanBank = (bankCode != null && !bankCode.isBlank()) ? bankCode.trim().toUpperCase() : "BANK";
+        String cleanAcc = (accountNumber != null && !accountNumber.isBlank()) ? accountNumber.trim() : "";
+        String cleanHolder = (accountHolder != null && !accountHolder.isBlank()) ? accountHolder.trim().toUpperCase()
+                : "";
+        String refInfo = cleanBank + ": " + cleanAcc + " - " + cleanHolder;
+        if (refInfo.length() > 100) {
+            refInfo = refInfo.substring(0, 100);
+        }
+        refund.setTransactionCode(refInfo);
+
+        return paymentRepository.save(refund);
+    }
+
+    @Override
+    @Transactional
+    public Payment confirmRefundCompleted(Long paymentId, Long employeeId, String transactionNo) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new NoSuchElementException("Payment not found: " + paymentId));
+
+        if (!"REFUND".equalsIgnoreCase(payment.getPaymentType())) {
+            throw new IllegalStateException("Payment is not a refund");
+        }
+        if (!"pending".equalsIgnoreCase(payment.getStatus())) {
+            return payment; // Idempotent
+        }
+
+        payment.setStatus("paid");
+        payment.setPaidAt(OffsetDateTime.now());
+        if (transactionNo != null && !transactionNo.isBlank()) {
+            payment.setTransactionCode(transactionNo.trim());
+        }
+
+        Payment saved = paymentRepository.save(payment);
+        eventPublisher.publishEvent(new RefundCompletedEvent(payment.getBooking().getId(), payment.getId()));
+        return saved;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Payment> getPendingRefund(Long bookingId) {
+        return paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(bookingId, "REFUND", "pending");
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Payment> getPendingRefunds() {
+        return paymentRepository.findByPaymentTypeAndStatus("REFUND", "pending");
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countPendingRefunds() {
+        return paymentRepository.countPendingRefunds();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Long> getPendingRefundBookingIds() {
+        return paymentRepository.findBookingIdsWithPendingRefund();
     }
 }

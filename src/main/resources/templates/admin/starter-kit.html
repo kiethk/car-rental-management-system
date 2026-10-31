@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>SaaS UI Starter Kit — DriveNow Admin</title>
+        <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" th:href="@{/css/bootstrap.css}" />
+        <link rel="stylesheet" th:href="@{/css/drivenow.css}" />
+        <link rel="stylesheet" th:href="@{/css/app.css}" />
+    </head>
+    <body class="d-flex flex-column min-vh-100 bg-surface">
+        <div th:replace="~{fragments/header :: header}"></div>
+
+        <main class="container-fluid px-lg-5 my-4 flex-grow-1">
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col-md-3 col-lg-2">
+                    <div th:replace="~{fragments/admin-sidebar :: sidebar(active='dashboard')}"></div>
+                </div>
+
+                <!-- Main Content Area -->
+                <div class="col-md-9 col-lg-10">
+                    <!-- 1. Flash Alerts Component -->
+                    <div
+                        th:replace="~{fragments/admin-components :: alert(type='success', message='Chào mừng bạn đến với CRMS SaaS UI Starter Kit! Trang này là quy chuẩn giao diện cho toàn bộ Admin/Staff.')}"
+                    ></div>
+
+                    <!-- 2. Page Header Component -->
+                    <div class="admin-page-header">
+                        <div class="admin-page-title-wrap">
+                            <div class="admin-page-breadcrumb">
+                                <a th:href="@{/admin/dashboard}">Hệ thống</a>
+                                <span>/</span>
+                                <span>UI Starter Kit</span>
+                            </div>
+                            <h1 class="admin-page-title">Quy chuẩn Giao diện Admin CRMS</h1>
+                            <p class="admin-page-subtitle">
+                                Hướng dẫn mẫu Component cho Phú (Nhận/Trả xe), Trí (Khuyến mãi, Đánh giá), Phúc (Báo cáo
+                                sự cố).
+                            </p>
+                        </div>
+                        <div class="admin-page-actions">
+                            <button
+                                type="button"
+                                class="admin-btn admin-btn-secondary"
+                                onclick="openDemoModal()"
+                            >
+                                <svg
+                                    class="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    stroke-width="2"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                    ></path>
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                    ></path>
+                                </svg>
+                                <span>Mở Modal Popup</span>
+                            </button>
+                            <a href="#codeExamples" class="admin-btn admin-btn-primary">
+                                <svg
+                                    class="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    stroke-width="2"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                                    ></path>
+                                </svg>
+                                <span>Xem mã mẫu (Copy)</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 3. Stat Cards Row -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6 col-lg-3">
+                            <div
+                                th:replace="~{fragments/admin-components :: statCard(label='TỔNG ĐƠN ĐẶT', value='248', subtext='Tăng 12% so với tháng trước', iconType='car', variant='primary')}"
+                            ></div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div
+                                th:replace="~{fragments/admin-components :: statCard(label='DOANH THU', value='145.8M đ', subtext='Đã cọc & quyết toán', iconType='money', variant='success')}"
+                            ></div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div
+                                th:replace="~{fragments/admin-components :: statCard(label='CHỜ HOÀN CỌC', value='3 đơn', subtext='Cần quét VietQR hoàn tiền', iconType='clock', variant='warning')}"
+                            ></div>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <div
+                                th:replace="~{fragments/admin-components :: statCard(label='TỶ LỆ HOÀN TẤT', value='98.5%', subtext='Chuyến đi an toàn', iconType='check', variant='success')}"
+                            ></div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Filter Tabs Row -->
+                    <div class="admin-tabs">
+                        <a href="javascript:void(0)" class="admin-tab-item active">
+                            <span>Tất cả</span>
+                            <span class="admin-tab-count">24</span>
+                        </a>
+                        <a href="javascript:void(0)" class="admin-tab-item">
+                            <span>Chờ nhận xe</span>
+                            <span class="admin-tab-count">5</span>
+                        </a>
+                        <a href="javascript:void(0)" class="admin-tab-item">
+                            <span>Đang di chuyển</span>
+                            <span class="admin-tab-count">12</span>
+                        </a>
+                        <a href="javascript:void(0)" class="admin-tab-item">
+                            <span>Đã hoàn thành</span>
+                            <span class="admin-tab-count">7</span>
+                        </a>
+                    </div>
+
+                    <!-- 5. Modern Data Table in Card -->
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <div class="admin-card-title-group">
+                                <h2 class="admin-card-title">
+                                    <span>Danh sách dữ liệu mẫu (SaaS Table)</span>
+                                </h2>
+                                <p class="admin-card-subtitle">Chuẩn bảng dữ liệu hover, viền 1px, typography rõ nét</p>
+                            </div>
+                            <div class="admin-card-actions">
+                                <button type="button" class="admin-btn admin-btn-secondary admin-btn-sm">
+                                    Bộ lọc nâng cao
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="admin-table-wrapper border-0 rounded-0">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã đơn</th>
+                                        <th>Khách hàng</th>
+                                        <th>Phương tiện</th>
+                                        <th>Lịch nhận - trả</th>
+                                        <th>Trạng thái</th>
+                                        <th>Tổng tiền</th>
+                                        <th class="text-right">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="font-mono font-weight-bold text-navy">#101</td>
+                                        <td>
+                                            <div class="font-weight-bold text-slate-900">Nguyễn Văn An</div>
+                                            <div class="text-[11px] text-slate-500">0912 345 678</div>
+                                        </td>
+                                        <td>
+                                            <div class="font-weight-medium">Toyota Vios 2023</div>
+                                            <span class="badge badge-light border text-navy font-mono">51A-123.45</span>
+                                        </td>
+                                        <td>
+                                            <div class="text-xs">31/10 09:00 → 02/11 18:00</div>
+                                            <div class="text-[11px] text-slate-400">Kho Lý Thường Kiệt</div>
+                                        </td>
+                                        <td>
+                                            <div
+                                                th:replace="~{fragments/admin-components :: statusBadge(status='confirmed', label='Đã xác nhận cọc', variant='info')}"
+                                            ></div>
+                                        </td>
+                                        <td class="font-mono font-weight-bold text-slate-900">1,800,000 đ</td>
+                                        <td class="text-right">
+                                            <div class="d-inline-flex gap-1">
+                                                <button
+                                                    type="button"
+                                                    class="admin-btn admin-btn-secondary admin-btn-sm"
+                                                >
+                                                    Chi tiết
+                                                </button>
+                                                <button type="button" class="admin-btn admin-btn-success admin-btn-sm">
+                                                    Giao xe
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-mono font-weight-bold text-navy">#102</td>
+                                        <td>
+                                            <div class="font-weight-bold text-slate-900">Trần Thị Bích</div>
+                                            <div class="text-[11px] text-slate-500">0988 777 666</div>
+                                        </td>
+                                        <td>
+                                            <div class="font-weight-medium">Ford Ranger 2024</div>
+                                            <span class="badge badge-light border text-navy font-mono">61A-777.66</span>
+                                        </td>
+                                        <td>
+                                            <div class="text-xs">28/10 08:00 → 30/10 20:00</div>
+                                            <div class="text-[11px] text-slate-400">Kho Lý Thường Kiệt</div>
+                                        </td>
+                                        <td>
+                                            <div
+                                                th:replace="~{fragments/admin-components :: statusBadge(status='active', label='Đang di chuyển', variant='success')}"
+                                            ></div>
+                                        </td>
+                                        <td class="font-mono font-weight-bold text-slate-900">2,560,000 đ</td>
+                                        <td class="text-right">
+                                            <div class="d-inline-flex gap-1">
+                                                <button
+                                                    type="button"
+                                                    class="admin-btn admin-btn-secondary admin-btn-sm"
+                                                >
+                                                    Chi tiết
+                                                </button>
+                                                <button type="button" class="admin-btn admin-btn-primary admin-btn-sm">
+                                                    Trả xe
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-mono font-weight-bold text-navy">#103</td>
+                                        <td>
+                                            <div class="font-weight-bold text-slate-900">Lê Hoàng Quân</div>
+                                            <div class="text-[11px] text-slate-500">0933 222 111</div>
+                                        </td>
+                                        <td>
+                                            <div class="font-weight-medium">VinFast VF8</div>
+                                            <span class="badge badge-light border text-navy font-mono">43A-691.34</span>
+                                        </td>
+                                        <td>
+                                            <div class="text-xs">25/10 09:00 → 26/10 18:00</div>
+                                            <div class="text-[11px] text-slate-400">Kho Lý Thường Kiệt</div>
+                                        </td>
+                                        <td>
+                                            <div
+                                                th:replace="~{fragments/admin-components :: statusBadge(status='cancelled', label='Chờ hoàn cọc', variant='warning')}"
+                                            ></div>
+                                        </td>
+                                        <td class="font-mono font-weight-bold text-slate-900">1,200,000 đ</td>
+                                        <td class="text-right">
+                                            <button type="button" class="admin-btn admin-btn-danger admin-btn-sm">
+                                                Hoàn cọc VietQR
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 6. Form Components Grid Example -->
+                    <div class="row g-4 mt-1 mb-4" id="formExamples">
+                        <div class="col-lg-6">
+                            <div class="admin-card h-100">
+                                <div class="admin-card-header">
+                                    <h3 class="admin-card-title">Form nhập liệu chuẩn SaaS</h3>
+                                </div>
+                                <div class="admin-card-body">
+                                    <div class="admin-form-group">
+                                        <label class="admin-form-label">Tên chương trình / Tiêu đề (*)</label>
+                                        <input
+                                            type="text"
+                                            class="admin-form-input"
+                                            placeholder="Ví dụ: Giảm giá mùa du lịch Hè 2026"
+                                        />
+                                        <div class="admin-form-hint">Dùng cho phần khuyến mãi của Trí</div>
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <div class="admin-form-group">
+                                                <label class="admin-form-label">Mã khuyến mãi</label>
+                                                <input
+                                                    type="text"
+                                                    class="admin-form-input font-mono uppercase"
+                                                    placeholder="HE2026"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="admin-form-group">
+                                                <label class="admin-form-label">Loại chiết khấu</label>
+                                                <select class="admin-form-select">
+                                                    <option>Phần trăm (%)</option>
+                                                    <option>Số tiền cố định (VND)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="admin-form-group">
+                                        <label class="admin-form-label">Ghi chú kiểm tra tình trạng xe</label>
+                                        <textarea
+                                            class="admin-form-textarea"
+                                            rows="3"
+                                            placeholder="Dùng cho biên bản nhận/trả xe của Phú hoặc báo cáo sự cố của Phúc..."
+                                        ></textarea>
+                                    </div>
+                                </div>
+                                <div class="admin-card-footer">
+                                    <button type="button" class="admin-btn admin-btn-secondary">Hủy bỏ</button>
+                                    <button type="button" class="admin-btn admin-btn-primary">Lưu bản ghi</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 7. Status Badges Reference -->
+                        <div class="col-lg-6">
+                            <div class="admin-card h-100">
+                                <div class="admin-card-header">
+                                    <h3 class="admin-card-title">Bảng chuẩn màu Status Badges</h3>
+                                </div>
+                                <div class="admin-card-body">
+                                    <p class="text-xs text-muted mb-3">
+                                        Sử dụng
+                                        <code>~{fragments/admin-components :: statusBadge(...)}</code> để không bao giờ
+                                        bị lệch màu:
+                                    </p>
+                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                        <div
+                                            th:replace="~{fragments/admin-components :: statusBadge(status='success', label='Đã hoàn tất (success)', variant='success')}"
+                                        ></div>
+                                        <div
+                                            th:replace="~{fragments/admin-components :: statusBadge(status='active', label='Đang di chuyển (info)', variant='info')}"
+                                        ></div>
+                                        <div
+                                            th:replace="~{fragments/admin-components :: statusBadge(status='warning', label='Chờ xử lý (warning)', variant='warning')}"
+                                        ></div>
+                                        <div
+                                            th:replace="~{fragments/admin-components :: statusBadge(status='danger', label='Sự cố / Hủy (danger)', variant='danger')}"
+                                        ></div>
+                                        <div
+                                            th:replace="~{fragments/admin-components :: statusBadge(status='neutral', label='Nháp (neutral)', variant='neutral')}"
+                                        ></div>
+                                    </div>
+
+                                    <hr class="my-3" />
+
+                                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">
+                                        Bộ nút bấm chuẩn (Buttons)
+                                    </h4>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button class="admin-btn admin-btn-primary admin-btn-sm">Primary</button>
+                                        <button class="admin-btn admin-btn-secondary admin-btn-sm">Secondary</button>
+                                        <button class="admin-btn admin-btn-success admin-btn-sm">Success</button>
+                                        <button class="admin-btn admin-btn-danger admin-btn-sm">Danger</button>
+                                        <button class="admin-btn admin-btn-ghost admin-btn-sm">Ghost</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 8. Code Examples Guide Box -->
+                    <div class="admin-card" id="codeExamples">
+                        <div class="admin-card-header">
+                            <h3 class="admin-card-title">
+                                <span>Ví dụ Copy-Paste mẫu cho Thành viên trong nhóm</span>
+                            </h3>
+                        </div>
+                        <div class="admin-card-body">
+                            <p class="text-xs text-slate-600 mb-2">
+                                Để gọi component trong bất kỳ file Thymeleaf nào, chỉ cần chèn 1 dòng:
+                            </p>
+                            <pre
+                                class="bg-slate-900 text-slate-100 p-3 rounded-lg text-xs font-mono overflow-x-auto"
+                            ><code>&lt;!-- 1. Tiêu đề trang chuẩn --&gt;
+&lt;div th:replace="~{fragments/admin-components :: pageHeader(title='Quản lý khuyến mãi', subtitle='Tạo và điều chỉnh mã giảm giá', backUrl='/admin/dashboard')}"&gt;&lt;/div&gt;
+
+&lt;!-- 2. Thẻ thống kê KPI --&gt;
+&lt;div th:replace="~{fragments/admin-components :: statCard(label='TỔNG SỐ XE', value='45', subtext='Đang vận hành', iconType='car', variant='primary')}"&gt;&lt;/div&gt;
+
+&lt;!-- 3. Badge trạng thái tự động --&gt;
+&lt;div th:replace="~{fragments/admin-components :: statusBadge(status='active', label='Đang thuê', variant='success')}"&gt;&lt;/div&gt;
+
+&lt;!-- 4. Thông báo Flash alert --&gt;
+&lt;div th:replace="~{fragments/admin-components :: alert(type='success', message=${success})}"&gt;&lt;/div&gt;</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demo Modal -->
+            <div id="demoModal" class="admin-modal-backdrop hidden" onclick="closeDemoModalOnBackdrop(event)">
+                <div class="admin-modal-card">
+                    <div class="admin-modal-header">
+                        <h4 class="admin-modal-title">Hộp thoại Xác nhận (Modal Component)</h4>
+                        <button type="button" class="admin-modal-close" onclick="closeDemoModal()">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"
+                                ></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="admin-modal-body text-sm text-slate-600">
+                        Đây là mẫu Modal chuẩn giao diện SaaS. Các chức năng như Bàn giao xe (Phú), Tạo mã voucher
+                        (Trí), hay Báo cáo sự cố (Phúc) có thể dùng trực tiếp cấu trúc HTML này mà không bị lỗi giao
+                        diện.
+                    </div>
+                    <div class="admin-modal-footer">
+                        <button type="button" class="admin-btn admin-btn-secondary" onclick="closeDemoModal()">
+                            Hủy bỏ
+                        </button>
+                        <button
+                            type="button"
+                            class="admin-btn admin-btn-primary"
+                            onclick="alert('Đã xác nhận!'); closeDemoModal();"
+                        >
+                            Xác nhận thực hiện
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                function openDemoModal() {
+                    const m = document.getElementById("demoModal");
+                    if (m) m.classList.remove("hidden");
+                }
+                function closeDemoModal() {
+                    const m = document.getElementById("demoModal");
+                    if (m) m.classList.add("hidden");
+                }
+                function closeDemoModalOnBackdrop(e) {
+                    if (e.target.id === "demoModal") {
+                        closeDemoModal();
+                    }
+                }
+                document.addEventListener("keydown", function (e) {
+                    if (e.key === "Escape") closeDemoModal();
+                });
+            </script>
+        </main>
+    </body>
+</html>
+

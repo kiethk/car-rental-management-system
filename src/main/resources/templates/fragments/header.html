@@ -7,13 +7,19 @@
         <div class="flex items-center justify-between h-16">
             
             <!-- Logo -->
-            <a th:href="@{/}" class="flex items-center gap-2.5 hover:opacity-90 transition-opacity text-decoration-none" style="text-decoration: none !important;">
+            <a th:href="${isAdminPage != null and isAdminPage} ? @{/admin/dashboard} : @{/}" class="flex items-center gap-2.5 hover:opacity-90 transition-opacity text-decoration-none" style="text-decoration: none !important;">
                 <img th:src="@{/images/car-rental-logo.svg}" alt="DriveNow Logo" class="w-8 h-8 rounded-lg object-contain flex-shrink-0" width="32" height="32">
-                <span class="font-bold text-lg leading-none tracking-tight text-navy" style="color: #0f172a !important;">DriveNow</span>
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-lg leading-none tracking-tight text-navy" style="color: #0f172a !important;">DriveNow</span>
+                    <span th:if="${isAdminPage != null and isAdminPage}" class="header-admin-only hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        Vận hành
+                    </span>
+                </div>
             </a>
 
-            <!-- Desktop Nav for Customers & Guests (hidden for employees) -->
-            <nav th:if="${session.employeeId == null}" class="hidden lg:flex items-center gap-1">
+            <!-- Desktop Nav for Customers & Previewing Staff (shown on customer-facing pages) -->
+            <nav th:if="${isAdminPage == null or !isAdminPage}" class="header-customer-only hidden lg:flex items-center gap-1">
                 <a th:href="@{/}" class="crms-nav-link header-nav-link" data-nav="home">Trang chủ</a>
                 <a th:href="@{/vehicles}" class="crms-nav-link header-nav-link" data-nav="vehicles">Danh mục xe</a>
                 <a th:href="@{/search}" class="crms-nav-link header-nav-link" data-nav="search">Đặt thuê xe</a>
@@ -96,42 +102,29 @@
                     </div>
                 </th:block>
 
-                <!-- Employee Dropdown (No customer tabs, clean operations focus) -->
-                <th:block th:if="${session.employeeId != null and session.customerId == null}">
-                    <div class="crms-dropdown user-dropdown-container">
-                        <button type="button" class="crms-dropdown-toggle header-user-btn flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-white hover:bg-surface text-navy transition-all" onclick="toggleDropdown(this, event)">
-                            <div class="w-7 h-7 rounded-full bg-slate-800 text-amber font-bold text-xs flex items-center justify-center flex-shrink-0">
-                                <span>A</span>
-                            </div>
-                            <span class="text-xs font-semibold text-navy max-w-[120px] truncate hidden sm:inline" th:text="${session.employeeName != null ? session.employeeName : 'Nhân viên'}">Nhân viên</span>
-                            <span class="badge badge-warning text-dark text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase" th:text="${session.employeeRole}">Vận hành</span>
-                            <svg class="w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 dropdown-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </button>
-                        
-                        <div class="crms-dropdown-menu header-dropdown-menu">
-                            <div class="px-4 py-2.5 border-b border-border bg-surface/50">
-                                <div class="text-xs font-bold text-navy" th:text="${session.employeeName}">Tên nhân viên</div>
-                                <div class="text-[11px] text-muted-foreground uppercase font-semibold mt-0.5" style="letter-spacing: 0.05em;" th:text="${session.employeeRole != null ? session.employeeRole : 'Vận hành hệ thống'}">Vận hành hệ thống</div>
-                            </div>
-                            
-                            <div class="py-1">
-                                <a th:href="@{/admin/dashboard}" class="crms-dropdown-item header-dropdown-item">
-                                    <svg class="w-4 h-4 text-muted-foreground flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                                    <span>Bảng điều khiển</span>
-                                </a>
-                                <a th:href="@{/admin/password}" class="crms-dropdown-item header-dropdown-item">
-                                    <svg class="w-4 h-4 text-muted-foreground flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
-                                    <span>Đổi mật khẩu</span>
-                                </a>
-                            </div>
-                            
-                            <div class="border-t border-border py-1">
-                                <a th:href="@{/logout}" class="crms-dropdown-item header-dropdown-item text-red-600 hover:bg-red-50 hover:text-red-700" style="color: #dc2626 !important;">
-                                    <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                                    <span style="font-weight: 600;">Đăng xuất</span>
-                                </a>
-                            </div>
-                        </div>
+                <!-- Employee on Admin Pages: CTA to View Customer Site in New Tab -->
+                <th:block th:if="${session.employeeId != null and session.customerId == null and (isAdminPage != null and isAdminPage)}">
+                    <a th:href="@{/}" target="_blank" class="header-admin-only inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all text-decoration-none shadow-xs" style="height: 34px !important; text-decoration: none !important;" title="Mở trang khách hàng trong tab mới">
+                        <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                        </svg>
+                        <span>Xem trang khách</span>
+                    </a>
+                </th:block>
+
+                <!-- Employee Previewing on Customer Pages: Prominent CTA to Return to Admin Back-office -->
+                <th:block th:if="${session.employeeId != null and (isAdminPage == null or !isAdminPage)}">
+                    <div class="header-customer-only flex items-center gap-2">
+                        <span class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200" title="Bạn đang xem giao diện với tư cách Nhân viên">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                            <span>Xem trước (Nhân viên)</span>
+                        </span>
+                        <a th:href="@{/admin/dashboard}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-navy hover:bg-slate-800 text-white shadow-xs transition-all text-decoration-none" style="height: 34px !important; text-decoration: none !important; background-color: #0f172a !important; color: #ffffff !important;" title="Quay lại Bảng điều khiển Quản trị">
+                            <svg class="w-3.5 h-3.5 text-slate-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12"></path>
+                            </svg>
+                            <span>Về trang Quản trị</span>
+                        </a>
                     </div>
                 </th:block>
 
@@ -193,6 +186,16 @@
 
     (function highlightActiveTab() {
         const path = window.location.pathname;
+        const isClientAdmin = path.startsWith('/admin');
+
+        // Dynamic visibility sync in case of client routing
+        document.querySelectorAll('.header-admin-only').forEach(el => {
+            if (!isClientAdmin) el.classList.add('hidden');
+        });
+        document.querySelectorAll('.header-customer-only').forEach(el => {
+            if (isClientAdmin) el.classList.add('hidden');
+        });
+
         const navLinks = document.querySelectorAll('nav .crms-nav-link, nav .header-nav-link');
         navLinks.forEach(link => {
             const href = link.getAttribute('href');
