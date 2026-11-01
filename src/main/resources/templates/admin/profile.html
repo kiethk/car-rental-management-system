@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Change Password — DriveNow Admin</title>
+    <title>Account Settings — DriveNow Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -29,38 +29,11 @@
                 <div class="col-md-8 col-lg-6">
                     <div class="card card-drivenow border shadow-sm p-4 bg-white rounded-xl">
                         <div class="mb-4 text-center">
-                            <h1 class="h4 font-weight-bold text-navy mb-1">Change Account Password</h1>
-                            <p class="text-muted small mb-0">Update your employee security credentials</p>
+                            <h1 class="h4 font-weight-bold text-navy mb-1">Account Settings</h1>
+                            <p class="text-muted small mb-0">Update your contact information and password</p>
                         </div>
 
-                        <div class="alert alert-success py-2 small" th:if="${param.changed}">
-                            Your password has been changed successfully.
-                        </div>
-                        <div class="alert alert-danger py-2 small" th:if="${error}" th:text="${error}"></div>
-
-                        <form method="post" th:action="@{/admin/password}" th:object="${passwordForm}">
-                            <div class="form-group mb-3">
-                                <label for="currentPassword" class="small font-weight-bold text-navy mb-1">Current Password</label>
-                                <input id="currentPassword" type="password" th:field="*{currentPassword}"
-                                       class="form-control rounded-lg"
-                                       th:classappend="${#fields.hasErrors('currentPassword')} ? 'is-invalid'"
-                                       maxlength="255" placeholder="••••••••" required>
-                                <div class="invalid-feedback" th:if="${#fields.hasErrors('currentPassword')}"
-                                     th:errors="*{currentPassword}"></div>
-                            </div>
-
-                            <div class="form-group mb-4">
-                                <label for="newPassword" class="small font-weight-bold text-navy mb-1">New Password</label>
-                                <input id="newPassword" type="password" th:field="*{newPassword}"
-                                       class="form-control rounded-lg"
-                                       th:classappend="${#fields.hasErrors('newPassword')} ? 'is-invalid'"
-                                       maxlength="255" placeholder="••••••••" required>
-                                <div class="invalid-feedback" th:if="${#fields.hasErrors('newPassword')}"
-                                     th:errors="*{newPassword}"></div>
-                            </div>
-
-                            <button class="btn btn-navy font-weight-bold btn-block w-100 py-2 rounded-lg shadow-sm" type="submit">Update Password</button>
-                        </form>
+                        <div th:replace="~{fragments/account-form :: form('/admin/profile')}"></div>
                     </div>
                 </div>
             </div>

@@ -1,5 +1,8 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.support.TestSessions;
+import org.springframework.context.annotation.Import;
+import com.crms.mvc.support.PassThroughSessionAccountService;
 import com.crms.mvc.dto.ContractDTO;
 import com.crms.mvc.service.ContractService;
 import org.junit.jupiter.api.Test;
@@ -20,6 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Import(PassThroughSessionAccountService.class)
 @WebMvcTest(ContractController.class)
 class ContractControllerTest {
     @Autowired private MockMvc mvc;
@@ -72,16 +76,10 @@ class ContractControllerTest {
     }
 
     private MockHttpSession staff() {
-        MockHttpSession staff = new MockHttpSession();
-        staff.setAttribute("employeeId", 2L);
-        staff.setAttribute("employeeRole", "staff");
-        return staff;
+        return TestSessions.staff(2L);
     }
 
     private MockHttpSession customer(Long customerId) {
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("customerId", customerId);
-        session.setAttribute("licenseStatus", "approved");
-        return session;
+        return TestSessions.customer(customerId);
     }
 }

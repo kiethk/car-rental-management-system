@@ -51,13 +51,13 @@ Tài liệu này dành cho **dev hoặc AI được giao việc trong dự án**
 
 **Thanh toán thử:** VNPay sandbox, thẻ NCB `9704198526191432198`, tên `NGUYEN VAN A`, ngày phát hành `07/15`, OTP `123456`. Không trừ tiền thật.
 
-**Session:** các attribute `customerId`, `customerName`, `licenseStatus`, `employeeId`, `employeeName`, `employeeRole` (`admin`/`staff`). `AuthInterceptor` bảo vệ `/profile/**`, `/bookings/**`, `/licenses/**`; `RoleInterceptor` bảo vệ `/admin/**` (admin và staff đều vào được).
+**Session:** chỉ một attribute `account` (`SessionAccount`: id, loại tài khoản, tên, email, role, `credentialStamp`); đọc qua `util/CurrentAccount`. `SessionAccountInterceptor` đối chiếu lại với DB ở mỗi request (account bị xoá, role đổi hoặc mật khẩu đổi → session bị huỷ). `AuthInterceptor` bảo vệ `/profile/**`, `/bookings/**`, `/licenses/**`; `RoleInterceptor` bảo vệ `/admin/**` (admin và staff đều vào được).
 
 ### Bản đồ code nhanh (`src/main/java/com/crms/mvc/`)
 | Luồng | Controller | Service (interface → impl) |
 |---|---|---|
-| Đăng nhập/đăng ký/hồ sơ | `AuthController`, `ProfileController`, `EmployeePasswordController` | `AuthService`, `CustomerService`, `EmployeeService` |
-| GPLX | `LicenseDocumentController` (cả khách và admin) | `LicenseDocumentService`, `FileUploadService` |
+| Đăng nhập/đăng ký/hồ sơ | `AuthController`, `AccountController` (`/profile`, `/admin/profile`) | `AuthService`, `CustomerService`, `AccountService`, `SessionAccountService` |
+| GPLX | `LicenseDocumentController` (khách upload, không cần duyệt) | `LicenseDocumentService`, `FileUploadService` |
 | Xe công khai | `VehicleController`, `HomeController` | `VehicleService` |
 | Quản lý xe (admin) | `AdminVehicleController`, `AdminVehicleTypeController`, `AdminLicensePlateController`, `AdminInspectionController` | `VehicleService`, `VehicleTypeService`, `LicensePlateService`, `VehicleInspectionService` |
 | Đặt xe | `BookingController` | `BookingService`, `SlotService`, `ContractTemplateService` |

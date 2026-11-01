@@ -1,5 +1,6 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.util.CurrentAccount;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.BookingSummaryDTO;
 import com.crms.mvc.dto.CheckOutDTO;
@@ -27,7 +28,7 @@ public class AdminBookingController {
     @GetMapping
     public String listBookings(@RequestParam(value = "status", required = false, defaultValue = "all") String status,
                                HttpSession session, Model model, RedirectAttributes ra) {
-        Long employeeId = (Long) session.getAttribute("employeeId");
+        Long employeeId = CurrentAccount.employeeId(session).orElse(null);
         if (employeeId == null) {
             ra.addFlashAttribute("error", "Admin / Staff authentication required.");
             return "redirect:/login";
@@ -41,7 +42,7 @@ public class AdminBookingController {
 
     @GetMapping("/{id}")
     public String manageBooking(@PathVariable("id") Long bookingId, HttpSession session, Model model, RedirectAttributes ra) {
-        Long employeeId = (Long) session.getAttribute("employeeId");
+        Long employeeId = CurrentAccount.employeeId(session).orElse(null);
         if (employeeId == null) return "redirect:/login";
 
         try {
@@ -63,7 +64,7 @@ public class AdminBookingController {
     @PostMapping("/{id}/assign")
     public String assignVehicle(@PathVariable("id") Long bookingId, @RequestParam("vehicleId") Long vehicleId,
                                 HttpSession session, RedirectAttributes ra) {
-        Long employeeId = (Long) session.getAttribute("employeeId");
+        Long employeeId = CurrentAccount.employeeId(session).orElse(null);
         if (employeeId == null) return "redirect:/login";
 
         try {
@@ -77,7 +78,7 @@ public class AdminBookingController {
 
     @PostMapping("/{id}/check-in")
     public String checkIn(@PathVariable("id") Long bookingId, HttpSession session, RedirectAttributes ra) {
-        Long employeeId = (Long) session.getAttribute("employeeId");
+        Long employeeId = CurrentAccount.employeeId(session).orElse(null);
         if (employeeId == null) return "redirect:/login";
 
         try {
@@ -92,7 +93,7 @@ public class AdminBookingController {
     @PostMapping("/{id}/check-out")
     public String checkOut(@PathVariable("id") Long bookingId, @ModelAttribute("checkOutForm") CheckOutDTO form,
                            HttpSession session, RedirectAttributes ra) {
-        Long employeeId = (Long) session.getAttribute("employeeId");
+        Long employeeId = CurrentAccount.employeeId(session).orElse(null);
         if (employeeId == null) return "redirect:/login";
 
         try {

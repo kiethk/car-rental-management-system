@@ -1,5 +1,8 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.support.TestSessions;
+import org.springframework.context.annotation.Import;
+import com.crms.mvc.support.PassThroughSessionAccountService;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.ContractDTO;
 import com.crms.mvc.dto.ContractTemplateDTO;
@@ -22,6 +25,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Import(PassThroughSessionAccountService.class)
 @WebMvcTest(AdminBookingController.class)
 class AdminBookingContractViewTest {
     @Autowired private MockMvc mvc;
@@ -33,9 +37,7 @@ class AdminBookingContractViewTest {
         when(bookingService.getBookingDetailForAdmin(42L)).thenReturn(confirmedBooking());
         when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
 
-        MockHttpSession staff = new MockHttpSession();
-        staff.setAttribute("employeeId", 2L);
-        staff.setAttribute("employeeRole", "staff");
+        MockHttpSession staff = TestSessions.staff(2L);
 
         mvc.perform(get("/admin/bookings/42").session(staff))
                 .andExpect(status().isOk())

@@ -3,8 +3,11 @@ package com.crms.mvc.controller;
 import com.crms.mvc.dto.LoginDTO;
 import com.crms.mvc.dto.LoginIdentityDTO;
 import com.crms.mvc.dto.CustomerRegisterDTO;
+import com.crms.mvc.dto.SessionAccount;
 import com.crms.mvc.service.AuthService;
 import com.crms.mvc.service.CustomerService;
+import com.crms.mvc.service.SessionAccountService;
+import com.crms.mvc.util.CurrentAccount;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -19,10 +22,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class AuthController {
     private final AuthService authService;
     private final CustomerService customerService;
+    private final SessionAccountService sessionAccountService;
 
-    public AuthController(AuthService authService, CustomerService customerService) {
+    public AuthController(AuthService authService,
+                          CustomerService customerService,
+                          SessionAccountService sessionAccountService) {
         this.authService = authService;
         this.customerService = customerService;
+        this.sessionAccountService = sessionAccountService;
     }
 
     @GetMapping("/login")
@@ -51,17 +58,10 @@ public class AuthController {
             oldSession.invalidate();
         }
 
+        SessionAccount sessionAccount = sessionAccountService.create(account);
         HttpSession session = request.getSession(true);
-        if ("customer".equals(account.accountType())) {
-            session.setAttribute("customerId", account.accountId());
-            session.setAttribute("customerName", account.name());
-            return "redirect:/vehicles";
-        }
-
-        session.setAttribute("employeeId", account.accountId());
-        session.setAttribute("employeeName", account.name());
-        session.setAttribute("employeeRole", account.role());
-        return "redirect:/admin/dashboard";
+        session.setAttribute(CurrentAccount.SESSION_KEY, sessionAccount);
+        return sessionAccount.isCustomer() ? "redirect:/vehicles" : "redirect:/admin/dashboard";
     }
 
     @GetMapping("/register")

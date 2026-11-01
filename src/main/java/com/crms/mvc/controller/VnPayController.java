@@ -1,5 +1,6 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.util.CurrentAccount;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.PaymentService;
@@ -38,7 +39,7 @@ public class VnPayController {
                                       HttpServletRequest request,
                                       HttpSession session,
                                       RedirectAttributes ra) {
-        Long customerId = (Long) session.getAttribute("customerId");
+        Long customerId = CurrentAccount.customerId(session).orElse(null);
         if (customerId == null) {
             return "redirect:/login";
         }

@@ -1,5 +1,8 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.support.TestSessions;
+import org.springframework.context.annotation.Import;
+import com.crms.mvc.support.PassThroughSessionAccountService;
 import com.crms.mvc.dto.AdminVehicleQueryDTO;
 import com.crms.mvc.dto.PageQueryDTO;
 import com.crms.mvc.dto.VehicleDTO;
@@ -34,6 +37,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Import(PassThroughSessionAccountService.class)
 @WebMvcTest({AdminVehicleController.class, AdminVehicleTypeController.class})
 class AdminListPagingTest {
     @Autowired private MockMvc mvc;
@@ -45,9 +49,7 @@ class AdminListPagingTest {
 
     @BeforeEach
     void setUp() {
-        admin = new MockHttpSession();
-        admin.setAttribute("employeeId", 1L);
-        admin.setAttribute("employeeRole", "admin");
+        admin = TestSessions.admin(1L);
     }
 
     @Test

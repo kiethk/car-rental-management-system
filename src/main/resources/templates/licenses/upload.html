@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Driving License Verification — DriveNow</title>
+    <title>Driving License — DriveNow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -26,16 +26,14 @@
 
             <div th:if="${error}" class="alert alert-danger py-2" th:text="${error}"></div>
             <div th:if="${param.submitted}" class="alert alert-success py-2">
-                Your license was submitted successfully and is currently pending admin review.
+                Your license was uploaded successfully.
             </div>
 
-            <!-- Current Application Card -->
             <section th:if="${currentLicense != null}" class="card card-drivenow border shadow-sm p-4 bg-white rounded-xl mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2 class="h5 font-weight-bold text-navy mb-0">Current Document Status</h2>
-                    <span th:if="${currentLicense.status == 'approved'}" class="badge badge-success px-3 py-1 font-weight-bold">Verified & Approved</span>
-                    <span th:if="${currentLicense.status == 'pending'}" class="badge badge-warning text-dark px-3 py-1 font-weight-bold">Pending Review</span>
-                    <span th:if="${currentLicense.status == 'rejected'}" class="badge badge-danger px-3 py-1 font-weight-bold">Rejected</span>
+                    <h2 class="h5 font-weight-bold text-navy mb-0">Current License</h2>
+                    <span th:if="${!licenseExpired}" class="badge badge-success px-3 py-1 font-weight-bold">Uploaded</span>
+                    <span th:if="${licenseExpired}" class="badge badge-danger px-3 py-1 font-weight-bold">Expired</span>
                 </div>
 
                 <div class="row align-items-center">
@@ -49,9 +47,6 @@
 
                             <dt class="col-5 text-muted mb-2">Expiry Date:</dt>
                             <dd class="col-7 font-weight-bold text-navy mb-2" th:text="${currentLicense.licenseExpiry}"></dd>
-
-                            <dt th:if="${currentLicense.rejectionReason != null}" class="col-5 text-danger mb-0">Rejection Note:</dt>
-                            <dd th:if="${currentLicense.rejectionReason != null}" class="col-7 text-danger mb-0" th:text="${currentLicense.rejectionReason}"></dd>
                         </dl>
                     </div>
                     <div class="col-md-6 text-center">
@@ -61,9 +56,8 @@
                 </div>
             </section>
 
-            <!-- Submit Form Card -->
-            <section th:if="${currentLicense == null or currentLicense.status == 'rejected'}" class="card card-drivenow border shadow-sm p-4 bg-white rounded-xl">
-                <h2 class="h5 font-weight-bold text-navy mb-3" th:text="${currentLicense == null ? 'Submit Driving License' : 'Resubmit Driving License'}"></h2>
+            <section class="card card-drivenow border shadow-sm p-4 bg-white rounded-xl">
+                <h2 class="h5 font-weight-bold text-navy mb-3" th:text="${currentLicense == null ? 'Upload Driving License' : 'Replace Driving License'}"></h2>
                 <form th:action="@{/licenses}" th:object="${licenseForm}" method="post" enctype="multipart/form-data">
                     <div class="row g-3">
                         <div class="col-md-6 form-group mb-3">
@@ -89,7 +83,7 @@
                         </div>
                     </div>
                     <div class="pt-3 border-top mt-2">
-                        <button type="submit" class="btn btn-navy font-weight-bold px-4 rounded-lg shadow-sm">Submit for Verification</button>
+                        <button type="submit" class="btn btn-navy font-weight-bold px-4 rounded-lg shadow-sm">Upload License</button>
                     </div>
                 </form>
             </section>

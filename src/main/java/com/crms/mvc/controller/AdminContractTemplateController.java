@@ -1,5 +1,6 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.util.CurrentAccount;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.dto.ContractTemplateFormDTO;
 import com.crms.mvc.service.ContractTemplateService;
@@ -54,7 +55,7 @@ public class AdminContractTemplateController {
             return "redirect:/admin/contract-templates";
         }
         try {
-            ContractTemplateDTO draft = contractTemplateService.createDraft((Long) session.getAttribute("employeeId"));
+            ContractTemplateDTO draft = contractTemplateService.createDraft(CurrentAccount.employeeId(session).orElse(null));
             ra.addFlashAttribute("success", "Draft version " + draft.getVersionNo() + " created from the active terms.");
             return "redirect:/admin/contract-templates/" + draft.getId();
         } catch (IllegalStateException e) {
@@ -119,6 +120,6 @@ public class AdminContractTemplateController {
     }
 
     private boolean isAdmin(HttpSession session) {
-        return "admin".equals(session.getAttribute("employeeRole"));
+        return CurrentAccount.isAdmin(session);
     }
 }
