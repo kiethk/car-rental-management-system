@@ -3,6 +3,7 @@ package com.crms.mvc.controller;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.dto.ContractTemplateFormDTO;
 import com.crms.mvc.service.ContractTemplateService;
+import com.crms.mvc.util.EmployeeRole;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -119,6 +120,6 @@ public class AdminContractTemplateController {
     }
 
     private boolean isAdmin(HttpSession session) {
-        return "admin".equals(session.getAttribute("employeeRole"));
+        return EmployeeRole.isAdmin(session);
     }
 }

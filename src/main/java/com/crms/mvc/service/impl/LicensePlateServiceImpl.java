@@ -60,7 +60,7 @@ public class LicensePlateServiceImpl implements LicensePlateService {
         String newPlate = form.getPlate().trim().toUpperCase();
 
         if (current != null) {
-            if ("rented".equalsIgnoreCase(vehicle.getStatus())) {
+            if (Vehicle.STATUS_RENTED.equalsIgnoreCase(vehicle.getStatus())) {
                 throw new IllegalStateException("Cannot change the plate while the vehicle is rented out");
             }
             if (current.getPlate().equalsIgnoreCase(newPlate)) {

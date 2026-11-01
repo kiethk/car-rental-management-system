@@ -225,6 +225,7 @@ Bảng có hover dòng mượt, padding thoáng, text không bị xuống dòng 
   - Khách hàng sau khi hoàn tất chuyến (`completed`) được chấm sao (1-5 sao) và nhận xét.
 
 ### 3. Phúc — Task: Báo cáo sự cố (Issues & Incident Damage)
-- **Vị trí**: Khi nhận lại xe lúc Check-out hoặc phát sinh trong hành trình.
-- Form ghi nhận: mô tả sự cố (va chạm, hỏng lốp, xước sơn), mức phí đền bù (gắn với `BookingFee`), trạng thái xử lý (`open`, `investigating`, `resolved`).
+- **Vị trí**: Trang danh sách `/admin/issues`, nút "Ghi nhận sự cố" ở trang chi tiết đơn và trang trả xe. Ghi nhận được ở **bất kỳ thời điểm nào** sau khi khách đã nhận xe (đơn `active` hoặc `completed`): khách gọi báo giữa chuyến, lúc trả xe, hoặc sau quyết toán (phạt nguội).
+- Form ghi nhận: loại sự cố (va chạm, hư hỏng, phạt nguội, khác), tiêu đề, mô tả, thời điểm xảy ra, ảnh bằng chứng, mức phí đền bù (một `BookingFee` loại `ISSUE_COMPENSATION` gắn với sự cố). Số tiền chỉ nằm ở `BookingFee`, sự cố không có cột `fine_amount`.
+- Trạng thái xử lý: `open` → `resolved` (chốt phí) hoặc `cancelled`. Không có `in_progress` / `investigating`. Sự cố chỉ theo dõi trách nhiệm tiền của khách, việc sửa xe đi theo trạng thái xe (xem `docs/adr/0001-issue-tracks-customer-liability-only.md`).
 

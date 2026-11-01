@@ -21,6 +21,8 @@ public class BookingDetailDTO implements Serializable {
     private Long vehicleId;
     private String licensePlate;
     private String vehicleColor;
+    /** True when the assigned vehicle has been retired, so the booking needs another vehicle. */
+    private boolean vehicleRetired;
 
     private Long slotId;
     private OffsetDateTime pickupTime;
@@ -118,6 +120,8 @@ public class BookingDetailDTO implements Serializable {
     public void setVehicleId(Long vehicleId) { this.vehicleId = vehicleId; }
     public String getLicensePlate() { return licensePlate; }
     public void setLicensePlate(String licensePlate) { this.licensePlate = licensePlate; }
+    public boolean isVehicleRetired() { return vehicleRetired; }
+    public void setVehicleRetired(boolean vehicleRetired) { this.vehicleRetired = vehicleRetired; }
     public String getVehicleColor() { return vehicleColor; }
     public void setVehicleColor(String vehicleColor) { this.vehicleColor = vehicleColor; }
     public Long getSlotId() { return slotId; }

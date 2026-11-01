@@ -7,6 +7,7 @@ import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.VehicleService;
 import com.crms.mvc.entity.Payment;
+import com.crms.mvc.service.IssueService;
 import com.crms.mvc.service.PaymentService;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -30,11 +31,14 @@ public class AdminBookingController {
     private final BookingService bookingService;
     private final VehicleService vehicleService;
     private final PaymentService paymentService;
+    private final IssueService issueService;
 
-    public AdminBookingController(BookingService bookingService, VehicleService vehicleService, PaymentService paymentService) {
+    public AdminBookingController(BookingService bookingService, VehicleService vehicleService,
+                                  PaymentService paymentService, IssueService issueService) {
         this.bookingService = bookingService;
         this.vehicleService = vehicleService;
         this.paymentService = paymentService;
+        this.issueService = issueService;
     }
 
     @GetMapping
@@ -63,13 +67,14 @@ public class AdminBookingController {
 
         try {
             BookingDetailDTO detail = bookingService.getBookingDetailForAdmin(bookingId);
-            List<Vehicle> availableVehicles = vehicleService.findByStatusWithDetails("available").stream()
+            List<Vehicle> availableVehicles = vehicleService.findByStatusWithDetails(Vehicle.STATUS_AVAILABLE).stream()
                     .filter(v -> v.getVehicleType().getId().equals(detail.getVehicleTypeId()))
                     .toList();
 
             model.addAttribute("booking", detail);
             model.addAttribute("availableVehicles", availableVehicles);
             model.addAttribute("checkOutForm", new CheckOutDTO());
+            model.addAttribute("issues", issueService.findByBooking(bookingId));
 
             Optional<Payment> pendingRefundOpt = paymentService.getPendingRefund(bookingId);
             if (pendingRefundOpt.isPresent()) {

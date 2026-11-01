@@ -3,7 +3,9 @@ package com.crms.mvc.service;
 import com.crms.mvc.dto.CustomerRegisterDTO;
 import com.crms.mvc.dto.PasswordChangeDTO;
 import com.crms.mvc.dto.VehicleFormDTO;
+import com.crms.mvc.entity.Slot;
 import com.crms.mvc.entity.Vehicle;
+import com.crms.mvc.entity.VehicleType;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.VehicleRepository;
 import com.crms.mvc.service.impl.BookingServiceImpl;
@@ -147,7 +149,7 @@ class BookingServiceSchedulingAndValidationTest {
 
         assertThatThrownBy(() -> vehicleService.updateStatus(10L, "rented"))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Only 'available' and 'maintenance' are allowed");
+                .hasMessageContaining("Only 'available', 'maintenance' and 'retired' are allowed");
 
         assertThatThrownBy(() -> vehicleService.updateStatus(10L, "invalid_status"))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -251,5 +253,48 @@ class BookingServiceSchedulingAndValidationTest {
         assertThat(booking.getStatus()).isEqualTo("cancelled");
         verify(paymentService, never()).createPendingRefund(any(), any(), any(), any(), any());
         verify(bookingRepository, times(1)).save(booking);
+    }
+
+    @Test
+    @DisplayName("A retired vehicle cannot be assigned to a booking")
+    void testAssignRetiredVehicleIsRejected() {
+        VehicleType type = new VehicleType();
+        type.setId(3L);
+        Slot slot = new Slot();
+        slot.setVehicleType(type);
+        Booking booking = new Booking();
+        booking.setId(200L);
+        booking.setSlot(slot);
+        Vehicle retired = new Vehicle();
+        retired.setId(9L);
+        retired.setVehicleType(type);
+        retired.setStatus(Vehicle.STATUS_RETIRED);
+        when(bookingRepository.findById(200L)).thenReturn(Optional.of(booking));
+        when(vehicleRepository.findById(9L)).thenReturn(Optional.of(retired));
+
+        assertThatThrownBy(() -> bookingService.assignVehicle(200L, 9L))
+                .isInstanceOf(IllegalStateException.class);
+
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Vehicles offered for a time range exclude retired and maintenance ones")
+    void testAvailableVehiclesExcludeRetiredAndMaintenance() {
+        Vehicle ready = vehicleWithStatus(1L, "available");
+        Vehicle repairing = vehicleWithStatus(2L, "maintenance");
+        Vehicle retired = vehicleWithStatus(3L, Vehicle.STATUS_RETIRED);
+        when(vehicleRepository.findByVehicleTypeIdWithDetails(3L)).thenReturn(java.util.List.of(ready, repairing, retired));
+
+        var offered = bookingService.findAvailableVehiclesInTimeRange(3L, OffsetDateTime.now().plusDays(1), OffsetDateTime.now().plusDays(2));
+
+        assertThat(offered).containsExactly(ready);
+    }
+
+    private static Vehicle vehicleWithStatus(Long id, String status) {
+        Vehicle vehicle = new Vehicle();
+        vehicle.setId(id);
+        vehicle.setStatus(status);
+        return vehicle;
     }
 }

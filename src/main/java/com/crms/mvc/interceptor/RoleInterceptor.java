@@ -1,5 +1,7 @@
 package com.crms.mvc.interceptor;
 
+import com.crms.mvc.util.EmployeeRole;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -20,7 +22,7 @@ public class RoleInterceptor implements HandlerInterceptor {
         }
 
         String role = (String) session.getAttribute("employeeRole");
-        if ("admin".equals(role) || "staff".equals(role)) {
+        if (EmployeeRole.isEmployee(role)) {
             return true;
         }
 

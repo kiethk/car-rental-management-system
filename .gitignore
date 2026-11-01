@@ -29,3 +29,6 @@ skills-lock.json
 .github/copilot-instructions.md
 
 database/payment-card-example.txt
+
+# Local issue tracker (specs & tickets)
+.scratch/

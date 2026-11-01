@@ -167,6 +167,7 @@ ON CONFLICT (booking_id) DO NOTHING;
 
 -- 10. CONTRACT_TEMPLATES
 -- status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED'. Numbers live in typed columns; terms_content holds wording only.
+-- Version 1 is archived: contracts 1 and 2 were signed on it. Version 2 adds the post-settlement fee and total-loss clauses.
 INSERT INTO contract_templates (contract_template_id, version_no, title, terms_content,
                                 deposit_rate, late_fee_multiplier, free_cancellation_hours,
                                 status, created_by, created_at, activated_at)
@@ -183,7 +184,28 @@ VALUES
      || E'7. Bồi thường thiệt hại khi xe bị hư hỏng hoặc mất mát do lỗi của Bên B, căn cứ biên bản bàn giao và chi phí sửa chữa thực tế.\n'
      || E'8. Trả xe đúng thời hạn, đúng địa điểm, với mức nhiên liệu như khi nhận; tự chi trả phí cầu đường, bến bãi phát sinh.',
      0.5000, 2.00, 72,
-     'ACTIVE', 1, CURRENT_TIMESTAMP - INTERVAL '30 days', CURRENT_TIMESTAMP - INTERVAL '30 days')
+     'ARCHIVED', 1, CURRENT_TIMESTAMP - INTERVAL '30 days', CURRENT_TIMESTAMP - INTERVAL '30 days'),
+    (2, 2, 'Hợp đồng thuê xe ô tô tự lái',
+     E'Quyền và nghĩa vụ của Bên A\n'
+     || E'1. Bàn giao xe đúng thời gian và địa điểm đã thỏa thuận; xe ở tình trạng kỹ thuật tốt, có đủ giấy đăng ký, giấy chứng nhận kiểm định và bảo hiểm trách nhiệm dân sự bắt buộc còn hiệu lực.\n'
+     || E'2. Cùng Bên B lập biên bản bàn giao, ghi nhận số km, mức nhiên liệu và tình trạng ngoại thất, nội thất khi giao và khi nhận lại xe.\n'
+     || E'3. Chịu chi phí bảo dưỡng định kỳ và các hư hỏng do hao mòn tự nhiên của xe.\n'
+     || E'\nQuyền và nghĩa vụ của Bên B\n'
+     || E'4. Xuất trình bản gốc căn cước công dân và giấy phép lái xe phù hợp với hạng xe khi nhận xe.\n'
+     || E'5. Sử dụng xe đúng mục đích, tuân thủ pháp luật về giao thông đường bộ và chịu trách nhiệm về mọi vi phạm giao thông, kể cả phạt nguội, phát sinh trong thời gian thuê.\n'
+     || E'6. Không giao xe cho người khác điều khiển khi chưa được Bên A đồng ý; không cầm cố, thế chấp, cho thuê lại xe; không dùng xe để chở hàng cấm hoặc đua xe.\n'
+     || E'7. Bồi thường thiệt hại khi xe bị hư hỏng hoặc mất mát do lỗi của Bên B, căn cứ biên bản bàn giao và chi phí sửa chữa thực tế.\n'
+     || E'8. Trả xe đúng thời hạn, đúng địa điểm, với mức nhiên liệu như khi nhận; tự chi trả phí cầu đường, bến bãi phát sinh.\n'
+     || E'\nPhí phát sinh sau quyết toán\n'
+     || E'9. Các khoản phạt vi phạm giao thông (kể cả phạt nguội) hoặc thiệt hại phát sinh trong thời gian thuê nhưng được ghi nhận sau khi đã quyết toán vẫn thuộc trách nhiệm của Bên B. Bên A thông báo qua email kèm chứng từ, và Bên B thanh toán trong vòng 7 ngày kể từ ngày nhận thông báo.\n'
+     || E'\nXe hư hỏng không thể sửa chữa hoặc không thể thu hồi\n'
+     || E'10. Áp dụng khi xe bị tổn thất toàn bộ (đơn vị giám định hoặc gara chính hãng kết luận không thể sửa chữa, hoặc chi phí sửa chữa vượt 70% giá trị xe), hoặc khi xe không thể thu hồi (mất cắp, bị chiếm giữ, Bên B không hoàn trả) do lỗi của Bên B. Khi đó Bên B bồi thường:\n'
+     || E'a) Giá trị thị trường của xe tại thời điểm xảy ra sự việc, theo định giá của đơn vị thẩm định độc lập, trừ đi số tiền bảo hiểm Bên A thực nhận (nếu có);\n'
+     || E'b) Chi phí cứu hộ, cẩu kéo, lưu bãi và giám định thực tế phát sinh;\n'
+     || E'c) Thiệt hại do xe ngừng khai thác: đơn giá thuê theo ngày nhân với số ngày từ khi xảy ra sự việc đến khi hoàn tất bồi thường, tối đa 30 ngày.\n'
+     || E'Tiền cọc được cấn trừ vào khoản bồi thường. Phần còn thiếu Bên B thanh toán trong vòng 7 ngày.',
+     0.5000, 2.00, 72,
+     'ACTIVE', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (contract_template_id) DO NOTHING;
 
 -- 11. CONTRACTS
@@ -224,17 +246,28 @@ VALUES
 ON CONFLICT (vehicle_inspection_id) DO NOTHING;
 
 -- 15. ISSUES
--- issue_type, status: 'open' | 'in_progress' | 'resolved'
-INSERT INTO issues (issue_id, booking_id, slot_id, vehicle_id, employee_id, issue_type, subject, status, evidence_url, reported_at)
-VALUES 
-    (1, 1, 1, 1, 2, 'SCRATCH', 'Minor scratch on front bumper', 'resolved', '/uploads/issues/issue_1.jpg', CURRENT_TIMESTAMP - INTERVAL '2 days')
+-- issue_type: 'COLLISION' | 'DAMAGE' | 'TRAFFIC_FINE' | 'OTHER'; status: 'open' | 'resolved' | 'cancelled'
+-- The amount owed is a booking_fees row (fee_type 'ISSUE_COMPENSATION'), not a column here.
+INSERT INTO issues (issue_id, booking_id, vehicle_id, employee_id, issue_type, subject, description, status,
+                    occurred_at, reported_at, resolved_at, resolution_note)
+VALUES
+    (1, 1, 1, 2, 'DAMAGE', 'Minor scratch on front bumper', 'Scratch about 15 cm found on the front bumper at return.', 'resolved',
+     CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days',
+     'Customer agreed to a flat compensation of 200,000 VND.')
 ON CONFLICT (issue_id) DO NOTHING;
 
--- 16. BOOKING_FEES
--- fee_type: 'RENTAL' | 'LATE_FEE' | 'DAMAGE_COMPENSATION' | 'CLEANING_FEE' | 'TOLL_FEE'
-INSERT INTO booking_fees (booking_fee_id, booking_id, fee_type, amount, description, issue_id, created_at)
+-- 15b. ISSUE_EVIDENCES (files live in the private issue upload folder)
+INSERT INTO issue_evidences (issue_evidence_id, issue_id, file_name, uploaded_at)
 VALUES
-    (1, 1, 'DAMAGE_COMPENSATION', 200000.00, 'Compensation for front bumper scratch per incident #1', 1, CURRENT_TIMESTAMP - INTERVAL '2 days')
+    (1, 1, 'issue_1.jpg', CURRENT_TIMESTAMP - INTERVAL '2 days')
+ON CONFLICT (issue_evidence_id) DO NOTHING;
+
+-- 16. BOOKING_FEES
+-- fee_type: 'RENTAL' | 'LATE_FEE' | 'ISSUE_COMPENSATION' | 'CLEANING_FEE' | 'TOLL_FEE'
+-- payment_id: the payment that settled the fee (booking 1's settlement is payment 3); NULL means still owed.
+INSERT INTO booking_fees (booking_fee_id, booking_id, fee_type, amount, description, issue_id, payment_id, created_at)
+VALUES
+    (1, 1, 'ISSUE_COMPENSATION', 200000.00, 'Compensation for front bumper scratch per issue #1', 1, 3, CURRENT_TIMESTAMP - INTERVAL '2 days')
 ON CONFLICT (booking_fee_id) DO NOTHING;
 
 -- Sequence updates
@@ -253,6 +286,7 @@ SELECT setval(pg_get_serial_sequence('payments', 'payment_id'), COALESCE(MAX(pay
 SELECT setval(pg_get_serial_sequence('reviews', 'review_id'), COALESCE(MAX(review_id), 1)) FROM reviews;
 SELECT setval(pg_get_serial_sequence('vehicle_inspections', 'vehicle_inspection_id'), COALESCE(MAX(vehicle_inspection_id), 1)) FROM vehicle_inspections;
 SELECT setval(pg_get_serial_sequence('issues', 'issue_id'), COALESCE(MAX(issue_id), 1)) FROM issues;
+SELECT setval(pg_get_serial_sequence('issue_evidences', 'issue_evidence_id'), COALESCE(MAX(issue_evidence_id), 1)) FROM issue_evidences;
 SELECT setval(pg_get_serial_sequence('booking_fees', 'booking_fee_id'), COALESCE(MAX(booking_fee_id), 1)) FROM booking_fees;
 
 COMMIT;

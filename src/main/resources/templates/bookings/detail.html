@@ -129,6 +129,60 @@
                     </div>
                 </div>
 
+                <!-- Fees of issues found after the booking was settled: the customer pays them here -->
+                <div class="surface-card" th:if="${payableIssues != null and !payableIssues.isEmpty()}">
+                    <h2 class="card-title">Phí phát sinh chưa thanh toán</h2>
+                    <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">
+                        Các khoản dưới đây phát sinh sau khi chuyến thuê đã quyết toán. Bạn thanh toán một lần cho tất cả qua VNPay.
+                    </p>
+                    <div class="cost-row" th:each="issue : ${payableIssues}">
+                        <span th:text="${issue.subject}">Vượt đèn đỏ</span>
+                        <span style="font-family: 'JetBrains Mono', monospace; font-weight: 500; color: #0f172a;">
+                            <span th:text="${#numbers.formatDecimal(issue.feeAmount, 0, 'COMMA', 0, 'POINT')}">800,000</span> đ
+                        </span>
+                    </div>
+                    <div class="cost-total-row">
+                        <span class="cost-total-label">Tổng cần thanh toán</span>
+                        <span class="cost-total-val">
+                            <span th:text="${#numbers.formatDecimal(payableTotal, 0, 'COMMA', 0, 'POINT')}">800,000</span> đ
+                        </span>
+                    </div>
+                    <form th:action="@{/bookings/{id}/pay-issue-fees(id=${booking.id})}" method="post">
+                        <button type="submit" class="btn-pay-now">Thanh toán phí phát sinh →</button>
+                    </form>
+                </div>
+
+                <!-- Issues charged on this booking (read-only for the customer) -->
+                <div class="surface-card" th:if="${issues != null and !issues.isEmpty()}">
+                    <h2 class="card-title">Sự cố trong chuyến thuê</h2>
+                    <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">
+                        Các khoản phí dưới đây phát sinh từ sự cố ghi nhận trong thời gian bạn thuê xe.
+                    </p>
+                    <div th:each="issue : ${issues}" style="border-top: 1px solid #e2e8f0; padding: 12px 0;">
+                        <div style="display: flex; justify-content: space-between; gap: 12px;">
+                            <div>
+                                <strong th:text="${issue.subject}">Trầy cản trước</strong>
+                                <div style="font-size: 12px; color: #64748b;">
+                                    <span th:text="${issue.issueType.label}">Hư hỏng</span> ·
+                                    <span th:text="${#temporals.format(issue.occurredAt, 'dd/MM/yyyy HH:mm')}">30/10/2026 14:30</span> ·
+                                    <span th:text="${issue.status.label}">Đã chốt</span>
+                                </div>
+                            </div>
+                            <div th:if="${issue.feeAmount != null}" style="font-family: 'JetBrains Mono', monospace; font-weight: 600; white-space: nowrap;">
+                                <span th:text="${#numbers.formatDecimal(issue.feeAmount, 0, 'COMMA', 0, 'POINT')}">200,000</span> đ
+                            </div>
+                        </div>
+                        <p th:if="${issue.description != null}" style="font-size: 13px; margin: 6px 0 0; white-space: pre-line;" th:text="${issue.description}">Mô tả</p>
+                        <div th:if="${!issue.evidences.isEmpty()}" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+                            <a th:each="photo : ${issue.evidences}" target="_blank" rel="noopener"
+                               th:href="@{/bookings/{bid}/issues/{iid}/evidences/{eid}(bid=${booking.id},iid=${issue.id},eid=${photo.id})}">
+                                <img th:src="@{/bookings/{bid}/issues/{iid}/evidences/{eid}(bid=${booking.id},iid=${issue.id},eid=${photo.id})}"
+                                     alt="Ảnh sự cố" style="width: 96px; height: 72px; object-fit: cover; border-radius: 6px; border: 1px solid #e2e8f0;">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Card 2: Payment Ledger -->
                 <div class="surface-card">
                     <h2 class="card-title">Lịch sử giao dịch thanh toán</h2>

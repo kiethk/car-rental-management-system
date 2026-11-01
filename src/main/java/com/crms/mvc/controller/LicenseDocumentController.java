@@ -5,6 +5,7 @@ import com.crms.mvc.dto.LicenseSubmitDTO;
 import com.crms.mvc.entity.LicenseDocument;
 import com.crms.mvc.service.FileUploadService;
 import com.crms.mvc.service.LicenseDocumentService;
+import com.crms.mvc.util.EmployeeRole;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.core.io.Resource;
@@ -143,7 +144,7 @@ public class LicenseDocumentController {
         boolean isCustomerOwner = customerId != null
                 && customerId.equals(license.getCustomer().getId());
         boolean isAllowedEmployee = employeeId != null
-                && ("admin".equals(employeeRole) || "staff".equals(employeeRole));
+                && EmployeeRole.isEmployee(employeeRole);
 
         if (!isCustomerOwner && !isAllowedEmployee) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();

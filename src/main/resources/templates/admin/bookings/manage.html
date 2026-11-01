@@ -313,7 +313,7 @@
                             </div>
 
                             <!-- 2. Action Bước 1: Gán xe vật lý (Assign Physical Car) -->
-                            <div class="admin-card" th:if="${booking.status == 'confirmed' and booking.vehicleId == null}">
+                            <div class="admin-card" th:if="${booking.status == 'confirmed' and (booking.vehicleId == null or booking.vehicleRetired)}">
                                 <div class="admin-card-header">
                                     <div class="admin-card-title-group">
                                         <h3 class="admin-card-title">Bước 1: Phân bổ xe vật lý</h3>
@@ -321,6 +321,9 @@
                                     </div>
                                 </div>
                                 <div class="admin-card-body">
+                                    <div th:if="${booking.vehicleRetired}" class="admin-alert admin-alert-warning mb-3">
+                                        Xe đã ngừng khai thác, cần gán lại xe khác cho đơn này.
+                                    </div>
                                     <div th:if="${#lists.isEmpty(availableVehicles)}" class="admin-alert admin-alert-warning mb-3">
                                         Hiện không có xe vật lý nào đang sẵn sàng (Available) cho dòng này.
                                     </div>
@@ -344,7 +347,7 @@
                             </div>
 
                             <!-- 3. Action Bước 2: Bàn giao xe (Check-In Handover) [Task Phú] -->
-                            <div class="admin-card" th:if="${booking.status == 'confirmed' and booking.vehicleId != null}"
+                            <div class="admin-card" th:if="${booking.status == 'confirmed' and booking.vehicleId != null and !booking.vehicleRetired}"
                                  th:with="canHandover=${session.employeeId == booking.staffId or session.employeeRole == 'ADMIN'}">
                                 <div class="admin-card-header">
                                     <div class="admin-card-title-group">
@@ -378,6 +381,35 @@
                                 </div>
                             </div>
 
+                            <!-- Sự cố của đơn thuê: ghi nhận được bất cứ lúc nào sau khi khách đã nhận xe -->
+                            <div class="admin-card" th:if="${booking.status == 'active' or booking.status == 'completed'}">
+                                <div class="admin-card-header">
+                                    <div class="admin-card-title-group">
+                                        <h3 class="admin-card-title">Sự cố trong chuyến thuê</h3>
+                                        <p class="admin-card-subtitle">Va chạm, hư hỏng, phạt nguội. Phí của sự cố đã chốt được cộng vào quyết toán.</p>
+                                    </div>
+                                    <div class="admin-card-actions">
+                                        <a th:href="@{/admin/issues/new(bookingId=${booking.id})}" class="admin-btn admin-btn-primary admin-btn-sm">+ Ghi nhận sự cố</a>
+                                    </div>
+                                </div>
+                                <div class="admin-card-body">
+                                    <div th:if="${#lists.isEmpty(issues)}" class="text-muted small">Chưa có sự cố nào được ghi nhận cho đơn này.</div>
+                                    <div th:each="issue : ${issues}" class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                        <div>
+                                            <a th:href="@{/admin/issues/{id}(id=${issue.id})}" class="font-weight-bold" th:text="'#' + ${issue.id} + ' · ' + ${issue.subject}">#1 · Trầy cản trước</a>
+                                            <div class="small text-muted">
+                                                <span th:text="${issue.issueType.label}">Hư hỏng</span>
+                                                <span th:if="${issue.feeAmount != null}" th:text="' · ' + ${#numbers.formatDecimal(issue.feeAmount, 0, 'POINT', 0, 'COMMA')} + ' đ'"> · 200.000 đ</span>
+                                            </div>
+                                        </div>
+                                        <div th:replace="~{fragments/admin-components :: statusBadge(
+                                            status=${issue.status.dbValue()},
+                                            label=${issue.status.label},
+                                            variant=${issue.status.name() == 'OPEN' ? 'warning' : (issue.status.name() == 'RESOLVED' ? 'success' : 'neutral')})}"></div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- 4. Action Bước 3: Nhận lại xe & Quyết toán (Check-Out Settlement) [Task Phú] -->
                             <div class="admin-card" th:if="${booking.status == 'active'}">
                                 <div class="admin-card-header">
@@ -388,11 +420,15 @@
                                 </div>
                                 <div class="admin-card-body">
                                     <form th:action="@{/admin/bookings/{id}/check-out(id=${booking.id})}" th:object="${checkOutForm}" method="post">
-                                        <div class="admin-form-group">
-                                            <label class="admin-form-label">Phụ phí phát sinh / Bồi thường (VND)</label>
-                                            <input type="number" th:field="*{additionalFine}" class="admin-form-input font-mono" value="0" min="0" step="10000" />
-                                            <div class="admin-form-hint">Phí trễ giờ sẽ được hệ thống tự động tính theo điều khoản.</div>
+                                        <div class="admin-alert admin-alert-info mb-3">
+                                            Phí trễ giờ được hệ thống tự động tính theo điều khoản. Phí của sự cố đã chốt sẽ được cộng vào quyết toán;
+                                            sự cố chưa chốt được thu sau, khi chốt xong, dưới dạng phí phát sinh sau quyết toán.
                                         </div>
+                                        <th:block th:with="openIssues=${issues.?[open]}">
+                                            <div class="admin-alert admin-alert-warning mb-3" th:if="${!openIssues.isEmpty()}">
+                                                Còn <strong th:text="${openIssues.size()}">1</strong> sự cố đang mở. Hãy chốt trước nếu muốn tính phí ngay hôm nay.
+                                            </div>
+                                        </th:block>
                                         <div class="admin-form-group">
                                             <label class="admin-form-label">Ghi chú tình trạng khi nhận xe</label>
                                             <textarea th:field="*{returnNotes}" class="admin-form-textarea" rows="2" placeholder="Ví dụ: Xe sạch sẽ, xăng đầy bình..."></textarea>

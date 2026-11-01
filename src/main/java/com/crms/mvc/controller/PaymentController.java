@@ -2,6 +2,7 @@ package com.crms.mvc.controller;
 
 import com.crms.mvc.config.VnPayConfig;
 import com.crms.mvc.entity.Booking;
+import com.crms.mvc.entity.Payment;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,11 +18,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @Controller
 public class PaymentController {
 
     private static final Logger log = LoggerFactory.getLogger(PaymentController.class);
+
+    private static final String ISSUE_REFERENCE_PREFIX = Payment.ISSUE_TXN_PREFIX;
 
     private final PaymentService paymentService;
     private final BookingService bookingService;
@@ -80,6 +84,25 @@ public class PaymentController {
         }
     }
 
+    /** Pays every outstanding issue fee of a completed booking in one go; the amount is computed, never typed. */
+    @PostMapping("/bookings/{id}/pay-issue-fees")
+    public String initiateIssuePayment(@PathVariable("id") Long bookingId,
+                                       HttpServletRequest request,
+                                       HttpSession session,
+                                       RedirectAttributes ra) {
+        Long customerId = (Long) session.getAttribute("customerId");
+        if (customerId == null) {
+            return "redirect:/login";
+        }
+        try {
+            String paymentUrl = paymentService.createIssuePaymentUrl(bookingId, customerId, VnPayConfig.getIpAddress(request));
+            return "redirect:" + paymentUrl;
+        } catch (IllegalStateException | NoSuchElementException e) {
+            ra.addFlashAttribute("error", e.getMessage());
+            return "redirect:/bookings/" + bookingId;
+        }
+    }
+
     @GetMapping("/payment/{gateway}/return")
     public String handlePaymentReturn(@PathVariable("gateway") String gatewayPath,
                                       @RequestParam Map<String, String> allParams,
@@ -96,6 +119,10 @@ public class PaymentController {
         if (vnp_TxnRef == null || vnp_TxnRef.isEmpty()) {
             ra.addFlashAttribute("error", "Invalid payment response: missing transaction reference.");
             return "redirect:/";
+        }
+
+        if (vnp_TxnRef.startsWith(ISSUE_REFERENCE_PREFIX)) {
+            return handleIssuePaymentReturn(vnp_TxnRef, allParams, ra);
         }
 
         Long bookingId;
@@ -156,5 +183,31 @@ public class PaymentController {
             return "redirect:/bookings/" + bookingId + "/pay-deposit";
         }
     }
-}
 
+    /** Return from the gateway for fees owed after settlement (reference "I{paymentId}_{time}"). */
+    private String handleIssuePaymentReturn(String txnRef, Map<String, String> params, RedirectAttributes ra) {
+        if (!paymentService.verifyPaymentSignature(params)) {
+            log.error("Signature verification failed for issue payment reference {}", txnRef);
+            ra.addFlashAttribute("error", "Payment verification failed: invalid digital signature.");
+            return "redirect:/bookings/my-bookings";
+        }
+        try {
+            Long paymentId = Long.parseLong(txnRef.substring(ISSUE_REFERENCE_PREFIX.length()).split("_")[0]);
+            Payment payment;
+            if ("00".equals(params.get("vnp_ResponseCode"))) {
+                long amountInCents = Long.parseLong(params.getOrDefault("vnp_Amount", "0"));
+                payment = paymentService.confirmIssuePayment(paymentId, params.get("vnp_TransactionNo"), amountInCents);
+                ra.addFlashAttribute("success", "Thanh toán phí phát sinh thành công. Cảm ơn bạn!");
+            } else {
+                payment = paymentService.failIssuePayment(paymentId);
+                ra.addFlashAttribute("error", "Thanh toán chưa hoàn tất (mã " + params.get("vnp_ResponseCode")
+                        + "). Khoản phí vẫn chưa được thanh toán, bạn có thể thử lại.");
+            }
+            return "redirect:/bookings/" + payment.getBooking().getId();
+        } catch (IllegalStateException | IllegalArgumentException | NoSuchElementException e) {
+            log.error("Could not record issue payment {}", txnRef, e);
+            ra.addFlashAttribute("error", e.getMessage());
+            return "redirect:/bookings/my-bookings";
+        }
+    }
+}

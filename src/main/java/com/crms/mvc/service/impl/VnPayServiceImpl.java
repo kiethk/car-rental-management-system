@@ -2,6 +2,7 @@ package com.crms.mvc.service.impl;
 
 import com.crms.mvc.config.VnPayConfig;
 import com.crms.mvc.entity.Booking;
+import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.event.DepositConfirmedEvent;
 import com.crms.mvc.event.RefundCompletedEvent;
@@ -49,16 +50,21 @@ public class VnPayServiceImpl implements PaymentService {
     @Override
     @Transactional(readOnly = true)
     public String createDepositPaymentUrl(Booking booking, String clientIp) {
-        long amountInCents = booking.getDepositAmount().multiply(new BigDecimal(100)).longValue();
+        return buildPaymentUrl(booking.getDepositAmount(), booking.getId() + "_" + System.currentTimeMillis(),
+                "DriveNow_Deposit_Booking_" + booking.getId(), clientIp);
+    }
+
+    /** Signs and assembles the VNPay redirect URL; the amount is in dong, VNPay wants it times 100. */
+    private String buildPaymentUrl(BigDecimal amount, String txnRef, String orderInfo, String clientIp) {
+        long amountInCents = amount.multiply(new BigDecimal(100)).longValue();
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         formatter.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         String vnp_CreateDate = formatter.format(cld.getTime());
-        cld.add(Calendar.MINUTE, 15);
+        cld.add(Calendar.MINUTE, Payment.PAYMENT_TIMEOUT_MINUTES);
         String vnp_ExpireDate = formatter.format(cld.getTime());
 
-        String vnp_TxnRef = booking.getId() + "_" + System.currentTimeMillis();
         String vnp_IpAddr = (clientIp != null && !clientIp.isBlank()) ? clientIp : "127.0.0.1";
 
         Map<String, String> vnp_Params = new HashMap<>();
@@ -67,8 +73,8 @@ public class VnPayServiceImpl implements PaymentService {
         vnp_Params.put("vnp_TmnCode", vnPayConfig.getTmnCode());
         vnp_Params.put("vnp_Amount", String.valueOf(amountInCents));
         vnp_Params.put("vnp_CurrCode", "VND");
-        vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
-        vnp_Params.put("vnp_OrderInfo", "DriveNow_Deposit_Booking_" + booking.getId());
+        vnp_Params.put("vnp_TxnRef", txnRef);
+        vnp_Params.put("vnp_OrderInfo", orderInfo);
         vnp_Params.put("vnp_OrderType", "other");
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
@@ -99,10 +105,10 @@ public class VnPayServiceImpl implements PaymentService {
 
             String vnp_SecureHash = VnPayConfig.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
             String paymentUrl = vnPayConfig.getPayUrl() + "?" + query.toString() + "&vnp_SecureHash=" + vnp_SecureHash;
-            log.info("Generated VNPay deposit payment URL for bookingId {}", booking.getId());
+            log.info("Generated VNPay payment URL for reference {}", txnRef);
             return paymentUrl;
         } catch (Exception e) {
-            log.error("Failed to generate VNPay payment URL for bookingId: {}", booking.getId(), e);
+            log.error("Failed to generate VNPay payment URL for reference: {}", txnRef, e);
             throw new RuntimeException("Could not initiate VNPay payment: " + e.getMessage(), e);
         }
     }
@@ -156,26 +162,26 @@ public class VnPayServiceImpl implements PaymentService {
 
     @Override
     public Payment processDeposit(Long bookingId) {
-        return processDeposit(bookingId, null, "VNPAY");
+        return processDeposit(bookingId, null, Payment.METHOD_VNPAY);
     }
 
     @Override
     public Payment processDeposit(Long bookingId, String transactionNo, String paymentMethod) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy đơn thuê: " + bookingId));
 
         if ("confirmed".equalsIgnoreCase(booking.getStatus())) {
-            return paymentRepository.findByBookingIdAndPaymentType(bookingId, "DEPOSIT").orElse(null);
+            return paymentRepository.findByBookingIdAndPaymentType(bookingId, Payment.TYPE_DEPOSIT).orElse(null);
         }
 
         Payment payment = new Payment();
         payment.setBooking(booking);
-        payment.setPaymentType("DEPOSIT");
+        payment.setPaymentType(Payment.TYPE_DEPOSIT);
         payment.setTransactionCode(
                 transactionNo != null ? transactionNo : "TXN-DEP-" + bookingId + "-" + System.currentTimeMillis());
-        payment.setPaymentMethod(paymentMethod != null ? paymentMethod : "VNPAY");
+        payment.setPaymentMethod(paymentMethod != null ? paymentMethod : Payment.METHOD_VNPAY);
         payment.setAmount(booking.getDepositAmount());
-        payment.setStatus("paid");
+        payment.setStatus(Payment.STATUS_PAID);
         payment.setPaidAt(OffsetDateTime.now());
         paymentRepository.save(payment);
 
@@ -188,59 +194,177 @@ public class VnPayServiceImpl implements PaymentService {
     }
 
     @Override
-    public Payment processSettlement(Long bookingId, BigDecimal lateFee, BigDecimal additionalFine) {
+    public Payment processSettlement(Long bookingId, BigDecimal lateFee) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy đơn thuê: " + bookingId));
+
+        // Kiểm tra xem có phiên thanh toán trực tuyến nào đang chờ không (15 phút)
+        Optional<Payment> activePending = paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(
+                bookingId, Payment.TYPE_ISSUE_COMPENSATION, Payment.STATUS_PENDING);
+        if (activePending.isPresent() && !activePending.get().isExpired()) {
+            throw new IllegalStateException("Sự cố của đơn thuê đang trong phiên thanh toán trực tuyến của khách (15 phút). "
+                    + "Vui lòng chờ phiên hết hạn hoặc yêu cầu khách hoàn tất/hủy phiên trước khi quyết toán.");
+        }
 
         BigDecimal initialDeposit = booking.getDepositAmount() != null ? booking.getDepositAmount() : BigDecimal.ZERO;
         BigDecimal rentAmount = booking.getTotalPrice() != null ? booking.getTotalPrice() : BigDecimal.ZERO;
-
         BigDecimal safeLateFee = lateFee != null ? lateFee : BigDecimal.ZERO;
-        BigDecimal safeFine = additionalFine != null ? additionalFine : BigDecimal.ZERO;
 
+        List<BookingFee> collected = new ArrayList<>();
         if (safeLateFee.compareTo(BigDecimal.ZERO) > 0) {
-            bookingFeeService.recordFee(bookingId, "LATE_FEE", safeLateFee, "Late return fee", null);
+            collected.add(bookingFeeService.recordFee(bookingId, "LATE_FEE", safeLateFee, "Phí trả trễ", null));
         }
-        if (safeFine.compareTo(BigDecimal.ZERO) > 0) {
-            bookingFeeService.recordFee(bookingId, "DAMAGE_COMPENSATION", safeFine, "Fine for issues during trip",
-                    null);
-        }
+        // Chỉ các sự cố đã chốt mới được thu trong lần quyết toán này
+        List<BookingFee> issueFees = bookingFeeService.getSettleableIssueFees(bookingId);
+        collected.addAll(issueFees);
+        BigDecimal issueTotal = issueFees.stream().map(BookingFee::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-
-        BigDecimal totalPayable = rentAmount.add(safeLateFee).add(safeFine);
+        BigDecimal totalPayable = rentAmount.add(safeLateFee).add(issueTotal);
         BigDecimal remaining = totalPayable.subtract(initialDeposit);
 
+        Payment settlement = new Payment();
+        settlement.setBooking(booking);
+        settlement.setStatus(Payment.STATUS_PAID);
+        settlement.setPaymentMethod(Payment.METHOD_VNPAY);
+        settlement.setPaidAt(OffsetDateTime.now());
         if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
-            BigDecimal refundAmount = remaining.abs();
-            Payment refundPayment = new Payment();
-            refundPayment.setBooking(booking);
-            refundPayment.setPaymentType("REFUND");
-            refundPayment.setAmount(refundAmount);
-            refundPayment.setStatus("paid");
-            refundPayment.setPaymentMethod("VNPAY");
-            refundPayment.setTransactionCode("REFUND-" + bookingId + "-" + System.currentTimeMillis());
-            refundPayment.setPaidAt(OffsetDateTime.now());
-            paymentRepository.save(refundPayment);
-
-            booking.setTotalPrice(totalPayable);
-            bookingRepository.save(booking);
-            return refundPayment;
+            settlement.setPaymentType(Payment.TYPE_REFUND);
+            settlement.setAmount(remaining.abs());
+            settlement.setTransactionCode("REFUND-" + bookingId + "-" + System.currentTimeMillis());
+        } else {
+            settlement.setPaymentType(Payment.TYPE_FINAL);
+            settlement.setAmount(remaining);
+            settlement.setTransactionCode("FINAL-" + bookingId + "-" + System.currentTimeMillis());
         }
-
-        Payment finalPayment = new Payment();
-        finalPayment.setBooking(booking);
-        finalPayment.setPaymentType("FINAL");
-        finalPayment.setAmount(remaining);
-        finalPayment.setStatus("paid");
-        finalPayment.setPaymentMethod("VNPAY");
-        finalPayment.setTransactionCode("FINAL-" + bookingId + "-" + System.currentTimeMillis());
-        finalPayment.setPaidAt(OffsetDateTime.now());
-        paymentRepository.save(finalPayment);
+        Payment saved = paymentRepository.save(settlement);
 
         booking.setTotalPrice(totalPayable);
         bookingRepository.save(booking);
 
-        return finalPayment;
+        if (!collected.isEmpty()) {
+            bookingFeeService.attachPayment(collected, saved);
+        }
+        return saved;
+    }
+
+    @Override
+    public String createIssuePaymentUrl(Long bookingId, Long customerId, String clientIp) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy đơn thuê: " + bookingId));
+        if (customerId == null || !customerId.equals(booking.getCustomer().getId())) {
+            throw new NoSuchElementException("Không tìm thấy đơn thuê: " + bookingId);
+        }
+        if (!Booking.STATUS_ACTIVE.equalsIgnoreCase(booking.getStatus())
+                && !Booking.STATUS_COMPLETED.equalsIgnoreCase(booking.getStatus())) {
+            throw new IllegalStateException("Chỉ có thể thanh toán phí phát sinh cho chuyến thuê đang hoạt động hoặc đã kết thúc");
+        }
+
+        // Kiểm tra lượt thanh toán pending trước đó
+        Optional<Payment> existingPending = paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(
+                bookingId, Payment.TYPE_ISSUE_COMPENSATION, Payment.STATUS_PENDING);
+
+        if (existingPending.isPresent()) {
+            Payment prev = existingPending.get();
+            if (!isPaymentExpired(prev)) {
+                // Phiên cũ vẫn còn hiệu lực (< 15 phút), tái sử dụng để khách tiếp tục thanh toán
+                return buildPaymentUrl(prev.getAmount(), Payment.ISSUE_TXN_PREFIX + prev.getId() + "_" + System.currentTimeMillis(),
+                        "DriveNow_Issue_Fees_Booking_" + bookingId, clientIp);
+            } else {
+                // Phiên cũ đã hết hạn, huỷ để giải phóng phí
+                cancelPending(prev);
+            }
+        }
+
+        List<BookingFee> owed = bookingFeeService.getSettleableIssueFees(bookingId);
+        if (owed.isEmpty()) {
+            throw new IllegalStateException("Không có khoản phí phát sinh nào cần thanh toán");
+        }
+        BigDecimal total = owed.stream().map(BookingFee::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        Payment pending = new Payment();
+        pending.setBooking(booking);
+        pending.setPaymentType(Payment.TYPE_ISSUE_COMPENSATION);
+        pending.setAmount(total);
+        pending.setPaymentMethod(Payment.METHOD_VNPAY);
+        pending.setStatus(Payment.STATUS_PENDING);
+        pending.setTransactionCode("ISSUE-" + bookingId + "-" + System.currentTimeMillis());
+        Payment saved = paymentRepository.save(pending);
+        bookingFeeService.attachPayment(owed, saved);
+
+        return buildPaymentUrl(total, Payment.ISSUE_TXN_PREFIX + saved.getId() + "_" + System.currentTimeMillis(),
+                "DriveNow_Issue_Fees_Booking_" + bookingId, clientIp);
+    }
+
+    @Override
+    public Payment confirmIssuePayment(Long paymentId, String transactionNo, long amountInCents) {
+        Payment payment = findIssuePayment(paymentId);
+        if (Payment.STATUS_PAID.equalsIgnoreCase(payment.getStatus())) {
+            return payment; // Cổng có thể gọi callback nhiều lần
+        }
+        if (!Payment.STATUS_PENDING.equalsIgnoreCase(payment.getStatus())) {
+            // Cứu giao dịch: Nếu khách đã thanh toán trên tab cũ bị đánh dấu failed nhưng phí vẫn chưa được thanh toán
+            Long bookingId = payment.getBooking() != null ? payment.getBooking().getId() : null;
+            List<BookingFee> owed = bookingId != null ? bookingFeeService.getSettleableIssueFees(bookingId) : List.of();
+            if (!owed.isEmpty()) {
+                bookingFeeService.attachPayment(owed, payment);
+            } else {
+                throw new IllegalStateException("Phiên thanh toán này đã hết hạn; vui lòng thực hiện lại giao dịch mới");
+            }
+        }
+        if (payment.getAmount().multiply(new BigDecimal(100)).longValue() != amountInCents) {
+            throw new IllegalArgumentException("Payment amount mismatch");
+        }
+
+        payment.setStatus(Payment.STATUS_PAID);
+        payment.setPaidAt(OffsetDateTime.now());
+        if (transactionNo != null && !transactionNo.isBlank()) {
+            payment.setTransactionCode(transactionNo.trim());
+        }
+        Payment saved = paymentRepository.save(payment);
+        bookingFeeService.confirmPayment(saved);
+        return saved;
+    }
+
+    @Override
+    public Payment failIssuePayment(Long paymentId) {
+        Payment payment = findIssuePayment(paymentId);
+        if (Payment.STATUS_PENDING.equalsIgnoreCase(payment.getStatus())) {
+            cancelPending(payment);
+        }
+        return payment;
+    }
+
+    private Payment findIssuePayment(Long paymentId) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy khoản thanh toán: " + paymentId));
+        if (!Payment.TYPE_ISSUE_COMPENSATION.equals(payment.getPaymentType())) {
+            throw new IllegalStateException("Giao dịch này không phải là thanh toán phí sự cố");
+        }
+        return payment;
+    }
+
+    private void cancelPending(Payment payment) {
+        payment.setStatus(Payment.STATUS_FAILED);
+        paymentRepository.save(payment);
+        bookingFeeService.detachPayment(payment);
+    }
+
+    private boolean isPaymentExpired(Payment payment) {
+        if (payment == null) {
+            return false;
+        }
+        String code = payment.getTransactionCode();
+        if (code == null) {
+            return true;
+        }
+        int lastDash = code.lastIndexOf('-');
+        if (lastDash >= 0 && lastDash < code.length() - 1) {
+            try {
+                long createdMillis = Long.parseLong(code.substring(lastDash + 1));
+                return System.currentTimeMillis() - createdMillis > Payment.PAYMENT_TIMEOUT_MINUTES * 60 * 1000L;
+            } catch (NumberFormatException ignored) {}
+        }
+        return true;
     }
 
     @Override
@@ -254,15 +378,15 @@ public class VnPayServiceImpl implements PaymentService {
     public Payment createPendingRefund(Long bookingId, BigDecimal amount, String bankCode, String accountNumber,
             String accountHolder) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy đơn thuê: " + bookingId));
 
         Payment refund = new Payment();
         refund.setBooking(booking);
-        refund.setPaymentType("REFUND");
+        refund.setPaymentType(Payment.TYPE_REFUND);
         refund.setAmount(amount != null ? amount
                 : (booking.getDepositAmount() != null ? booking.getDepositAmount() : BigDecimal.ZERO));
-        refund.setPaymentMethod("BANK_TRANSFER");
-        refund.setStatus("pending");
+        refund.setPaymentMethod(Payment.METHOD_BANK_TRANSFER);
+        refund.setStatus(Payment.STATUS_PENDING);
 
         String cleanBank = (bankCode != null && !bankCode.isBlank()) ? bankCode.trim().toUpperCase() : "BANK";
         String cleanAcc = (accountNumber != null && !accountNumber.isBlank()) ? accountNumber.trim() : "";
@@ -281,16 +405,16 @@ public class VnPayServiceImpl implements PaymentService {
     @Transactional
     public Payment confirmRefundCompleted(Long paymentId, Long employeeId, String transactionNo) {
         Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new NoSuchElementException("Payment not found: " + paymentId));
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy khoản thanh toán: " + paymentId));
 
-        if (!"REFUND".equalsIgnoreCase(payment.getPaymentType())) {
-            throw new IllegalStateException("Payment is not a refund");
+        if (!Payment.TYPE_REFUND.equalsIgnoreCase(payment.getPaymentType())) {
+            throw new IllegalStateException("Giao dịch không phải là khoản hoàn tiền");
         }
-        if (!"pending".equalsIgnoreCase(payment.getStatus())) {
+        if (!Payment.STATUS_PENDING.equalsIgnoreCase(payment.getStatus())) {
             return payment; // Idempotent
         }
 
-        payment.setStatus("paid");
+        payment.setStatus(Payment.STATUS_PAID);
         payment.setPaidAt(OffsetDateTime.now());
         if (transactionNo != null && !transactionNo.isBlank()) {
             payment.setTransactionCode(transactionNo.trim());
@@ -304,13 +428,13 @@ public class VnPayServiceImpl implements PaymentService {
     @Override
     @Transactional(readOnly = true)
     public Optional<Payment> getPendingRefund(Long bookingId) {
-        return paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(bookingId, "REFUND", "pending");
+        return paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(bookingId, Payment.TYPE_REFUND, Payment.STATUS_PENDING);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Payment> getPendingRefunds() {
-        return paymentRepository.findByPaymentTypeAndStatus("REFUND", "pending");
+        return paymentRepository.findByPaymentTypeAndStatus(Payment.TYPE_REFUND, Payment.STATUS_PENDING);
     }
 
     @Override

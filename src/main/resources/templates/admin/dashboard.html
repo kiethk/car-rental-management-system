@@ -43,6 +43,7 @@
                             <span class="badge badge-light border text-muted">Vehicles</span>
                         </div>
                         <div class="small text-muted mt-2">Physical car inventory in warehouse</div>
+                        <div class="small text-muted" th:if="${retiredVehicles > 0}" th:text="${retiredVehicles} + ' xe ngừng khai thác (không tính)'">1 xe ngừng khai thác (không tính)</div>
                     </div>
                 </div>
 

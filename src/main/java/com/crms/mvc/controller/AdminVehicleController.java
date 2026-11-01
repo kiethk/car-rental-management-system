@@ -8,6 +8,8 @@ import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.service.LicensePlateService;
 import com.crms.mvc.service.VehicleService;
 import com.crms.mvc.service.VehicleTypeService;
+import com.crms.mvc.util.EmployeeRole;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -23,6 +25,7 @@ import java.util.Map;
 public class AdminVehicleController {
 
     private static final String LIST_PATH = "/admin/vehicles";
+    private static final String RETIRE_ADMIN_ONLY_MESSAGE = "Chỉ quản trị viên mới được chuyển xe sang trạng thái ngừng khai thác.";
 
     private final VehicleService vehicleService;
     private final VehicleTypeService vehicleTypeService;
@@ -101,6 +104,7 @@ public class AdminVehicleController {
     public String update(@PathVariable Long id,
                          @Valid @ModelAttribute("vehicleForm") VehicleFormDTO form,
                          BindingResult result,
+                         HttpSession session,
                          RedirectAttributes ra,
                          Model model) {
         if (result.hasErrors()) {
@@ -109,6 +113,11 @@ public class AdminVehicleController {
             model.addAttribute("vehicleTypes", vehicleTypeService.findAll());
             model.addAttribute("activeNav", "vehicles");
             return "admin/vehicles/form";
+        }
+
+        if (isNewRetirement(id, form.getStatus()) && !EmployeeRole.isAdmin(session)) {
+            ra.addFlashAttribute("error", RETIRE_ADMIN_ONLY_MESSAGE);
+            return "redirect:/admin/vehicles/" + id + "/edit";
         }
 
         try {
@@ -122,10 +131,15 @@ public class AdminVehicleController {
     }
 
     @PostMapping("/{id}/status")
-    public String toggleStatus(@PathVariable Long id,
+    public String changeStatus(@PathVariable Long id,
                                @RequestParam("status") String status,
                                @RequestParam(value = "returnTo", required = false) String returnTo,
+                               HttpSession session,
                                RedirectAttributes ra) {
+        if (isNewRetirement(id, status) && !EmployeeRole.isAdmin(session)) {
+            ra.addFlashAttribute("error", RETIRE_ADMIN_ONLY_MESSAGE);
+            return redirectToList(returnTo);
+        }
         try {
             vehicleService.updateStatus(id, status);
             ra.addFlashAttribute("success", "Car #" + id + " status updated to " + status.toUpperCase());
@@ -160,6 +174,12 @@ public class AdminVehicleController {
             ra.addFlashAttribute("error", ex.getMessage());
         }
         return redirectToList(returnTo);
+    }
+
+    /** True when the request would move a vehicle that is not retired yet into the retired status. */
+    private boolean isNewRetirement(Long id, String requestedStatus) {
+        return Vehicle.STATUS_RETIRED.equalsIgnoreCase(requestedStatus)
+                && vehicleService.findEntityById(id).map(v -> !v.isRetired()).orElse(true);
     }
 
     /**

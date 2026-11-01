@@ -15,6 +15,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.scheduling.annotation.Scheduled;
+import jakarta.annotation.PostConstruct;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -34,6 +36,20 @@ public class VehicleServiceImpl implements VehicleService {
     private final BookingRepository bookingRepository;
     private final VehicleInspectionRepository vehicleInspectionRepository;
     private final IssueRepository issueRepository;
+
+    @PostConstruct
+    @Scheduled(fixedRate = 60000)
+    public void autoUpdateExpiredVehiclesToMaintenance() {
+        LocalDate today = LocalDate.now();
+        List<Vehicle> expiredVehicles = vehicleRepository.findAll().stream()
+                .filter(v -> Vehicle.STATUS_AVAILABLE.equalsIgnoreCase(v.getStatus()))
+                .filter(v -> v.getRegistrationExpiry() != null && v.getRegistrationExpiry().isBefore(today))
+                .toList();
+        for (Vehicle v : expiredVehicles) {
+            v.setStatus(Vehicle.STATUS_MAINTENANCE);
+            vehicleRepository.save(v);
+        }
+    }
 
     public VehicleServiceImpl(VehicleRepository vehicleRepository,
                               VehicleTypeRepository vehicleTypeRepository,
@@ -174,8 +190,8 @@ public class VehicleServiceImpl implements VehicleService {
         vehicle.setYear(dto.getYear());
         vehicle.setOdometer(dto.getOdometer() != null ? dto.getOdometer() : 0);
         vehicle.setRegistrationExpiry(dto.getRegistrationExpiry());
-        String status = dto.getStatus() != null ? dto.getStatus().trim().toLowerCase() : "available";
-        if (!"available".equals(status) && !"maintenance".equals(status)) {
+        String status = dto.getStatus() != null ? dto.getStatus().trim().toLowerCase() : Vehicle.STATUS_AVAILABLE;
+        if (!Vehicle.STATUS_AVAILABLE.equals(status) && !Vehicle.STATUS_MAINTENANCE.equals(status)) {
             throw new IllegalArgumentException("Invalid vehicle status: " + status + ". Allowed: 'available', 'maintenance'");
         }
         vehicle.setStatus(status);
@@ -203,13 +219,15 @@ public class VehicleServiceImpl implements VehicleService {
         vehicle.setOdometer(dto.getOdometer() != null ? dto.getOdometer() : 0);
 
         // Don't allow changing status to maintenance/available if vehicle is currently rented
-        if ("rented".equalsIgnoreCase(vehicle.getStatus()) && !vehicle.getStatus().equalsIgnoreCase(dto.getStatus())) {
+        if (Vehicle.STATUS_RENTED.equalsIgnoreCase(vehicle.getStatus()) && !vehicle.getStatus().equalsIgnoreCase(dto.getStatus())) {
             throw new IllegalStateException("Cannot change status of vehicle while currently rented!");
         }
-        if (dto.getStatus() != null) {
+        // The form has no "retired" option, so it must not bring a retired vehicle back into service
+        if (dto.getStatus() != null && !vehicle.isRetired()) {
             String newStatus = dto.getStatus().trim().toLowerCase();
-            if (!"available".equals(newStatus) && !"maintenance".equals(newStatus)) {
-                throw new IllegalArgumentException("Invalid vehicle status: " + newStatus + ". Allowed: 'available', 'maintenance'");
+            if (!Vehicle.STATUS_AVAILABLE.equals(newStatus) && !Vehicle.STATUS_MAINTENANCE.equals(newStatus)
+                    && !Vehicle.STATUS_RETIRED.equals(newStatus)) {
+                throw new IllegalArgumentException("Invalid vehicle status: " + newStatus + ". Allowed: 'available', 'maintenance', 'retired'");
             }
             vehicle.setStatus(newStatus);
         }
@@ -225,12 +243,18 @@ public class VehicleServiceImpl implements VehicleService {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with ID: " + id));
 
-        if ("rented".equalsIgnoreCase(vehicle.getStatus())) {
+        if (Vehicle.STATUS_RENTED.equalsIgnoreCase(vehicle.getStatus())) {
             throw new IllegalStateException("Cannot change status of vehicle while currently rented!");
         }
 
-        if (newStatus == null || (!"available".equalsIgnoreCase(newStatus.trim()) && !"maintenance".equalsIgnoreCase(newStatus.trim()))) {
-            throw new IllegalArgumentException("Invalid vehicle status: " + newStatus + ". Only 'available' and 'maintenance' are allowed.");
+        if (vehicle.isRetired()) {
+            throw new IllegalStateException("A retired vehicle is out of service for good and cannot change status");
+        }
+
+        if (newStatus == null || (!Vehicle.STATUS_AVAILABLE.equalsIgnoreCase(newStatus.trim())
+                && !Vehicle.STATUS_MAINTENANCE.equalsIgnoreCase(newStatus.trim())
+                && !Vehicle.STATUS_RETIRED.equalsIgnoreCase(newStatus.trim()))) {
+            throw new IllegalArgumentException("Invalid vehicle status: " + newStatus + ". Only 'available', 'maintenance' and 'retired' are allowed.");
         }
 
         vehicle.setStatus(newStatus.trim().toLowerCase());

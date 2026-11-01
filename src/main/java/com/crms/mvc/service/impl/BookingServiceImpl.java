@@ -9,6 +9,7 @@ import com.crms.mvc.service.ContractService;
 import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.service.PaymentService;
 import com.crms.mvc.service.PricingService;
+import com.crms.mvc.service.IssueService;
 import com.crms.mvc.util.DateTimeUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -39,6 +40,7 @@ public class BookingServiceImpl implements BookingService {
     private final ContractTemplateService contractTemplateService;
     private final BookingFeeService bookingFeeService;
     private final PricingService pricingService;
+    private final IssueService issueService;
 
     public BookingServiceImpl(
             BookingRepository bookingRepository,
@@ -52,7 +54,9 @@ public class BookingServiceImpl implements BookingService {
             ContractService contractService,
             ContractTemplateService contractTemplateService,
             BookingFeeService bookingFeeService,
-            PricingService pricingService) {
+            PricingService pricingService,
+            IssueService issueService) {
+        this.issueService = issueService;
         this.bookingRepository = bookingRepository;
         this.customerRepository = customerRepository;
         this.slotRepository = slotRepository;
@@ -323,8 +327,8 @@ public class BookingServiceImpl implements BookingService {
         if (!v.getVehicleType().getId().equals(b.getSlot().getVehicleType().getId())) {
             throw new IllegalStateException("Vehicle type does not match booking request");
         }
-        if ("maintenance".equalsIgnoreCase(v.getStatus())) {
-            throw new IllegalStateException("Vehicle is currently under maintenance");
+        if ("maintenance".equalsIgnoreCase(v.getStatus()) || Vehicle.STATUS_RETIRED.equalsIgnoreCase(v.getStatus())) {
+            throw new IllegalStateException("Vehicle is not available for assignment");
         }
 
         // B3: Chống gán xe trùng giờ với booking khác
@@ -363,7 +367,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public void checkOut(Long bookingId, Long employeeId, CheckOutDTO dto) {
-        Booking b = bookingRepository.findById(bookingId)
+        Booking b = bookingRepository.findByIdForUpdate(bookingId)
+                .or(() -> bookingRepository.findById(bookingId))
                 .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
 
         if (!"active".equalsIgnoreCase(b.getStatus())) {
@@ -377,14 +382,15 @@ public class BookingServiceImpl implements BookingService {
         BigDecimal multiplier = contractService.getTermsOfBooking(bookingId).getLateFeeMultiplier();
         BigDecimal lateFee = pricingService.calculateLateFee(b.getScheduledEndTime(), actualReturn, b.getPricePerHour(), multiplier);
 
-        paymentService.processSettlement(bookingId, lateFee, dto != null ? dto.getAdditionalFine() : BigDecimal.ZERO);
+        paymentService.processSettlement(bookingId, lateFee);
 
-        if (b.getVehicle() != null) {
-            boolean hasDamage = dto != null && dto.getReturnNotes() != null
-                    && (dto.getReturnNotes().toLowerCase().contains("damage")
-                    || dto.getReturnNotes().toLowerCase().contains("hỏng")
-                    || dto.getReturnNotes().toLowerCase().contains("sự cố"));
-            b.getVehicle().setStatus(hasDamage ? "maintenance" : "available");
+        b.setStatus(Booking.STATUS_COMPLETED);
+        bookingRepository.save(b);
+
+        if (b.getVehicle() != null && !Vehicle.STATUS_RETIRED.equalsIgnoreCase(b.getVehicle().getStatus())) {
+            // A car goes back to work unless a collision or damage issue says it needs a look first
+            boolean damaged = issueService.bookingHasVehicleDamage(bookingId);
+            b.getVehicle().setStatus(damaged ? Vehicle.STATUS_MAINTENANCE : Vehicle.STATUS_AVAILABLE);
             vehicleRepository.save(b.getVehicle());
         }
     }
@@ -407,6 +413,7 @@ public class BookingServiceImpl implements BookingService {
         if (b.getVehicle() != null) {
             d.setVehicleId(b.getVehicle().getId());
             d.setVehicleColor(b.getVehicle().getColor());
+            d.setVehicleRetired(Vehicle.STATUS_RETIRED.equalsIgnoreCase(b.getVehicle().getStatus()));
         }
         d.setLicensePlate(resolvePlate(b));
 
@@ -511,7 +518,7 @@ public class BookingServiceImpl implements BookingService {
         List<Long> bookedVehicleIds = bookingRepository.findBookedVehicleIdsInTimeRange(startTime, endTime, cutoffTime);
 
         return allVehiclesOfType.stream()
-                .filter(v -> !"maintenance".equalsIgnoreCase(v.getStatus()))
+                .filter(v -> !"maintenance".equalsIgnoreCase(v.getStatus()) && !Vehicle.STATUS_RETIRED.equalsIgnoreCase(v.getStatus()))
                 .filter(v -> !bookedVehicleIds.contains(v.getId()))
                 .toList();
     }

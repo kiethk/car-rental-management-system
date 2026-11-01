@@ -7,6 +7,9 @@ import java.time.OffsetDateTime;
 @Entity
 @Table(name = "bookings")
 public class Booking {
+    public static final String STATUS_ACTIVE = "active";
+    public static final String STATUS_COMPLETED = "completed";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "booking_id")

@@ -7,6 +7,22 @@ import java.time.OffsetDateTime;
 @Entity
 @Table(name = "payments")
 public class Payment {
+    /** What a customer pays later for the fees of issues resolved after settlement. */
+    public static final String TYPE_ISSUE_COMPENSATION = "ISSUE_COMPENSATION";
+    public static final String TYPE_FINAL = "FINAL";
+    public static final String TYPE_REFUND = "REFUND";
+    public static final String TYPE_DEPOSIT = "DEPOSIT";
+
+    public static final String STATUS_PENDING = "pending";
+    public static final String STATUS_PAID = "paid";
+    public static final String STATUS_FAILED = "failed";
+
+    public static final String METHOD_VNPAY = "VNPAY";
+    public static final String METHOD_BANK_TRANSFER = "BANK_TRANSFER";
+
+    public static final String ISSUE_TXN_PREFIX = "I";
+    public static final int PAYMENT_TIMEOUT_MINUTES = 15;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "payment_id")
@@ -26,7 +42,7 @@ public class Payment {
     private BigDecimal amount;
 
     @Column(name = "payment_method", nullable = false, length = 30)
-    private String paymentMethod = "VNPAY";
+    private String paymentMethod = METHOD_VNPAY;
 
     @Column(name = "status", nullable = false, length = 30)
     private String status;
@@ -57,4 +73,16 @@ public class Payment {
 
     public OffsetDateTime getPaidAt() { return paidAt; }
     public void setPaidAt(OffsetDateTime paidAt) { this.paidAt = paidAt; }
+
+    public boolean isExpired() {
+        if (transactionCode == null) return false;
+        int lastDash = transactionCode.lastIndexOf('-');
+        if (lastDash >= 0 && lastDash < transactionCode.length() - 1) {
+            try {
+                long createdMillis = Long.parseLong(transactionCode.substring(lastDash + 1));
+                return System.currentTimeMillis() - createdMillis > PAYMENT_TIMEOUT_MINUTES * 60 * 1000L;
+            } catch (NumberFormatException ignored) {}
+        }
+        return false;
+    }
 }
