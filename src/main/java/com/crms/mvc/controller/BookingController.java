@@ -4,6 +4,8 @@ import com.crms.mvc.util.CurrentAccount;
 import com.crms.mvc.dto.BookingCreateDTO;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.BookingSummaryDTO;
+import com.crms.mvc.dto.BookingCancelDTO;
+import com.crms.mvc.util.DateTimeUtils;
 import com.crms.mvc.dto.VehicleTypeSearchResultDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Vehicle;
@@ -13,23 +15,20 @@ import com.crms.mvc.service.PricingService;
 import com.crms.mvc.dto.PriceQuoteDTO;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.PaymentService;
-import com.crms.mvc.service.SlotService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.Collections;
 import java.util.List;
 import com.crms.mvc.entity.LicenseDocument;
 import com.crms.mvc.service.LicenseDocumentService;
@@ -40,7 +39,6 @@ import jakarta.servlet.http.HttpServletRequest;
 @Controller
 public class BookingController {
     private final BookingService bookingService;
-    private final SlotService slotService;
     private final PaymentService paymentService;
     private final VehicleTypeService vehicleTypeService;
     private final PricingService pricingService;
@@ -49,14 +47,12 @@ public class BookingController {
 
     public BookingController(
             BookingService bookingService,
-            SlotService slotService,
             PaymentService paymentService,
             VehicleTypeService vehicleTypeService,
             LicenseDocumentService licenseDocumentService,
             ContractTemplateService contractTemplateService,
             PricingService pricingService) {
         this.bookingService = bookingService;
-        this.slotService = slotService;
         this.paymentService = paymentService;
         this.vehicleTypeService = vehicleTypeService;
         this.licenseDocumentService = licenseDocumentService;
@@ -65,7 +61,7 @@ public class BookingController {
     }
 
     // STEP 1 & 2: Choose rental schedule & filter available vehicle types
-    @GetMapping({"/search", "/vehicles/available"})
+    @GetMapping({ "/search", "/vehicles/available" })
     public String searchAvailableVehicles(
             @RequestParam(value = "startDate", required = false) String startDateStr,
             @RequestParam(value = "endDate", required = false) String endDateStr,
@@ -83,18 +79,30 @@ public class BookingController {
 
         LocalDate startDate = LocalDate.now().plusDays(1);
         if (startDateStr != null && !startDateStr.isBlank()) {
-            try { startDate = LocalDate.parse(startDateStr.trim()); } catch (Exception ignored) {}
+            try {
+                startDate = LocalDate.parse(startDateStr.trim());
+            } catch (Exception ignored) {
+            }
         } else if (dateStr != null && !dateStr.isBlank()) {
-            try { startDate = LocalDate.parse(dateStr.trim()); } catch (Exception ignored) {}
+            try {
+                startDate = LocalDate.parse(dateStr.trim());
+            } catch (Exception ignored) {
+            }
         }
 
         LocalDate endDate = startDate;
         if (endDateStr != null && !endDateStr.isBlank()) {
-            try { endDate = LocalDate.parse(endDateStr.trim()); } catch (Exception ignored) {}
+            try {
+                endDate = LocalDate.parse(endDateStr.trim());
+            } catch (Exception ignored) {
+            }
         } else if (startDateStr != null && !startDateStr.isBlank()) {
             endDate = startDate;
         } else if (dateStr != null && !dateStr.isBlank()) {
-            try { endDate = LocalDate.parse(dateStr.trim()); } catch (Exception ignored) {}
+            try {
+                endDate = LocalDate.parse(dateStr.trim());
+            } catch (Exception ignored) {
+            }
         }
 
         LocalTime startTime = LocalTime.of(9, 0);
@@ -104,15 +112,27 @@ public class BookingController {
         LocalDateTime endDateTime = null;
 
         if (startStr != null && startStr.contains("T")) {
-            try { startDateTime = LocalDateTime.parse(startStr); } catch (Exception ignored) {}
+            try {
+                startDateTime = LocalDateTime.parse(startStr);
+            } catch (Exception ignored) {
+            }
         } else if (startStr != null && !startStr.isBlank()) {
-            try { startTime = LocalTime.parse(startStr.trim()); } catch (Exception ignored) {}
+            try {
+                startTime = LocalTime.parse(startStr.trim());
+            } catch (Exception ignored) {
+            }
         }
 
         if (endStr != null && endStr.contains("T")) {
-            try { endDateTime = LocalDateTime.parse(endStr); } catch (Exception ignored) {}
+            try {
+                endDateTime = LocalDateTime.parse(endStr);
+            } catch (Exception ignored) {
+            }
         } else if (endStr != null && !endStr.isBlank()) {
-            try { endTime = LocalTime.parse(endStr.trim()); } catch (Exception ignored) {}
+            try {
+                endTime = LocalTime.parse(endStr.trim());
+            } catch (Exception ignored) {
+            }
         }
 
         if (startDateTime == null) {
@@ -134,7 +154,7 @@ public class BookingController {
         }
 
         ZoneOffset offset = ZoneOffset.ofHours(7);
-        List<VehicleTypeSearchResultDTO> rawResults = slotService.searchAvailableVehicleTypes(
+        List<VehicleTypeSearchResultDTO> rawResults = bookingService.searchAvailableVehicleTypes(
                 startDateTime.atOffset(offset), endDateTime.atOffset(offset), category);
 
         // Filter by keyword, brand, transmission, seats, max price
@@ -142,7 +162,8 @@ public class BookingController {
                 .filter(v -> minSeats == null || minSeats == 0 || (v.getSeats() != null && v.getSeats() >= minSeats))
                 .filter(v -> maxPrice == null || v.getPricePerHour().compareTo(maxPrice) <= 0)
                 .filter(v -> {
-                    if (keyword == null || keyword.isBlank()) return true;
+                    if (keyword == null || keyword.isBlank())
+                        return true;
                     String kw = keyword.trim().toLowerCase();
                     String name = v.getName() != null ? v.getName().toLowerCase() : "";
                     String b = v.getBrand() != null ? v.getBrand().toLowerCase() : "";
@@ -150,11 +171,13 @@ public class BookingController {
                     return name.contains(kw) || b.contains(kw) || display.contains(kw);
                 })
                 .filter(v -> {
-                    if (brand == null || brand.isBlank() || brand.equalsIgnoreCase("all")) return true;
+                    if (brand == null || brand.isBlank() || brand.equalsIgnoreCase("all"))
+                        return true;
                     return v.getBrand() != null && v.getBrand().equalsIgnoreCase(brand.trim());
                 })
                 .filter(v -> {
-                    if (transmission == null || transmission.isBlank() || transmission.equalsIgnoreCase("all")) return true;
+                    if (transmission == null || transmission.isBlank() || transmission.equalsIgnoreCase("all"))
+                        return true;
                     return v.getTransmission() != null && v.getTransmission().equalsIgnoreCase(transmission.trim());
                 })
                 .toList();
@@ -162,7 +185,8 @@ public class BookingController {
         long rentalHours = Math.max(1, Duration.between(startDateTime, endDateTime).toHours());
         long rentalDays = rentalHours / 24;
         long remainingHours = rentalHours % 24;
-        String durationDisplay = (rentalDays > 0 ? (rentalDays + "d ") : "") + (remainingHours > 0 ? (remainingHours + "h") : (rentalDays == 0 ? "1h" : ""));
+        String durationDisplay = (rentalDays > 0 ? (rentalDays + "d ") : "")
+                + (remainingHours > 0 ? (remainingHours + "h") : (rentalDays == 0 ? "1h" : ""));
 
         model.addAttribute("today", LocalDate.now().toString());
         model.addAttribute("selectedStartDate", startDate.toString());
@@ -217,21 +241,32 @@ public class BookingController {
         LocalDateTime endTime = null;
 
         if (startStr != null && startStr.contains("T")) {
-            try { startTime = LocalDateTime.parse(startStr); } catch (Exception ignored) {}
+            try {
+                startTime = LocalDateTime.parse(startStr);
+            } catch (Exception ignored) {
+            }
         }
         if (endStr != null && endStr.contains("T")) {
-            try { endTime = LocalDateTime.parse(endStr); } catch (Exception ignored) {}
+            try {
+                endTime = LocalDateTime.parse(endStr);
+            } catch (Exception ignored) {
+            }
         }
 
         if (startTime == null || endTime == null) {
             LocalDate sDate = (startDateStr != null && !startDateStr.isBlank())
                     ? LocalDate.parse(startDateStr.trim())
-                    : ((dateStr != null && !dateStr.isBlank()) ? LocalDate.parse(dateStr.trim()) : LocalDate.now().plusDays(1));
+                    : ((dateStr != null && !dateStr.isBlank()) ? LocalDate.parse(dateStr.trim())
+                            : LocalDate.now().plusDays(1));
             LocalDate eDate = (endDateStr != null && !endDateStr.isBlank())
                     ? LocalDate.parse(endDateStr.trim())
                     : sDate;
-            LocalTime s = (startStr != null && !startStr.isBlank() && !startStr.contains("T")) ? LocalTime.parse(startStr.trim()) : LocalTime.of(9, 0);
-            LocalTime e = (endStr != null && !endStr.isBlank() && !endStr.contains("T")) ? LocalTime.parse(endStr.trim()) : LocalTime.of(18, 0);
+            LocalTime s = (startStr != null && !startStr.isBlank() && !startStr.contains("T"))
+                    ? LocalTime.parse(startStr.trim())
+                    : LocalTime.of(9, 0);
+            LocalTime e = (endStr != null && !endStr.isBlank() && !endStr.contains("T"))
+                    ? LocalTime.parse(endStr.trim())
+                    : LocalTime.of(18, 0);
             startTime = LocalDateTime.of(sDate, s);
             endTime = LocalDateTime.of(eDate, e);
         }
@@ -241,7 +276,7 @@ public class BookingController {
         }
 
         ZoneOffset offset = ZoneOffset.ofHours(7);
-        List<Vehicle> availableCars = slotService.findAvailableVehiclesInTimeRange(
+        List<Vehicle> availableCars = bookingService.findAvailableVehiclesInTimeRange(
                 vehicleTypeId, startTime.atOffset(offset), endTime.atOffset(offset));
 
         if (availableCars.isEmpty()) {
@@ -250,11 +285,13 @@ public class BookingController {
         }
 
         ContractTemplateDTO contractTerms = contractTemplateService.getActiveTemplate();
-        PriceQuoteDTO quote = pricingService.calculatePrice(startTime, endTime, vt.getPricePerHour(), contractTerms.getDepositRate(), BigDecimal.ZERO);
+        PriceQuoteDTO quote = pricingService.calculatePrice(startTime, endTime, vt.getPricePerHour(),
+                contractTerms.getDepositRate(), BigDecimal.ZERO);
         long rentalHours = quote.getRentalHours();
         long rentalDays = rentalHours / 24;
         long remainingHours = rentalHours % 24;
-        String durationDisplay = (rentalDays > 0 ? (rentalDays + "d ") : "") + (remainingHours > 0 ? (remainingHours + "h") : (rentalDays == 0 ? "1h" : ""));
+        String durationDisplay = (rentalDays > 0 ? (rentalDays + "d ") : "")
+                + (remainingHours > 0 ? (remainingHours + "h") : (rentalDays == 0 ? "1h" : ""));
         BigDecimal estimatedTotal = quote.getTotalPrice();
         BigDecimal depositAmount = quote.getDepositAmount();
         BigDecimal remainingAmount = quote.getRemainingAmount();
@@ -310,7 +347,8 @@ public class BookingController {
         }
 
         try {
-            // Server-side address, not a client header, because it is stored as acceptance evidence.
+            // Server-side address, not a client header, because it is stored as acceptance
+            // evidence.
             Booking booking = bookingService.createBooking(customerId, form, request.getRemoteAddr());
             return "redirect:/bookings/" + booking.getId() + "/pay-deposit";
         } catch (Exception e) {
@@ -332,25 +370,19 @@ public class BookingController {
 
         try {
             BookingDetailDTO detail = bookingService.getBookingDetail(bookingId, customerId);
+            if (!"pending_payment".equalsIgnoreCase(detail.getStatus())) {
+                if ("confirmed".equalsIgnoreCase(detail.getStatus())) {
+                    return "redirect:/bookings/" + bookingId + "/success";
+                }
+                ra.addFlashAttribute("error",
+                        "Đơn đặt xe không ở trạng thái chờ đặt cọc (Trạng thái hiện tại: " + detail.getStatus() + ").");
+                return "redirect:/bookings/" + bookingId;
+            }
             model.addAttribute("booking", detail);
             return "bookings/deposit";
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             return "redirect:/bookings/my-bookings";
-        }
-    }
-
-    @PostMapping("/bookings/{id}/pay-deposit")
-    public String processDeposit(@PathVariable("id") Long bookingId, HttpSession session, RedirectAttributes ra) {
-        Long customerId = CurrentAccount.customerId(session).orElse(null);
-        if (customerId == null) return "redirect:/login";
-
-        try {
-            paymentService.processDeposit(bookingId);
-            return "redirect:/bookings/" + bookingId + "/success";
-        } catch (Exception e) {
-            ra.addFlashAttribute("error", "Payment failed: " + e.getMessage());
-            return "redirect:/bookings/" + bookingId + "/pay-deposit";
         }
     }
 
@@ -400,6 +432,27 @@ public class BookingController {
         try {
             BookingDetailDTO detail = bookingService.getBookingDetail(bookingId, customerId);
             model.addAttribute("booking", detail);
+
+            int freeCancellationHours = 72;
+            try {
+                ContractTemplateDTO terms = contractTemplateService.getActiveTemplate();
+                if (terms != null && terms.getFreeCancellationHours() > 0) {
+                    freeCancellationHours = terms.getFreeCancellationHours();
+                }
+            } catch (Exception ignored) {
+            }
+
+            OffsetDateTime nowVn = OffsetDateTime.now(ZoneOffset.ofHours(7));
+            OffsetDateTime cancelDeadline = detail.getPickupTime() != null
+                    ? detail.getPickupTime().minusHours(freeCancellationHours)
+                    : null;
+            boolean refundEligible = "confirmed".equalsIgnoreCase(detail.getStatus()) && cancelDeadline != null
+                    && !nowVn.isAfter(cancelDeadline);
+
+            model.addAttribute("refundEligible", refundEligible);
+            model.addAttribute("freeCancellationHours", freeCancellationHours);
+            model.addAttribute("cancelDeadline", cancelDeadline);
+            model.addAttribute("cancelForm", new BookingCancelDTO());
             return "bookings/detail";
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
@@ -409,13 +462,30 @@ public class BookingController {
 
     // Hủy đơn
     @PostMapping("/bookings/{id}/cancel")
-    public String cancelBooking(@PathVariable("id") Long bookingId, HttpSession session, RedirectAttributes ra) {
+    public String cancelBooking(@PathVariable("id") Long bookingId,
+            @ModelAttribute("cancelForm") BookingCancelDTO form,
+            HttpSession session, RedirectAttributes ra) {
         Long customerId = CurrentAccount.customerId(session).orElse(null);
-        if (customerId == null) return "redirect:/login";
+        if (customerId == null)
+            return "redirect:/login";
 
         try {
-            bookingService.cancelBooking(bookingId, customerId);
-            ra.addFlashAttribute("success", "Booking cancelled successfully.");
+            BookingDetailDTO detail = bookingService.getBookingDetail(bookingId, customerId);
+            boolean wasConfirmed = "confirmed".equalsIgnoreCase(detail.getStatus());
+            boolean refundCreated = bookingService.cancelBooking(bookingId, customerId, form);
+
+            if (refundCreated) {
+                String formattedDeposit = detail.getDepositAmount() != null
+                        ? String.format("%,d", detail.getDepositAmount().longValue())
+                        : "0";
+                ra.addFlashAttribute("success", "Hủy đơn đặt xe thành công! Yêu cầu hoàn cọc " + formattedDeposit
+                        + " đ đang được xử lý, tiền sẽ được hoàn vào tài khoản của bạn trong vòng 24h làm việc.");
+            } else if (wasConfirmed) {
+                ra.addFlashAttribute("warning",
+                        "Hủy đơn đặt xe thành công. Do bạn hủy trong vòng 72 giờ trước giờ nhận xe, tiền cọc không được hoàn lại theo điều khoản hợp đồng.");
+            } else {
+                ra.addFlashAttribute("success", "Đã hủy đơn đặt xe thành công.");
+            }
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }

@@ -11,17 +11,21 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer", "promotion", "vehicle.vehicleType"})
+    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer", "promotion", "vehicle.vehicleType", "employee"})
     Optional<Booking> findById(Long id);
 
-    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer"})
+    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer", "employee"})
     List<Booking> findByCustomerIdOrderByCreatedAtDesc(Long customerId);
 
-    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer"})
+    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer", "employee"})
     List<Booking> findAllByOrderByCreatedAtDesc();
 
-    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer"})
+    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer", "employee"})
     List<Booking> findByStatusOrderByCreatedAtDesc(String status);
+
+    @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer", "employee"})
+    @Query("SELECT DISTINCT b FROM Booking b, Payment p WHERE p.booking = b AND p.paymentType = 'REFUND' AND p.status = 'pending' ORDER BY b.createdAt DESC")
+    List<Booking> findBookingsWithPendingRefund();
 
     long countByVehicleId(Long vehicleId);
 

@@ -16,6 +16,18 @@ public class GlobalSessionAdvice {
         this.licenseDocumentService = licenseDocumentService;
     }
 
+    @ModelAttribute("isAdminPage")
+    public boolean isAdminPage(HttpServletRequest request) {
+        if (request == null) return false;
+        String uri = request.getRequestURI();
+        if (uri == null) return false;
+        String contextPath = request.getContextPath();
+        if (contextPath != null && !contextPath.isEmpty() && uri.startsWith(contextPath)) {
+            uri = uri.substring(contextPath.length());
+        }
+        return uri.startsWith("/admin");
+    }
+
     @ModelAttribute
     public void populateLicenseFlag(HttpServletRequest request, Model model) {
         if (licenseDocumentService == null) {

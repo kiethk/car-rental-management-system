@@ -67,4 +67,9 @@ public class AdminDashboardController {
 
         return "admin/dashboard";
     }
+
+    @GetMapping("/admin/ui-kit")
+    public String uiKit() {
+        return "admin/starter-kit";
+    }
 }

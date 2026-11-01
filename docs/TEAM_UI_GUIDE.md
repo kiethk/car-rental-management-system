@@ -2,6 +2,8 @@
 
 All members (**Kiet, Phu, Phuc, Tri**) must follow this DriveNow Design System when building Thymeleaf views to ensure visual consistency across the entire application.
 
+> 💡 **QUY CHUẨN CSS**: Vui lòng đọc chi tiết [Quy chuẩn viết CSS & Đặt tên class chống trùng lặp (TEAM_CSS_GUIDE.md)](TEAM_CSS_GUIDE.md) để biết cách chia file `modules/*.css` và đặt tiền tố (prefix) tránh xung đột code.
+
 ---
 
 ## 1. Brand Design Tokens

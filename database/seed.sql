@@ -134,34 +134,34 @@ ON CONFLICT (slot_id) DO NOTHING;
 INSERT INTO bookings (
     booking_id, customer_id, slot_id, vehicle_id, employee_id, promotion_id,
     pickup_time, scheduled_end_time, actual_return_time,
-    late_fee, total_price,
+    total_price,
     status, created_at,
-    price_per_hour, deposit_amount, discount_amount, license_plate
+    price_per_hour, deposit_amount, discount_amount
 )
 VALUES 
     -- Booking 1: Completed
     (
         1, 1, 1, 1, 2, 1,
         CURRENT_TIMESTAMP - INTERVAL '3 days', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days',
-        0.00, 1350000.00,
+        1350000.00,
         'completed', CURRENT_TIMESTAMP - INTERVAL '5 days',
-        150000.00, 5000000.00, 150000.00, '51A-123.45'
+        150000.00, 5000000.00, 150000.00
     ),
     -- Booking 2: Active rental
     (
         2, 2, 1, 2, 2, NULL,
         CURRENT_TIMESTAMP - INTERVAL '4 hours', CURRENT_TIMESTAMP + INTERVAL '6 hours', NULL,
-        0.00, 1500000.00,
+        1500000.00,
         'active', CURRENT_TIMESTAMP - INTERVAL '1 day',
-        150000.00, 5000000.00, 0.00, '51B-678.90'
+        150000.00, 5000000.00, 0.00
     ),
     -- Booking 3: Confirmed
     (
         3, 1, 3, 3, 2, 2,
         CURRENT_TIMESTAMP + INTERVAL '1 day', CURRENT_TIMESTAMP + INTERVAL '1 day 10 hours', NULL,
-        0.00, 2900000.00,
+        2900000.00,
         'confirmed', CURRENT_TIMESTAMP - INTERVAL '2 hours',
-        300000.00, 8000000.00, 100000.00, NULL
+        300000.00, 8000000.00, 100000.00
     )
 ON CONFLICT (booking_id) DO NOTHING;
 
