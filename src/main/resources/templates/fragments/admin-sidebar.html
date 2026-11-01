@@ -3,7 +3,7 @@
     <body>
         <!--
     Admin Clean Light Flush Collapsible Sidebar Fragment
-    Pass active param: 'dashboard', 'bookings', 'contracts', 'vehicles', 'inspections', 'license-plates', 'licenses', 'profile'
+    Pass active param: 'dashboard', 'bookings', 'contracts', 'vehicles', 'inspections', 'license-plates', 'licenses', 'profile', 'accounts'
 -->
         <nav th:fragment="sidebar(active)" class="admin-sidebar-nav" aria-label="Menu quản trị hệ thống">
             <!-- Top Bar: Title & Toggle Button -->
@@ -197,6 +197,19 @@
             </div>
             <!-- PHÂN TÁCH & TIỆN ÍCH -->
             <div class="admin-sidebar-divider"></div>
+
+            <div class="admin-sidebar-group" th:if="${session.account != null and session.account.admin}">
+                <a
+                    th:href="@{/admin/accounts}"
+                    th:class="'admin-sidebar-link ' + (${active == 'accounts'} ? 'active' : '')"
+                    title="Account Management"
+                >
+                    <svg class="admin-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M7 20H2v-2a4 4 0 013-3.87M15 7a3 3 0 11-6 0 3 3 0 016 0zM12 13c-3 0-5 2-5 5v2h10v-2c0-3-2-5-5-5z"></path>
+                    </svg>
+                    <span class="admin-nav-label">Account Management</span>
+                </a>
+            </div>
 
             <div class="admin-sidebar-group">
                 <a

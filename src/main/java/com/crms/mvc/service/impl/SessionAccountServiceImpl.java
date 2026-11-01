@@ -57,10 +57,11 @@ public class SessionAccountServiceImpl implements SessionAccountService {
 
     private Optional<SessionAccount> load(SessionAccount account) {
         if (account.isCustomer()) {
-            return customerRepository.findById(account.getId()).map(this::fromCustomer);
+            return customerRepository.findById(account.getId()).filter(Customer::isActive).map(this::fromCustomer);
         }
         if (account.isEmployee()) {
             return employeeRepository.findById(account.getId())
+                    .filter(Employee::isActive)
                     .map(this::fromEmployee)
                     .filter(SessionAccount::isStaffOrAdmin);
         }

@@ -14,7 +14,7 @@ public interface PaymentService {
 
     Payment processDeposit(Long bookingId);
     Payment processDeposit(Long bookingId, String transactionNo, String paymentMethod);
-    Payment processSettlement(Long bookingId, BigDecimal lateFee, BigDecimal additionalFine);
+    Payment recordFinalPayment(Long bookingId, BigDecimal amount, String paymentMethod);
     List<Payment> getPaymentsByBooking(Long bookingId);
 
     Payment createPendingRefund(Long bookingId, BigDecimal amount, String bankCode, String accountNumber, String accountHolder);

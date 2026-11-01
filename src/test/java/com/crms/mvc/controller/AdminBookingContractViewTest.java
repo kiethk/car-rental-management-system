@@ -40,6 +40,7 @@ class AdminBookingContractViewTest {
     @MockitoBean private BookingService bookingService;
     @MockitoBean private VehicleService vehicleService;
     @MockitoBean private com.crms.mvc.service.PaymentService paymentService;
+    @MockitoBean private com.crms.mvc.service.HandoverService handoverService;
 
     @Test
     void confirmedBookingWithoutPdfOffersRetry() throws Exception {

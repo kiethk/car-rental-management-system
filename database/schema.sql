@@ -34,7 +34,8 @@ CREATE TABLE customers (
     phone VARCHAR(20) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE TABLE employees (
@@ -44,6 +45,7 @@ CREATE TABLE employees (
     email VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role VARCHAR(20) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
     CHECK (role IN ('admin','staff'))
 );
 
@@ -223,6 +225,7 @@ CREATE TABLE issues (
     subject VARCHAR(200) NOT NULL,
     status VARCHAR(30) NOT NULL,
     evidence_url VARCHAR(500),
+    secondary_evidence_url VARCHAR(500),
     reported_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CHECK (status IN ('open','in_progress','resolved'))
 );
@@ -237,6 +240,8 @@ CREATE TABLE booking_fees (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE UNIQUE INDEX ux_issues_booking_handover ON issues (booking_id, issue_type)
+    WHERE issue_type IN ('CHECK_IN', 'CHECK_OUT');
 CREATE UNIQUE INDEX ux_customers_email_lower ON customers (LOWER(email));
 
 CREATE UNIQUE INDEX ux_employees_email_lower ON employees (LOWER(email));

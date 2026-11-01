@@ -163,7 +163,7 @@ public class BookingServiceImpl implements BookingService {
         if (staffList != null && !staffList.isEmpty()) {
             assignedStaff = staffList.get(0);
         } else {
-            List<Employee> allEmployees = employeeRepository.findAll();
+            List<Employee> allEmployees = employeeRepository.findByActiveTrueOrderByNameAsc();
             if (!allEmployees.isEmpty()) {
                 assignedStaff = allEmployees.get(0);
             }
@@ -336,57 +336,6 @@ public class BookingServiceImpl implements BookingService {
 
         b.setVehicle(v);
         bookingRepository.save(b);
-    }
-
-    @Override
-    public void checkIn(Long bookingId, Long employeeId) {
-        Booking b = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
-        Employee emp = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new NoSuchElementException("Employee not found: " + employeeId));
-
-        if (b.getVehicle() == null) {
-            throw new IllegalStateException("Cannot check-in: Vehicle is not assigned yet");
-        }
-        if (!"confirmed".equalsIgnoreCase(b.getStatus())) {
-            throw new IllegalStateException("Booking must be confirmed before check-in");
-        }
-
-        b.setStatus("active");
-        b.setEmployee(emp);
-        b.getVehicle().setStatus("rented");
-
-
-        vehicleRepository.save(b.getVehicle());
-        bookingRepository.save(b);
-    }
-
-    @Override
-    public void checkOut(Long bookingId, Long employeeId, CheckOutDTO dto) {
-        Booking b = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
-
-        if (!"active".equalsIgnoreCase(b.getStatus())) {
-            throw new IllegalStateException("Booking is not currently active");
-        }
-
-        OffsetDateTime actualReturn = OffsetDateTime.now();
-        b.setActualReturnTime(actualReturn);
-
-        // B4: Tính phí trễ qua PricingService có ân hạn 15 phút và làm tròn lên
-        BigDecimal multiplier = contractService.getTermsOfBooking(bookingId).getLateFeeMultiplier();
-        BigDecimal lateFee = pricingService.calculateLateFee(b.getScheduledEndTime(), actualReturn, b.getPricePerHour(), multiplier);
-
-        paymentService.processSettlement(bookingId, lateFee, dto != null ? dto.getAdditionalFine() : BigDecimal.ZERO);
-
-        if (b.getVehicle() != null) {
-            boolean hasDamage = dto != null && dto.getReturnNotes() != null
-                    && (dto.getReturnNotes().toLowerCase().contains("damage")
-                    || dto.getReturnNotes().toLowerCase().contains("hỏng")
-                    || dto.getReturnNotes().toLowerCase().contains("sự cố"));
-            b.getVehicle().setStatus(hasDamage ? "maintenance" : "available");
-            vehicleRepository.save(b.getVehicle());
-        }
     }
 
     private BookingDetailDTO mapToDetailDTO(Booking b) {
