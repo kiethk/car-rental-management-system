@@ -1,5 +1,8 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.support.TestSessions;
+import org.springframework.context.annotation.Import;
+import com.crms.mvc.support.PassThroughSessionAccountService;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.ContractDTO;
 import com.crms.mvc.dto.ContractTemplateDTO;
@@ -42,6 +45,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Import(PassThroughSessionAccountService.class)
 @WebMvcTest(BookingController.class)
 class BookingContractFlowTest {
     @Autowired private MockMvc mvc;
@@ -57,10 +61,7 @@ class BookingContractFlowTest {
 
     @BeforeEach
     void setUp() {
-        customerSession = new MockHttpSession();
-        customerSession.setAttribute("customerId", 1L);
-        customerSession.setAttribute("customerName", "Nguyễn Văn An");
-        customerSession.setAttribute("licenseStatus", "approved");
+        customerSession = TestSessions.customer(1L, "Nguyễn Văn An");
 
         terms = new ContractTemplateDTO();
         terms.setId(3L);
@@ -72,7 +73,7 @@ class BookingContractFlowTest {
         terms.setFreeCancellationHours(48);
         terms.setStatus(ContractTemplateStatus.ACTIVE);
         when(contractTemplateService.getActiveTemplate()).thenReturn(terms);
-        when(licenseDocumentService.isCustomerVerified(1L)).thenReturn(true);
+        when(licenseDocumentService.hasValidLicense(eq(1L), any())).thenReturn(true);
         when(pricingService.calculatePrice(any(), any(), any(), any(), any())).thenAnswer(inv -> new PricingServiceImpl().calculatePrice(inv.getArgument(0), inv.getArgument(1), inv.getArgument(2), inv.getArgument(3), inv.getArgument(4)));
     }
 

@@ -3,7 +3,7 @@
     <body>
         <!--
     Admin Clean Light Flush Collapsible Sidebar Fragment
-    Pass active param: 'dashboard', 'bookings', 'contracts', 'vehicles', 'inspections', 'license-plates', 'licenses', 'password'
+    Pass active param: 'dashboard', 'bookings', 'contracts', 'vehicles', 'inspections', 'license-plates', 'licenses', 'profile', 'accounts'
 -->
         <nav th:fragment="sidebar(active)" class="admin-sidebar-nav" aria-label="Menu quản trị hệ thống">
             <!-- Top Bar: Title & Toggle Button -->
@@ -198,11 +198,24 @@
             <!-- PHÂN TÁCH & TIỆN ÍCH -->
             <div class="admin-sidebar-divider"></div>
 
+            <div class="admin-sidebar-group" th:if="${session.account != null and session.account.admin}">
+                <a
+                    th:href="@{/admin/accounts}"
+                    th:class="'admin-sidebar-link ' + (${active == 'accounts'} ? 'active' : '')"
+                    title="Account Management"
+                >
+                    <svg class="admin-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M7 20H2v-2a4 4 0 013-3.87M15 7a3 3 0 11-6 0 3 3 0 016 0zM12 13c-3 0-5 2-5 5v2h10v-2c0-3-2-5-5-5z"></path>
+                    </svg>
+                    <span class="admin-nav-label">Account Management</span>
+                </a>
+            </div>
+
             <div class="admin-sidebar-group">
                 <a
-                    th:href="@{/admin/password}"
-                    th:class="'admin-sidebar-link ' + (${active == 'password'} ? 'active' : '')"
-                    title="Đổi mật khẩu"
+                    th:href="@{/admin/profile}"
+                    th:class="'admin-sidebar-link ' + (${active == 'profile'} ? 'active' : '')"
+                    title="Account Settings"
                 >
                     <svg
                         class="admin-nav-icon"
@@ -217,7 +230,7 @@
                             d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
                         ></path>
                     </svg>
-                    <span class="admin-nav-label">Đổi mật khẩu</span>
+                    <span class="admin-nav-label">Account Settings</span>
                 </a>
             </div>
 
@@ -230,11 +243,11 @@
                             onclick="toggleAdminProfileMenu(this, event)"
                             title="Hồ sơ nhân viên">
                         <div class="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-xs">
-                            <span th:text="${#strings.substring(session.employeeName != null ? session.employeeName : 'S', 0, 1)}">S</span>
+                            <span th:text="${#strings.substring(session.account != null ? session.account.name : 'S', 0, 1)}">S</span>
                         </div>
                         <div class="admin-profile-info text-left min-w-0 flex-1">
-                            <div class="text-xs font-bold text-slate-900 truncate" th:text="${session.employeeName != null ? session.employeeName : 'Support Staff'}">Support Staff</div>
-                            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider truncate" th:text="${session.employeeRole != null ? session.employeeRole : 'STAFF'}">STAFF</div>
+                            <div class="text-xs font-bold text-slate-900 truncate" th:text="${session.account != null ? session.account.name : 'Support Staff'}">Support Staff</div>
+                            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider truncate" th:text="${session.account != null ? session.account.role : 'STAFF'}">STAFF</div>
                         </div>
                         <svg class="w-4 h-4 text-slate-400 admin-profile-chevron flex-shrink-0 transition-transform duration-200" id="adminProfileChevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path>
@@ -244,8 +257,8 @@
                     <!-- Profile Dropup Menu (opens upwards from bottom of sidebar) -->
                     <div class="admin-profile-menu hidden" id="adminProfileMenu">
                         <div class="px-3.5 py-2.5 border-b border-slate-100 bg-slate-50/60 rounded-t-lg">
-                            <div class="text-xs font-bold text-slate-900" th:text="${session.employeeName != null ? session.employeeName : 'Nhân viên'}">Support Staff</div>
-                            <div class="text-[10.5px] text-slate-500 font-medium mt-0.5" th:text="${session.employeeRole != null ? session.employeeRole : 'STAFF'}">STAFF</div>
+                            <div class="text-xs font-bold text-slate-900" th:text="${session.account != null ? session.account.name : 'Nhân viên'}">Support Staff</div>
+                            <div class="text-[10.5px] text-slate-500 font-medium mt-0.5" th:text="${session.account != null ? session.account.role : 'STAFF'}">STAFF</div>
                             <div class="text-[10px] text-emerald-600 font-medium mt-1 flex items-center gap-1">
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                 <span>Đang hoạt động</span>
@@ -261,11 +274,11 @@
                                 </svg>
                                 <span>Bảng điều khiển</span>
                             </a>
-                            <a th:href="@{/admin/password}" class="admin-profile-menu-item">
+                            <a th:href="@{/admin/profile}" class="admin-profile-menu-item">
                                 <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
                                 </svg>
-                                <span>Đổi mật khẩu</span>
+                                <span>Account Settings</span>
                             </a>
                             <a th:href="@{/}" target="_blank" class="admin-profile-menu-item">
                                 <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">

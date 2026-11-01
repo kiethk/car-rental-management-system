@@ -16,10 +16,6 @@ public class LicenseDocument {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "reviewed_by", nullable = true)
-    private Employee reviewedBy;
-
     @Column(name = "license_number", nullable = false, length = 50)
     private String licenseNumber;
 
@@ -32,17 +28,8 @@ public class LicenseDocument {
     @Column(name = "license_image_url", nullable = false, length = 500)
     private String licenseImageUrl;
 
-    @Column(name = "status", nullable = false, length = 30)
-    private String status;
-
-    @Column(name = "rejection_reason", length = 500)
-    private String rejectionReason;
-
     @Column(name = "submitted_at", nullable = false)
     private OffsetDateTime submittedAt;
-
-    @Column(name = "reviewed_at")
-    private OffsetDateTime reviewedAt;
 
     public LicenseDocument() {
     }
@@ -52,14 +39,12 @@ public class LicenseDocument {
                            String licenseClass,
                            LocalDate licenseExpiry,
                            String licenseImageUrl,
-                           String status,
                            OffsetDateTime submittedAt) {
         this.customer = customer;
         this.licenseNumber = licenseNumber;
         this.licenseClass = licenseClass;
         this.licenseExpiry = licenseExpiry;
         this.licenseImageUrl = licenseImageUrl;
-        this.status = status;
         this.submittedAt = submittedAt;
     }
 
@@ -68,9 +53,6 @@ public class LicenseDocument {
 
     public Customer getCustomer() { return customer; }
     public void setCustomer(Customer customer) { this.customer = customer; }
-
-    public Employee getReviewedBy() { return reviewedBy; }
-    public void setReviewedBy(Employee reviewedBy) { this.reviewedBy = reviewedBy; }
 
     public String getLicenseNumber() { return licenseNumber; }
     public void setLicenseNumber(String licenseNumber) { this.licenseNumber = licenseNumber; }
@@ -84,15 +66,6 @@ public class LicenseDocument {
     public String getLicenseImageUrl() { return licenseImageUrl; }
     public void setLicenseImageUrl(String licenseImageUrl) { this.licenseImageUrl = licenseImageUrl; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-
-    public String getRejectionReason() { return rejectionReason; }
-    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
-
     public OffsetDateTime getSubmittedAt() { return submittedAt; }
     public void setSubmittedAt(OffsetDateTime submittedAt) { this.submittedAt = submittedAt; }
-
-    public OffsetDateTime getReviewedAt() { return reviewedAt; }
-    public void setReviewedAt(OffsetDateTime reviewedAt) { this.reviewedAt = reviewedAt; }
 }

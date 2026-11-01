@@ -1,5 +1,9 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.dto.SessionAccount;
+import com.crms.mvc.support.PassThroughSessionAccountService;
+import com.crms.mvc.util.CurrentAccount;
+import org.springframework.context.annotation.Import;
 import com.crms.mvc.service.VehicleTypeService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +20,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Import(PassThroughSessionAccountService.class)
 @WebMvcTest(HomeController.class)
 class HeaderNavigationTest {
 
@@ -27,9 +32,8 @@ class HeaderNavigationTest {
         when(vehicleTypeService.findAll()).thenReturn(List.of());
 
         MockHttpSession staffSession = new MockHttpSession();
-        staffSession.setAttribute("employeeId", 2L);
-        staffSession.setAttribute("employeeRole", "staff");
-        staffSession.setAttribute("employeeName", "Staff Member");
+        staffSession.setAttribute(CurrentAccount.SESSION_KEY,
+                new SessionAccount(2L, SessionAccount.EMPLOYEE, "Staff Member", "staff@crms.test", "staff", null));
 
         mvc.perform(get("/").session(staffSession))
                 .andExpect(status().isOk())
@@ -38,7 +42,7 @@ class HeaderNavigationTest {
                 .andExpect(content().string(containsString("/admin/dashboard")))
                 .andExpect(content().string(containsString("Xem trước (Nhân viên)")))
                 .andExpect(content().string(not(containsString("Xem trang khách"))))
-                .andExpect(content().string(containsString("Danh mục xe")));
+                .andExpect(content().string(containsString("Browse Cars")));
     }
 
     @Test

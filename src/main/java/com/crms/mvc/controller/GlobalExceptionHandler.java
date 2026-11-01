@@ -1,6 +1,7 @@
 package com.crms.mvc.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -42,6 +43,14 @@ public class GlobalExceptionHandler {
     public String handleBadRequest(RuntimeException ex, Model model) {
         model.addAttribute("errorCode", "400");
         model.addAttribute("errorMessage", ex.getMessage());
+        return "error/default";
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public String handleDataAccess(DataAccessException ex, Model model) {
+        model.addAttribute("errorCode", "503");
+        model.addAttribute("errorMessage", "The service is temporarily unavailable. Please try again later.");
         return "error/default";
     }
 

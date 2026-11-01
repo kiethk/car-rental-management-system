@@ -188,59 +188,19 @@ public class VnPayServiceImpl implements PaymentService {
     }
 
     @Override
-    public Payment processSettlement(Long bookingId, BigDecimal lateFee, BigDecimal additionalFine) {
+    public Payment recordFinalPayment(Long bookingId, BigDecimal amount, String paymentMethod) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
-
-        BigDecimal initialDeposit = booking.getDepositAmount() != null ? booking.getDepositAmount() : BigDecimal.ZERO;
-        BigDecimal rentAmount = booking.getTotalPrice() != null ? booking.getTotalPrice() : BigDecimal.ZERO;
-
-        BigDecimal safeLateFee = lateFee != null ? lateFee : BigDecimal.ZERO;
-        BigDecimal safeFine = additionalFine != null ? additionalFine : BigDecimal.ZERO;
-
-        if (safeLateFee.compareTo(BigDecimal.ZERO) > 0) {
-            bookingFeeService.recordFee(bookingId, "LATE_FEE", safeLateFee, "Late return fee", null);
-        }
-        if (safeFine.compareTo(BigDecimal.ZERO) > 0) {
-            bookingFeeService.recordFee(bookingId, "DAMAGE_COMPENSATION", safeFine, "Fine for issues during trip",
-                    null);
-        }
-
-
-        BigDecimal totalPayable = rentAmount.add(safeLateFee).add(safeFine);
-        BigDecimal remaining = totalPayable.subtract(initialDeposit);
-
-        if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
-            BigDecimal refundAmount = remaining.abs();
-            Payment refundPayment = new Payment();
-            refundPayment.setBooking(booking);
-            refundPayment.setPaymentType("REFUND");
-            refundPayment.setAmount(refundAmount);
-            refundPayment.setStatus("paid");
-            refundPayment.setPaymentMethod("VNPAY");
-            refundPayment.setTransactionCode("REFUND-" + bookingId + "-" + System.currentTimeMillis());
-            refundPayment.setPaidAt(OffsetDateTime.now());
-            paymentRepository.save(refundPayment);
-
-            booking.setTotalPrice(totalPayable);
-            bookingRepository.save(booking);
-            return refundPayment;
-        }
 
         Payment finalPayment = new Payment();
         finalPayment.setBooking(booking);
         finalPayment.setPaymentType("FINAL");
-        finalPayment.setAmount(remaining);
+        finalPayment.setAmount(amount);
         finalPayment.setStatus("paid");
-        finalPayment.setPaymentMethod("VNPAY");
+        finalPayment.setPaymentMethod(paymentMethod);
         finalPayment.setTransactionCode("FINAL-" + bookingId + "-" + System.currentTimeMillis());
         finalPayment.setPaidAt(OffsetDateTime.now());
-        paymentRepository.save(finalPayment);
-
-        booking.setTotalPrice(totalPayable);
-        bookingRepository.save(booking);
-
-        return finalPayment;
+        return paymentRepository.save(finalPayment);
     }
 
     @Override

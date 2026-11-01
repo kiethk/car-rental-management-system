@@ -1,7 +1,7 @@
 package com.crms.mvc.service;
 
 import com.crms.mvc.dto.CustomerRegisterDTO;
-import com.crms.mvc.dto.PasswordChangeDTO;
+import com.crms.mvc.dto.AccountProfileDTO;
 import com.crms.mvc.dto.VehicleFormDTO;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.repository.BookingRepository;
@@ -101,18 +101,20 @@ class BookingServiceSchedulingAndValidationTest {
     }
 
     @Test
-    @DisplayName("B14: PasswordChangeDTO rejects new password shorter than 8 characters")
+    @DisplayName("B14: AccountProfileDTO rejects new password shorter than 8 characters")
     void testPasswordChangeMinLength() {
-        PasswordChangeDTO dto = new PasswordChangeDTO();
+        AccountProfileDTO dto = new AccountProfileDTO();
         dto.setCurrentPassword("oldPass123");
         dto.setNewPassword("123"); // < 8 chars
+        dto.setConfirmPassword("123");
 
-        Set<ConstraintViolation<PasswordChangeDTO>> violations = validator.validate(dto);
-        assertThat(violations).anyMatch(v -> v.getPropertyPath().toString().equals("newPassword"));
+        Set<ConstraintViolation<AccountProfileDTO>> violations = validator.validate(dto);
+        assertThat(violations).anyMatch(v -> v.getPropertyPath().toString().equals("newPasswordLongEnough"));
 
         dto.setNewPassword("newSecretPass");
+        dto.setConfirmPassword("newSecretPass");
         violations = validator.validate(dto);
-        assertThat(violations).noneMatch(v -> v.getPropertyPath().toString().equals("newPassword"));
+        assertThat(violations).noneMatch(v -> v.getPropertyPath().toString().equals("newPasswordLongEnough"));
     }
 
     @Test

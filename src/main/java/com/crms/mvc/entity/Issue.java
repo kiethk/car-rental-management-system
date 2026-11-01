@@ -39,6 +39,9 @@ public class Issue {
     @Column(name = "evidence_url", length = 500)
     private String evidenceUrl;
 
+    @Column(name = "secondary_evidence_url", length = 500)
+    private String secondaryEvidenceUrl;
+
     @Column(name = "reported_at", nullable = false)
     private OffsetDateTime reportedAt;
 
@@ -68,6 +71,9 @@ public class Issue {
 
     public String getEvidenceUrl() { return evidenceUrl; }
     public void setEvidenceUrl(String evidenceUrl) { this.evidenceUrl = evidenceUrl; }
+
+    public String getSecondaryEvidenceUrl() { return secondaryEvidenceUrl; }
+    public void setSecondaryEvidenceUrl(String secondaryEvidenceUrl) { this.secondaryEvidenceUrl = secondaryEvidenceUrl; }
 
     public OffsetDateTime getReportedAt() { return reportedAt; }
     public void setReportedAt(OffsetDateTime reportedAt) { this.reportedAt = reportedAt; }

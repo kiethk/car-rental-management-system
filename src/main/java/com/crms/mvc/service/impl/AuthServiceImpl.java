@@ -38,11 +38,11 @@ public class AuthServiceImpl implements AuthService {
             return null;
         }
 
-        if (customer != null && passwordEncoder.matches(password, customer.getPasswordHash())) {
+        if (customer != null && customer.isActive() && passwordEncoder.matches(password, customer.getPasswordHash())) {
             return new LoginIdentityDTO("customer", customer.getId(), customer.getName(), null);
         }
 
-        if (employee != null && passwordEncoder.matches(password, employee.getPasswordHash())) {
+        if (employee != null && employee.isActive() && passwordEncoder.matches(password, employee.getPasswordHash())) {
             return new LoginIdentityDTO("employee", employee.getId(), employee.getName(), employee.getRole());
         }
 

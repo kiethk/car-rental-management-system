@@ -112,11 +112,11 @@ ON CONFLICT (promotion_id) DO NOTHING;
 
 -- 7. LICENSE_DOCUMENTS
 -- status: 'pending' | 'approved' | 'rejected'
-INSERT INTO license_documents (license_document_id, customer_id, reviewed_by, license_number, license_class, license_expiry, license_image_url, status, rejection_reason, submitted_at, reviewed_at)
+INSERT INTO license_documents (license_document_id, customer_id, license_number, license_class, license_expiry, license_image_url, submitted_at)
 VALUES 
-    (1, 1, 2, 'B2-79123456', 'B2', CURRENT_DATE + INTERVAL '5 years', '/uploads/licenses/cust1_license.jpg', 'approved', NULL, CURRENT_TIMESTAMP - INTERVAL '8 days', CURRENT_TIMESTAMP - INTERVAL '7 days'),
-    (2, 2, 2, 'B1-88123999', 'B1', CURRENT_DATE + INTERVAL '3 years', '/uploads/licenses/cust2_license.jpg', 'approved', NULL, CURRENT_TIMESTAMP - INTERVAL '4 days', CURRENT_TIMESTAMP - INTERVAL '3 days'),
-    (3, 3, NULL, 'B2-99887766', 'B2', CURRENT_DATE + INTERVAL '8 years', '/uploads/licenses/cust3_license.jpg', 'pending', NULL, CURRENT_TIMESTAMP - INTERVAL '1 days', NULL)
+    (1, 1, 'B2-79123456', 'B2', CURRENT_DATE + INTERVAL '5 years', '/uploads/licenses/cust1_license.jpg', CURRENT_TIMESTAMP - INTERVAL '8 days'),
+    (2, 2, 'B1-88123999', 'B1', CURRENT_DATE + INTERVAL '3 years', '/uploads/licenses/cust2_license.jpg', CURRENT_TIMESTAMP - INTERVAL '4 days'),
+    (3, 3, 'B2-99887766', 'B2', CURRENT_DATE + INTERVAL '8 years', '/uploads/licenses/cust3_license.jpg', CURRENT_TIMESTAMP - INTERVAL '1 days')
 ON CONFLICT (license_document_id) DO NOTHING;
 
 -- 8. SLOTS

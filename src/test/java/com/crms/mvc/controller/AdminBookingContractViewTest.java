@@ -1,5 +1,10 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.dto.SessionAccount;
+import com.crms.mvc.util.CurrentAccount;
+import com.crms.mvc.support.TestSessions;
+import org.springframework.context.annotation.Import;
+import com.crms.mvc.support.PassThroughSessionAccountService;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.ContractDTO;
 import com.crms.mvc.dto.ContractTemplateDTO;
@@ -28,21 +33,21 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Import(PassThroughSessionAccountService.class)
 @WebMvcTest(AdminBookingController.class)
 class AdminBookingContractViewTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private BookingService bookingService;
     @MockitoBean private VehicleService vehicleService;
     @MockitoBean private com.crms.mvc.service.PaymentService paymentService;
+    @MockitoBean private com.crms.mvc.service.HandoverService handoverService;
 
     @Test
     void confirmedBookingWithoutPdfOffersRetry() throws Exception {
         when(bookingService.getBookingDetailForAdmin(42L)).thenReturn(confirmedBooking());
         when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
 
-        MockHttpSession staff = new MockHttpSession();
-        staff.setAttribute("employeeId", 2L);
-        staff.setAttribute("employeeRole", "staff");
+        MockHttpSession staff = TestSessions.staff(2L);
 
         mvc.perform(get("/admin/bookings/42").session(staff))
                 .andExpect(status().isOk())
@@ -110,8 +115,8 @@ class AdminBookingContractViewTest {
         when(bookingService.getAllBookings("all")).thenReturn(List.of(summary));
 
         MockHttpSession staff = new MockHttpSession();
-        staff.setAttribute("employeeId", 2L);
-        staff.setAttribute("employeeRole", "staff");
+        staff.setAttribute(CurrentAccount.SESSION_KEY,
+                new SessionAccount(2L, SessionAccount.EMPLOYEE, "Staff Member", "staff@crms.test", "staff", null));
 
         mvc.perform(get("/admin/bookings").session(staff))
                 .andExpect(status().isOk())
@@ -134,8 +139,8 @@ class AdminBookingContractViewTest {
         when(bookingService.getAllBookings("refund")).thenReturn(List.of(summary));
 
         MockHttpSession staff = new MockHttpSession();
-        staff.setAttribute("employeeId", 2L);
-        staff.setAttribute("employeeRole", "staff");
+        staff.setAttribute(CurrentAccount.SESSION_KEY,
+                new SessionAccount(2L, SessionAccount.EMPLOYEE, "Staff Member", "staff@crms.test", "staff", null));
 
         mvc.perform(get("/admin/bookings?status=refund").session(staff))
                 .andExpect(status().isOk())
@@ -160,8 +165,8 @@ class AdminBookingContractViewTest {
         when(bookingService.getAllBookings("confirmed")).thenReturn(List.of(summary));
 
         MockHttpSession staff = new MockHttpSession();
-        staff.setAttribute("employeeId", 2L);
-        staff.setAttribute("employeeRole", "staff");
+        staff.setAttribute(CurrentAccount.SESSION_KEY,
+                new SessionAccount(2L, SessionAccount.EMPLOYEE, "Staff Member", "staff@crms.test", "staff", null));
 
         mvc.perform(get("/admin/bookings?status=confirmed").session(staff))
                 .andExpect(status().isOk())
