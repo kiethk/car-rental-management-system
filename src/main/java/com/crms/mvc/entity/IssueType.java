@@ -7,6 +7,8 @@ public enum IssueType {
     COLLISION("Va chạm"),
     DAMAGE("Hư hỏng"),
     TRAFFIC_FINE("Phạt nguội"),
+    CHECK_IN("Bàn giao xe"),
+    CHECK_OUT("Trả xe"),
     OTHER("Khác");
 
     private final String label;

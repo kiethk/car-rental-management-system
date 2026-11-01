@@ -1,7 +1,8 @@
 package com.crms.mvc.interceptor;
 
+import com.crms.mvc.dto.SessionAccount;
+import com.crms.mvc.util.CurrentAccount;
 import com.crms.mvc.util.EmployeeRole;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -15,14 +16,14 @@ public class RoleInterceptor implements HandlerInterceptor {
                              HttpServletResponse response,
                              Object handler) throws Exception {
         HttpSession session = request.getSession(false);
-
-        if (session == null || session.getAttribute("employeeId") == null) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return false;
+        boolean allowed = CurrentAccount.of(session)
+                .map(SessionAccount::isStaffOrAdmin)
+                .orElse(false);
+        if (!allowed && session != null) {
+            String role = (String) session.getAttribute("employeeRole");
+            allowed = EmployeeRole.isEmployee(role);
         }
-
-        String role = (String) session.getAttribute("employeeRole");
-        if (EmployeeRole.isEmployee(role)) {
+        if (allowed) {
             return true;
         }
 

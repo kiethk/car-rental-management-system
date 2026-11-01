@@ -1,5 +1,7 @@
 package com.crms.mvc.controller;
 
+import org.springframework.context.annotation.Import;
+import com.crms.mvc.support.PassThroughSessionAccountService;
 import com.crms.mvc.dto.LoginIdentityDTO;
 import com.crms.mvc.service.AuthService;
 import com.crms.mvc.service.CustomerService;
@@ -9,12 +11,16 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Import(PassThroughSessionAccountService.class)
 @WebMvcTest(AuthController.class)
 class AuthControllerTest {
     @Autowired private MockMvc mvc;
@@ -44,8 +50,10 @@ class AuthControllerTest {
                 .thenReturn(new LoginIdentityDTO("customer", 1L, "An", null));
         mvc.perform(post("/login").param("email", "a@example.com").param("password", "secret"))
                 .andExpect(redirectedUrl("/vehicles"))
-                .andExpect(request().sessionAttribute("customerId", 1L))
-                .andExpect(request().sessionAttribute("customerName", "An"));
+                .andExpect(request().sessionAttribute("account", allOf(
+                        hasProperty("id", is(1L)),
+                        hasProperty("name", is("An")),
+                        hasProperty("customer", is(true)))));
     }
 
     @Test void logoutRedirectsToLogin() throws Exception {

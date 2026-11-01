@@ -36,6 +36,8 @@ public interface PaymentService {
 
     /** The gateway reported failure or cancellation: marks the payment failed and gives its fees back as owed. */
     Payment failIssuePayment(Long paymentId);
+
+    Payment recordFinalPayment(Long bookingId, BigDecimal amount, String paymentMethod);
     List<Payment> getPaymentsByBooking(Long bookingId);
 
     Payment createPendingRefund(Long bookingId, BigDecimal amount, String bankCode, String accountNumber, String accountHolder);

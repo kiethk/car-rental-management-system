@@ -26,6 +26,9 @@ public class Customer {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
+    @Column(name = "is_active", nullable = false)
+    private boolean active = true;
+
     public Customer() {
     }
 
@@ -36,6 +39,9 @@ public class Customer {
         this.passwordHash = passwordHash;
         this.createdAt = createdAt;
     }
+
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

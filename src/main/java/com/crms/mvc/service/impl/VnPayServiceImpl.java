@@ -368,6 +368,21 @@ public class VnPayServiceImpl implements PaymentService {
     }
 
     @Override
+    public Payment recordFinalPayment(Long bookingId, BigDecimal amount, String paymentMethod) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy đơn thuê: " + bookingId));
+        Payment finalPayment = new Payment();
+        finalPayment.setBooking(booking);
+        finalPayment.setPaymentType("FINAL");
+        finalPayment.setAmount(amount);
+        finalPayment.setStatus("paid");
+        finalPayment.setPaymentMethod(paymentMethod);
+        finalPayment.setTransactionCode("FINAL-" + bookingId + "-" + System.currentTimeMillis());
+        finalPayment.setPaidAt(OffsetDateTime.now());
+        return paymentRepository.save(finalPayment);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<Payment> getPaymentsByBooking(Long bookingId) {
         return paymentRepository.findByBookingIdOrderByPaidAtAsc(bookingId);

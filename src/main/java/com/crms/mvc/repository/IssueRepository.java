@@ -1,4 +1,5 @@
 package com.crms.mvc.repository;
+
 import com.crms.mvc.entity.Issue;
 import com.crms.mvc.entity.IssueStatus;
 import com.crms.mvc.entity.IssueType;
@@ -35,4 +36,9 @@ public interface IssueRepository extends JpaRepository<Issue, Long>, JpaSpecific
     @Override
     @EntityGraph(attributePaths = {"booking", "booking.customer", "vehicle", "vehicle.vehicleType", "employee"})
     Page<Issue> findAll(Specification<Issue> spec, Pageable pageable);
+
+    @Query("SELECT i FROM Issue i WHERE i.booking.id = :bookingId AND CAST(i.issueType as string) = :issueType")
+    Optional<Issue> findByBookingIdAndIssueType(@Param("bookingId") Long bookingId, @Param("issueType") String issueType);
+
+    List<Issue> findByBookingIdOrderByReportedAtAsc(Long bookingId);
 }

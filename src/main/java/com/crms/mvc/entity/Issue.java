@@ -17,6 +17,10 @@ public class Issue {
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "slot_id")
+    private Slot slot;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle;
@@ -42,6 +46,12 @@ public class Issue {
 
     @Column(name = "occurred_at", nullable = false)
     private OffsetDateTime occurredAt;
+
+    @Column(name = "evidence_url", length = 500)
+    private String evidenceUrl;
+
+    @Column(name = "secondary_evidence_url", length = 500)
+    private String secondaryEvidenceUrl;
 
     @Column(name = "reported_at", nullable = false)
     private OffsetDateTime reportedAt;
@@ -85,6 +95,9 @@ public class Issue {
     public OffsetDateTime getOccurredAt() { return occurredAt; }
     public void setOccurredAt(OffsetDateTime occurredAt) { this.occurredAt = occurredAt; }
 
+    public String getSecondaryEvidenceUrl() { return secondaryEvidenceUrl; }
+    public void setSecondaryEvidenceUrl(String secondaryEvidenceUrl) { this.secondaryEvidenceUrl = secondaryEvidenceUrl; }
+
     public OffsetDateTime getReportedAt() { return reportedAt; }
     public void setReportedAt(OffsetDateTime reportedAt) { this.reportedAt = reportedAt; }
 
@@ -99,4 +112,46 @@ public class Issue {
 
     public List<IssueEvidence> getEvidences() { return evidences; }
     public void setEvidences(List<IssueEvidence> evidences) { this.evidences = evidences; }
+
+    public Slot getSlot() { return slot; }
+    public void setSlot(Slot slot) { this.slot = slot; }
+
+    public String getEvidenceUrl() { return evidenceUrl; }
+    public void setEvidenceUrl(String evidenceUrl) { this.evidenceUrl = evidenceUrl; }
+
+    public void setIssueType(String typeStr) {
+        if (typeStr == null) {
+            this.issueType = null;
+            return;
+        }
+        try {
+            this.issueType = IssueType.valueOf(typeStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            this.issueType = IssueType.OTHER;
+        }
+    }
+
+    public void setStatus(String statusStr) {
+        if (statusStr == null) {
+            this.status = IssueStatus.OPEN;
+            return;
+        }
+        for (IssueStatus s : IssueStatus.values()) {
+            if (s.name().equalsIgnoreCase(statusStr) || s.dbValue().equalsIgnoreCase(statusStr)) {
+                this.status = s;
+                return;
+            }
+        }
+        this.status = IssueStatus.OPEN;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (occurredAt == null) {
+            occurredAt = OffsetDateTime.now();
+        }
+        if (reportedAt == null) {
+            reportedAt = OffsetDateTime.now();
+        }
+    }
 }

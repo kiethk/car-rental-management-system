@@ -1,5 +1,6 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.util.CurrentAccount;
 import com.crms.mvc.dto.BookingCreateDTO;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.BookingSummaryDTO;
@@ -235,7 +236,7 @@ public class BookingController {
             @RequestParam(value = "date", required = false) String dateStr,
             HttpSession session, Model model, RedirectAttributes ra) {
 
-        Long customerId = (Long) session.getAttribute("customerId");
+        Long customerId = CurrentAccount.customerId(session).orElse(null);
         if (customerId == null) {
             ra.addFlashAttribute("error", "Please sign in to proceed with your booking.");
             return "redirect:/login";
@@ -313,16 +314,14 @@ public class BookingController {
         form.setContractTemplateId(contractTerms.getId());
 
         LicenseDocument license = licenseDocumentService.getCustomerLicense(customerId);
-        boolean isLicenseVerified = licenseDocumentService.isCustomerVerified(customerId);
-        String licenseStatus = (license != null) ? license.getStatus() : "not_uploaded";
-        session.setAttribute("licenseStatus", licenseStatus);
+        boolean hasValidLicense = licenseDocumentService.hasValidLicense(customerId, endTime.toLocalDate());
 
         model.addAttribute("vehicleType", vt);
         model.addAttribute("bookingForm", form);
         model.addAttribute("availableCars", availableCars);
         model.addAttribute("customerLicense", license);
-        model.addAttribute("isLicenseVerified", isLicenseVerified);
-        model.addAttribute("licenseStatus", licenseStatus);
+        model.addAttribute("hasValidLicense", hasValidLicense);
+        model.addAttribute("licenseExpired", license != null && !hasValidLicense);
         model.addAttribute("rentalHours", rentalHours);
         model.addAttribute("rentalDays", rentalDays);
         model.addAttribute("remainingHours", remainingHours);
@@ -338,15 +337,16 @@ public class BookingController {
     // TẠO ĐƠN: POST /bookings -> Lưu Booking (pending_payment) -> Sang trang cọc
     @PostMapping("/bookings")
     public String createBooking(@Valid @ModelAttribute("bookingForm") BookingCreateDTO form,
-            BindingResult result, HttpServletRequest request,
-            HttpSession session, RedirectAttributes ra) {
-        Long customerId = (Long) session.getAttribute("customerId");
-        if (customerId == null)
-            return "redirect:/login";
+                                BindingResult result, HttpServletRequest request,
+                                HttpSession session, RedirectAttributes ra) {
+        Long customerId = CurrentAccount.customerId(session).orElse(null);
+        if (customerId == null) return "redirect:/login";
 
-        if (!licenseDocumentService.isCustomerVerified(customerId)) {
-            ra.addFlashAttribute("error",
-                    "You must have an approved driving license before completing a reservation. Please upload your driving license for verification.");
+        LocalDate rentalEndDate = form.getEndTime() != null ? form.getEndTime().toLocalDate() : LocalDate.now();
+        if (!licenseDocumentService.hasValidLicense(customerId, rentalEndDate)) {
+            ra.addFlashAttribute("error", licenseDocumentService.getCustomerLicense(customerId) == null
+                    ? "Please upload your driving license before booking."
+                    : "Your driving license expires before the rental ends.");
             return "redirect:/licenses/my-license";
         }
 
@@ -374,12 +374,10 @@ public class BookingController {
     }
 
     // BƯỚC 4: Thanh toán tiền cọc (Deposit)
-    @GetMapping({ "/bookings/{id}/pay-deposit", "/bookings/{id}/payment" })
-    public String payDepositPage(@PathVariable("id") Long bookingId, HttpSession session, Model model,
-            RedirectAttributes ra) {
-        Long customerId = (Long) session.getAttribute("customerId");
-        if (customerId == null)
-            return "redirect:/login";
+    @GetMapping({"/bookings/{id}/pay-deposit", "/bookings/{id}/payment"})
+    public String payDepositPage(@PathVariable("id") Long bookingId, HttpSession session, Model model, RedirectAttributes ra) {
+        Long customerId = CurrentAccount.customerId(session).orElse(null);
+        if (customerId == null) return "redirect:/login";
 
         try {
             BookingDetailDTO detail = bookingService.getBookingDetail(bookingId, customerId);
@@ -401,11 +399,9 @@ public class BookingController {
 
     // BƯỚC 5: Trang xác nhận đặt xe thành công
     @GetMapping("/bookings/{id}/success")
-    public String bookingSuccess(@PathVariable("id") Long bookingId, HttpSession session, Model model,
-            RedirectAttributes ra) {
-        Long customerId = (Long) session.getAttribute("customerId");
-        if (customerId == null)
-            return "redirect:/login";
+    public String bookingSuccess(@PathVariable("id") Long bookingId, HttpSession session, Model model, RedirectAttributes ra) {
+        Long customerId = CurrentAccount.customerId(session).orElse(null);
+        if (customerId == null) return "redirect:/login";
 
         try {
             BookingDetailDTO detail = bookingService.getBookingDetail(bookingId, customerId);
@@ -419,10 +415,9 @@ public class BookingController {
 
     // Lịch sử đơn của khách
     @GetMapping("/bookings/my-bookings")
-    public String myBookings(
-            @RequestParam(value = "status", required = false, defaultValue = "all") String filterStatus,
-            HttpSession session, Model model, RedirectAttributes ra) {
-        Long customerId = (Long) session.getAttribute("customerId");
+    public String myBookings(@RequestParam(value = "status", required = false, defaultValue = "all") String filterStatus,
+                             HttpSession session, Model model, RedirectAttributes ra) {
+        Long customerId = CurrentAccount.customerId(session).orElse(null);
         if (customerId == null) {
             ra.addFlashAttribute("error", "Please sign in to view your bookings.");
             return "redirect:/login";
@@ -441,11 +436,9 @@ public class BookingController {
 
     // Chi tiết đơn
     @GetMapping("/bookings/{id}")
-    public String bookingDetail(@PathVariable("id") Long bookingId, HttpSession session, Model model,
-            RedirectAttributes ra) {
-        Long customerId = (Long) session.getAttribute("customerId");
-        if (customerId == null)
-            return "redirect:/login";
+    public String bookingDetail(@PathVariable("id") Long bookingId, HttpSession session, Model model, RedirectAttributes ra) {
+        Long customerId = CurrentAccount.customerId(session).orElse(null);
+        if (customerId == null) return "redirect:/login";
 
         try {
             BookingDetailDTO detail = bookingService.getBookingDetail(bookingId, customerId);
@@ -499,7 +492,7 @@ public class BookingController {
     public String cancelBooking(@PathVariable("id") Long bookingId,
             @ModelAttribute("cancelForm") BookingCancelDTO form,
             HttpSession session, RedirectAttributes ra) {
-        Long customerId = (Long) session.getAttribute("customerId");
+        Long customerId = CurrentAccount.customerId(session).orElse(null);
         if (customerId == null)
             return "redirect:/login";
 
@@ -539,7 +532,10 @@ public class BookingController {
             @PathVariable("issueId") Long issueId,
             @PathVariable("evidenceId") Long evidenceId,
             HttpSession session) {
-        Long customerId = (Long) session.getAttribute("customerId");
+        Long customerId = com.crms.mvc.util.CurrentAccount.customerId(session).orElse(null);
+        if (customerId == null) {
+            customerId = (Long) session.getAttribute("customerId");
+        }
         if (customerId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }

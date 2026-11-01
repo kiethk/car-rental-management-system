@@ -18,8 +18,6 @@ public interface BookingService {
     void cancelBooking(Long bookingId, Long customerId);
     boolean cancelBooking(Long bookingId, Long customerId, BookingCancelDTO dto);
     void assignVehicle(Long bookingId, Long vehicleId);
-    void checkIn(Long bookingId, Long employeeId);
-    void checkOut(Long bookingId, Long employeeId, CheckOutDTO dto);
 
     long countTotalBookings();
     Optional<Booking> findEntityById(Long id);
@@ -31,4 +29,6 @@ public interface BookingService {
     List<Vehicle> findAvailableVehiclesInTimeRange(Long vehicleTypeId, OffsetDateTime startTime, OffsetDateTime endTime);
     List<VehicleTypeSearchResultDTO> searchAvailableVehicleTypes(OffsetDateTime startTime, OffsetDateTime endTime, String category);
     Slot createSlotForBooking(Long vehicleTypeId, OffsetDateTime startTime, OffsetDateTime endTime);
+    void checkIn(Long bookingId, Long employeeId);
+    void checkOut(Long bookingId, Long employeeId, com.crms.mvc.dto.CheckOutDTO dto);
 }

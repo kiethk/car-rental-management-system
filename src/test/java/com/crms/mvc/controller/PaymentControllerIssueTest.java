@@ -38,6 +38,8 @@ class PaymentControllerIssueTest {
     void setUp() {
         customer = new MockHttpSession();
         customer.setAttribute("customerId", 1L);
+        customer.setAttribute(com.crms.mvc.util.CurrentAccount.SESSION_KEY,
+                new com.crms.mvc.dto.SessionAccount(1L, com.crms.mvc.dto.SessionAccount.CUSTOMER, "John Doe", "customer@example.com", null, null));
         when(paymentService.verifyPaymentSignature(any())).thenReturn(true);
     }
 

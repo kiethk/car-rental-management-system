@@ -167,7 +167,7 @@ public class BookingServiceImpl implements BookingService {
         if (staffList != null && !staffList.isEmpty()) {
             assignedStaff = staffList.get(0);
         } else {
-            List<Employee> allEmployees = employeeRepository.findAll();
+            List<Employee> allEmployees = employeeRepository.findByActiveTrueOrderByNameAsc();
             if (!allEmployees.isEmpty()) {
                 assignedStaff = allEmployees.get(0);
             }

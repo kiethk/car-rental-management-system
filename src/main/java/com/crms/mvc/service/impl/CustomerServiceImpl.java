@@ -1,8 +1,6 @@
 package com.crms.mvc.service.impl;
 
-import com.crms.mvc.dto.CustomerProfileDTO;
 import com.crms.mvc.dto.CustomerRegisterDTO;
-import com.crms.mvc.dto.PasswordChangeDTO;
 import com.crms.mvc.entity.Customer;
 import com.crms.mvc.repository.CustomerRepository;
 import com.crms.mvc.repository.EmployeeRepository;
@@ -42,45 +40,6 @@ public class CustomerServiceImpl implements CustomerService {
                 passwordEncoder.encode(form.getPassword()),
                 OffsetDateTime.now()
         ));
-        return true;
-    }
-
-    @Override
-    public CustomerProfileDTO getProfile(Long customerId) {
-        Customer customer = customerRepository.findById(customerId).orElse(null);
-        if (customer == null) {
-            return null;
-        }
-
-        CustomerProfileDTO profile = new CustomerProfileDTO();
-        profile.setName(customer.getName());
-        profile.setEmail(customer.getEmail());
-        profile.setPhone(customer.getPhone());
-        return profile;
-    }
-
-    @Override
-    public boolean updateProfile(Long customerId, CustomerProfileDTO form) {
-        Customer customer = customerRepository.findById(customerId).orElse(null);
-        if (customer == null) {
-            return false;
-        }
-
-        customer.setPhone(form.getPhone().trim());
-        customerRepository.save(customer);
-        return true;
-    }
-
-    @Override
-    public boolean changePassword(Long customerId, PasswordChangeDTO form) {
-        Customer customer = customerRepository.findById(customerId).orElse(null);
-        if (customer == null || !passwordEncoder.matches(
-                form.getCurrentPassword(), customer.getPasswordHash())) {
-            return false;
-        }
-
-        customer.setPasswordHash(passwordEncoder.encode(form.getNewPassword()));
-        customerRepository.save(customer);
         return true;
     }
 }

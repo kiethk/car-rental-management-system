@@ -13,6 +13,10 @@ public interface FileUploadService {
 
     Resource loadVehicleImage(String fileName);
 
+    String saveHandoverImage(MultipartFile image);
+
+    Resource loadHandoverImage(String fileName);
+
     /** Stores a generated contract PDF in a private folder and returns its file name. */
     String saveContractPdf(String contractNumber, byte[] content);
 

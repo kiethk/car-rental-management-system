@@ -1,5 +1,6 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.util.CurrentAccount;
 import com.crms.mvc.service.ContractService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.core.io.Resource;
@@ -27,7 +28,7 @@ public class ContractController {
 
     @GetMapping("/bookings/{id}/contract")
     public ResponseEntity<Resource> downloadOwnContract(@PathVariable("id") Long bookingId, HttpSession session) {
-        Long customerId = (Long) session.getAttribute("customerId");
+        Long customerId = CurrentAccount.customerId(session).orElse(null);
         if (customerId == null) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
