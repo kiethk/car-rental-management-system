@@ -15,6 +15,7 @@ import com.crms.mvc.repository.EmployeeRepository;
 import com.crms.mvc.repository.IssueEvidenceRepository;
 import com.crms.mvc.repository.IssueRepository;
 import com.crms.mvc.repository.LicensePlateRepository;
+import com.crms.mvc.util.DateTimeUtils;
 import com.crms.mvc.service.impl.IssueServiceImpl;
 import com.crms.mvc.util.EmployeeRole;
 import org.junit.jupiter.api.BeforeEach;
@@ -200,7 +201,7 @@ class IssueServiceTest {
         form.setIssueType(IssueType.DAMAGE);
         form.setSubject("Scratch on the bumper");
         form.setDescription("About 15 cm.");
-        form.setOccurredAt(LocalDateTime.now().minusHours(2));
+        form.setOccurredAt(LocalDateTime.now(DateTimeUtils.VIETNAM_ZONE).minusHours(2));
         form.setFeeAmount(fee == null ? null : new BigDecimal(fee));
         return form;
     }

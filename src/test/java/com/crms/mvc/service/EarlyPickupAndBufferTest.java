@@ -6,6 +6,7 @@ import com.crms.mvc.dto.IssueFormDTO;
 import com.crms.mvc.dto.SettlementDTO;
 import com.crms.mvc.entity.*;
 import com.crms.mvc.repository.*;
+import com.crms.mvc.util.DateTimeUtils;
 import com.crms.mvc.service.impl.BookingServiceImpl;
 import com.crms.mvc.service.impl.HandoverServiceImpl;
 import com.crms.mvc.service.impl.IssueServiceImpl;
@@ -214,7 +215,7 @@ class EarlyPickupAndBufferTest {
         form.setSubject("Va quẹt nhẹ gương chiếu hậu");
         form.setFeeAmount(new BigDecimal("500000"));
         // Incident occurred 5 minutes ago (between actualPickup and scheduled pickup)
-        form.setOccurredAt(LocalDateTime.now().minusMinutes(5));
+        form.setOccurredAt(LocalDateTime.now(DateTimeUtils.VIETNAM_ZONE).minusMinutes(5));
 
         when(issueRepository.save(any(Issue.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
