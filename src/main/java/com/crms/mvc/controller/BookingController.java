@@ -532,10 +532,7 @@ public class BookingController {
             @PathVariable("issueId") Long issueId,
             @PathVariable("evidenceId") Long evidenceId,
             HttpSession session) {
-        Long customerId = com.crms.mvc.util.CurrentAccount.customerId(session).orElse(null);
-        if (customerId == null) {
-            customerId = (Long) session.getAttribute("customerId");
-        }
+        Long customerId = CurrentAccount.customerId(session).orElse(null);
         if (customerId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }

@@ -23,6 +23,8 @@ public class BookingDetailDTO implements Serializable {
     private String vehicleColor;
     /** True when the assigned vehicle has been retired, so the booking needs another vehicle. */
     private boolean vehicleRetired;
+    /** Last odometer reading the system has for the assigned vehicle; the next handover cannot go below it. */
+    private Integer vehicleOdometer;
 
     private Long slotId;
     private OffsetDateTime pickupTime;
@@ -120,6 +122,9 @@ public class BookingDetailDTO implements Serializable {
     public void setVehicleId(Long vehicleId) { this.vehicleId = vehicleId; }
     public String getLicensePlate() { return licensePlate; }
     public void setLicensePlate(String licensePlate) { this.licensePlate = licensePlate; }
+    public Integer getVehicleOdometer() { return vehicleOdometer; }
+    public void setVehicleOdometer(Integer vehicleOdometer) { this.vehicleOdometer = vehicleOdometer; }
+
     public boolean isVehicleRetired() { return vehicleRetired; }
     public void setVehicleRetired(boolean vehicleRetired) { this.vehicleRetired = vehicleRetired; }
     public String getVehicleColor() { return vehicleColor; }

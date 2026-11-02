@@ -6,6 +6,7 @@ import com.crms.mvc.dto.IssueDTO;
 import com.crms.mvc.dto.IssueFormDTO;
 import com.crms.mvc.dto.IssueQueryDTO;
 import com.crms.mvc.dto.PageNavDTO;
+import com.crms.mvc.dto.SessionAccount;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Issue;
 import com.crms.mvc.entity.IssueStatus;
@@ -13,7 +14,7 @@ import com.crms.mvc.entity.IssueType;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.IssueService;
 import com.crms.mvc.util.DateTimeUtils;
-import com.crms.mvc.util.EmployeeRole;
+import com.crms.mvc.util.CurrentAccount;
 import com.crms.mvc.util.MediaUtils;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -60,7 +61,7 @@ public class AdminIssueController {
 
         model.addAttribute("issues", page.getContent());
         model.addAttribute("nav", PageNavDTO.of(page, number -> query.urlForPage(LIST_PATH, number)));
-        model.addAttribute("stats", issueService.stats());
+        model.addAttribute("openCount", issueService.countOpen());
         model.addAttribute("issueTypes", IssueType.values());
         model.addAttribute("activeNav", "issues");
         return "admin/issues/list";
@@ -154,16 +155,13 @@ public class AdminIssueController {
     }
 
     @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, HttpSession session, Model model, RedirectAttributes ra) {
+    public String detail(@PathVariable Long id, Model model, RedirectAttributes ra) {
         IssueDTO issue = issueService.findDetail(id).orElse(null);
         if (issue == null) {
             ra.addFlashAttribute("error", "Không tìm thấy sự cố: " + id);
             return "redirect:" + LIST_PATH;
         }
         model.addAttribute("issue", issue);
-        boolean canReopen = issue.getStatus() == IssueStatus.RESOLVED && EmployeeRole.isAdmin(session) && !issue.isFeeLocked();
-        model.addAttribute("canReopen", canReopen);
-        model.addAttribute("canCancel", issue.isOpen() || canReopen);
         model.addAttribute("activeNav", "issues");
         return "admin/issues/detail";
     }
@@ -229,8 +227,11 @@ public class AdminIssueController {
     }
 
     private IssueActor actorOf(HttpSession session) {
-        return new IssueActor((Long) session.getAttribute(EmployeeRole.SESSION_KEY_ID),
-                (String) session.getAttribute(EmployeeRole.SESSION_KEY_ROLE));
+        // RoleInterceptor already guarantees a logged-in employee on /admin/**.
+        return CurrentAccount.of(session)
+                .filter(SessionAccount::isEmployee)
+                .map(IssueActor::of)
+                .orElseThrow(() -> new IllegalStateException("Employee session required"));
     }
 
     private IssueFormDTO toForm(IssueDTO issue) {

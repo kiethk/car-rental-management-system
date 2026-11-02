@@ -8,7 +8,6 @@ import com.crms.mvc.entity.Vehicle;
 
 import org.springframework.data.domain.Page;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,7 +38,6 @@ public interface VehicleService {
     void updateOdometer(Long id, Integer newOdometer);
 
     /** Registration (inspection sticker) belongs to the vehicle, so it survives plate changes. */
-    void updateRegistrationExpiry(Long id, LocalDate registrationExpiry);
 
     List<Vehicle> findByVehicleTypeIdWithDetails(Long typeId);
 

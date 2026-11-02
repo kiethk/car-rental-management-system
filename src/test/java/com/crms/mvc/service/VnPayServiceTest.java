@@ -136,57 +136,28 @@ public class VnPayServiceTest {
     }
 
     @Test
-    public void testSettlementCollectsTheResolvedIssueFeesAndTakesThemWithTheFinalPayment() {
-        Booking booking = bookingToSettle(11L, "1000000", "500000");
-        BookingFee issueFee = fee("ISSUE_COMPENSATION", "200000");
-        Mockito.when(bookingFeeService.getSettleableIssueFees(11L)).thenReturn(List.of(issueFee));
+    public void testALiveIssuePaymentSessionIsReported() {
+        Payment pending = new Payment();
+        pending.setStatus(Payment.STATUS_PENDING);
+        pending.setTransactionCode("ISSUE-11-" + System.currentTimeMillis());
+        Mockito.when(paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(
+                11L, Payment.TYPE_ISSUE_COMPENSATION, Payment.STATUS_PENDING)).thenReturn(Optional.of(pending));
 
-        Payment settlement = paymentService.processSettlement(11L, BigDecimal.ZERO);
-
-        assertEquals("FINAL", settlement.getPaymentType());
-        // rent 1,000,000 + issue fee 200,000 - deposit 500,000
-        assertEquals(new BigDecimal("700000"), settlement.getAmount());
-        assertEquals(new BigDecimal("1200000"), booking.getTotalPrice());
-        Mockito.verify(bookingFeeService).attachPayment(List.of(issueFee), settlement);
+        assertTrue(paymentService.hasLiveIssuePaymentSession(11L));
+        assertEquals(Payment.STATUS_PENDING, pending.getStatus());
     }
 
     @Test
-    public void testSettlementRefundsWhatIsLeftOfTheDepositAfterIssueFees() {
-        bookingToSettle(11L, "1000000", "5000000");
-        BookingFee issueFee = fee("ISSUE_COMPENSATION", "200000");
-        Mockito.when(bookingFeeService.getSettleableIssueFees(11L)).thenReturn(List.of(issueFee));
+    public void testAnExpiredIssuePaymentSessionIsReleasedAndDoesNotBlock() {
+        Payment pending = new Payment();
+        pending.setStatus(Payment.STATUS_PENDING);
+        pending.setTransactionCode("ISSUE-11-" + (System.currentTimeMillis() - 16 * 60 * 1000L));
+        Mockito.when(paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(
+                11L, Payment.TYPE_ISSUE_COMPENSATION, Payment.STATUS_PENDING)).thenReturn(Optional.of(pending));
 
-        Payment settlement = paymentService.processSettlement(11L, BigDecimal.ZERO);
-
-        assertEquals("REFUND", settlement.getPaymentType());
-        // deposit 5,000,000 - (rent 1,000,000 + issue fee 200,000)
-        assertEquals(new BigDecimal("3800000"), settlement.getAmount());
-        Mockito.verify(bookingFeeService).attachPayment(List.of(issueFee), settlement);
-    }
-
-    @Test
-    public void testSettlementRecordsTheLateFeeAndTakesItWithThePaymentToo() {
-        bookingToSettle(11L, "1000000", "500000");
-        BookingFee lateFee = fee("LATE_FEE", "100000");
-        Mockito.when(bookingFeeService.recordFee(11L, "LATE_FEE", new BigDecimal("100000"), "Phí trả trễ", null))
-                .thenReturn(lateFee);
-        Mockito.when(bookingFeeService.getSettleableIssueFees(11L)).thenReturn(List.of());
-
-        Payment settlement = paymentService.processSettlement(11L, new BigDecimal("100000"));
-
-        assertEquals(new BigDecimal("600000"), settlement.getAmount());
-        Mockito.verify(bookingFeeService).attachPayment(List.of(lateFee), settlement);
-    }
-
-    @Test
-    public void testSettlementWithoutAnyFeeTakesNothing() {
-        bookingToSettle(11L, "1000000", "500000");
-        Mockito.when(bookingFeeService.getSettleableIssueFees(11L)).thenReturn(List.of());
-
-        Payment settlement = paymentService.processSettlement(11L, BigDecimal.ZERO);
-
-        assertEquals(new BigDecimal("500000"), settlement.getAmount());
-        Mockito.verify(bookingFeeService, Mockito.never()).attachPayment(Mockito.any(), Mockito.any());
+        assertFalse(paymentService.hasLiveIssuePaymentSession(11L));
+        assertEquals(Payment.STATUS_FAILED, pending.getStatus());
+        Mockito.verify(bookingFeeService).detachPayment(pending);
     }
 
     // ---- paying issue fees after settlement ----
@@ -348,16 +319,6 @@ public class VnPayServiceTest {
         Mockito.when(paymentRepository.findById(id)).thenReturn(Optional.of(payment));
         Mockito.when(paymentRepository.save(Mockito.any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
         return payment;
-    }
-
-    private Booking bookingToSettle(Long id, String rent, String deposit) {
-        Booking booking = new Booking();
-        booking.setId(id);
-        booking.setTotalPrice(new BigDecimal(rent));
-        booking.setDepositAmount(new BigDecimal(deposit));
-        Mockito.when(bookingRepository.findById(id)).thenReturn(Optional.of(booking));
-        Mockito.when(paymentRepository.save(Mockito.any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        return booking;
     }
 
     private BookingFee fee(String type, String amount) {

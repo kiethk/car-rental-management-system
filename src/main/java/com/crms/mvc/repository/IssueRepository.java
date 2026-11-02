@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -32,13 +33,11 @@ public interface IssueRepository extends JpaRepository<Issue, Long>, JpaSpecific
 
     long countByStatus(IssueStatus status);
 
+    List<Issue> findByStatusAndNotifiedAtIsNullAndReportedAtBefore(IssueStatus status, OffsetDateTime reportedBefore);
+
     /** The list page loads everything it shows in one query (the count query ignores the graph). */
     @Override
     @EntityGraph(attributePaths = {"booking", "booking.customer", "vehicle", "vehicle.vehicleType", "employee"})
     Page<Issue> findAll(Specification<Issue> spec, Pageable pageable);
 
-    @Query("SELECT i FROM Issue i WHERE i.booking.id = :bookingId AND CAST(i.issueType as string) = :issueType")
-    Optional<Issue> findByBookingIdAndIssueType(@Param("bookingId") Long bookingId, @Param("issueType") String issueType);
-
-    List<Issue> findByBookingIdOrderByReportedAtAsc(Long bookingId);
 }

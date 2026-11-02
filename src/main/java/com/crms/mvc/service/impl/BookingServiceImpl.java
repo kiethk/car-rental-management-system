@@ -9,7 +9,6 @@ import com.crms.mvc.service.ContractService;
 import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.service.PaymentService;
 import com.crms.mvc.service.PricingService;
-import com.crms.mvc.service.IssueService;
 import com.crms.mvc.util.DateTimeUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,7 +28,6 @@ import java.util.Set;
 @Transactional
 public class BookingServiceImpl implements BookingService {
     public static final int BUFFER_BETWEEN_RENTALS_HOURS = 1;
-    public static final int MAX_EARLY_PICKUP_MINUTES = 30;
 
     private final BookingRepository bookingRepository;
     private final CustomerRepository customerRepository;
@@ -43,7 +41,6 @@ public class BookingServiceImpl implements BookingService {
     private final ContractTemplateService contractTemplateService;
     private final BookingFeeService bookingFeeService;
     private final PricingService pricingService;
-    private final IssueService issueService;
 
     public BookingServiceImpl(
             BookingRepository bookingRepository,
@@ -57,9 +54,7 @@ public class BookingServiceImpl implements BookingService {
             ContractService contractService,
             ContractTemplateService contractTemplateService,
             BookingFeeService bookingFeeService,
-            PricingService pricingService,
-            IssueService issueService) {
-        this.issueService = issueService;
+            PricingService pricingService) {
         this.bookingRepository = bookingRepository;
         this.customerRepository = customerRepository;
         this.slotRepository = slotRepository;
@@ -109,6 +104,9 @@ public class BookingServiceImpl implements BookingService {
             oldPending.setCancelledAt(OffsetDateTime.now());
             bookingRepository.save(oldPending);
         }
+
+        // Serialize bookings of the same vehicle type so two customers cannot both get the last free car.
+        vehicleRepository.lockByVehicleTypeId(type.getId());
 
         // 1. B2 + B3: Tìm xe thực tế có sẵn thông qua SlotService (loại trừ bảo trì và trùng giờ)
         List<Vehicle> availableVehicles = findAvailableVehiclesInTimeRange(type.getId(), start, end);
@@ -324,7 +322,7 @@ public class BookingServiceImpl implements BookingService {
     public void assignVehicle(Long bookingId, Long vehicleId) {
         Booking b = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
-        Vehicle v = vehicleRepository.findById(vehicleId)
+        Vehicle v = vehicleRepository.findByIdForUpdate(vehicleId)
                 .orElseThrow(() -> new NoSuchElementException("Vehicle not found: " + vehicleId));
 
         if (!v.getVehicleType().getId().equals(b.getSlot().getVehicleType().getId())) {
@@ -338,69 +336,13 @@ public class BookingServiceImpl implements BookingService {
         OffsetDateTime bufferedStart = b.getPickupTime().minusHours(BUFFER_BETWEEN_RENTALS_HOURS);
         OffsetDateTime bufferedEnd = b.getScheduledEndTime().plusHours(BUFFER_BETWEEN_RENTALS_HOURS);
         List<Long> bookedVehicleIds = bookingRepository.findBookedVehicleIdsInTimeRange(
-                bufferedStart, bufferedEnd, OffsetDateTime.now().minusMinutes(15));
+                bufferedStart, bufferedEnd, OffsetDateTime.now().minusMinutes(15), OffsetDateTime.now());
         if (bookedVehicleIds.contains(vehicleId) && (b.getVehicle() == null || !b.getVehicle().getId().equals(vehicleId))) {
             throw new IllegalStateException("Xe này đã có lịch đặt khác trong cùng khung giờ (yêu cầu cách nhau tối thiểu 1 tiếng).");
         }
 
         b.setVehicle(v);
         bookingRepository.save(b);
-    }
-
-    @Override
-    public void checkIn(Long bookingId, Long employeeId) {
-        Booking b = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
-        Employee emp = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new NoSuchElementException("Employee not found: " + employeeId));
-
-        if (b.getVehicle() == null) {
-            throw new IllegalStateException("Cannot check-in: Vehicle is not assigned yet");
-        }
-        if (!"confirmed".equalsIgnoreCase(b.getStatus())) {
-            throw new IllegalStateException("Booking must be confirmed before check-in");
-        }
-
-        validateEarlyPickupAndVehicleAvailability(b);
-
-        OffsetDateTime now = OffsetDateTime.now();
-        b.setActualPickupTime(now);
-        b.setStatus("active");
-        b.setEmployee(emp);
-        b.getVehicle().setStatus("rented");
-
-        vehicleRepository.save(b.getVehicle());
-        bookingRepository.save(b);
-    }
-
-    @Override
-    public void checkOut(Long bookingId, Long employeeId, CheckOutDTO dto) {
-        Booking b = bookingRepository.findByIdForUpdate(bookingId)
-                .or(() -> bookingRepository.findById(bookingId))
-                .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
-
-        if (!"active".equalsIgnoreCase(b.getStatus())) {
-            throw new IllegalStateException("Booking is not currently active");
-        }
-
-        OffsetDateTime actualReturn = OffsetDateTime.now();
-        b.setActualReturnTime(actualReturn);
-
-        // B4: Tính phí trễ qua PricingService có ân hạn 15 phút và làm tròn lên
-        BigDecimal multiplier = contractService.getTermsOfBooking(bookingId).getLateFeeMultiplier();
-        BigDecimal lateFee = pricingService.calculateLateFee(b.getScheduledEndTime(), actualReturn, b.getPricePerHour(), multiplier);
-
-        paymentService.processSettlement(bookingId, lateFee);
-
-        b.setStatus(Booking.STATUS_COMPLETED);
-        bookingRepository.save(b);
-
-        if (b.getVehicle() != null && !Vehicle.STATUS_RETIRED.equalsIgnoreCase(b.getVehicle().getStatus())) {
-            // A car goes back to work unless a collision or damage issue says it needs a look first
-            boolean damaged = issueService.bookingHasVehicleDamage(bookingId);
-            b.getVehicle().setStatus(damaged ? Vehicle.STATUS_MAINTENANCE : Vehicle.STATUS_AVAILABLE);
-            vehicleRepository.save(b.getVehicle());
-        }
     }
 
     private BookingDetailDTO mapToDetailDTO(Booking b) {
@@ -422,6 +364,7 @@ public class BookingServiceImpl implements BookingService {
             d.setVehicleId(b.getVehicle().getId());
             d.setVehicleColor(b.getVehicle().getColor());
             d.setVehicleRetired(Vehicle.STATUS_RETIRED.equalsIgnoreCase(b.getVehicle().getStatus()));
+            d.setVehicleOdometer(b.getVehicle().getOdometer());
         }
         d.setLicensePlate(resolvePlate(b));
 
@@ -525,61 +468,13 @@ public class BookingServiceImpl implements BookingService {
         OffsetDateTime cutoffTime = OffsetDateTime.now().minusMinutes(15);
         OffsetDateTime bufferedStart = startTime.minusHours(BUFFER_BETWEEN_RENTALS_HOURS);
         OffsetDateTime bufferedEnd = endTime.plusHours(BUFFER_BETWEEN_RENTALS_HOURS);
-        List<Long> bookedVehicleIds = bookingRepository.findBookedVehicleIdsInTimeRange(bufferedStart, bufferedEnd, cutoffTime);
+        List<Long> bookedVehicleIds = bookingRepository.findBookedVehicleIdsInTimeRange(
+                bufferedStart, bufferedEnd, cutoffTime, OffsetDateTime.now());
 
         return allVehiclesOfType.stream()
                 .filter(v -> !"maintenance".equalsIgnoreCase(v.getStatus()) && !Vehicle.STATUS_RETIRED.equalsIgnoreCase(v.getStatus()))
                 .filter(v -> !bookedVehicleIds.contains(v.getId()))
                 .toList();
-    }
-
-    public static final int CLEANING_WINDOW_MINUTES = 30;
-
-    private void validateEarlyPickupAndVehicleAvailability(Booking booking) {
-        OffsetDateTime now = OffsetDateTime.now();
-        OffsetDateTime scheduledPickup = booking.getPickupTime();
-        Vehicle vehicle = booking.getVehicle();
-
-        // 1. Chỉ được nhận xe trước giờ hẹn tối đa 30 phút
-        if (scheduledPickup != null && now.isBefore(scheduledPickup.minusMinutes(MAX_EARLY_PICKUP_MINUTES))) {
-            throw new IllegalStateException(
-                    "Chỉ được phép nhận xe trước giờ hẹn tối đa 30 phút. Giờ nhận xe dự kiến là: "
-                            + DateTimeUtils.formatToVietnamTime(scheduledPickup) + ".");
-        }
-
-        // 2. Xe phải ở trạng thái sẵn sàng (available)
-        if (vehicle != null && !Vehicle.STATUS_AVAILABLE.equalsIgnoreCase(vehicle.getStatus())) {
-            if (scheduledPickup != null && now.isBefore(scheduledPickup)) {
-                throw new IllegalStateException(
-                        "Phương tiện hiện đang trong quy trình kiểm tra và vệ sinh sau ca thuê trước. "
-                                + "Quý khách vui lòng nhận xe vào đúng khung giờ dự kiến ("
-                                + DateTimeUtils.formatToVietnamTime(scheduledPickup)
-                                + "), hoặc đổi sang phương tiện cùng loại khác biển số nếu muốn nhận ngay.");
-            } else {
-                throw new IllegalStateException(
-                        "Phương tiện chưa sẵn sàng bàn giao (trạng thái hiện tại: " + vehicle.getStatus()
-                                + "). Vui lòng kiểm tra lại tình trạng xe hoặc đổi sang xe khác cùng loại.");
-            }
-        }
-
-        // 3. Cơ chế suy diễn thời gian (Computed State): Xe vừa trả của ca trước chưa đủ 30 phút dọn rửa
-        if (vehicle != null && vehicle.getId() != null) {
-            List<Booking> recentReturns = bookingRepository.findRecentReturnsByVehicle(vehicle.getId(), booking.getId());
-            if (!recentReturns.isEmpty()) {
-                Booking latestReturn = recentReturns.get(0);
-                if (latestReturn.getActualReturnTime() != null) {
-                    OffsetDateTime cleaningDoneAt = latestReturn.getActualReturnTime().plusMinutes(CLEANING_WINDOW_MINUTES);
-                    if (now.isBefore(cleaningDoneAt)) {
-                        throw new IllegalStateException(
-                                "Phương tiện hiện đang trong quy trình kiểm tra và vệ sinh sau ca thuê trước (dự kiến hoàn tất lúc "
-                                        + DateTimeUtils.formatToVietnamTime(cleaningDoneAt) + "). "
-                                        + (scheduledPickup != null ? "Quý khách vui lòng nhận xe vào đúng khung giờ dự kiến ("
-                                        + DateTimeUtils.formatToVietnamTime(scheduledPickup) + ")" : "Quý khách vui lòng đợi trong giây lát")
-                                        + ", hoặc liên hệ nhân viên để được hỗ trợ đổi sang phương tiện cùng loại khác biển số nếu muốn nhận ngay.");
-                    }
-                }
-            }
-        }
     }
 
     @Override

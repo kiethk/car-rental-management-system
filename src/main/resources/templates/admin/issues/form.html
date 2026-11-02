@@ -88,7 +88,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="admin-card-body border-top d-flex justify-content-end" style="gap: 8px;">
+                    <div class="admin-card-body border-top d-flex justify-content-end gap-2">
                         <a th:href="${issueId != null ? '/admin/issues/' + issueId : '/admin/bookings/' + booking.id}" class="admin-btn admin-btn-secondary">Huỷ bỏ</a>
                         <button type="submit" class="admin-btn admin-btn-primary" th:text="${issueId != null ? 'Lưu thay đổi' : 'Ghi nhận sự cố'}">Ghi nhận sự cố</button>
                     </div>

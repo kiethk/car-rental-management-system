@@ -1,5 +1,8 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.support.PassThroughSessionAccountService;
+import org.springframework.context.annotation.Import;
+import com.crms.mvc.support.TestSessions;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.LicensePlateService;
@@ -23,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /** Retired vehicles are out of service for good, so the fleet total counts only the cars that can still work. */
 @WebMvcTest(AdminDashboardController.class)
+@Import(PassThroughSessionAccountService.class)
 class AdminDashboardVehicleCountTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private VehicleService vehicleService;
@@ -51,9 +55,6 @@ class AdminDashboardVehicleCountTest {
     }
 
     private static MockHttpSession admin() {
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("employeeId", 1L);
-        session.setAttribute("employeeRole", "admin");
-        return session;
+        return TestSessions.admin(1L);
     }
 }

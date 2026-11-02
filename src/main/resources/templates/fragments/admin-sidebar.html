@@ -3,7 +3,7 @@
     <body>
         <!--
     Admin Clean Light Flush Collapsible Sidebar Fragment
-    Pass active param: 'dashboard', 'bookings', 'contracts', 'vehicles', 'inspections', 'license-plates', 'licenses', 'profile', 'accounts'
+    Pass active param: 'dashboard', 'bookings', 'contracts', 'vehicles', 'inspections', 'licenses', 'profile', 'accounts'
 -->
         <nav th:fragment="sidebar(active)" class="admin-sidebar-nav" aria-label="Menu quản trị hệ thống">
             <!-- Top Bar: Title & Toggle Button -->
@@ -155,23 +155,6 @@
                         ></path>
                     </svg>
                     <span class="admin-nav-label">Kiểm định & Bảo dưỡng</span>
-                </a>
-                <a
-                    th:href="@{/admin/license-plates}"
-                    th:class="'admin-sidebar-link ' + (${active == 'license-plates'} ? 'active' : '')"
-                    title="Lịch sử biển số xe"
-                >
-                    <svg
-                        class="admin-nav-icon"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        stroke-width="1.75"
-                    >
-                        <rect x="2" y="6" width="20" height="12" rx="2"></rect>
-                        <path d="M6 12h.01M18 12h.01"></path>
-                    </svg>
-                    <span class="admin-nav-label">Lịch sử biển số xe</span>
                 </a>
             </div>
 

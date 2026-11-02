@@ -79,8 +79,7 @@ public class BookingFeeServiceImpl implements BookingFeeService {
                 if (issue.getStatus() == IssueStatus.OPEN) {
                     issue.setStatus(IssueStatus.RESOLVED);
                     issue.setResolutionNote(Payment.TYPE_FINAL.equalsIgnoreCase(payment.getPaymentType())
-                            || Payment.TYPE_REFUND.equalsIgnoreCase(payment.getPaymentType())
-                            ? "Đã cấn trừ vào tiền cọc khi quyết toán trả xe"
+                            ? "Đã thu cùng quyết toán khi trả xe"
                             : "Đã thanh toán (" + payment.getPaymentMethod() + ")");
                     issue.setResolvedAt(OffsetDateTime.now());
                     issueRepository.save(issue);
@@ -105,10 +104,23 @@ public class BookingFeeServiceImpl implements BookingFeeService {
 
     @Override
     @Transactional(readOnly = true)
-    public BigDecimal calculateTotalAdditionalFees(Long bookingId) {
-        return bookingFeeRepository.findByBookingIdOrderByCreatedAtAsc(bookingId)
-                .stream()
+    public List<BookingFee> getUnpaidFees(Long bookingId) {
+        return bookingFeeRepository.findByBookingIdOrderByCreatedAtAsc(bookingId).stream()
+                .filter(fee -> !isPaid(fee))
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BigDecimal calculatePrepaidIssueFees(Long bookingId) {
+        return bookingFeeRepository.findByBookingIdOrderByCreatedAtAsc(bookingId).stream()
+                .filter(fee -> BookingFee.FEE_TYPE_ISSUE_COMPENSATION.equals(fee.getFeeType()))
+                .filter(this::isPaid)
                 .map(BookingFee::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private boolean isPaid(BookingFee fee) {
+        return fee.getPayment() != null && Payment.STATUS_PAID.equalsIgnoreCase(fee.getPayment().getStatus());
     }
 }

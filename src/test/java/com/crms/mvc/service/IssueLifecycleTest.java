@@ -8,6 +8,7 @@ import com.crms.mvc.entity.IssueStatus;
 import com.crms.mvc.entity.IssueType;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.event.IssueCancelledEvent;
+import com.crms.mvc.event.IssueFeeDueEvent;
 import com.crms.mvc.repository.BookingFeeRepository;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.EmployeeRepository;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -91,8 +93,9 @@ class IssueLifecycleTest {
     // ---- cancel ----
 
     @Test
-    void staffCanCancelAnOpenIssueAndItsFeeDisappearsAndEventIsPublished() {
+    void cancellingAnAnnouncedIssueRemovesItsFeeAndTellsTheCustomer() {
         Issue issue = issue(IssueStatus.OPEN);
+        issue.setNotifiedAt(OffsetDateTime.now().minusMinutes(5));
         BookingFee fee = feeOf(issue, null);
 
         service.cancel(7L, "Recorded on the wrong booking", staff);
@@ -101,6 +104,31 @@ class IssueLifecycleTest {
         assertEquals("Recorded on the wrong booking", issue.getCancelReason());
         verify(bookingFeeRepository).delete(fee);
         verify(eventPublisher).publishEvent(new IssueCancelledEvent(7L, "Recorded on the wrong booking"));
+    }
+
+    @Test
+    void cancellingInsideTheGracePeriodSendsNothing() {
+        Issue issue = issue(IssueStatus.OPEN);
+        BookingFee fee = feeOf(issue, null);
+
+        service.cancel(7L, "Typed on the wrong booking", staff);
+
+        assertEquals(IssueStatus.CANCELLED, issue.getStatus());
+        verify(bookingFeeRepository).delete(fee);
+        verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    // ---- notice grace period ----
+
+    @Test
+    void issuesPastTheGracePeriodAreAnnouncedOnce() {
+        Issue due = issue(IssueStatus.OPEN);
+        when(issueRepository.findByStatusAndNotifiedAtIsNullAndReportedAtBefore(any(), any())).thenReturn(List.of(due));
+
+        service.sendDueNotices();
+
+        assertNotNull(due.getNotifiedAt());
+        verify(eventPublisher).publishEvent(new IssueFeeDueEvent(7L));
     }
 
     @Test
@@ -128,16 +156,6 @@ class IssueLifecycleTest {
         issue(IssueStatus.CANCELLED);
 
         assertThrows(IllegalStateException.class, () -> service.cancel(7L, "again", admin));
-    }
-
-    // ---- reopen is disabled ----
-
-    @Test
-    void reopeningIsDisabledOnceResolvedOrCancelled() {
-        for (IssueStatus status : List.of(IssueStatus.RESOLVED, IssueStatus.CANCELLED, IssueStatus.OPEN)) {
-            issue(status);
-            assertThrows(IllegalStateException.class, () -> service.reopen(7L, admin));
-        }
     }
 
     private Issue issue(IssueStatus status) {

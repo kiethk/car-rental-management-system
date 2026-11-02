@@ -1,10 +1,7 @@
 package com.crms.mvc.event;
 
-import com.crms.mvc.entity.BookingFee;
-import com.crms.mvc.entity.Issue;
-import com.crms.mvc.repository.BookingFeeRepository;
-import com.crms.mvc.repository.IssueRepository;
-import com.crms.mvc.util.DateTimeUtils;
+import com.crms.mvc.dto.IssueNoticeDTO;
+import com.crms.mvc.service.IssueService;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,8 +19,9 @@ import org.thymeleaf.context.Context;
 import java.util.Locale;
 
 /**
- * Emails the customer when an issue fee falls due after settlement. Runs after the commit and off the request
- * thread, and swallows its own failures, so a mail problem can never undo or block resolving the issue.
+ * Emails the customer about an Issue fee (once its notice grace period has passed, or when the fee changes) and
+ * when an announced Issue is cancelled. Runs after the commit and off the request thread, and swallows its own
+ * failures, so a mail problem can never undo or block the Issue change.
  */
 @Component
 public class IssueFeeNotificationListener {
@@ -34,8 +32,7 @@ public class IssueFeeNotificationListener {
 
     private final ObjectProvider<JavaMailSender> mailSender;
     private final ITemplateEngine templateEngine;
-    private final IssueRepository issueRepository;
-    private final BookingFeeRepository bookingFeeRepository;
+    private final IssueService issueService;
     private final String username;
     private final String password;
     private final String fromAddress;
@@ -43,16 +40,14 @@ public class IssueFeeNotificationListener {
 
     public IssueFeeNotificationListener(ObjectProvider<JavaMailSender> mailSender,
                                         ITemplateEngine templateEngine,
-                                        IssueRepository issueRepository,
-                                        BookingFeeRepository bookingFeeRepository,
+                                        IssueService issueService,
                                         @Value("${spring.mail.username:}") String username,
                                         @Value("${spring.mail.password:}") String password,
                                         @Value("${crms.mail.from:}") String fromAddress,
                                         @Value("${crms.base-url:http://localhost:8081}") String baseUrl) {
         this.mailSender = mailSender;
         this.templateEngine = templateEngine;
-        this.issueRepository = issueRepository;
-        this.bookingFeeRepository = bookingFeeRepository;
+        this.issueService = issueService;
         this.username = username;
         this.password = password;
         this.fromAddress = fromAddress;
@@ -68,28 +63,27 @@ public class IssueFeeNotificationListener {
                 log.info("Email service not configured; skipping fee notice for issue #{}", event.issueId());
                 return;
             }
-            Issue issue = issueRepository.findByIdWithDetails(event.issueId()).orElse(null);
-            BookingFee fee = bookingFeeRepository.findByIssueId(event.issueId()).stream().findFirst().orElse(null);
-            if (issue == null || fee == null || issue.getBooking().getCustomer().getEmail() == null) {
+            IssueNoticeDTO notice = issueService.findNotice(event.issueId()).orElse(null);
+            if (notice == null || notice.feeAmount() == null || notice.customerEmail() == null) {
                 log.warn("Cannot send fee notice: missing issue, fee or customer email for issue #{}", event.issueId());
                 return;
             }
 
-            Long bookingId = issue.getBooking().getId();
+            Long bookingId = notice.bookingId();
             Context context = new Context(VIETNAMESE);
-            context.setVariable("customerName", issue.getBooking().getCustomer().getName());
+            context.setVariable("customerName", notice.customerName());
             context.setVariable("bookingId", bookingId);
-            context.setVariable("issueType", issue.getIssueType().getLabel());
-            context.setVariable("subject", issue.getSubject());
-            context.setVariable("occurredAt", DateTimeUtils.toVietnamTime(issue.getOccurredAt()));
-            context.setVariable("amount", fee.getAmount());
+            context.setVariable("issueType", notice.issueTypeLabel());
+            context.setVariable("subject", notice.subject());
+            context.setVariable("occurredAt", notice.occurredAt());
+            context.setVariable("amount", notice.feeAmount());
             context.setVariable("bookingUrl", baseUrl + "/bookings/" + bookingId);
             String body = templateEngine.process(TEMPLATE, context);
 
             MimeMessage message = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setFrom(fromAddress == null || fromAddress.isBlank() ? "DriveNow <" + username + ">" : fromAddress);
-            helper.setTo(issue.getBooking().getCustomer().getEmail());
+            helper.setTo(notice.customerEmail());
             helper.setSubject("DriveNow - Phí phát sinh cần thanh toán cho đơn #" + bookingId);
             helper.setText(body, true);
             sender.send(message);
@@ -108,18 +102,18 @@ public class IssueFeeNotificationListener {
                 log.info("Email service not configured; skipping cancel notice for issue #{}", event.issueId());
                 return;
             }
-            Issue issue = issueRepository.findByIdWithDetails(event.issueId()).orElse(null);
-            if (issue == null || issue.getBooking().getCustomer().getEmail() == null) {
+            IssueNoticeDTO notice = issueService.findNotice(event.issueId()).orElse(null);
+            if (notice == null || notice.customerEmail() == null) {
                 log.warn("Cannot send cancel notice: missing issue or customer email for issue #{}", event.issueId());
                 return;
             }
 
-            Long bookingId = issue.getBooking().getId();
+            Long bookingId = notice.bookingId();
             Context context = new Context(VIETNAMESE);
-            context.setVariable("customerName", issue.getBooking().getCustomer().getName());
+            context.setVariable("customerName", notice.customerName());
             context.setVariable("bookingId", bookingId);
-            context.setVariable("issueId", issue.getId());
-            context.setVariable("subject", issue.getSubject());
+            context.setVariable("issueId", notice.issueId());
+            context.setVariable("subject", notice.subject());
             context.setVariable("cancelReason", event.cancelReason());
             context.setVariable("bookingUrl", baseUrl + "/bookings/" + bookingId);
             String body = templateEngine.process(CANCEL_TEMPLATE, context);
@@ -127,8 +121,8 @@ public class IssueFeeNotificationListener {
             MimeMessage message = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setFrom(fromAddress == null || fromAddress.isBlank() ? "DriveNow <" + username + ">" : fromAddress);
-            helper.setTo(issue.getBooking().getCustomer().getEmail());
-            helper.setSubject("DriveNow - Thông báo hủy yêu cầu bồi thường sự cố #" + issue.getId());
+            helper.setTo(notice.customerEmail());
+            helper.setSubject("DriveNow - Thông báo hủy yêu cầu bồi thường sự cố #" + notice.issueId());
             helper.setText(body, true);
             sender.send(message);
             log.info("Sent cancel notice for issue #{} to booking #{}", event.issueId(), bookingId);

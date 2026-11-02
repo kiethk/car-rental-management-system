@@ -15,7 +15,7 @@ import java.util.Optional;
 public class SessionAccountInterceptor implements HandlerInterceptor {
     private final SessionAccountService sessionAccountService;
 
-    public SessionAccountInterceptor(@org.springframework.beans.factory.annotation.Autowired(required = false) SessionAccountService sessionAccountService) {
+    public SessionAccountInterceptor(SessionAccountService sessionAccountService) {
         this.sessionAccountService = sessionAccountService;
     }
 
@@ -23,9 +23,6 @@ public class SessionAccountInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request,
                              HttpServletResponse response,
                              Object handler) {
-        if (sessionAccountService == null) {
-            return true;
-        }
         HttpSession session = request.getSession(false);
         if (session == null) {
             return true;

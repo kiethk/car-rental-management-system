@@ -8,7 +8,7 @@ import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.service.LicensePlateService;
 import com.crms.mvc.service.VehicleService;
 import com.crms.mvc.service.VehicleTypeService;
-import com.crms.mvc.util.EmployeeRole;
+import com.crms.mvc.util.CurrentAccount;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -115,7 +115,7 @@ public class AdminVehicleController {
             return "admin/vehicles/form";
         }
 
-        if (isNewRetirement(id, form.getStatus()) && !EmployeeRole.isAdmin(session)) {
+        if (isNewRetirement(id, form.getStatus()) && !CurrentAccount.isAdmin(session)) {
             ra.addFlashAttribute("error", RETIRE_ADMIN_ONLY_MESSAGE);
             return "redirect:/admin/vehicles/" + id + "/edit";
         }
@@ -136,7 +136,7 @@ public class AdminVehicleController {
                                @RequestParam(value = "returnTo", required = false) String returnTo,
                                HttpSession session,
                                RedirectAttributes ra) {
-        if (isNewRetirement(id, status) && !EmployeeRole.isAdmin(session)) {
+        if (isNewRetirement(id, status) && !CurrentAccount.isAdmin(session)) {
             ra.addFlashAttribute("error", RETIRE_ADMIN_ONLY_MESSAGE);
             return redirectToList(returnTo);
         }

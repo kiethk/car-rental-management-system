@@ -247,7 +247,7 @@ class BookingContractFlowTest {
 
         mvc.perform(get("/bookings/42").session(customerSession))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Phí phát sinh chưa thanh toán")))
+                .andExpect(content().string(containsString("Phí sự cố chưa thanh toán")))
                 .andExpect(content().string(containsString("/bookings/42/pay-issue-fees")))
                 // only open and unpaid: 200,000 + 500,000; the resolved and cancelled ones are left out
                 .andExpect(content().string(containsString("700,000")));

@@ -58,6 +58,8 @@ class EarlyPickupAndBufferTest {
     private BookingFeeRepository bookingFeeRepository;
     @Mock
     private ApplicationEventPublisher eventPublisher;
+    @Mock
+    private HandoverRepository handoverRepository;
 
     private HandoverServiceImpl handoverService;
     private IssueServiceImpl issueService;
@@ -70,7 +72,7 @@ class EarlyPickupAndBufferTest {
     void setUp() {
         handoverService = new HandoverServiceImpl(
                 bookingRepository, employeeRepository, vehicleRepository,
-                issueRepository, bookingFeeService, contractService,
+                issueRepository, handoverRepository, bookingFeeService, contractService,
                 pricingService, paymentService, fileUploadService);
 
         issueService = new IssueServiceImpl(
@@ -104,7 +106,7 @@ class EarlyPickupAndBufferTest {
         lenient().when(bookingRepository.findById(10L)).thenReturn(Optional.of(booking));
         lenient().when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
         lenient().when(fileUploadService.saveHandoverImage(any())).thenReturn("photo.jpg");
-        lenient().when(bookingFeeService.calculateTotalAdditionalFees(10L)).thenReturn(BigDecimal.ZERO);
+        lenient().when(bookingFeeService.getUnpaidFees(10L)).thenReturn(List.of());
     }
 
     private CheckInDTO createCheckInForm() {
@@ -223,23 +225,20 @@ class EarlyPickupAndBufferTest {
     }
 
     @Test
-    @DisplayName("Settlement automatically marks open damage issues as RESOLVED")
-    void testSettlementResolvesOpenDamageIssues() {
+    @DisplayName("Settlement ties the unpaid damage fee to the settlement payment, which resolves its issue")
+    void testSettlementCollectsOpenDamageIssueFees() {
         booking.setStatus("active");
 
-        Issue checkOutRecord = new Issue();
-        checkOutRecord.setId(201L);
-        checkOutRecord.setStatus("open");
-        when(issueRepository.findByBookingIdAndIssueType(10L, "CHECK_OUT")).thenReturn(Optional.of(checkOutRecord));
+        Handover checkOutRecord = new Handover();
+        checkOutRecord.setType(HandoverType.CHECK_OUT);
+        when(handoverRepository.findByBookingIdAndType(10L, HandoverType.CHECK_OUT)).thenReturn(Optional.of(checkOutRecord));
 
-        Issue damageIssue = new Issue();
-        damageIssue.setId(301L);
-        damageIssue.setStatus(IssueStatus.OPEN);
-
-        List<Issue> bookingIssues = new ArrayList<>();
-        bookingIssues.add(checkOutRecord);
-        bookingIssues.add(damageIssue);
-        when(issueRepository.findByBookingIdOrderByReportedAtAsc(10L)).thenReturn(bookingIssues);
+        BookingFee damageFee = new BookingFee();
+        damageFee.setAmount(new BigDecimal("200000"));
+        List<BookingFee> unpaid = List.of(damageFee);
+        when(bookingFeeService.getUnpaidFees(10L)).thenReturn(unpaid);
+        Payment finalPayment = new Payment();
+        when(paymentService.recordFinalPayment(10L, new BigDecimal("900000"), "CASH")).thenReturn(finalPayment);
 
         SettlementDTO form = new SettlementDTO();
         form.setPaymentMethod("CASH");
@@ -247,7 +246,8 @@ class EarlyPickupAndBufferTest {
         handoverService.settle(10L, 1L, form);
 
         assertEquals("completed", booking.getStatus());
-        assertEquals(IssueStatus.RESOLVED, damageIssue.getStatus());
+        assertNotNull(checkOutRecord.getSettledAt());
+        verify(bookingFeeService).attachPayment(unpaid, finalPayment);
     }
 
     @Test
@@ -257,7 +257,7 @@ class EarlyPickupAndBufferTest {
                 bookingRepository, mock(CustomerRepository.class), mock(SlotRepository.class),
                 mock(VehicleTypeRepository.class), vehicleRepository, employeeRepository,
                 mock(PromotionRepository.class), paymentService, contractService,
-                mock(ContractTemplateService.class), bookingFeeService, pricingService, issueService);
+                mock(ContractTemplateService.class), bookingFeeService, pricingService);
 
         Vehicle car = new Vehicle();
         car.setId(100L);
@@ -273,7 +273,7 @@ class EarlyPickupAndBufferTest {
         // When searching, findBookedVehicleIdsInTimeRange is called with bufferedEnd = 16:30 + 1h = 17:30
         // which overlaps with existing booking starting at 17:00 (< 17:30), so DB returns [100L]
         when(bookingRepository.findBookedVehicleIdsInTimeRange(
-                eq(morningStart.minusHours(1)), eq(invalidEnd.plusHours(1)), any()))
+                eq(morningStart.minusHours(1)), eq(invalidEnd.plusHours(1)), any(), any()))
                 .thenReturn(List.of(100L));
 
         List<Vehicle> availableInvalid = bookingService.findAvailableVehiclesInTimeRange(1L, morningStart, invalidEnd);
@@ -283,7 +283,7 @@ class EarlyPickupAndBufferTest {
         OffsetDateTime validEnd = fivePm.minusHours(1); // 16:00
         // When searching, bufferedEnd = 16:00 + 1h = 17:00. DB condition pickupTime (17:00) < 17:00 is false!
         when(bookingRepository.findBookedVehicleIdsInTimeRange(
-                eq(morningStart.minusHours(1)), eq(validEnd.plusHours(1)), any()))
+                eq(morningStart.minusHours(1)), eq(validEnd.plusHours(1)), any(), any()))
                 .thenReturn(List.of()); // No conflict
 
         List<Vehicle> availableValid = bookingService.findAvailableVehiclesInTimeRange(1L, morningStart, validEnd);

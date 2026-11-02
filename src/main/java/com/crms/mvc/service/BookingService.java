@@ -29,6 +29,4 @@ public interface BookingService {
     List<Vehicle> findAvailableVehiclesInTimeRange(Long vehicleTypeId, OffsetDateTime startTime, OffsetDateTime endTime);
     List<VehicleTypeSearchResultDTO> searchAvailableVehicleTypes(OffsetDateTime startTime, OffsetDateTime endTime, String category);
     Slot createSlotForBooking(Long vehicleTypeId, OffsetDateTime startTime, OffsetDateTime endTime);
-    void checkIn(Long bookingId, Long employeeId);
-    void checkOut(Long bookingId, Long employeeId, com.crms.mvc.dto.CheckOutDTO dto);
 }

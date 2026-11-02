@@ -272,7 +272,7 @@ class BookingServiceSchedulingAndValidationTest {
         retired.setVehicleType(type);
         retired.setStatus(Vehicle.STATUS_RETIRED);
         when(bookingRepository.findById(200L)).thenReturn(Optional.of(booking));
-        when(vehicleRepository.findById(9L)).thenReturn(Optional.of(retired));
+        when(vehicleRepository.findByIdForUpdate(9L)).thenReturn(Optional.of(retired));
 
         assertThatThrownBy(() -> bookingService.assignVehicle(200L, 9L))
                 .isInstanceOf(IllegalStateException.class);

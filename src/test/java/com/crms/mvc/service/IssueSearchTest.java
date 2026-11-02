@@ -2,7 +2,6 @@ package com.crms.mvc.service;
 
 import com.crms.mvc.dto.IssueDTO;
 import com.crms.mvc.dto.IssueQueryDTO;
-import com.crms.mvc.dto.IssueStatsDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Customer;
 import com.crms.mvc.entity.Employee;
@@ -114,32 +113,10 @@ class IssueSearchTest {
     }
 
     @Test
-    void theStatsCountOpenIssuesWhatIsStillOwedAndWhatWasCollectedThisMonth() {
+    void theOpenCountIsTheNumberOfOpenIssues() {
         when(issueRepository.countByStatus(IssueStatus.OPEN)).thenReturn(4L);
-        when(feeRepository.countIssueFeesAwaitingPayment(IssueStatus.RESOLVED)).thenReturn(2L);
-        when(feeRepository.sumIssueFeesPaidBetween(any(), any())).thenReturn(new BigDecimal("1250000"));
 
-        IssueStatsDTO stats = service.stats();
-
-        assertEquals(4L, stats.open());
-        assertEquals(2L, stats.awaitingPayment());
-        assertEquals(new BigDecimal("1250000"), stats.collectedThisMonth());
-    }
-
-    @Test
-    void thisMonthRunsFromTheFirstToTheFirstOfNextMonthInVietnamTime() {
-        when(feeRepository.sumIssueFeesPaidBetween(any(), any())).thenReturn(BigDecimal.ZERO);
-
-        service.stats();
-
-        ArgumentCaptor<OffsetDateTime> from = ArgumentCaptor.forClass(OffsetDateTime.class);
-        ArgumentCaptor<OffsetDateTime> to = ArgumentCaptor.forClass(OffsetDateTime.class);
-        verify(feeRepository).sumIssueFeesPaidBetween(from.capture(), to.capture());
-        ZonedDateTime start = from.getValue().atZoneSameInstant(DateTimeUtils.VIETNAM_ZONE);
-        assertEquals(1, start.getDayOfMonth());
-        assertEquals(0, start.getHour());
-        assertEquals(start.plusMonths(1).toInstant(), to.getValue().toInstant());
-        assertTrue(!start.toInstant().isAfter(OffsetDateTime.now().toInstant().plus(1, ChronoUnit.SECONDS)));
+        assertEquals(4L, service.countOpen());
     }
 
     private Issue issue(Long id, String occurredAt) {

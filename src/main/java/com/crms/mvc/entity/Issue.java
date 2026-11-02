@@ -50,8 +50,9 @@ public class Issue {
     @Column(name = "evidence_url", length = 500)
     private String evidenceUrl;
 
-    @Column(name = "secondary_evidence_url", length = 500)
-    private String secondaryEvidenceUrl;
+    /** Null while the issue is inside its notice grace period; set once the customer has been emailed. */
+    @Column(name = "notified_at")
+    private OffsetDateTime notifiedAt;
 
     @Column(name = "reported_at", nullable = false)
     private OffsetDateTime reportedAt;
@@ -95,8 +96,8 @@ public class Issue {
     public OffsetDateTime getOccurredAt() { return occurredAt; }
     public void setOccurredAt(OffsetDateTime occurredAt) { this.occurredAt = occurredAt; }
 
-    public String getSecondaryEvidenceUrl() { return secondaryEvidenceUrl; }
-    public void setSecondaryEvidenceUrl(String secondaryEvidenceUrl) { this.secondaryEvidenceUrl = secondaryEvidenceUrl; }
+    public OffsetDateTime getNotifiedAt() { return notifiedAt; }
+    public void setNotifiedAt(OffsetDateTime notifiedAt) { this.notifiedAt = notifiedAt; }
 
     public OffsetDateTime getReportedAt() { return reportedAt; }
     public void setReportedAt(OffsetDateTime reportedAt) { this.reportedAt = reportedAt; }

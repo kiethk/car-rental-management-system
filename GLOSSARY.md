@@ -7,12 +7,20 @@ Hệ thống cho thuê xe tự lái: khách đặt đơn thuê theo loại xe, n
 ### Quyết toán & phí
 
 **Quyết toán (Settlement)**:
-Lần chốt tiền khi khách trả xe, gộp tiền thuê, phí trễ và các Phí sự cố chưa thanh toán trước đó rồi đối trừ với tiền cọc. Các sự cố khách đã thanh toán trực tuyến trước đó không bị trừ lại.
+Lần chốt tiền khi khách trả xe: khách trả phần tiền thuê còn lại (tiền thuê trừ Tiền cọc đã đặt) cộng phí trễ, Phí trả xe và các Phí sự cố chưa thanh toán. Phí không bao giờ được trừ vào cọc, và Quyết toán không bao giờ hoàn tiền. Sự cố khách đã thanh toán trước đó không bị thu lại.
 _Avoid_: Thanh toán cuối, checkout payment
 
 **Phí sự cố (Issue compensation)**:
 Khoản tiền khách phải trả gắn với một Sự cố — bắt buộc phải có mức phí cụ thể (> 0) khi lập Sự cố; mỗi Sự cố có duy nhất một khoản phí.
 _Avoid_: Tiền phạt (chung chung), fine amount, phụ phí, additional fine
+
+**Tiền cọc (Deposit)**:
+Phần tiền thuê khách trả trước khi đặt xe, theo tỷ lệ trong điều khoản hợp đồng (hiện là 50%). Chỉ là trả trước tiền thuê, không phải khoản bảo đảm để trừ phí; chỉ được hoàn khi khách huỷ đơn đúng hạn.
+_Avoid_: Tiền thế chân, tiền bảo đảm
+
+**Phí trả xe (Return charge)**:
+Khoản phí nhân viên ghi nhận lúc nhận lại xe — vệ sinh, thiếu nhiên liệu, phí cầu đường, khác — không có biên bản, không gửi thông báo riêng, cộng thẳng vào Quyết toán. Hư hỏng không phải Phí trả xe mà phải lập Sự cố.
+_Avoid_: Phụ phí, surcharge
 
 **Phí phát sinh sau quyết toán**:
 Phí sự cố (như phạt nguội) được phát hiện và lập biên bản sau khi đơn thuê đã hoàn tất trả xe, khách nhận email và thanh toán trực tuyến riêng.
@@ -29,7 +37,7 @@ Một biến cố trong thời gian thuê mà khách phải chịu trách nhiệ
 _Avoid_: Incident, biên bản, ticket
 
 **Chốt (Resolve)**:
-Trạng thái hoàn tất nghĩa vụ tài chính của Sự cố — đạt được ngay khi khách thanh toán trực tuyến thành công, hoặc khi khoản phí được cấn trừ xong trong Quyết toán trả xe.
+Trạng thái hoàn tất nghĩa vụ tài chính của Sự cố — đạt được ngay khi khách thanh toán trực tuyến thành công, hoặc khi khoản phí được thu cùng Quyết toán trả xe.
 _Avoid_: Đóng, giải quyết xong (khi chưa trả tiền)
 
 **Phạt nguội (Traffic fine)**:
@@ -39,6 +47,10 @@ _Avoid_: Vi phạm giao thông (khi phạt tại chỗ — khách tự nộp, kh
 **Người lập biên bản (Reporter)**:
 Nhân viên ghi nhận Sự cố vào hệ thống; không đổi về sau.
 _Avoid_: Người xử lý, assignee
+
+**Thời gian chờ thông báo (Notice grace period)**:
+30 giây đầu sau khi lập Sự cố, khách chưa được thông báo. Huỷ trong khoảng này coi như Sự cố chưa từng tồn tại với khách; sửa phí trong khoảng này chỉ dẫn tới một thông báo duy nhất với mức phí cuối.
+_Avoid_: Nháp, draft
 
 ### Xe
 
@@ -61,6 +73,10 @@ _Avoid_: Giờ nghỉ, khoảng trống, downtime
 **Khung giờ nhận sớm (Early Pickup Window)**:
 Khoảng thời gian tối đa 30 phút trước giờ nhận dự kiến (`scheduled_pickup_time - 30 phút`) mà khách có thể làm thủ tục nhận xe, với điều kiện tiên quyết là phương tiện đã ở trạng thái sẵn sàng (`available`).
 _Avoid_: Lấy xe tuỳ tiện, nhận xe bất cứ lúc nào
+
+**Bàn giao (Handover)**:
+Biên bản ghi nhận lúc giao xe cho khách (nhận xe) hoặc nhận lại xe từ khách (trả xe): số km, mức nhiên liệu, ảnh giấy tờ, ghi chú. Không phải Sự cố và không mang phí.
+_Avoid_: Sự cố bàn giao, issue check-in
 
 **Thời điểm nhận xe thực tế (Actual Pickup Time)**:
 Thời điểm nhân viên hoàn tất thủ tục bàn giao xe (Check-in) trên hệ thống, chuyển trạng thái đơn thuê sang `active`. Mọi sự cố và trách nhiệm bồi thường của khách được kích hoạt có hiệu lực kể từ thời điểm này.

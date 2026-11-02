@@ -41,9 +41,6 @@
                 <li class="nav-item">
                     <a class="nav-link font-weight-bold text-navy" th:href="@{/admin/vehicle-types}">Vehicle Models</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link font-weight-bold text-navy" th:href="@{/admin/license-plates}">License Plates & Registration</a>
-                </li>
             </ul>
 
             <!-- Page Header -->
@@ -184,7 +181,7 @@
                                     <span th:if="${v.status == 'retired'}" class="admin-status-badge badge-light border text-muted">
                                         Đã ngừng khai thác
                                     </span>
-                                    <form th:if="${(v.status == 'available' or v.status == 'maintenance') and session.employeeRole == 'admin'}"
+                                    <form th:if="${(v.status == 'available' or v.status == 'maintenance') and (session.account != null and session.account.admin)}"
                                           method="post" th:action="@{/admin/vehicles/{id}/status(id=${v.id})}" class="m-0 mt-1"
                                           onsubmit="return confirm('Chuyển xe sang ngừng khai thác vĩnh viễn? Xe sẽ không bao giờ được cho thuê lại.');">
                                         <input type="hidden" name="status" value="retired" />

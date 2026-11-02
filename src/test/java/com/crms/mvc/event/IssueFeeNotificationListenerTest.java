@@ -1,13 +1,7 @@
 package com.crms.mvc.event;
 
-import com.crms.mvc.entity.Booking;
-import com.crms.mvc.entity.BookingFee;
-import com.crms.mvc.entity.Customer;
-import com.crms.mvc.entity.Issue;
-import com.crms.mvc.entity.IssueStatus;
-import com.crms.mvc.entity.IssueType;
-import com.crms.mvc.repository.BookingFeeRepository;
-import com.crms.mvc.repository.IssueRepository;
+import com.crms.mvc.dto.IssueNoticeDTO;
+import com.crms.mvc.service.IssueService;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.Test;
@@ -19,7 +13,6 @@ import org.thymeleaf.context.Context;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -33,10 +26,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-/** The customer is emailed when a fee falls due after settlement; a mail problem must never break resolving. */
+/** The customer is emailed what an Issue costs; a mail problem must never break the Issue change. */
 class IssueFeeNotificationListenerTest {
-    private final IssueRepository issueRepository = mock(IssueRepository.class);
-    private final BookingFeeRepository feeRepository = mock(BookingFeeRepository.class);
+    private final IssueService issueService = mock(IssueService.class);
     private final ITemplateEngine templateEngine = mock(ITemplateEngine.class);
 
     @Test
@@ -47,7 +39,7 @@ class IssueFeeNotificationListenerTest {
 
         listener.onIssueFeeDue(new IssueFeeDueEvent(7L));
 
-        verifyNoInteractions(issueRepository);
+        verifyNoInteractions(issueService);
     }
 
     @Test
@@ -59,24 +51,9 @@ class IssueFeeNotificationListenerTest {
         MimeMessage message = new MimeMessage(Session.getInstance(new Properties()));
         when(sender.createMimeMessage()).thenReturn(message);
         when(templateEngine.process(eq("mail/issue-fee-due"), any(Context.class))).thenReturn("<html>fee</html>");
-
-        Customer customer = new Customer();
-        customer.setName("Nguyễn Văn An");
-        customer.setEmail("an@example.com");
-        Booking booking = new Booking();
-        booking.setId(42L);
-        booking.setCustomer(customer);
-        Issue issue = new Issue();
-        issue.setId(7L);
-        issue.setBooking(booking);
-        issue.setIssueType(IssueType.TRAFFIC_FINE);
-        issue.setSubject("Red light, Le Loi street");
-        issue.setStatus(IssueStatus.RESOLVED);
-        issue.setOccurredAt(OffsetDateTime.now().minusDays(20));
-        BookingFee fee = new BookingFee();
-        fee.setAmount(new BigDecimal("800000"));
-        when(issueRepository.findByIdWithDetails(7L)).thenReturn(Optional.of(issue));
-        when(feeRepository.findByIssueId(7L)).thenReturn(List.of(fee));
+        when(issueService.findNotice(7L)).thenReturn(Optional.of(new IssueNoticeDTO(
+                7L, 42L, "Nguyễn Văn An", "an@example.com", "Phạt nguội", "Red light, Le Loi street",
+                OffsetDateTime.now().minusDays(20), new BigDecimal("800000"))));
 
         listener(provider, "admin@drivenow.com", "secret").onIssueFeeDue(new IssueFeeDueEvent(7L));
 
@@ -97,7 +74,7 @@ class IssueFeeNotificationListenerTest {
         JavaMailSender sender = mock(JavaMailSender.class);
         ObjectProvider<JavaMailSender> provider = mock(ObjectProvider.class);
         when(provider.getIfAvailable()).thenReturn(sender);
-        when(issueRepository.findByIdWithDetails(7L)).thenThrow(new IllegalStateException("db down"));
+        when(issueService.findNotice(7L)).thenThrow(new IllegalStateException("db down"));
 
         listener(provider, "admin@drivenow.com", "secret").onIssueFeeDue(new IssueFeeDueEvent(7L));
 
@@ -105,7 +82,7 @@ class IssueFeeNotificationListenerTest {
     }
 
     private IssueFeeNotificationListener listener(ObjectProvider<JavaMailSender> provider, String username, String password) {
-        return new IssueFeeNotificationListener(provider, templateEngine, issueRepository, feeRepository,
+        return new IssueFeeNotificationListener(provider, templateEngine, issueService,
                 username, password, "DriveNow <admin@drivenow.com>", "http://localhost:8081");
     }
 }

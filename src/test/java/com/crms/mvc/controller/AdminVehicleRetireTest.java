@@ -1,5 +1,8 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.support.PassThroughSessionAccountService;
+import org.springframework.context.annotation.Import;
+import com.crms.mvc.support.TestSessions;
 import com.crms.mvc.dto.VehicleDTO;
 import com.crms.mvc.dto.VehicleFormDTO;
 import com.crms.mvc.entity.Vehicle;
@@ -37,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /** Retiring a vehicle (a permanent, asset-level decision) is an admin-only action. */
 @WebMvcTest(AdminVehicleController.class)
+@Import(PassThroughSessionAccountService.class)
 class AdminVehicleRetireTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private VehicleService vehicleService;
@@ -179,9 +183,6 @@ class AdminVehicleRetireTest {
     }
 
     private static MockHttpSession sessionOf(String role) {
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("employeeId", 1L);
-        session.setAttribute("employeeRole", role);
-        return session;
+        return TestSessions.employee(1L, role, "Test " + role);
     }
 }

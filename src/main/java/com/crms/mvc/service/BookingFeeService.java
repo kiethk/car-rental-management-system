@@ -23,5 +23,9 @@ public interface BookingFeeService {
 
     /** Gives back every fee a payment had taken (the payment failed or was abandoned), so they are owed again. */
     void detachPayment(Payment payment);
-    BigDecimal calculateTotalAdditionalFees(Long bookingId);
+    /** Fees no paid payment has taken yet: late fee, Return charges and open Issue fees still owed at settlement. */
+    List<BookingFee> getUnpaidFees(Long bookingId);
+
+    /** Issue fees the customer already paid before settlement (online or at the counter). */
+    BigDecimal calculatePrepaidIssueFees(Long bookingId);
 }

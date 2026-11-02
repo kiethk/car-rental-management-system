@@ -8,19 +8,19 @@ import jakarta.validation.constraints.Size;
 import org.springframework.web.multipart.MultipartFile;
 
 public class CheckInDTO {
-    @NotNull(message = "Odometer is required")
-    @Min(value = 0, message = "Odometer cannot be negative")
+    @NotNull(message = "Vui lòng nhập số km")
+    @Min(value = 0, message = "Số km không được âm")
     private Integer odometer;
 
-    @NotNull(message = "Fuel level is required")
-    @Min(value = 0, message = "Fuel level must be between 0 and 100")
-    @Max(value = 100, message = "Fuel level must be between 0 and 100")
+    @NotNull(message = "Vui lòng nhập mức nhiên liệu")
+    @Min(value = 0, message = "Mức nhiên liệu phải từ 0 đến 100")
+    @Max(value = 100, message = "Mức nhiên liệu phải từ 0 đến 100")
     private Integer fuelPercent;
 
-    @Size(max = 150, message = "Condition notes must be at most 150 characters")
+    @Size(max = 150, message = "Ghi chú tình trạng xe tối đa 150 ký tự")
     private String notes;
 
-    @AssertTrue(message = "Confirm that the original license and ID card were checked")
+    @AssertTrue(message = "Vui lòng xác nhận đã kiểm tra bản gốc GPLX và CCCD")
     private boolean documentsVerified;
 
     private MultipartFile licenseImage;

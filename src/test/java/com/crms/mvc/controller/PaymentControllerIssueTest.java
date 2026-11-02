@@ -1,5 +1,8 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.support.PassThroughSessionAccountService;
+import com.crms.mvc.support.TestSessions;
+import org.springframework.context.annotation.Import;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.service.BookingService;
@@ -27,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /** Paying the fees of issues found after settlement, and telling them apart from deposit payments on return. */
 @WebMvcTest(PaymentController.class)
+@Import(PassThroughSessionAccountService.class)
 class PaymentControllerIssueTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private PaymentService paymentService;
@@ -36,10 +40,7 @@ class PaymentControllerIssueTest {
 
     @BeforeEach
     void setUp() {
-        customer = new MockHttpSession();
-        customer.setAttribute("customerId", 1L);
-        customer.setAttribute(com.crms.mvc.util.CurrentAccount.SESSION_KEY,
-                new com.crms.mvc.dto.SessionAccount(1L, com.crms.mvc.dto.SessionAccount.CUSTOMER, "John Doe", "customer@example.com", null, null));
+        customer = TestSessions.customer(1L, "John Doe");
         when(paymentService.verifyPaymentSignature(any())).thenReturn(true);
     }
 

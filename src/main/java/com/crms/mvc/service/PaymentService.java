@@ -14,12 +14,12 @@ public interface PaymentService {
 
     Payment processDeposit(Long bookingId);
     Payment processDeposit(Long bookingId, String transactionNo, String paymentMethod);
+
     /**
-     * Final settlement when the car comes back: rent, late fee and the fees of resolved issues, set against the
-     * deposit, as a FINAL payment (customer owes) or a REFUND (deposit left over). Every fee collected is tied
-     * to the resulting payment.
+     * True while the customer has an unexpired VNPay session for Issue fees on this booking.
+     * An expired session is released (marked failed, its fees freed) as a side effect.
      */
-    Payment processSettlement(Long bookingId, BigDecimal lateFee);
+    boolean hasLiveIssuePaymentSession(Long bookingId);
 
     /**
      * Starts paying every outstanding issue fee of a completed booking in one VNPay payment; the amount is the sum

@@ -14,11 +14,12 @@ import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     /**
-     * Rentals of a vehicle that were under way at a moment: picked up (active) or finished (completed), starting
-     * before it and ending after it (the real return time, or the planned end while the car is still out).
+     * Rentals of a vehicle that were under way at a moment, measured on the real handover times: from the actual
+     * pickup to the actual return. A car not returned yet is still the customer's, even past its planned end.
      */
     @Query("SELECT b FROM Booking b WHERE b.vehicle.id = :vehicleId AND b.status IN ('active', 'completed') "
-            + "AND COALESCE(b.actualPickupTime, b.pickupTime) <= :at AND :at <= COALESCE(b.actualReturnTime, b.scheduledEndTime) "
+            + "AND COALESCE(b.actualPickupTime, b.pickupTime) <= :at "
+            + "AND ((b.status = 'active' AND b.actualReturnTime IS NULL) OR :at <= b.actualReturnTime) "
             + "ORDER BY b.pickupTime DESC")
     List<Booking> findRentalsCovering(@Param("vehicleId") Long vehicleId, @Param("at") OffsetDateTime at);
 
@@ -50,12 +51,19 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     long countByVehicleId(Long vehicleId);
 
+    /**
+     * Vehicles taken during [startTime, endTime). A rental that is active but not returned yet keeps its vehicle
+     * until at least {@code now}, even past its scheduled end, because the car has not physically come back.
+     */
     @Query("SELECT b.vehicle.id FROM Booking b WHERE b.vehicle IS NOT NULL " +
            "AND (b.status IN ('confirmed', 'active') OR (b.status = 'pending_payment' AND b.createdAt > :cutoffTime)) " +
-           "AND b.pickupTime < :endTime AND b.scheduledEndTime > :startTime")
+           "AND b.pickupTime < :endTime " +
+           "AND (b.scheduledEndTime > :startTime " +
+           "     OR (b.status = 'active' AND b.actualReturnTime IS NULL AND :now > :startTime))")
     List<Long> findBookedVehicleIdsInTimeRange(@Param("startTime") OffsetDateTime startTime,
                                               @Param("endTime") OffsetDateTime endTime,
-                                              @Param("cutoffTime") OffsetDateTime cutoffTime);
+                                              @Param("cutoffTime") OffsetDateTime cutoffTime,
+                                              @Param("now") OffsetDateTime now);
 
     @Query("SELECT b FROM Booking b WHERE b.customer.id = :customerId " +
            "AND b.status = 'pending_payment' " +

@@ -11,6 +11,7 @@
     <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
     <link rel="stylesheet" th:href="@{/css/drivenow.css}">
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/modules/issues.css}">
 </head>
 <body class="d-flex flex-column min-vh-100 bg-surface">
 
@@ -33,42 +34,34 @@
                 backText=null)}"></div>
 
             <div class="row g-3 mb-3">
-                <div class="col-sm-6 col-lg-4">
+                <div class="col-lg-3 issue-open-stat">
                     <div th:replace="~{fragments/admin-components :: statCard(
-                        label='Đang mở', value=${stats.open}, subtext='Sự cố chưa chốt phí', iconType='clock', variant='warning')}"></div>
+                        label='Đang mở', value=${openCount}, subtext='Sự cố khách chưa thanh toán', iconType='clock', variant='warning')}"></div>
                 </div>
-                <div class="col-sm-6 col-lg-4">
-                    <div th:replace="~{fragments/admin-components :: statCard(
-                        label='Chờ khách thanh toán', value=${stats.awaitingPayment}, subtext='Đã chốt, khách chưa trả', iconType='money', variant='danger')}"></div>
-                </div>
-                <div class="col-sm-6 col-lg-4">
-                    <div th:replace="~{fragments/admin-components :: statCard(
-                        label='Đã thu tháng này', value=${#numbers.formatDecimal(stats.collectedThisMonth, 0, 'POINT', 0, 'COMMA')} + ' đ',
-                        subtext='Phí sự cố khách đã thanh toán', iconType='check', variant='success')}"></div>
-                </div>
-            </div>
-
-            <div class="admin-card mb-3">
-                <div class="admin-card-header">
-                    <div class="admin-card-title-group">
-                        <h2 class="admin-card-title">Ghi nhận phạt nguội</h2>
-                        <p class="admin-card-subtitle">Nhập biển số và thời điểm vi phạm trên biên bản. Hệ thống tìm đơn thuê của xe tại thời điểm đó.</p>
+                <div class="col-lg-9">
+                    <div class="admin-card h-100">
+                    <div class="admin-card-header">
+                        <div class="admin-card-title-group">
+                            <h2 class="admin-card-title">Ghi nhận phạt nguội</h2>
+                            <p class="admin-card-subtitle">Nhập biển số và thời điểm vi phạm trên biên bản. Hệ thống tìm đơn thuê của xe tại thời điểm đó.</p>
+                        </div>
                     </div>
-                </div>
-                <div class="admin-card-body">
-                    <form th:action="@{/admin/issues/traffic-fine}" method="get" class="row align-items-end">
-                        <div class="col-md-4 admin-form-group">
-                            <label class="admin-form-label" for="plate">Biển số (*)</label>
-                            <input id="plate" type="text" name="plate" class="admin-form-input font-mono" placeholder="51A-123.45" required>
-                        </div>
-                        <div class="col-md-4 admin-form-group">
-                            <label class="admin-form-label" for="violationTime">Thời điểm vi phạm (*)</label>
-                            <input id="violationTime" type="datetime-local" name="occurredAt" class="admin-form-input" required>
-                        </div>
-                        <div class="col-md-4 admin-form-group">
-                            <button type="submit" class="admin-btn admin-btn-primary">Tra đơn thuê</button>
-                        </div>
-                    </form>
+                    <div class="admin-card-body">
+                        <form th:action="@{/admin/issues/traffic-fine}" method="get" class="row align-items-end">
+                            <div class="col-md-4 admin-form-group">
+                                <label class="admin-form-label" for="plate">Biển số (*)</label>
+                                <input id="plate" type="text" name="plate" class="admin-form-input font-mono" placeholder="51A-123.45" required>
+                            </div>
+                            <div class="col-md-4 admin-form-group">
+                                <label class="admin-form-label" for="violationTime">Thời điểm vi phạm (*)</label>
+                                <input id="violationTime" type="datetime-local" name="occurredAt" class="admin-form-input" required>
+                            </div>
+                            <div class="col-md-4 admin-form-group">
+                                <button type="submit" class="admin-btn admin-btn-primary">Tra đơn thuê</button>
+                            </div>
+                        </form>
+                    </div>
+                    </div>
                 </div>
             </div>
 
@@ -109,7 +102,7 @@
                             <input id="fTo" type="date" name="to" th:value="${query.to}" class="admin-form-input">
                         </div>
                     </div>
-                    <div class="d-flex justify-content-end" style="gap: 8px;">
+                    <div class="d-flex justify-content-end gap-2">
                         <a th:href="@{/admin/issues}" class="admin-btn admin-btn-secondary admin-btn-sm">Xoá lọc</a>
                         <button type="submit" class="admin-btn admin-btn-primary admin-btn-sm">Lọc</button>
                     </div>

@@ -1,11 +1,13 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.support.PassThroughSessionAccountService;
+import org.springframework.context.annotation.Import;
+import com.crms.mvc.support.TestSessions;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.IssueActor;
 import com.crms.mvc.dto.IssueDTO;
 import com.crms.mvc.dto.IssueFormDTO;
 import com.crms.mvc.dto.IssueQueryDTO;
-import com.crms.mvc.dto.IssueStatsDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Issue;
 import com.crms.mvc.entity.IssueStatus;
@@ -51,6 +53,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 @WebMvcTest(AdminIssueController.class)
+@Import(PassThroughSessionAccountService.class)
 class AdminIssueControllerTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private IssueService issueService;
@@ -60,9 +63,7 @@ class AdminIssueControllerTest {
 
     @BeforeEach
     void setUp() {
-        staff = new MockHttpSession();
-        staff.setAttribute("employeeId", 2L);
-        staff.setAttribute("employeeRole", "staff");
+        staff = TestSessions.staff(2L);
     }
 
     @Test
@@ -120,7 +121,7 @@ class AdminIssueControllerTest {
     @Test
     void theListShowsEveryIssue() throws Exception {
         when(issueService.searchForAdmin(any())).thenReturn(new PageImpl<>(List.of(issue()), PageRequest.of(0, 10), 1));
-        when(issueService.stats()).thenReturn(new IssueStatsDTO(0, 0, BigDecimal.ZERO));
+        when(issueService.countOpen()).thenReturn(0L);
 
         mvc.perform(get("/admin/issues").session(staff))
                 .andExpect(status().isOk())
@@ -315,7 +316,7 @@ class AdminIssueControllerTest {
     @Test
     void theListOffersTheTrafficFineLookup() throws Exception {
         when(issueService.searchForAdmin(any())).thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 10), 0));
-        when(issueService.stats()).thenReturn(new IssueStatsDTO(0, 0, BigDecimal.ZERO));
+        when(issueService.countOpen()).thenReturn(0L);
 
         mvc.perform(get("/admin/issues").session(staff))
                 .andExpect(content().string(containsString("/admin/issues/traffic-fine")))
@@ -323,21 +324,20 @@ class AdminIssueControllerTest {
     }
 
     @Test
-    void theListShowsTheThreeNumbersOnTop() throws Exception {
+    void theListShowsOnlyTheOpenCountOnTop() throws Exception {
         when(issueService.searchForAdmin(any())).thenReturn(new PageImpl<>(List.of(issue()), PageRequest.of(0, 10), 1));
-        when(issueService.stats()).thenReturn(new IssueStatsDTO(4, 2, new BigDecimal("1250000")));
+        when(issueService.countOpen()).thenReturn(4L);
 
         mvc.perform(get("/admin/issues").session(staff))
                 .andExpect(content().string(containsString("Đang mở")))
-                .andExpect(content().string(containsString("Chờ khách thanh toán")))
-                .andExpect(content().string(containsString("Đã thu tháng này")))
-                .andExpect(content().string(containsString("1.250.000")));
+                .andExpect(content().string(not(containsString("Chờ khách thanh toán"))))
+                .andExpect(content().string(not(containsString("Đã thu tháng này"))));
     }
 
     @Test
     void theFiltersReachTheServiceAndStayInTheForm() throws Exception {
         when(issueService.searchForAdmin(any())).thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 10), 0));
-        when(issueService.stats()).thenReturn(new IssueStatsDTO(0, 0, BigDecimal.ZERO));
+        when(issueService.countOpen()).thenReturn(0L);
 
         mvc.perform(get("/admin/issues").session(staff)
                         .param("status", "resolved").param("type", "DAMAGE").param("plate", "51A")
@@ -362,7 +362,7 @@ class AdminIssueControllerTest {
     @Test
     void aBadFilterValueDoesNotBreakThePage() throws Exception {
         when(issueService.searchForAdmin(any())).thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 10), 0));
-        when(issueService.stats()).thenReturn(new IssueStatsDTO(0, 0, BigDecimal.ZERO));
+        when(issueService.countOpen()).thenReturn(0L);
 
         mvc.perform(get("/admin/issues").session(staff).param("from", "not-a-date").param("bookingId", "abc"))
                 .andExpect(status().isOk());
@@ -374,7 +374,7 @@ class AdminIssueControllerTest {
         owed.setStatus(IssueStatus.RESOLVED);
         owed.setFeePaid(false);
         when(issueService.searchForAdmin(any())).thenReturn(new PageImpl<>(List.of(owed), PageRequest.of(0, 10), 1));
-        when(issueService.stats()).thenReturn(new IssueStatsDTO(0, 1, BigDecimal.ZERO));
+        when(issueService.countOpen()).thenReturn(0L);
 
         mvc.perform(get("/admin/issues").session(staff))
                 .andExpect(content().string(containsString("Chưa thanh toán")));
@@ -388,7 +388,7 @@ class AdminIssueControllerTest {
         IssueDTO open = issue();
         open.setId(8L);
         when(issueService.searchForAdmin(any())).thenReturn(new PageImpl<>(List.of(paid, open), PageRequest.of(0, 10), 2));
-        when(issueService.stats()).thenReturn(new IssueStatsDTO(1, 0, BigDecimal.ZERO));
+        when(issueService.countOpen()).thenReturn(1L);
 
         mvc.perform(get("/admin/issues").session(staff))
                 .andExpect(content().string(not(containsString("Chưa thanh toán"))));
@@ -398,7 +398,7 @@ class AdminIssueControllerTest {
     void thePagerKeepsTheFilters() throws Exception {
         when(issueService.searchForAdmin(any())).thenReturn(new PageImpl<>(
                 List.of(issue()), PageRequest.of(0, 10), 25));
-        when(issueService.stats()).thenReturn(new IssueStatsDTO(0, 0, BigDecimal.ZERO));
+        when(issueService.countOpen()).thenReturn(0L);
 
         mvc.perform(get("/admin/issues").session(staff).param("status", "open").param("plate", "51A"))
                 .andExpect(content().string(containsString("page=2")))
@@ -407,10 +407,7 @@ class AdminIssueControllerTest {
     }
 
     private static MockHttpSession admin() {
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("employeeId", 1L);
-        session.setAttribute("employeeRole", "admin");
-        return session;
+        return TestSessions.admin(1L);
     }
 
     private MockHttpServletRequestBuilder validForm(MockHttpServletRequestBuilder request) {

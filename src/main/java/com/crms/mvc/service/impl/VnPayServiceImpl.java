@@ -194,57 +194,17 @@ public class VnPayServiceImpl implements PaymentService {
     }
 
     @Override
-    public Payment processSettlement(Long bookingId, BigDecimal lateFee) {
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy đơn thuê: " + bookingId));
-
-        // Kiểm tra xem có phiên thanh toán trực tuyến nào đang chờ không (15 phút)
-        Optional<Payment> activePending = paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(
+    public boolean hasLiveIssuePaymentSession(Long bookingId) {
+        Optional<Payment> pending = paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(
                 bookingId, Payment.TYPE_ISSUE_COMPENSATION, Payment.STATUS_PENDING);
-        if (activePending.isPresent() && !activePending.get().isExpired()) {
-            throw new IllegalStateException("Sự cố của đơn thuê đang trong phiên thanh toán trực tuyến của khách (15 phút). "
-                    + "Vui lòng chờ phiên hết hạn hoặc yêu cầu khách hoàn tất/hủy phiên trước khi quyết toán.");
+        if (pending.isEmpty()) {
+            return false;
         }
-
-        BigDecimal initialDeposit = booking.getDepositAmount() != null ? booking.getDepositAmount() : BigDecimal.ZERO;
-        BigDecimal rentAmount = booking.getTotalPrice() != null ? booking.getTotalPrice() : BigDecimal.ZERO;
-        BigDecimal safeLateFee = lateFee != null ? lateFee : BigDecimal.ZERO;
-
-        List<BookingFee> collected = new ArrayList<>();
-        if (safeLateFee.compareTo(BigDecimal.ZERO) > 0) {
-            collected.add(bookingFeeService.recordFee(bookingId, "LATE_FEE", safeLateFee, "Phí trả trễ", null));
+        if (isPaymentExpired(pending.get())) {
+            cancelPending(pending.get());
+            return false;
         }
-        // Chỉ các sự cố đã chốt mới được thu trong lần quyết toán này
-        List<BookingFee> issueFees = bookingFeeService.getSettleableIssueFees(bookingId);
-        collected.addAll(issueFees);
-        BigDecimal issueTotal = issueFees.stream().map(BookingFee::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal totalPayable = rentAmount.add(safeLateFee).add(issueTotal);
-        BigDecimal remaining = totalPayable.subtract(initialDeposit);
-
-        Payment settlement = new Payment();
-        settlement.setBooking(booking);
-        settlement.setStatus(Payment.STATUS_PAID);
-        settlement.setPaymentMethod(Payment.METHOD_VNPAY);
-        settlement.setPaidAt(OffsetDateTime.now());
-        if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
-            settlement.setPaymentType(Payment.TYPE_REFUND);
-            settlement.setAmount(remaining.abs());
-            settlement.setTransactionCode("REFUND-" + bookingId + "-" + System.currentTimeMillis());
-        } else {
-            settlement.setPaymentType(Payment.TYPE_FINAL);
-            settlement.setAmount(remaining);
-            settlement.setTransactionCode("FINAL-" + bookingId + "-" + System.currentTimeMillis());
-        }
-        Payment saved = paymentRepository.save(settlement);
-
-        booking.setTotalPrice(totalPayable);
-        bookingRepository.save(booking);
-
-        if (!collected.isEmpty()) {
-            bookingFeeService.attachPayment(collected, saved);
-        }
-        return saved;
+        return true;
     }
 
     @Override

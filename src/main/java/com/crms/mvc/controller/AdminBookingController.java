@@ -89,8 +89,13 @@ public class AdminBookingController {
 
             model.addAttribute("booking", detail);
             model.addAttribute("availableVehicles", availableVehicles);
-            model.addAttribute("checkInForm", new CheckInDTO());
-            model.addAttribute("checkOutForm", new CheckOutDTO());
+            // Start both forms at the last reading the system has; staff only change it if the dashboard differs.
+            CheckInDTO checkInForm = new CheckInDTO();
+            checkInForm.setOdometer(detail.getVehicleOdometer());
+            CheckOutDTO checkOutForm = new CheckOutDTO();
+            checkOutForm.setOdometer(detail.getVehicleOdometer());
+            model.addAttribute("checkInForm", checkInForm);
+            model.addAttribute("checkOutForm", checkOutForm);
             model.addAttribute("issues", issueService.findByBooking(bookingId));
             model.addAttribute("settlementForm", new SettlementDTO());
             model.addAttribute("handover", handoverService.getSummary(bookingId));
@@ -150,7 +155,7 @@ public class AdminBookingController {
 
         try {
             bookingService.assignVehicle(bookingId, vehicleId);
-            ra.addFlashAttribute("success", "Vehicle assigned successfully.");
+            ra.addFlashAttribute("success", "Đã gán xe cho đơn thuê.");
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Assignment failed: " + e.getMessage());
         }
@@ -167,7 +172,7 @@ public class AdminBookingController {
 
         try {
             handoverService.reassignStaff(bookingId, staffId);
-            ra.addFlashAttribute("success", "Assigned staff updated.");
+            ra.addFlashAttribute("success", "Đã cập nhật nhân viên phụ trách.");
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Could not change assigned staff: " + e.getMessage());
         }
@@ -188,7 +193,7 @@ public class AdminBookingController {
 
         try {
             handoverService.checkIn(bookingId, employeeId, form);
-            ra.addFlashAttribute("success", "Check-in completed. Rental trip is now ACTIVE.");
+            ra.addFlashAttribute("success", "Đã bàn giao xe. Chuyến thuê bắt đầu.");
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Check-in failed: " + e.getMessage());
         }
@@ -209,7 +214,7 @@ public class AdminBookingController {
 
         try {
             handoverService.checkOut(bookingId, employeeId, form);
-            ra.addFlashAttribute("success", "Vehicle return recorded. Complete the settlement to close this booking.");
+            ra.addFlashAttribute("success", "Đã ghi nhận trả xe. Hãy quyết toán để đóng đơn thuê.");
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Check-out failed: " + e.getMessage());
         }
@@ -230,7 +235,7 @@ public class AdminBookingController {
 
         try {
             handoverService.settle(bookingId, employeeId, form);
-            ra.addFlashAttribute("success", "Settlement completed. This booking is now closed.");
+            ra.addFlashAttribute("success", "Đã quyết toán xong. Đơn thuê đã đóng.");
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Settlement failed: " + e.getMessage());
         }

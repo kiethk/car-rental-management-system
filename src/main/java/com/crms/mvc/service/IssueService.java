@@ -3,8 +3,8 @@ package com.crms.mvc.service;
 import com.crms.mvc.dto.IssueActor;
 import com.crms.mvc.dto.IssueDTO;
 import com.crms.mvc.dto.IssueQueryDTO;
-import com.crms.mvc.dto.IssueStatsDTO;
 import com.crms.mvc.dto.IssueFormDTO;
+import com.crms.mvc.dto.IssueNoticeDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Issue;
 import com.crms.mvc.entity.IssueEvidence;
@@ -48,9 +48,6 @@ public interface IssueService {
      */
     Issue cancel(Long issueId, String reason, IssueActor actor);
 
-    /** Admin-only: resolved -> open again, while no payment has taken the fee. */
-    Issue reopen(Long issueId, IssueActor actor);
-
     /**
      * Adds one photo (JPEG/PNG/WebP, up to 5 MB, at most 10 per issue). Allowed while the issue is open, or resolved
      * but not yet being paid; never on a cancelled issue.
@@ -84,9 +81,19 @@ public interface IssueService {
      */
     boolean bookingHasVehicleDamage(Long bookingId);
 
+    /**
+     * Emails customers about open Issues whose notice grace period has passed and who have not been told yet.
+     * Runs on a schedule; an Issue cancelled inside the grace period is never announced.
+     */
+    void sendDueNotices();
+
+    /** The data a customer email about this Issue needs, read inside a transaction. */
+    Optional<IssueNoticeDTO> findNotice(Long issueId);
+
     /** One page of the admin list: filtered, newest first. A page past the end steps back to the last one. */
     Page<IssueDTO> searchForAdmin(IssueQueryDTO query);
 
     /** Open issues, resolved issues still waiting for the customer's money, and what was collected this month. */
-    IssueStatsDTO stats();
+    /** How many Issues are still open (fee not settled yet). */
+    long countOpen();
 }

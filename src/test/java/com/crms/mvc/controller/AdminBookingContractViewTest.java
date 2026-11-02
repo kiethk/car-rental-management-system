@@ -58,9 +58,9 @@ class AdminBookingContractViewTest {
         mvc.perform(get("/admin/bookings/42").session(staff))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/bookings/manage"))
-                .andExpect(content().string(containsString("Terms v1")))
-                .andExpect(content().string(containsString("from IP 127.0.0.1")))
-                .andExpect(content().string(containsString("Issue PDF and email")));
+                .andExpect(content().string(containsString("Điều khoản v1")))
+                .andExpect(content().string(containsString("từ IP 127.0.0.1")))
+                .andExpect(content().string(containsString("Phát hành PDF và gửi email")));
     }
 
     @Test
@@ -122,7 +122,7 @@ class AdminBookingContractViewTest {
         mvc.perform(get("/admin/bookings/42").session(staffSession()))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("additionalFine"))))
-                .andExpect(content().string(containsString("Phí của sự cố đã chốt sẽ được cộng vào quyết toán")));
+                .andExpect(content().string(containsString("Phí của các sự cố khách chưa thanh toán")));
     }
 
     @Test
@@ -136,12 +136,7 @@ class AdminBookingContractViewTest {
     }
 
     private static MockHttpSession staffSession() {
-        MockHttpSession staff = new MockHttpSession();
-        staff.setAttribute("employeeId", 2L);
-        staff.setAttribute("employeeRole", "staff");
-        staff.setAttribute(com.crms.mvc.util.CurrentAccount.SESSION_KEY,
-                new com.crms.mvc.dto.SessionAccount(2L, com.crms.mvc.dto.SessionAccount.EMPLOYEE, "Staff Member", "staff@crms.test", "staff", null));
-        return staff;
+        return TestSessions.employee(2L, "staff", "Staff Member");
     }
 
     private BookingDetailDTO confirmedBooking() {

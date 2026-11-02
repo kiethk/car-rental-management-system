@@ -96,7 +96,7 @@
                                 <option value="available">Available for rent</option>
                                 <option value="maintenance">In maintenance / Inspection</option>
                                 <option th:if="${vehicleForm.status == 'rented'}" value="rented" disabled>Rented (Managed by booking lifecycle)</option>
-                                <option th:if="${vehicleForm.id != null and (vehicleForm.status == 'retired' or session.employeeRole == 'admin')}"
+                                <option th:if="${vehicleForm.id != null and (vehicleForm.status == 'retired' or (session.account != null and session.account.admin))}"
                                         value="retired">Ngừng khai thác (vĩnh viễn, không thể hoàn tác)</option>
                             </select>
                         </div>

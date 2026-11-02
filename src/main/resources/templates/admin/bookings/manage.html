@@ -156,7 +156,7 @@
                                     </div>
                                     <a th:href="@{/admin/contract-templates/{id}(id=${booking.contract.terms.id})}"
                                        class="admin-badge admin-badge-neutral"
-                                       th:text="'Terms v' + ${booking.contract.terms.versionNo}">Điều khoản v1</a>
+                                       th:text="'Điều khoản v' + ${booking.contract.terms.versionNo}">Điều khoản v1</a>
                                 </div>
                                 <div class="admin-card-body p-0">
                                     <table class="admin-table">
@@ -164,7 +164,7 @@
                                             <tr>
                                                 <td class="text-slate-500" style="width: 35%;">Khách hàng đồng ý</td>
                                                 <td class="font-medium text-slate-800"
-                                                    th:text="${#temporals.format(booking.contract.acceptedAt, 'dd/MM/yyyy HH:mm')} + (${booking.contract.acceptedIp != null} ? ' from IP ' + ${booking.contract.acceptedIp} : '')">
+                                                    th:text="${#temporals.format(booking.contract.acceptedAt, 'dd/MM/yyyy HH:mm')} + (${booking.contract.acceptedIp != null} ? ' từ IP ' + ${booking.contract.acceptedIp} : '')">
                                                     23/10/2026 09:00
                                                 </td>
                                             </tr>
@@ -199,7 +199,7 @@
                                               th:action="@{/admin/bookings/{id}/contract/issue(id=${booking.id})}"
                                               method="post" class="d-inline">
                                             <button type="submit" class="admin-btn admin-btn-primary admin-btn-sm"
-                                                    th:text="${booking.contract.issued} ? 'Resend email' : 'Issue PDF and email'">
+                                                    th:text="${booking.contract.issued} ? 'Gửi lại email' : 'Phát hành PDF và gửi email'">
                                                 Gửi lại email
                                             </button>
                                         </form>
@@ -349,18 +349,18 @@
                             <div class="admin-card" th:if="${isAdminAccount and booking.status != 'completed' and booking.status != 'cancelled'}">
                                 <div class="admin-card-header">
                                     <div class="admin-card-title-group">
-                                        <h3 class="admin-card-title">Assigned Staff</h3>
-                                        <p class="admin-card-subtitle">Only this person or an admin can hand over and receive the vehicle</p>
+                                        <h3 class="admin-card-title">Nhân viên phụ trách</h3>
+                                        <p class="admin-card-subtitle">Chỉ nhân viên này hoặc quản trị viên được giao và nhận lại xe</p>
                                     </div>
                                 </div>
                                 <div class="admin-card-body">
-                                    <form th:action="@{/admin/bookings/{id}/assign-staff(id=${booking.id})}" method="post" class="d-flex" style="gap: 8px;">
-                                        <select name="staffId" class="admin-form-select" required aria-label="Assigned staff">
+                                    <form th:action="@{/admin/bookings/{id}/assign-staff(id=${booking.id})}" method="post" class="d-flex gap-2">
+                                        <select name="staffId" class="admin-form-select" required aria-label="Nhân viên phụ trách">
                                             <option th:each="employee : ${assignableEmployees}" th:value="${employee.id}"
                                                     th:selected="${employee.id == booking.staffId}"
                                                     th:text="${employee.name + ' (' + employee.role + ')'}">Support Staff (staff)</option>
                                         </select>
-                                        <button type="submit" class="admin-btn admin-btn-secondary font-bold">Save</button>
+                                        <button type="submit" class="admin-btn admin-btn-secondary font-bold">Lưu</button>
                                     </form>
                                 </div>
                             </div>
@@ -368,24 +368,26 @@
                             <div class="admin-card" th:if="${handover != null and !#lists.isEmpty(handover.records)}">
                                 <div class="admin-card-header">
                                     <div class="admin-card-title-group">
-                                        <h3 class="admin-card-title">Handover Records</h3>
-                                        <p class="admin-card-subtitle">Handover, return and damage records of this booking</p>
+                                        <h3 class="admin-card-title">Biên bản bàn giao</h3>
+                                        <p class="admin-card-subtitle">Tình trạng xe lúc giao cho khách và lúc nhận lại</p>
                                     </div>
                                 </div>
                                 <div class="admin-card-body">
                                     <div th:each="record : ${handover.records}" class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs mb-2">
-                                        <div class="font-bold text-slate-800" th:text="${record.type}">CHECK_IN</div>
-                                        <div class="text-slate-600 mt-1" th:text="${record.subject}">Handover: ODO 12000 km, fuel 80%</div>
+                                        <div class="font-bold text-slate-800" th:text="${record.typeLabel}">Nhận xe</div>
+                                        <div class="text-slate-600 mt-1">
+                                            <span th:text="${'ODO ' + record.odometer + ' km · nhiên liệu ' + record.fuelPercent + '%'}">ODO 12000 km · nhiên liệu 80%</span>
+                                            <span th:if="${record.notes != null}" th:text="${' · ' + record.notes}"></span>
+                                        </div>
                                         <div class="text-slate-500 mt-1">
                                             <span th:text="${record.employeeName}">Staff</span>
-                                            <span th:if="${record.reportedAt != null}" th:text="${' · ' + #temporals.format(record.reportedAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                            <span th:if="${record.recordedAt != null}" th:text="${' · ' + #temporals.format(record.recordedAt, 'dd/MM/yyyy HH:mm')}"></span>
                                         </div>
-                                        <div class="mt-1" th:if="${record.evidence or record.secondaryEvidence}">
-                                            <a th:if="${record.evidence}" target="_blank" class="font-bold"
-                                               th:href="@{/admin/bookings/{id}/records/{recordId}/evidence(id=${booking.id}, recordId=${record.id})}"
-                                               th:text="${record.type == 'CHECK_IN'} ? 'Driving license photo' : 'Evidence photo'">Evidence photo</a>
-                                            <a th:if="${record.secondaryEvidence}" target="_blank" class="font-bold ml-2"
-                                               th:href="@{/admin/bookings/{id}/records/{recordId}/evidence(id=${booking.id}, recordId=${record.id}, secondary=true)}">ID card photo</a>
+                                        <div class="mt-1" th:if="${record.licenseImage or record.idCardImage}">
+                                            <a th:if="${record.licenseImage}" target="_blank" class="font-bold"
+                                               th:href="@{/admin/bookings/{id}/records/{recordId}/evidence(id=${booking.id}, recordId=${record.id})}">Ảnh GPLX</a>
+                                            <a th:if="${record.idCardImage}" target="_blank" class="font-bold ml-2"
+                                               th:href="@{/admin/bookings/{id}/records/{recordId}/evidence(id=${booking.id}, recordId=${record.id}, secondary=true)}">Ảnh CCCD</a>
                                         </div>
                                     </div>
                                 </div>
@@ -394,52 +396,55 @@
                             <div class="admin-card" th:if="${booking.status == 'confirmed' and booking.vehicleId != null and !booking.vehicleRetired}">
                                 <div class="admin-card-header">
                                     <div class="admin-card-title-group">
-                                        <h3 class="admin-card-title">Bước 2: Bàn giao xe cho khách · Hand Over Vehicle</h3>
-                                        <p class="admin-card-subtitle">Check the original documents and record the vehicle condition</p>
+                                        <h3 class="admin-card-title">Bước 2: Bàn giao xe cho khách</h3>
+                                        <p class="admin-card-subtitle">Kiểm tra giấy tờ bản gốc và ghi nhận tình trạng xe</p>
                                     </div>
                                 </div>
                                 <div class="admin-card-body">
                                     <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs mb-3">
                                         <ul class="pl-3 mb-0 text-slate-600 space-y-1">
-                                            <li>Check the original <strong>driving license (class B1/B2, not expired) and ID card</strong>.</li>
-                                            <li>Confirm they belong to customer <strong><span th:text="${booking.customerName}"></span></strong>.</li>
-                                            <li>If the documents are not valid, do not submit this form. The booking stays confirmed.</li>
+                                            <li>Kiểm tra bản gốc <strong>giấy phép lái xe (hạng B1/B2, còn hạn) và CCCD</strong>.</li>
+                                            <li>Xác nhận giấy tờ đúng của khách hàng <strong><span th:text="${booking.customerName}"></span></strong>.</li>
+                                            <li>Nếu giấy tờ không hợp lệ, không gửi biểu mẫu này; đơn thuê giữ trạng thái đã xác nhận.</li>
                                         </ul>
                                     </div>
 
                                     <div th:unless="${canHandle}" class="admin-alert admin-alert-warning mb-3">
-                                        This booking is assigned to <strong th:text="${booking.staffName}"></strong>. Only that staff member or an admin can hand over the vehicle.
+                                        Đơn này do <strong th:text="${booking.staffName}"></strong> phụ trách. Chỉ nhân viên đó hoặc quản trị viên được bàn giao xe.
                                     </div>
 
                                     <form th:if="${canHandle}" th:action="@{/admin/bookings/{id}/check-in(id=${booking.id})}" th:object="${checkInForm}" method="post" enctype="multipart/form-data">
                                         <div class="admin-form-group">
-                                            <label class="admin-form-label" for="checkInOdometer">Odometer (km)</label>
-                                            <input id="checkInOdometer" type="number" th:field="*{odometer}" class="admin-form-input font-mono" min="0" required />
+                                            <label class="admin-form-label" for="checkInOdometer">Số km (ODO)</label>
+                                            <input id="checkInOdometer" type="number" th:field="*{odometer}" class="admin-form-input font-mono"
+                                                   th:attr="min=${booking.vehicleOdometer != null ? booking.vehicleOdometer : 0}" required />
+                                            <div class="admin-form-hint" th:if="${booking.vehicleOdometer != null}"
+                                                 th:text="${'Hệ thống ghi nhận lần cuối: ' + #numbers.formatInteger(booking.vehicleOdometer, 0, 'POINT') + ' km. Chỉ sửa nếu đồng hồ trên xe khác.'}">Hệ thống ghi nhận lần cuối: 12.000 km.</div>
                                         </div>
                                         <div class="admin-form-group">
-                                            <label class="admin-form-label" for="checkInFuel">Fuel / battery level (%)</label>
+                                            <label class="admin-form-label" for="checkInFuel">Mức nhiên liệu / pin (%)</label>
                                             <input id="checkInFuel" type="number" th:field="*{fuelPercent}" class="admin-form-input font-mono" min="0" max="100" required />
                                         </div>
                                         <div class="admin-form-group">
-                                            <label class="admin-form-label" for="checkInNotes">Vehicle condition</label>
-                                            <input id="checkInNotes" type="text" th:field="*{notes}" class="admin-form-input" maxlength="150" placeholder="Example: small scratch on left door" />
+                                            <label class="admin-form-label" for="checkInNotes">Tình trạng xe</label>
+                                            <input id="checkInNotes" type="text" th:field="*{notes}" class="admin-form-input" maxlength="150" placeholder="Ví dụ: trầy nhẹ cửa trái" />
                                         </div>
                                         <div class="admin-form-group">
-                                            <label class="admin-form-label" for="licenseImage">Driving license photo</label>
+                                            <label class="admin-form-label" for="licenseImage">Ảnh giấy phép lái xe</label>
                                             <input id="licenseImage" type="file" name="licenseImage" class="admin-form-input" accept="image/jpeg,image/png,image/webp" required />
                                         </div>
                                         <div class="admin-form-group">
-                                            <label class="admin-form-label" for="idCardImage">ID card photo</label>
+                                            <label class="admin-form-label" for="idCardImage">Ảnh CCCD</label>
                                             <input id="idCardImage" type="file" name="idCardImage" class="admin-form-input" accept="image/jpeg,image/png,image/webp" required />
                                         </div>
                                         <div class="admin-form-group">
                                             <label class="text-xs text-slate-700">
                                                 <input type="checkbox" name="documentsVerified" value="true" required />
-                                                I checked the original driving license and ID card.
+                                                Tôi đã kiểm tra bản gốc GPLX và CCCD.
                                             </label>
                                         </div>
                                         <button type="submit" class="admin-btn admin-btn-success w-100 py-2.5 font-bold shadow-xs">
-                                            &check; Hand Over Vehicle
+                                            &check; Bàn giao xe
                                         </button>
                                     </form>
                                 </div>
@@ -478,66 +483,68 @@
                             <div class="admin-card" th:if="${booking.status == 'active' and (handover == null or !handover.returned)}">
                                 <div class="admin-card-header">
                                     <div class="admin-card-title-group">
-                                        <h3 class="admin-card-title">Step 3: Receive Vehicle</h3>
-                                        <p class="admin-card-subtitle">The late fee is calculated automatically from the contract terms</p>
+                                        <h3 class="admin-card-title">Bước 3: Nhận lại xe</h3>
+                                        <p class="admin-card-subtitle">Phí trả trễ được tính tự động theo điều khoản hợp đồng</p>
                                     </div>
                                 </div>
                                 <div class="admin-card-body">
                                     <div th:unless="${canHandle}" class="admin-alert admin-alert-warning mb-3">
-                                        This booking is assigned to <strong th:text="${booking.staffName}"></strong>. Only that staff member or an admin can receive the vehicle.
+                                        Đơn này do <strong th:text="${booking.staffName}"></strong> phụ trách. Chỉ nhân viên đó hoặc quản trị viên được nhận lại xe.
                                     </div>
 
                                     <form th:if="${canHandle}" th:action="@{/admin/bookings/{id}/check-out(id=${booking.id})}" th:object="${checkOutForm}" method="post" enctype="multipart/form-data">
                                         <div class="admin-alert admin-alert-info mb-3">
-                                            Phí trễ giờ được hệ thống tự động tính theo điều khoản. Phí của sự cố đã chốt sẽ được cộng vào quyết toán;
-                                            sự cố chưa chốt được thu sau, khi chốt xong, dưới dạng phí phát sinh sau quyết toán.
+                                            Phí trễ giờ được hệ thống tự động tính theo điều khoản. Phí của các sự cố khách chưa thanh toán
+                                            được cộng vào số tiền khách trả khi quyết toán. Hư hỏng phát hiện lúc nhận xe phải lập Sự cố trước khi quyết toán.
                                         </div>
                                         <div class="admin-form-group">
-                                            <label class="admin-form-label" for="checkOutOdometer">Odometer (km)</label>
-                                            <input id="checkOutOdometer" type="number" th:field="*{odometer}" class="admin-form-input font-mono" min="0" required />
+                                            <label class="admin-form-label" for="checkOutOdometer">Số km (ODO)</label>
+                                            <input id="checkOutOdometer" type="number" th:field="*{odometer}" class="admin-form-input font-mono"
+                                                   th:attr="min=${booking.vehicleOdometer != null ? booking.vehicleOdometer : 0}" required />
+                                            <div class="admin-form-hint" th:if="${booking.vehicleOdometer != null}"
+                                                 th:text="${'Số km lúc giao xe: ' + #numbers.formatInteger(booking.vehicleOdometer, 0, 'POINT') + ' km. Nhập số km hiện tại trên đồng hồ.'}">Số km lúc giao xe: 12.000 km.</div>
                                         </div>
                                         <th:block th:with="openIssues=${issues.?[open]}">
                                             <div class="admin-alert admin-alert-warning mb-3" th:if="${!openIssues.isEmpty()}">
-                                                Còn <strong th:text="${openIssues.size()}">1</strong> sự cố đang mở. Hãy chốt trước nếu muốn tính phí ngay hôm nay.
+                                                Còn <strong th:text="${openIssues.size()}">1</strong> sự cố chưa thanh toán; phí sẽ được cộng vào quyết toán.
                                             </div>
                                         </th:block>
                                         <div class="admin-form-group">
-                                            <label class="admin-form-label" for="checkOutFuel">Fuel / battery level (%)</label>
+                                            <label class="admin-form-label" for="checkOutFuel">Mức nhiên liệu / pin (%)</label>
                                             <input id="checkOutFuel" type="number" th:field="*{fuelPercent}" class="admin-form-input font-mono" min="0" max="100" required />
                                         </div>
                                         <div class="admin-form-group">
-                                            <label class="admin-form-label" for="checkOutNotes">Vehicle condition</label>
-                                            <input id="checkOutNotes" type="text" th:field="*{notes}" class="admin-form-input" maxlength="150" placeholder="Example: clean, no new damage" />
+                                            <label class="admin-form-label" for="checkOutNotes">Tình trạng xe</label>
+                                            <input id="checkOutNotes" type="text" th:field="*{notes}" class="admin-form-input" maxlength="150" placeholder="Ví dụ: sạch sẽ, không có hư hỏng mới" />
                                         </div>
 
                                         <div class="admin-form-group">
-                                            <div class="admin-form-label">Surcharges (VND)</div>
-                                            <div class="admin-form-hint mb-2">Leave a row empty if it does not apply.</div>
-                                            <div th:each="row : ${#numbers.sequence(0, 3)}" class="d-flex mb-2" style="gap: 6px;">
-                                                <select th:name="${'surcharges[' + row + '].feeType'}" class="admin-form-select" aria-label="Surcharge type">
-                                                    <option value="DAMAGE_COMPENSATION">Damage</option>
-                                                    <option value="CLEANING_FEE">Cleaning</option>
-                                                    <option value="FUEL_FEE">Fuel shortfall</option>
-                                                    <option value="TOLL_FEE">Toll</option>
-                                                    <option value="OTHER_FEE">Other</option>
+                                            <div class="admin-form-label">Phí trả xe (VNĐ)</div>
+                                            <div class="admin-form-hint mb-2">Bỏ trống dòng nào không áp dụng. Hư hỏng không ghi ở đây mà phải lập sự cố.</div>
+                                            <div th:each="row : ${#numbers.sequence(0, 3)}" class="d-flex mb-2 gap-2">
+                                                <select th:name="${'returnCharges[' + row + '].feeType'}" class="admin-form-select" aria-label="Loại phí trả xe">
+                                                    <option value="CLEANING_FEE">Vệ sinh xe</option>
+                                                    <option value="FUEL_FEE">Bù nhiên liệu</option>
+                                                    <option value="TOLL_FEE">Phí cầu đường</option>
+                                                    <option value="OTHER_FEE">Khác</option>
                                                 </select>
-                                                <input type="number" th:name="${'surcharges[' + row + '].amount'}" class="admin-form-input font-mono" min="0" step="1000" placeholder="Amount" aria-label="Surcharge amount" />
-                                                <input type="text" th:name="${'surcharges[' + row + '].description'}" class="admin-form-input" maxlength="200" placeholder="Description" aria-label="Surcharge description" />
+                                                <input type="number" th:name="${'returnCharges[' + row + '].amount'}" class="admin-form-input font-mono" min="0" step="1000" placeholder="Số tiền" aria-label="Số tiền phí trả xe" />
+                                                <input type="text" th:name="${'returnCharges[' + row + '].description'}" class="admin-form-input" maxlength="200" placeholder="Mô tả" aria-label="Mô tả phí trả xe" />
                                             </div>
                                         </div>
                                         <div class="admin-form-group">
-                                            <label class="admin-form-label" for="damageImage">Damage photo (optional)</label>
-                                            <input id="damageImage" type="file" name="damageImage" class="admin-form-input" accept="image/jpeg,image/png,image/webp" />
-                                        </div>
-                                        <div class="admin-form-group">
+                                            <div class="admin-alert admin-alert-warning mb-2" th:if="${handover != null and handover.vehicleDamageReported}">
+                                                Đơn này có sự cố va chạm/hư hỏng — xe nên được chuyển sang bảo trì để kiểm tra.
+                                            </div>
                                             <label class="text-xs text-slate-700">
-                                                <input type="checkbox" name="moveToMaintenance" value="true" />
-                                                Move this vehicle to maintenance
+                                                <input type="checkbox" name="moveToMaintenance" value="true"
+                                                       th:checked="${handover != null and handover.vehicleDamageReported}" />
+                                                Chuyển xe sang bảo trì
                                             </label>
                                         </div>
                                         <button type="submit" class="admin-btn admin-btn-primary w-100 py-2 font-bold"
-                                                onclick="return confirm('Record this vehicle return?');">
-                                            Record Vehicle Return
+                                                onclick="return confirm('Xác nhận ghi nhận trả xe?');">
+                                            Ghi nhận trả xe
                                         </button>
                                     </form>
                                 </div>
@@ -546,50 +553,37 @@
                             <div class="admin-card" th:if="${booking.status == 'active' and handover != null and handover.returned}">
                                 <div class="admin-card-header">
                                     <div class="admin-card-title-group">
-                                        <h3 class="admin-card-title">Step 4: Settlement</h3>
-                                        <p class="admin-card-subtitle">Rental total + fees - deposit</p>
+                                        <h3 class="admin-card-title">Bước 4: Quyết toán</h3>
+                                        <p class="admin-card-subtitle">Tiền thuê còn lại (sau khi trừ cọc đã đặt) + các khoản phí chưa thanh toán</p>
                                     </div>
                                 </div>
                                 <div class="admin-card-body">
                                     <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs mb-3">
-                                        <div class="d-flex justify-content-between"><span>Rental total</span><strong th:text="${#numbers.formatDecimal(handover.rentalTotal, 0, 'COMMA', 0, 'POINT') + ' VND'}">0 VND</strong></div>
-                                        <div class="d-flex justify-content-between"><span>Late fee and surcharges</span><strong th:text="${#numbers.formatDecimal(handover.feesTotal, 0, 'COMMA', 0, 'POINT') + ' VND'}">0 VND</strong></div>
-                                        <div class="d-flex justify-content-between"><span>Deposit paid</span><strong th:text="${'-' + #numbers.formatDecimal(handover.depositAmount, 0, 'COMMA', 0, 'POINT') + ' VND'}">0 VND</strong></div>
+                                        <div class="d-flex justify-content-between"><span>Tiền thuê</span><strong th:text="${#numbers.formatDecimal(handover.rentalTotal, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">0 VNĐ</strong></div>
+                                        <div class="d-flex justify-content-between"><span>Phí trả trễ, phí trả xe và phí sự cố chưa thanh toán</span><strong th:text="${#numbers.formatDecimal(handover.feesTotal, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">0 VNĐ</strong></div>
+                                        <div class="d-flex justify-content-between text-slate-500" th:if="${handover.prepaidTotal.signum() > 0}"><span>Phí sự cố khách đã thanh toán trước (không thu lại)</span><span th:text="${#numbers.formatDecimal(handover.prepaidTotal, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">0 VNĐ</span></div>
+                                        <div class="d-flex justify-content-between"><span>Tiền cọc đã đặt (trả trước một phần tiền thuê)</span><strong th:text="${'-' + #numbers.formatDecimal(handover.depositAmount, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">0 VNĐ</strong></div>
                                         <div class="d-flex justify-content-between mt-2 text-sm">
-                                            <span class="font-bold" th:text="${handover.refundDue} ? 'Refund to customer' : 'Customer pays'">Customer pays</span>
-                                            <strong th:text="${#numbers.formatDecimal(handover.refundAmount, 0, 'COMMA', 0, 'POINT') + ' VND'}">0 VND</strong>
+                                            <span class="font-bold">Khách cần thanh toán</span>
+                                            <strong th:text="${#numbers.formatDecimal(handover.finalAmount, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">0 VNĐ</strong>
                                         </div>
                                     </div>
 
                                     <div th:unless="${canHandle}" class="admin-alert admin-alert-warning mb-3">
-                                        This booking is assigned to <strong th:text="${booking.staffName}"></strong>. Only that staff member or an admin can settle it.
+                                        Đơn này do <strong th:text="${booking.staffName}"></strong> phụ trách. Chỉ nhân viên đó hoặc quản trị viên được quyết toán.
                                     </div>
 
                                     <form th:if="${canHandle}" th:action="@{/admin/bookings/{id}/settle(id=${booking.id})}" th:object="${settlementForm}" method="post">
                                         <div class="admin-form-group" th:if="${handover.customerOwes}">
-                                            <label class="admin-form-label" for="paymentMethod">Payment received by</label>
+                                            <label class="admin-form-label" for="paymentMethod">Hình thức nhận tiền</label>
                                             <select id="paymentMethod" th:field="*{paymentMethod}" class="admin-form-select" required>
-                                                <option value="CASH">Cash</option>
-                                                <option value="BANK_TRANSFER">Bank transfer</option>
+                                                <option value="CASH">Tiền mặt</option>
+                                                <option value="BANK_TRANSFER">Chuyển khoản</option>
                                             </select>
                                         </div>
-                                        <th:block th:if="${handover.refundDue}">
-                                            <div class="admin-form-group">
-                                                <label class="admin-form-label" for="bankCode">Bank code</label>
-                                                <input id="bankCode" type="text" th:field="*{bankCode}" class="admin-form-input" maxlength="20" placeholder="Example: VCB" required />
-                                            </div>
-                                            <div class="admin-form-group">
-                                                <label class="admin-form-label" for="accountNumber">Account number</label>
-                                                <input id="accountNumber" type="text" th:field="*{accountNumber}" class="admin-form-input font-mono" maxlength="30" required />
-                                            </div>
-                                            <div class="admin-form-group">
-                                                <label class="admin-form-label" for="accountHolder">Account holder</label>
-                                                <input id="accountHolder" type="text" th:field="*{accountHolder}" class="admin-form-input" maxlength="40" required />
-                                            </div>
-                                        </th:block>
                                         <button type="submit" class="admin-btn admin-btn-success w-100 py-2 font-bold"
-                                                onclick="return confirm('Complete settlement and close this booking?');">
-                                            Complete Settlement
+                                                onclick="return confirm('Hoàn tất quyết toán và đóng đơn thuê này?');">
+                                            Hoàn tất quyết toán
                                         </button>
                                     </form>
                                 </div>
@@ -628,7 +622,7 @@
                                     <span class="text-muted small">Đơn đặt xe #<span th:text="${booking.id}">101</span></span>
                                 </div>
                             </div>
-                            <button type="button" class="close text-muted" aria-label="Close" onclick="closeRefundConfirmModal()"
+                            <button type="button" class="close text-muted" aria-label="Đóng" onclick="closeRefundConfirmModal()"
                                     style="font-size: 24px; outline: none; border: none; background: transparent; cursor: pointer;">
                                 <span aria-hidden="true">&times;</span>
                             </button>

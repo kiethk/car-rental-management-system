@@ -91,7 +91,7 @@ public class PaymentController {
                                        HttpServletRequest request,
                                        HttpSession session,
                                        RedirectAttributes ra) {
-        Long customerId = (Long) session.getAttribute("customerId");
+        Long customerId = CurrentAccount.customerId(session).orElse(null);
         if (customerId == null) {
             return "redirect:/login";
         }

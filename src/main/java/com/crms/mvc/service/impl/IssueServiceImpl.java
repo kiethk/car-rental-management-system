@@ -3,8 +3,8 @@ package com.crms.mvc.service.impl;
 import com.crms.mvc.dto.IssueActor;
 import com.crms.mvc.dto.IssueDTO;
 import com.crms.mvc.dto.IssueFormDTO;
+import com.crms.mvc.dto.IssueNoticeDTO;
 import com.crms.mvc.dto.IssueQueryDTO;
-import com.crms.mvc.dto.IssueStatsDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Employee;
@@ -33,6 +33,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,7 +41,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
@@ -55,6 +55,8 @@ public class IssueServiceImpl implements IssueService {
 
     private static final int FEE_DESCRIPTION_MAX = 255;
     private static final int MAX_PHOTOS = 10;
+    /** Seconds after recording an Issue before the customer is emailed, so a mistaken Issue can be cancelled silently. */
+    public static final int NOTICE_GRACE_SECONDS = 30;
 
     private final IssueRepository issueRepository;
     private final BookingRepository bookingRepository;
@@ -121,8 +123,33 @@ public class IssueServiceImpl implements IssueService {
         Issue saved = issueRepository.save(issue);
 
         syncFee(saved, fee);
-        eventPublisher.publishEvent(new IssueFeeDueEvent(saved.getId()));
+        // No email yet: sendDueNotices() tells the customer once the grace period has passed.
         return saved;
+    }
+
+    @Override
+    @Scheduled(fixedDelay = 10_000)
+    public void sendDueNotices() {
+        OffsetDateTime graceEnded = OffsetDateTime.now().minusSeconds(NOTICE_GRACE_SECONDS);
+        for (Issue issue : issueRepository.findByStatusAndNotifiedAtIsNullAndReportedAtBefore(IssueStatus.OPEN, graceEnded)) {
+            issue.setNotifiedAt(OffsetDateTime.now());
+            issueRepository.save(issue);
+            eventPublisher.publishEvent(new IssueFeeDueEvent(issue.getId()));
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<IssueNoticeDTO> findNotice(Long issueId) {
+        return issueRepository.findByIdWithDetails(issueId).map(issue -> new IssueNoticeDTO(
+                issue.getId(),
+                issue.getBooking().getId(),
+                issue.getBooking().getCustomer().getName(),
+                issue.getBooking().getCustomer().getEmail(),
+                issue.getIssueType().getLabel(),
+                issue.getSubject(),
+                DateTimeUtils.toVietnamTime(issue.getOccurredAt()),
+                findFee(issue.getId()).map(BookingFee::getAmount).orElse(null)));
     }
 
     @Override
@@ -155,7 +182,10 @@ public class IssueServiceImpl implements IssueService {
         invalidatePendingPayments(issue.getBooking().getId());
 
         syncFee(saved, fee);
-        eventPublisher.publishEvent(new IssueFeeDueEvent(saved.getId()));
+        // Inside the grace period the customer has not been told yet; the one notice will carry the new fee.
+        if (saved.getNotifiedAt() != null) {
+            eventPublisher.publishEvent(new IssueFeeDueEvent(saved.getId()));
+        }
         return saved;
     }
 
@@ -221,13 +251,11 @@ public class IssueServiceImpl implements IssueService {
         findFee(issue.getId()).ifPresent(bookingFeeRepository::delete);
         Issue saved = issueRepository.save(issue);
 
-        eventPublisher.publishEvent(new IssueCancelledEvent(saved.getId(), text));
+        // Cancelled inside the grace period: the customer never heard of it, so there is nothing to retract.
+        if (saved.getNotifiedAt() != null) {
+            eventPublisher.publishEvent(new IssueCancelledEvent(saved.getId(), text));
+        }
         return saved;
-    }
-
-    @Override
-    public Issue reopen(Long issueId, IssueActor actor) {
-        throw new IllegalStateException("Không thể mở lại sự cố đã hoàn tất thanh toán hoặc đã huỷ");
     }
 
     @Override
@@ -336,14 +364,8 @@ public class IssueServiceImpl implements IssueService {
 
     @Override
     @Transactional(readOnly = true)
-    public IssueStatsDTO stats() {
-        ZonedDateTime monthStart = ZonedDateTime.now(DateTimeUtils.VIETNAM_ZONE)
-                .withDayOfMonth(1).truncatedTo(ChronoUnit.DAYS);
-        return new IssueStatsDTO(
-                issueRepository.countByStatus(IssueStatus.OPEN),
-                bookingFeeRepository.countIssueFeesAwaitingPayment(IssueStatus.RESOLVED),
-                bookingFeeRepository.sumIssueFeesPaidBetween(
-                        monthStart.toOffsetDateTime(), monthStart.plusMonths(1).toOffsetDateTime()));
+    public long countOpen() {
+        return issueRepository.countByStatus(IssueStatus.OPEN);
     }
 
     private void invalidatePendingPayments(Long bookingId) {
@@ -498,9 +520,10 @@ public class IssueServiceImpl implements IssueService {
         dto.setSubject(issue.getSubject());
         dto.setDescription(issue.getDescription());
         dto.setStatus(issue.getStatus());
-        dto.setOccurredAt(issue.getOccurredAt());
-        dto.setReportedAt(issue.getReportedAt());
-        dto.setResolvedAt(issue.getResolvedAt());
+        // Shown to people and copied into the edit form, so always in Vietnam time (the database hands back UTC).
+        dto.setOccurredAt(DateTimeUtils.toVietnamTime(issue.getOccurredAt()));
+        dto.setReportedAt(DateTimeUtils.toVietnamTime(issue.getReportedAt()));
+        dto.setResolvedAt(DateTimeUtils.toVietnamTime(issue.getResolvedAt()));
         dto.setResolutionNote(issue.getResolutionNote());
         dto.setCancelReason(issue.getCancelReason());
         if (fee != null) {

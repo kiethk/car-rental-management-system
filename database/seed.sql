@@ -145,7 +145,7 @@ VALUES
         CURRENT_TIMESTAMP - INTERVAL '3 days', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days',
         1350000.00,
         'completed', CURRENT_TIMESTAMP - INTERVAL '5 days',
-        150000.00, 5000000.00, 150000.00
+        150000.00, 675000.00, 150000.00
     ),
     -- Booking 2: Active rental
     (
@@ -153,7 +153,7 @@ VALUES
         CURRENT_TIMESTAMP - INTERVAL '4 hours', CURRENT_TIMESTAMP + INTERVAL '6 hours', NULL,
         1500000.00,
         'active', CURRENT_TIMESTAMP - INTERVAL '1 day',
-        150000.00, 5000000.00, 0.00
+        150000.00, 750000.00, 0.00
     ),
     -- Booking 3: Confirmed
     (
@@ -161,7 +161,7 @@ VALUES
         CURRENT_TIMESTAMP + INTERVAL '1 day', CURRENT_TIMESTAMP + INTERVAL '1 day 10 hours', NULL,
         2900000.00,
         'confirmed', CURRENT_TIMESTAMP - INTERVAL '2 hours',
-        300000.00, 8000000.00, 100000.00
+        300000.00, 1450000.00, 100000.00
     )
 ON CONFLICT (booking_id) DO NOTHING;
 
@@ -203,7 +203,7 @@ VALUES
      || E'a) Giá trị thị trường của xe tại thời điểm xảy ra sự việc, theo định giá của đơn vị thẩm định độc lập, trừ đi số tiền bảo hiểm Bên A thực nhận (nếu có);\n'
      || E'b) Chi phí cứu hộ, cẩu kéo, lưu bãi và giám định thực tế phát sinh;\n'
      || E'c) Thiệt hại do xe ngừng khai thác: đơn giá thuê theo ngày nhân với số ngày từ khi xảy ra sự việc đến khi hoàn tất bồi thường, tối đa 30 ngày.\n'
-     || E'Tiền cọc được cấn trừ vào khoản bồi thường. Phần còn thiếu Bên B thanh toán trong vòng 7 ngày.',
+     || E'Khoản bồi thường được thanh toán riêng, ngoài tiền thuê; Bên B thanh toán trong vòng 7 ngày kể từ ngày nhận thông báo.',
      0.5000, 2.00, 72,
      'ACTIVE', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (contract_template_id) DO NOTHING;
@@ -219,15 +219,16 @@ VALUES
 ON CONFLICT (contract_id) DO NOTHING;
 
 -- 12. PAYMENTS
--- payment_type: 'DEPOSIT' | 'FINAL' | 'REFUND'
+-- payment_type: 'DEPOSIT' | 'FINAL' | 'REFUND' | 'ISSUE_COMPENSATION'
+-- The deposit is 50% of the rent (contract terms), so settlement never refunds: REFUND only follows a timely cancellation.
+-- Booking 1 settlement: rent 1,350,000 - deposit 675,000 + issue fee 200,000 = 875,000.
 -- status: 'pending' | 'paid' | 'failed'
 INSERT INTO payments (payment_id, booking_id, transaction_code, payment_type, amount, payment_method, status, paid_at)
 VALUES 
-    (1, 1, 'TXN-DEP-1001', 'DEPOSIT', 5000000.00, 'VIETQR', 'paid', CURRENT_TIMESTAMP - INTERVAL '4 days'),
-    (2, 1, 'TXN-FIN-1002', 'FINAL', 1350000.00, 'VIETQR', 'paid', CURRENT_TIMESTAMP - INTERVAL '2 days'),
-    (3, 1, 'TXN-REF-1003', 'REFUND', 5000000.00, 'BANK_TRANSFER', 'paid', CURRENT_TIMESTAMP - INTERVAL '2 days'),
-    (4, 2, 'TXN-DEP-2001', 'DEPOSIT', 5000000.00, 'VIETQR', 'paid', CURRENT_TIMESTAMP - INTERVAL '1 day'),
-    (5, 3, 'TXN-DEP-3001', 'DEPOSIT', 8000000.00, 'VIETQR', 'paid', CURRENT_TIMESTAMP - INTERVAL '1 hour')
+    (1, 1, 'TXN-DEP-1001', 'DEPOSIT', 675000.00, 'VNPAY', 'paid', CURRENT_TIMESTAMP - INTERVAL '4 days'),
+    (2, 1, 'FINAL-1-1002', 'FINAL', 875000.00, 'CASH', 'paid', CURRENT_TIMESTAMP - INTERVAL '2 days'),
+    (4, 2, 'TXN-DEP-2001', 'DEPOSIT', 750000.00, 'VNPAY', 'paid', CURRENT_TIMESTAMP - INTERVAL '1 day'),
+    (5, 3, 'TXN-DEP-3001', 'DEPOSIT', 1450000.00, 'VNPAY', 'paid', CURRENT_TIMESTAMP - INTERVAL '1 hour')
 ON CONFLICT (payment_id) DO NOTHING;
 
 -- 13. REVIEWS
@@ -249,11 +250,11 @@ ON CONFLICT (vehicle_inspection_id) DO NOTHING;
 -- issue_type: 'COLLISION' | 'DAMAGE' | 'TRAFFIC_FINE' | 'OTHER'; status: 'open' | 'resolved' | 'cancelled'
 -- The amount owed is a booking_fees row (fee_type 'ISSUE_COMPENSATION'), not a column here.
 INSERT INTO issues (issue_id, booking_id, vehicle_id, employee_id, issue_type, subject, description, status,
-                    occurred_at, reported_at, resolved_at, resolution_note)
+                    occurred_at, reported_at, resolved_at, resolution_note, notified_at)
 VALUES
     (1, 1, 1, 2, 'DAMAGE', 'Minor scratch on front bumper', 'Scratch about 15 cm found on the front bumper at return.', 'resolved',
      CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days',
-     'Customer agreed to a flat compensation of 200,000 VND.')
+     'Customer agreed to a flat compensation of 200,000 VND.', CURRENT_TIMESTAMP - INTERVAL '2 days')
 ON CONFLICT (issue_id) DO NOTHING;
 
 -- 15b. ISSUE_EVIDENCES (files live in the private issue upload folder)
@@ -264,10 +265,10 @@ ON CONFLICT (issue_evidence_id) DO NOTHING;
 
 -- 16. BOOKING_FEES
 -- fee_type: 'RENTAL' | 'LATE_FEE' | 'ISSUE_COMPENSATION' | 'CLEANING_FEE' | 'TOLL_FEE'
--- payment_id: the payment that settled the fee (booking 1's settlement is payment 3); NULL means still owed.
+-- payment_id: the payment that settled the fee (booking 1's settlement is payment 2); NULL means still owed.
 INSERT INTO booking_fees (booking_fee_id, booking_id, fee_type, amount, description, issue_id, payment_id, created_at)
 VALUES
-    (1, 1, 'ISSUE_COMPENSATION', 200000.00, 'Compensation for front bumper scratch per issue #1', 1, 3, CURRENT_TIMESTAMP - INTERVAL '2 days')
+    (1, 1, 'ISSUE_COMPENSATION', 200000.00, 'Compensation for front bumper scratch per issue #1', 1, 2, CURRENT_TIMESTAMP - INTERVAL '2 days')
 ON CONFLICT (booking_fee_id) DO NOTHING;
 
 -- Sequence updates
@@ -286,6 +287,7 @@ SELECT setval(pg_get_serial_sequence('payments', 'payment_id'), COALESCE(MAX(pay
 SELECT setval(pg_get_serial_sequence('reviews', 'review_id'), COALESCE(MAX(review_id), 1)) FROM reviews;
 SELECT setval(pg_get_serial_sequence('vehicle_inspections', 'vehicle_inspection_id'), COALESCE(MAX(vehicle_inspection_id), 1)) FROM vehicle_inspections;
 SELECT setval(pg_get_serial_sequence('issues', 'issue_id'), COALESCE(MAX(issue_id), 1)) FROM issues;
+SELECT setval(pg_get_serial_sequence('handovers', 'handover_id'), COALESCE(MAX(handover_id), 1)) FROM handovers;
 SELECT setval(pg_get_serial_sequence('issue_evidences', 'issue_evidence_id'), COALESCE(MAX(issue_evidence_id), 1)) FROM issue_evidences;
 SELECT setval(pg_get_serial_sequence('booking_fees', 'booking_fee_id'), COALESCE(MAX(booking_fee_id), 1)) FROM booking_fees;
 

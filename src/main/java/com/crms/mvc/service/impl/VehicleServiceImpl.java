@@ -273,17 +273,6 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     @Override
-    public void updateRegistrationExpiry(Long id, LocalDate registrationExpiry) {
-        Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with ID: " + id));
-        if (registrationExpiry == null) {
-            throw new IllegalArgumentException("Registration expiry date is required");
-        }
-        vehicle.setRegistrationExpiry(registrationExpiry);
-        vehicleRepository.save(vehicle);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<Vehicle> findByVehicleTypeIdWithDetails(Long typeId) {
         return vehicleRepository.findByVehicleTypeIdWithDetails(typeId);

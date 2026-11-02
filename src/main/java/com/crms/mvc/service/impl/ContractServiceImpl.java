@@ -97,7 +97,9 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public void issueContract(Long bookingId) {
-        Contract contract = findContract(bookingId);
+        // The second caller waits here, then sees the contract already issued and emailed, and does nothing.
+        Contract contract = contractRepository.findByBookingIdForUpdate(bookingId)
+                .orElseThrow(() -> new NoSuchElementException("Contract not found for booking: " + bookingId));
         if (!ISSUABLE_BOOKING_STATUSES.contains(contract.getBooking().getStatus())) {
             throw new IllegalStateException("Contract can only be issued after the deposit is paid");
         }
