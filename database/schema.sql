@@ -230,6 +230,7 @@ CREATE TABLE issues (
     description TEXT,
     status VARCHAR(30) NOT NULL,
     evidence_url VARCHAR(500),
+    secondary_evidence_url VARCHAR(500),
     occurred_at TIMESTAMP WITH TIME ZONE NOT NULL,
     reported_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     resolved_at TIMESTAMP WITH TIME ZONE,
