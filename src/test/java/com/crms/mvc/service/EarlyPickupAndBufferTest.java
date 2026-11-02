@@ -210,4 +210,44 @@ class EarlyPickupAndBufferTest {
         assertEquals("completed", booking.getStatus());
         assertEquals(IssueStatus.RESOLVED, damageIssue.getStatus());
     }
+
+    @Test
+    @DisplayName("Symmetrical 1-hour buffer: booking at 17:00 requires preceding booking to end by 16:00")
+    void testPrecedingBookingMustEndOneHourBeforeNextBooking() {
+        BookingServiceImpl bookingService = new BookingServiceImpl(
+                bookingRepository, mock(CustomerRepository.class), mock(SlotRepository.class),
+                mock(VehicleTypeRepository.class), vehicleRepository, employeeRepository,
+                mock(PromotionRepository.class), paymentService, contractService,
+                mock(ContractTemplateService.class), bookingFeeService, pricingService, issueService);
+
+        Vehicle car = new Vehicle();
+        car.setId(100L);
+        car.setStatus("available");
+        when(vehicleRepository.findByVehicleTypeIdWithDetails(1L)).thenReturn(List.of(car));
+
+        // Given: Existing booking at 17:00 - 19:00
+        OffsetDateTime fivePm = OffsetDateTime.now().withHour(17).withMinute(0).withSecond(0).withNano(0);
+        OffsetDateTime morningStart = fivePm.minusHours(8); // 09:00
+
+        // Case 1: Candidate wants 09:00 - 16:30 (only 30 mins before 17:00)
+        OffsetDateTime invalidEnd = fivePm.minusMinutes(30); // 16:30
+        // When searching, findBookedVehicleIdsInTimeRange is called with bufferedEnd = 16:30 + 1h = 17:30
+        // which overlaps with existing booking starting at 17:00 (< 17:30), so DB returns [100L]
+        when(bookingRepository.findBookedVehicleIdsInTimeRange(
+                eq(morningStart.minusHours(1)), eq(invalidEnd.plusHours(1)), any()))
+                .thenReturn(List.of(100L));
+
+        List<Vehicle> availableInvalid = bookingService.findAvailableVehiclesInTimeRange(1L, morningStart, invalidEnd);
+        assertThat(availableInvalid).isEmpty(); // Blocked! Cannot book ending at 16:30
+
+        // Case 2: Candidate wants 09:00 - 16:00 (ends exactly 1 hour before 17:00)
+        OffsetDateTime validEnd = fivePm.minusHours(1); // 16:00
+        // When searching, bufferedEnd = 16:00 + 1h = 17:00. DB condition pickupTime (17:00) < 17:00 is false!
+        when(bookingRepository.findBookedVehicleIdsInTimeRange(
+                eq(morningStart.minusHours(1)), eq(validEnd.plusHours(1)), any()))
+                .thenReturn(List.of()); // No conflict
+
+        List<Vehicle> availableValid = bookingService.findAvailableVehiclesInTimeRange(1L, morningStart, validEnd);
+        assertThat(availableValid).containsExactly(car); // Allowed!
+    }
 }
