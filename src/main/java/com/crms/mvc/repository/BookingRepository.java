@@ -42,6 +42,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT DISTINCT b FROM Booking b, Payment p WHERE p.booking = b AND p.paymentType = 'REFUND' AND p.status = 'pending' ORDER BY b.createdAt DESC")
     List<Booking> findBookingsWithPendingRefund();
 
+    @Query("SELECT b FROM Booking b WHERE b.vehicle.id = :vehicleId " +
+           "AND b.id != COALESCE(:excludeBookingId, -1L) " +
+           "AND b.actualReturnTime IS NOT NULL ORDER BY b.actualReturnTime DESC")
+    List<Booking> findRecentReturnsByVehicle(@Param("vehicleId") Long vehicleId,
+                                            @Param("excludeBookingId") Long excludeBookingId);
+
     long countByVehicleId(Long vehicleId);
 
     @Query("SELECT b.vehicle.id FROM Booking b WHERE b.vehicle IS NOT NULL " +

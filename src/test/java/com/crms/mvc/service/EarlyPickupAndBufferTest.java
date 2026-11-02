@@ -158,6 +158,45 @@ class EarlyPickupAndBufferTest {
     }
 
     @Test
+    @DisplayName("Computed State: Check-in rejected when vehicle returned only 10 minutes ago even if status is available")
+    void testCheckInRejectedWhenVehicleReturnedLessThan30MinutesAgo() {
+        // Scheduled in 20 minutes (within 30 mins)
+        booking.setPickupTime(OffsetDateTime.now().plusMinutes(20));
+        vehicle.setStatus("available"); // DB status is available
+
+        // Previous rental returned 10 minutes ago
+        Booking priorBooking = new Booking();
+        priorBooking.setId(9L);
+        priorBooking.setActualReturnTime(OffsetDateTime.now().minusMinutes(10));
+        when(bookingRepository.findRecentReturnsByVehicle(100L, 10L)).thenReturn(List.of(priorBooking));
+
+        assertThatThrownBy(() -> handoverService.checkIn(10L, 1L, createCheckInForm()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Phương tiện hiện đang trong quy trình kiểm tra và vệ sinh sau ca thuê trước")
+                .hasMessageContaining("dự kiến hoàn tất lúc");
+    }
+
+    @Test
+    @DisplayName("Computed State: Check-in allowed when vehicle returned 35 minutes ago (> 30 mins)")
+    void testCheckInAllowedWhenVehicleReturnedMoreThan30MinutesAgo() {
+        // Scheduled in 20 minutes (within 30 mins)
+        booking.setPickupTime(OffsetDateTime.now().plusMinutes(20));
+        vehicle.setStatus("available");
+
+        // Previous rental returned 35 minutes ago
+        Booking priorBooking = new Booking();
+        priorBooking.setId(9L);
+        priorBooking.setActualReturnTime(OffsetDateTime.now().minusMinutes(35));
+        when(bookingRepository.findRecentReturnsByVehicle(100L, 10L)).thenReturn(List.of(priorBooking));
+
+        handoverService.checkIn(10L, 1L, createCheckInForm());
+
+        assertEquals("active", booking.getStatus());
+        assertEquals("rented", vehicle.getStatus());
+        assertNotNull(booking.getActualPickupTime());
+    }
+
+    @Test
     @DisplayName("Issue can be created for actual early pickup time even if before scheduled pickup time")
     void testIssueCreationAllowedAfterActualPickupTime() {
         // Scheduled at 11:00, but picked up at 10:35

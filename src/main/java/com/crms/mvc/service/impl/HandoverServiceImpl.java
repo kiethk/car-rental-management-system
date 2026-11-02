@@ -335,6 +335,7 @@ public class HandoverServiceImpl implements HandoverService {
     }
 
     public static final int MAX_EARLY_PICKUP_MINUTES = 30;
+    public static final int CLEANING_WINDOW_MINUTES = 30;
 
     private void validateEarlyPickupAndVehicleAvailability(Booking booking) {
         OffsetDateTime now = OffsetDateTime.now();
@@ -360,6 +361,25 @@ public class HandoverServiceImpl implements HandoverService {
                 throw new IllegalStateException(
                         "Phương tiện chưa sẵn sàng bàn giao (trạng thái hiện tại: " + vehicle.getStatus()
                                 + "). Vui lòng kiểm tra lại tình trạng xe hoặc đổi sang xe khác cùng loại.");
+            }
+        }
+
+        // 3. Cơ chế suy diễn thời gian (Computed State): Xe vừa trả của ca trước chưa đủ 30 phút dọn rửa
+        if (vehicle != null && vehicle.getId() != null) {
+            List<Booking> recentReturns = bookingRepository.findRecentReturnsByVehicle(vehicle.getId(), booking.getId());
+            if (!recentReturns.isEmpty()) {
+                Booking latestReturn = recentReturns.get(0);
+                if (latestReturn.getActualReturnTime() != null) {
+                    OffsetDateTime cleaningDoneAt = latestReturn.getActualReturnTime().plusMinutes(CLEANING_WINDOW_MINUTES);
+                    if (now.isBefore(cleaningDoneAt)) {
+                        throw new IllegalStateException(
+                                "Phương tiện hiện đang trong quy trình kiểm tra và vệ sinh sau ca thuê trước (dự kiến hoàn tất lúc "
+                                        + DateTimeUtils.formatToVietnamTime(cleaningDoneAt) + "). "
+                                        + (scheduledPickup != null ? "Quý khách vui lòng nhận xe vào đúng khung giờ dự kiến ("
+                                        + DateTimeUtils.formatToVietnamTime(scheduledPickup) + ")" : "Quý khách vui lòng đợi trong giây lát")
+                                        + ", hoặc liên hệ nhân viên để được hỗ trợ đổi sang phương tiện cùng loại khác biển số nếu muốn nhận ngay.");
+                    }
+                }
             }
         }
     }
