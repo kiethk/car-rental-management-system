@@ -425,8 +425,9 @@ VALUES
 ON CONFLICT (license_plate_id) DO NOTHING;
 
 -- Update sequences
-SELECT setval('license_plates_license_plate_id_seq', (SELECT MAX(license_plate_id) FROM license_plates));
-SELECT setval('vehicles_vehicle_id_seq', (SELECT MAX(vehicle_id) FROM vehicles));
+SELECT setval(pg_get_serial_sequence('license_plates', 'license_plate_id'), (SELECT MAX(license_plate_id) FROM license_plates));
+SELECT setval(pg_get_serial_sequence('vehicles', 'vehicle_id'), (SELECT MAX(vehicle_id) FROM vehicles));
 
 COMMIT;
+
 
