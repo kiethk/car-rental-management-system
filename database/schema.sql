@@ -137,6 +137,7 @@ CREATE TABLE bookings (
     employee_id BIGINT REFERENCES employees(employee_id),
     promotion_id BIGINT REFERENCES promotions(promotion_id),
     pickup_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    actual_pickup_time TIMESTAMP WITH TIME ZONE,
     scheduled_end_time TIMESTAMP WITH TIME ZONE NOT NULL,
     actual_return_time TIMESTAMP WITH TIME ZONE,
     total_price NUMERIC(14,2) NOT NULL,

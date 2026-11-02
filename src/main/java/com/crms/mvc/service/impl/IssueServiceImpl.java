@@ -432,8 +432,10 @@ public class IssueServiceImpl implements IssueService {
         if (occurred.isAfter(OffsetDateTime.now())) {
             throw new IllegalArgumentException("Thời gian sự cố không được ở tương lai");
         }
-        if (issue.getBooking() != null && issue.getBooking().getPickupTime() != null
-                && occurred.isBefore(issue.getBooking().getPickupTime())) {
+        OffsetDateTime effectivePickup = issue.getBooking() != null && issue.getBooking().getActualPickupTime() != null
+                ? issue.getBooking().getActualPickupTime()
+                : (issue.getBooking() != null ? issue.getBooking().getPickupTime() : null);
+        if (effectivePickup != null && occurred.isBefore(effectivePickup)) {
             throw new IllegalArgumentException("Thời gian sự cố không được trước thời gian nhận xe của chuyến thuê");
         }
         issue.setOccurredAt(occurred);

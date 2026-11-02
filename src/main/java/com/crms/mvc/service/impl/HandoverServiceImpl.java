@@ -21,6 +21,7 @@ import com.crms.mvc.service.FileUploadService;
 import com.crms.mvc.service.HandoverService;
 import com.crms.mvc.service.PaymentService;
 import com.crms.mvc.service.PricingService;
+import com.crms.mvc.util.DateTimeUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,6 +90,7 @@ public class HandoverServiceImpl implements HandoverService {
         if (vehicle == null) {
             throw new IllegalStateException("Cannot check-in: vehicle is not assigned yet");
         }
+        validateEarlyPickupAndVehicleAvailability(booking);
         if (issueRepository.findByBookingIdAndIssueType(bookingId, TYPE_CHECK_IN).isPresent()) {
             throw new IllegalStateException("Handover record already exists for this booking");
         }
@@ -107,6 +109,7 @@ public class HandoverServiceImpl implements HandoverService {
         vehicle.setStatus("rented");
         vehicleRepository.save(vehicle);
 
+        booking.setActualPickupTime(OffsetDateTime.now());
         booking.setStatus("active");
         bookingRepository.save(booking);
     }
@@ -192,6 +195,14 @@ public class HandoverServiceImpl implements HandoverService {
 
         record.setStatus(STATUS_RESOLVED);
         issueRepository.save(record);
+
+        for (Issue issue : issueRepository.findByBookingIdOrderByReportedAtAsc(bookingId)) {
+            if (issue.getStatus() == IssueStatus.OPEN) {
+                issue.setStatus(IssueStatus.RESOLVED);
+                issueRepository.save(issue);
+            }
+        }
+
         booking.setStatus("completed");
         bookingRepository.save(booking);
     }
@@ -321,6 +332,36 @@ public class HandoverServiceImpl implements HandoverService {
     private String subject(String label, Integer odometer, Integer fuelPercent, String notes) {
         String subject = label + ": ODO " + odometer + " km, fuel " + fuelPercent + "%";
         return hasText(notes) ? subject + ", " + notes.trim() : subject;
+    }
+
+    public static final int MAX_EARLY_PICKUP_MINUTES = 30;
+
+    private void validateEarlyPickupAndVehicleAvailability(Booking booking) {
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime scheduledPickup = booking.getPickupTime();
+        Vehicle vehicle = booking.getVehicle();
+
+        // 1. Chỉ được nhận xe trước giờ hẹn tối đa 30 phút
+        if (scheduledPickup != null && now.isBefore(scheduledPickup.minusMinutes(MAX_EARLY_PICKUP_MINUTES))) {
+            throw new IllegalStateException(
+                    "Chỉ được phép nhận xe trước giờ hẹn tối đa 30 phút. Giờ nhận xe dự kiến là: "
+                            + DateTimeUtils.formatToVietnamTime(scheduledPickup) + ".");
+        }
+
+        // 2. Xe phải ở trạng thái sẵn sàng (available)
+        if (vehicle != null && !Vehicle.STATUS_AVAILABLE.equalsIgnoreCase(vehicle.getStatus())) {
+            if (scheduledPickup != null && now.isBefore(scheduledPickup)) {
+                throw new IllegalStateException(
+                        "Phương tiện hiện đang trong quy trình kiểm tra và vệ sinh sau ca thuê trước. "
+                                + "Quý khách vui lòng nhận xe vào đúng khung giờ dự kiến ("
+                                + DateTimeUtils.formatToVietnamTime(scheduledPickup)
+                                + "), hoặc đổi sang phương tiện cùng loại khác biển số nếu muốn nhận ngay.");
+            } else {
+                throw new IllegalStateException(
+                        "Phương tiện chưa sẵn sàng bàn giao (trạng thái hiện tại: " + vehicle.getStatus()
+                                + "). Vui lòng kiểm tra lại tình trạng xe hoặc đổi sang xe khác cùng loại.");
+            }
+        }
     }
 
     private boolean isMissing(MultipartFile file) {

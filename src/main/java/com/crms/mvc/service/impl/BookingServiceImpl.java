@@ -28,6 +28,9 @@ import java.util.Set;
 @Service
 @Transactional
 public class BookingServiceImpl implements BookingService {
+    public static final int BUFFER_BETWEEN_RENTALS_HOURS = 1;
+    public static final int MAX_EARLY_PICKUP_MINUTES = 30;
+
     private final BookingRepository bookingRepository;
     private final CustomerRepository customerRepository;
     private final SlotRepository slotRepository;
@@ -331,11 +334,13 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalStateException("Vehicle is not available for assignment");
         }
 
-        // B3: Chống gán xe trùng giờ với booking khác
+        // B3: Chống gán xe trùng giờ với booking khác (có buffer 1 tiếng)
+        OffsetDateTime bufferedStart = b.getPickupTime().minusHours(BUFFER_BETWEEN_RENTALS_HOURS);
+        OffsetDateTime bufferedEnd = b.getScheduledEndTime().plusHours(BUFFER_BETWEEN_RENTALS_HOURS);
         List<Long> bookedVehicleIds = bookingRepository.findBookedVehicleIdsInTimeRange(
-                b.getPickupTime(), b.getScheduledEndTime(), OffsetDateTime.now().minusMinutes(15));
+                bufferedStart, bufferedEnd, OffsetDateTime.now().minusMinutes(15));
         if (bookedVehicleIds.contains(vehicleId) && (b.getVehicle() == null || !b.getVehicle().getId().equals(vehicleId))) {
-            throw new IllegalStateException("Xe này đã có lịch đặt khác trong cùng khung giờ.");
+            throw new IllegalStateException("Xe này đã có lịch đặt khác trong cùng khung giờ (yêu cầu cách nhau tối thiểu 1 tiếng).");
         }
 
         b.setVehicle(v);
@@ -356,10 +361,13 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalStateException("Booking must be confirmed before check-in");
         }
 
+        validateEarlyPickupAndVehicleAvailability(b);
+
+        OffsetDateTime now = OffsetDateTime.now();
+        b.setActualPickupTime(now);
         b.setStatus("active");
         b.setEmployee(emp);
         b.getVehicle().setStatus("rented");
-
 
         vehicleRepository.save(b.getVehicle());
         bookingRepository.save(b);
@@ -515,12 +523,42 @@ public class BookingServiceImpl implements BookingService {
         List<Vehicle> allVehiclesOfType = vehicleRepository.findByVehicleTypeIdWithDetails(vehicleTypeId);
 
         OffsetDateTime cutoffTime = OffsetDateTime.now().minusMinutes(15);
-        List<Long> bookedVehicleIds = bookingRepository.findBookedVehicleIdsInTimeRange(startTime, endTime, cutoffTime);
+        OffsetDateTime bufferedStart = startTime.minusHours(BUFFER_BETWEEN_RENTALS_HOURS);
+        OffsetDateTime bufferedEnd = endTime.plusHours(BUFFER_BETWEEN_RENTALS_HOURS);
+        List<Long> bookedVehicleIds = bookingRepository.findBookedVehicleIdsInTimeRange(bufferedStart, bufferedEnd, cutoffTime);
 
         return allVehiclesOfType.stream()
                 .filter(v -> !"maintenance".equalsIgnoreCase(v.getStatus()) && !Vehicle.STATUS_RETIRED.equalsIgnoreCase(v.getStatus()))
                 .filter(v -> !bookedVehicleIds.contains(v.getId()))
                 .toList();
+    }
+
+    private void validateEarlyPickupAndVehicleAvailability(Booking booking) {
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime scheduledPickup = booking.getPickupTime();
+        Vehicle vehicle = booking.getVehicle();
+
+        // 1. Chỉ được nhận xe trước giờ hẹn tối đa 30 phút
+        if (scheduledPickup != null && now.isBefore(scheduledPickup.minusMinutes(MAX_EARLY_PICKUP_MINUTES))) {
+            throw new IllegalStateException(
+                    "Chỉ được phép nhận xe trước giờ hẹn tối đa 30 phút. Giờ nhận xe dự kiến là: "
+                            + DateTimeUtils.formatToVietnamTime(scheduledPickup) + ".");
+        }
+
+        // 2. Xe phải ở trạng thái sẵn sàng (available)
+        if (vehicle != null && !Vehicle.STATUS_AVAILABLE.equalsIgnoreCase(vehicle.getStatus())) {
+            if (scheduledPickup != null && now.isBefore(scheduledPickup)) {
+                throw new IllegalStateException(
+                        "Phương tiện hiện đang trong quy trình kiểm tra và vệ sinh sau ca thuê trước. "
+                                + "Quý khách vui lòng nhận xe vào đúng khung giờ dự kiến ("
+                                + DateTimeUtils.formatToVietnamTime(scheduledPickup)
+                                + "), hoặc đổi sang phương tiện cùng loại khác biển số nếu muốn nhận ngay.");
+            } else {
+                throw new IllegalStateException(
+                        "Phương tiện chưa sẵn sàng bàn giao (trạng thái hiện tại: " + vehicle.getStatus()
+                                + "). Vui lòng kiểm tra lại tình trạng xe hoặc đổi sang xe khác cùng loại.");
+            }
+        }
     }
 
     @Override

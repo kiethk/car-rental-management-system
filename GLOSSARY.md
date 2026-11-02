@@ -49,3 +49,19 @@ _Avoid_: Thanh lý, xoá xe, inactive
 **Tổn thất toàn bộ (Total loss)**:
 Xe hư hỏng không thể sửa chữa, hoặc chi phí sửa chữa vượt ngưỡng hợp đồng quy định so với giá trị xe.
 _Avoid_: Hư nặng, hỏng hẳn
+
+### Lịch trình & Bàn giao xe
+
+**Thời gian đệm chuyển ca (Rental Buffer Time)**:
+Khoảng cách tối thiểu bắt buộc là 1 giờ giữa hai lượt thuê liên tiếp trên cùng một phương tiện vật lý. Được phân bổ thành:
+1. 30 phút đầu: Vệ sinh xe, kiểm tra kỹ thuật sau khi ca thuê trước trả xe.
+2. 30 phút sau: Dự phòng và sẵn sàng bàn giao cho ca thuê tiếp theo (đón khách đúng giờ hoặc nhận sớm).
+_Avoid_: Giờ nghỉ, khoảng trống, downtime
+
+**Khung giờ nhận sớm (Early Pickup Window)**:
+Khoảng thời gian tối đa 30 phút trước giờ nhận dự kiến (`scheduled_pickup_time - 30 phút`) mà khách có thể làm thủ tục nhận xe, với điều kiện tiên quyết là phương tiện đã ở trạng thái sẵn sàng (`available`).
+_Avoid_: Lấy xe tuỳ tiện, nhận xe bất cứ lúc nào
+
+**Thời điểm nhận xe thực tế (Actual Pickup Time)**:
+Thời điểm nhân viên hoàn tất thủ tục bàn giao xe (Check-in) trên hệ thống, chuyển trạng thái đơn thuê sang `active`. Mọi sự cố và trách nhiệm bồi thường của khách được kích hoạt có hiệu lực kể từ thời điểm này.
+_Avoid_: Giờ hẹn, scheduled pickup

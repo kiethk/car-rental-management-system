@@ -38,6 +38,9 @@ public class Booking {
     @Column(name = "pickup_time", nullable = false)
     private OffsetDateTime pickupTime;
 
+    @Column(name = "actual_pickup_time")
+    private OffsetDateTime actualPickupTime;
+
     @Column(name = "scheduled_end_time", nullable = false)
     private OffsetDateTime scheduledEndTime;
 
@@ -87,6 +90,9 @@ public class Booking {
 
     public OffsetDateTime getPickupTime() { return pickupTime; }
     public void setPickupTime(OffsetDateTime pickupTime) { this.pickupTime = pickupTime; }
+
+    public OffsetDateTime getActualPickupTime() { return actualPickupTime; }
+    public void setActualPickupTime(OffsetDateTime actualPickupTime) { this.actualPickupTime = actualPickupTime; }
 
     public OffsetDateTime getScheduledEndTime() { return scheduledEndTime; }
     public void setScheduledEndTime(OffsetDateTime scheduledEndTime) { this.scheduledEndTime = scheduledEndTime; }

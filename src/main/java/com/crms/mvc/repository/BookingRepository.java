@@ -18,7 +18,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
      * before it and ending after it (the real return time, or the planned end while the car is still out).
      */
     @Query("SELECT b FROM Booking b WHERE b.vehicle.id = :vehicleId AND b.status IN ('active', 'completed') "
-            + "AND b.pickupTime <= :at AND :at <= COALESCE(b.actualReturnTime, b.scheduledEndTime) "
+            + "AND COALESCE(b.actualPickupTime, b.pickupTime) <= :at AND :at <= COALESCE(b.actualReturnTime, b.scheduledEndTime) "
             + "ORDER BY b.pickupTime DESC")
     List<Booking> findRentalsCovering(@Param("vehicleId") Long vehicleId, @Param("at") OffsetDateTime at);
 
