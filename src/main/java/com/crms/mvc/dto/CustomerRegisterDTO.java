@@ -20,7 +20,7 @@ public class CustomerRegisterDTO {
     private String email;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 8, max = 255, message = "Password must be at least 8 characters")
+    @Size(max = 255, message = "Password is too long")
     private String password;
 
     public String getName() {

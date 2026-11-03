@@ -9,7 +9,7 @@ public class PasswordChangeDTO {
     private String currentPassword;
 
     @NotBlank(message = "New password is required")
-    @Size(min = 8, max = 255, message = "New password must be at least 8 characters")
+    @Size(max = 255, message = "Password is too long")
     private String newPassword;
 
     public String getCurrentPassword() {

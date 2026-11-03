@@ -26,7 +26,7 @@ public class Payment {
     private BigDecimal amount;
 
     @Column(name = "payment_method", nullable = false, length = 30)
-    private String paymentMethod = "VNPAY";
+    private String paymentMethod = "VIETQR";
 
     @Column(name = "status", nullable = false, length = 30)
     private String status;

@@ -3,6 +3,7 @@ package com.crms.mvc.service.impl;
 import com.crms.mvc.dto.VehicleInspectionFormDTO;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleInspection;
+import com.crms.mvc.repository.LicensePlateRepository;
 import com.crms.mvc.repository.VehicleInspectionRepository;
 import com.crms.mvc.repository.VehicleRepository;
 import com.crms.mvc.service.VehicleInspectionService;
@@ -21,11 +22,14 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
 
     private final VehicleInspectionRepository vehicleInspectionRepository;
     private final VehicleRepository vehicleRepository;
+    private final LicensePlateRepository licensePlateRepository;
 
     public VehicleInspectionServiceImpl(VehicleInspectionRepository vehicleInspectionRepository,
-                                       VehicleRepository vehicleRepository) {
+                                       VehicleRepository vehicleRepository,
+                                       LicensePlateRepository licensePlateRepository) {
         this.vehicleInspectionRepository = vehicleInspectionRepository;
         this.vehicleRepository = vehicleRepository;
+        this.licensePlateRepository = licensePlateRepository;
     }
 
     @Override
@@ -92,9 +96,10 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
             // Restore vehicle to available
             vehicle.setStatus("available");
 
-            // The new inspection sticker belongs to the vehicle, whatever plate it carries
-            if (newRegistrationExpiry != null) {
-                vehicle.setRegistrationExpiry(newRegistrationExpiry);
+            // Renew registration expiry on license plate if provided
+            if (newRegistrationExpiry != null && vehicle.getLicensePlate() != null) {
+                vehicle.getLicensePlate().setRegistrationExpiry(newRegistrationExpiry);
+                licensePlateRepository.save(vehicle.getLicensePlate());
             }
         } else {
             // Keep in maintenance for repairs

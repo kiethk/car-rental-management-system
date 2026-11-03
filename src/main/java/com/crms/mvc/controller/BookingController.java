@@ -7,11 +7,10 @@ import com.crms.mvc.dto.VehicleTypeSearchResultDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleType;
-import com.crms.mvc.service.VehicleTypeService;
-import com.crms.mvc.service.PricingService;
-import com.crms.mvc.dto.PriceQuoteDTO;
+import com.crms.mvc.repository.VehicleTypeRepository;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.PaymentService;
+import com.crms.mvc.service.SlotService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -38,25 +37,25 @@ import jakarta.servlet.http.HttpServletRequest;
 @Controller
 public class BookingController {
     private final BookingService bookingService;
+    private final SlotService slotService;
     private final PaymentService paymentService;
-    private final VehicleTypeService vehicleTypeService;
-    private final PricingService pricingService;
+    private final VehicleTypeRepository vehicleTypeRepository;
     private final LicenseDocumentService licenseDocumentService;
     private final ContractTemplateService contractTemplateService;
 
     public BookingController(
             BookingService bookingService,
+            SlotService slotService,
             PaymentService paymentService,
-            VehicleTypeService vehicleTypeService,
+            VehicleTypeRepository vehicleTypeRepository,
             LicenseDocumentService licenseDocumentService,
-            ContractTemplateService contractTemplateService,
-            PricingService pricingService) {
+            ContractTemplateService contractTemplateService) {
         this.bookingService = bookingService;
+        this.slotService = slotService;
         this.paymentService = paymentService;
-        this.vehicleTypeService = vehicleTypeService;
+        this.vehicleTypeRepository = vehicleTypeRepository;
         this.licenseDocumentService = licenseDocumentService;
         this.contractTemplateService = contractTemplateService;
-        this.pricingService = pricingService;
     }
 
     // STEP 1 & 2: Choose rental schedule & filter available vehicle types
@@ -129,7 +128,7 @@ public class BookingController {
         }
 
         ZoneOffset offset = ZoneOffset.ofHours(7);
-        List<VehicleTypeSearchResultDTO> rawResults = bookingService.searchAvailableVehicleTypes(
+        List<VehicleTypeSearchResultDTO> rawResults = slotService.searchAvailableVehicleTypes(
                 startDateTime.atOffset(offset), endDateTime.atOffset(offset), category);
 
         // Filter by keyword, brand, transmission, seats, max price
@@ -180,8 +179,8 @@ public class BookingController {
         model.addAttribute("durationDisplay", durationDisplay);
         model.addAttribute("results", results);
         model.addAttribute("allCount", results.size());
-        model.addAttribute("brands", vehicleTypeService.getDistinctBrands());
-        model.addAttribute("categories", vehicleTypeService.getDistinctCategories());
+        model.addAttribute("brands", vehicleTypeRepository.findDistinctBrands());
+        model.addAttribute("categories", vehicleTypeRepository.findDistinctCategories());
         return "bookings/search";
     }
 
@@ -202,7 +201,7 @@ public class BookingController {
             return "redirect:/login";
         }
 
-        VehicleType vt = vehicleTypeService.findById(vehicleTypeId).orElse(null);
+        VehicleType vt = vehicleTypeRepository.findById(vehicleTypeId).orElse(null);
         if (vt == null) {
             ra.addFlashAttribute("error", "Vehicle type not found.");
             return "redirect:/search";
@@ -236,7 +235,7 @@ public class BookingController {
         }
 
         ZoneOffset offset = ZoneOffset.ofHours(7);
-        List<Vehicle> availableCars = bookingService.findAvailableVehiclesInTimeRange(
+        List<Vehicle> availableCars = slotService.findAvailableVehiclesInTimeRange(
                 vehicleTypeId, startTime.atOffset(offset), endTime.atOffset(offset));
 
         if (availableCars.isEmpty()) {
@@ -244,15 +243,14 @@ public class BookingController {
             return "redirect:/search";
         }
 
-        ContractTemplateDTO contractTerms = contractTemplateService.getActiveTemplate();
-        PriceQuoteDTO quote = pricingService.calculatePrice(startTime, endTime, vt.getPricePerHour(), contractTerms.getDepositRate(), BigDecimal.ZERO);
-        long rentalHours = quote.getRentalHours();
+        long rentalHours = Math.max(1, Duration.between(startTime, endTime).toHours());
         long rentalDays = rentalHours / 24;
         long remainingHours = rentalHours % 24;
         String durationDisplay = (rentalDays > 0 ? (rentalDays + "d ") : "") + (remainingHours > 0 ? (remainingHours + "h") : (rentalDays == 0 ? "1h" : ""));
-        BigDecimal estimatedTotal = quote.getTotalPrice();
-        BigDecimal depositAmount = quote.getDepositAmount();
-        BigDecimal remainingAmount = quote.getRemainingAmount();
+        BigDecimal estimatedTotal = vt.getPricePerHour().multiply(BigDecimal.valueOf(rentalHours));
+        ContractTemplateDTO contractTerms = contractTemplateService.getActiveTemplate();
+        BigDecimal depositAmount = estimatedTotal.multiply(contractTerms.getDepositRate()).setScale(0, RoundingMode.HALF_UP);
+        BigDecimal remainingAmount = estimatedTotal.subtract(depositAmount);
 
         BookingCreateDTO form = new BookingCreateDTO();
         form.setVehicleTypeId(vehicleTypeId);
@@ -326,18 +324,25 @@ public class BookingController {
 
         try {
             BookingDetailDTO detail = bookingService.getBookingDetail(bookingId, customerId);
-            if (!"pending_payment".equalsIgnoreCase(detail.getStatus())) {
-                if ("confirmed".equalsIgnoreCase(detail.getStatus())) {
-                    return "redirect:/bookings/" + bookingId + "/success";
-                }
-                ra.addFlashAttribute("error", "Đơn đặt xe không ở trạng thái chờ đặt cọc (Trạng thái hiện tại: " + detail.getStatus() + ").");
-                return "redirect:/bookings/" + bookingId;
-            }
             model.addAttribute("booking", detail);
             return "bookings/deposit";
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             return "redirect:/bookings/my-bookings";
+        }
+    }
+
+    @PostMapping("/bookings/{id}/pay-deposit")
+    public String processDeposit(@PathVariable("id") Long bookingId, HttpSession session, RedirectAttributes ra) {
+        Long customerId = (Long) session.getAttribute("customerId");
+        if (customerId == null) return "redirect:/login";
+
+        try {
+            paymentService.processDeposit(bookingId);
+            return "redirect:/bookings/" + bookingId + "/success";
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Payment failed: " + e.getMessage());
+            return "redirect:/bookings/" + bookingId + "/pay-deposit";
         }
     }
 

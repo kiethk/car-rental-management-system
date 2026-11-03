@@ -4,18 +4,16 @@ import com.crms.mvc.dto.PasswordChangeDTO;
 import com.crms.mvc.entity.Employee;
 import com.crms.mvc.repository.EmployeeRepository;
 import com.crms.mvc.service.EmployeeService;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository,
-                               PasswordEncoder passwordEncoder) {
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository) {
         this.employeeRepository = employeeRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override

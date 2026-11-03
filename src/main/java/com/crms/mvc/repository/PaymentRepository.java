@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
-    List<Payment> findByBookingId(Long bookingId);
-
     List<Payment> findByBookingIdOrderByPaidAtAsc(Long bookingId);
 
     Optional<Payment> findByBookingIdAndPaymentType(Long bookingId, String paymentType);

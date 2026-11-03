@@ -4,8 +4,8 @@ import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.BookingSummaryDTO;
 import com.crms.mvc.dto.CheckOutDTO;
 import com.crms.mvc.entity.Vehicle;
+import com.crms.mvc.repository.VehicleRepository;
 import com.crms.mvc.service.BookingService;
-import com.crms.mvc.service.VehicleService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,11 +17,11 @@ import java.util.List;
 @RequestMapping("/admin/bookings")
 public class AdminBookingController {
     private final BookingService bookingService;
-    private final VehicleService vehicleService;
+    private final VehicleRepository vehicleRepository;
 
-    public AdminBookingController(BookingService bookingService, VehicleService vehicleService) {
+    public AdminBookingController(BookingService bookingService, VehicleRepository vehicleRepository) {
         this.bookingService = bookingService;
-        this.vehicleService = vehicleService;
+        this.vehicleRepository = vehicleRepository;
     }
 
     @GetMapping
@@ -46,7 +46,7 @@ public class AdminBookingController {
 
         try {
             BookingDetailDTO detail = bookingService.getBookingDetailForAdmin(bookingId);
-            List<Vehicle> availableVehicles = vehicleService.findByStatusWithDetails("available").stream()
+            List<Vehicle> availableVehicles = vehicleRepository.findByStatus("available").stream()
                     .filter(v -> v.getVehicleType().getId().equals(detail.getVehicleTypeId()))
                     .toList();
 
@@ -104,3 +104,4 @@ public class AdminBookingController {
         return "redirect:/admin/bookings/" + bookingId;
     }
 }
+
