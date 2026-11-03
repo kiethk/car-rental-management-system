@@ -20,6 +20,8 @@ public class FileUploadServiceImpl implements FileUploadService {
             Path.of("uploads", "licenses").toAbsolutePath().normalize();
     private static final Path VEHICLE_UPLOAD_DIRECTORY =
             Path.of("uploads", "vehicles").toAbsolutePath().normalize();
+    private static final Path PROMOTION_UPLOAD_DIRECTORY =
+            Path.of("uploads", "promotions").toAbsolutePath().normalize();
     // Kept outside every public resource mapping; served only through ContractController.
     private static final Path CONTRACT_DIRECTORY =
             Path.of("uploads", "contracts").toAbsolutePath().normalize();
@@ -90,6 +92,35 @@ public class FileUploadServiceImpl implements FileUploadService {
     @Override
     public Resource loadVehicleImage(String fileName) {
         return loadFrom(VEHICLE_UPLOAD_DIRECTORY, fileName);
+    }
+
+    @Override
+    public String savePromotionImage(MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            throw new IllegalArgumentException("Promotion image is required");
+        }
+
+        if (image.getSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("Image must be 5 MB or smaller");
+        }
+
+        String extension = switch (image.getContentType() == null ? "" : image.getContentType()) {
+            case "image/jpeg" -> ".jpg";
+            case "image/png" -> ".png";
+            case "image/webp" -> ".webp";
+            default -> throw new IllegalArgumentException("Only JPEG, PNG, and WebP images are allowed");
+        };
+
+        String fileName = "promotion-" + UUID.randomUUID() + extension;
+        Path destination = PROMOTION_UPLOAD_DIRECTORY.resolve(fileName);
+
+        try {
+            Files.createDirectories(PROMOTION_UPLOAD_DIRECTORY);
+            Files.copy(image.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
+            return "/uploads/promotions/" + fileName;
+        } catch (IOException exception) {
+            throw new IllegalStateException("Could not save promotion image", exception);
+        }
     }
 
     @Override

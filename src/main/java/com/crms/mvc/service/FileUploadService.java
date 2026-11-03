@@ -12,6 +12,8 @@ public interface FileUploadService {
 
     Resource loadVehicleImage(String fileName);
 
+    String savePromotionImage(MultipartFile image);
+
     /** Stores a generated contract PDF in a private folder and returns its file name. */
     String saveContractPdf(String contractNumber, byte[] content);
 

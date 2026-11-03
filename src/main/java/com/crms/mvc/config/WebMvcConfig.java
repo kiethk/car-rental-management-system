@@ -18,7 +18,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
             vehiclePath += "/";
         }
 
+        String promotionPath = Path.of("uploads", "promotions").toAbsolutePath().normalize().toUri().toString();
+        if (!promotionPath.endsWith("/")) {
+            promotionPath += "/";
+        }
+
         registry.addResourceHandler("/uploads/vehicles/**")
                 .addResourceLocations(vehiclePath);
+        registry.addResourceHandler("/uploads/promotions/**")
+                .addResourceLocations(promotionPath);
     }
 }

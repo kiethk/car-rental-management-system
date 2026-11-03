@@ -25,6 +25,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     long countByVehicleId(Long vehicleId);
 
+    boolean existsByPromotionId(Long promotionId);
+
     @Query("SELECT b.vehicle.id FROM Booking b WHERE b.vehicle IS NOT NULL " +
            "AND (b.status IN ('confirmed', 'active') OR (b.status = 'pending_payment' AND b.createdAt > :cutoffTime)) " +
            "AND b.pickupTime < :endTime AND b.scheduledEndTime > :startTime")
