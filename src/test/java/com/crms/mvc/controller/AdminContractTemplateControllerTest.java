@@ -1,5 +1,8 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.support.TestSessions;
+import org.springframework.context.annotation.Import;
+import com.crms.mvc.support.PassThroughSessionAccountService;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.entity.ContractTemplateStatus;
 import com.crms.mvc.service.ContractTemplateService;
@@ -25,6 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Import(PassThroughSessionAccountService.class)
 @WebMvcTest(AdminContractTemplateController.class)
 class AdminContractTemplateControllerTest {
     @Autowired private MockMvc mvc;
@@ -92,11 +96,7 @@ class AdminContractTemplateControllerTest {
     }
 
     private MockHttpSession session(String role) {
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute("employeeId", 1L);
-        session.setAttribute("employeeName", "Admin Manager");
-        session.setAttribute("employeeRole", role);
-        return session;
+        return TestSessions.employee(1L, role, "Admin Manager");
     }
 
     private ContractTemplateDTO template(Long id, int version, ContractTemplateStatus status) {

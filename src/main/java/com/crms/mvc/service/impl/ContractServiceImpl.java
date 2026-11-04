@@ -154,6 +154,8 @@ public class ContractServiceImpl implements ContractService {
                 .orElseThrow(() -> new NoSuchElementException("Contract not found for booking: " + bookingId));
     }
 
+
+
     private byte[] readIssuedPdf(Contract contract) {
         try {
             return loadContractPdf(contract.getBooking().getId()).getContentAsByteArray();
@@ -176,9 +178,7 @@ public class ContractServiceImpl implements ContractService {
         doc.setCustomerName(customer.getName());
         doc.setCustomerPhone(customer.getPhone());
         doc.setCustomerEmail(customer.getEmail());
-        licenseDocumentRepository.findByCustomer_IdOrderBySubmittedAtDesc(customer.getId()).stream()
-                .filter(license -> "approved".equals(license.getStatus()))
-                .findFirst()
+        licenseDocumentRepository.findFirstByCustomer_IdOrderBySubmittedAtDesc(customer.getId())
                 .ifPresent(license -> fillLicense(doc, license));
 
         doc.setVehicleName(type.getDisplayName());

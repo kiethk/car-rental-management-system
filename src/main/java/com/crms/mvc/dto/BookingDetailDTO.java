@@ -41,6 +41,12 @@ public class BookingDetailDTO implements Serializable {
     private ContractDTO contract;
     private List<BookingFeeDTO> fees;
 
+    private Long staffId;
+    private String staffName;
+    private String staffPhone;
+    private String staffEmail;
+    private String stationAddress;
+
     public static class PaymentDTO implements Serializable {
         private Long id;
         private String transactionCode;
@@ -144,4 +150,15 @@ public class BookingDetailDTO implements Serializable {
     public void setContract(ContractDTO contract) { this.contract = contract; }
     public List<BookingFeeDTO> getFees() { return fees; }
     public void setFees(List<BookingFeeDTO> fees) { this.fees = fees; }
+
+    public Long getStaffId() { return staffId; }
+    public void setStaffId(Long staffId) { this.staffId = staffId; }
+    public String getStaffName() { return staffName; }
+    public void setStaffName(String staffName) { this.staffName = staffName; }
+    public String getStaffPhone() { return staffPhone; }
+    public void setStaffPhone(String staffPhone) { this.staffPhone = staffPhone; }
+    public String getStaffEmail() { return staffEmail; }
+    public void setStaffEmail(String staffEmail) { this.staffEmail = staffEmail; }
+    public String getStationAddress() { return stationAddress; }
+    public void setStationAddress(String stationAddress) { this.stationAddress = stationAddress; }
 }

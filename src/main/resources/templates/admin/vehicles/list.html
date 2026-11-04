@@ -59,24 +59,43 @@
                 </div>
             </div>
 
-            <!-- Filter Status Pills -->
-            <div class="mb-3 d-flex gap-2 align-items-center">
+            <!-- Search + sort + page size -->
+            <form method="get" th:action="@{/admin/vehicles}" class="d-flex flex-wrap align-items-center mb-3" style="gap: 8px;">
+                <input type="hidden" name="status" th:value="${query.status}">
+                <input type="search" name="keyword" th:value="${query.keyword}" class="form-control form-control-sm rounded-lg"
+                       style="max-width: 340px;" placeholder="Search plate, model, brand or color..." aria-label="Search cars">
+                <button type="submit" class="btn btn-navy btn-sm font-weight-bold rounded-lg px-3">Search</button>
+                <a th:if="${query.keyword != null}" th:href="@{/admin/vehicles(status=${query.status})}" class="small text-muted">Clear</a>
+
+                <span class="ml-md-auto small font-weight-bold text-muted">Sort</span>
+                <select name="sort" class="form-control form-control-sm rounded-lg" style="width: auto;" onchange="this.form.submit()" aria-label="Sort cars">
+                    <option value="name_asc" th:selected="${query.sort == 'name_asc'}">Name A → Z</option>
+                    <option value="name_desc" th:selected="${query.sort == 'name_desc'}">Name Z → A</option>
+                    <option value="plate_asc" th:selected="${query.sort == 'plate_asc'}">Plate A → Z</option>
+                </select>
+                <select name="size" class="form-control form-control-sm rounded-lg" style="width: auto;" onchange="this.form.submit()" aria-label="Cars per page">
+                    <option th:each="n : ${query.pageSizes}" th:value="${n}" th:text="${n} + ' / page'" th:selected="${query.size == n}">10 / page</option>
+                </select>
+            </form>
+
+            <!-- Filter Status Pills (keep the search and sort) -->
+            <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
                 <span class="small font-weight-bold text-muted mr-2">Status:</span>
-                <a th:href="@{/admin/vehicles(status='all')}"
-                   th:class="'btn btn-sm rounded-pill font-weight-bold ' + (${selectedStatus == 'all'} ? 'btn-navy text-white' : 'btn-light text-navy')">
-                    All (<span th:text="${vehicles.size()}">0</span>)
+                <a th:href="${query.urlForStatus('/admin/vehicles', 'all')}"
+                   th:class="'btn btn-sm rounded-pill font-weight-bold ' + (${query.status == 'all'} ? 'btn-navy text-white' : 'btn-light text-navy')">
+                    All (<span th:text="${totalCars}">0</span>)
                 </a>
-                <a th:href="@{/admin/vehicles(status='available')}"
-                   th:class="'btn btn-sm rounded-pill font-weight-bold ' + (${selectedStatus == 'available'} ? 'btn-success text-white' : 'btn-light text-navy')">
-                    Available
+                <a th:href="${query.urlForStatus('/admin/vehicles', 'available')}"
+                   th:class="'btn btn-sm rounded-pill font-weight-bold ' + (${query.status == 'available'} ? 'btn-success text-white' : 'btn-light text-navy')">
+                    Available (<span th:text="${statusCounts.getOrDefault('available', 0)}">0</span>)
                 </a>
-                <a th:href="@{/admin/vehicles(status='rented')}"
-                   th:class="'btn btn-sm rounded-pill font-weight-bold ' + (${selectedStatus == 'rented'} ? 'btn-warning text-dark' : 'btn-light text-navy')">
-                    Rented
+                <a th:href="${query.urlForStatus('/admin/vehicles', 'rented')}"
+                   th:class="'btn btn-sm rounded-pill font-weight-bold ' + (${query.status == 'rented'} ? 'btn-warning text-dark' : 'btn-light text-navy')">
+                    Rented (<span th:text="${statusCounts.getOrDefault('rented', 0)}">0</span>)
                 </a>
-                <a th:href="@{/admin/vehicles(status='maintenance')}"
-                   th:class="'btn btn-sm rounded-pill font-weight-bold ' + (${selectedStatus == 'maintenance'} ? 'btn-secondary text-white' : 'btn-light text-navy')">
-                    Maintenance
+                <a th:href="${query.urlForStatus('/admin/vehicles', 'maintenance')}"
+                   th:class="'btn btn-sm rounded-pill font-weight-bold ' + (${query.status == 'maintenance'} ? 'btn-secondary text-white' : 'btn-light text-navy')">
+                    Maintenance (<span th:text="${statusCounts.getOrDefault('maintenance', 0)}">0</span>)
                 </a>
             </div>
 
@@ -98,19 +117,24 @@
                         </thead>
                         <tbody class="small text-navy">
                             <tr th:if="${#lists.isEmpty(vehicles)}">
-                                <td colspan="8" class="text-center py-4 text-muted">No vehicles found.</td>
+                                <td colspan="8" class="text-center py-4 text-muted">
+                                    <span th:text="${query.keyword != null or query.status != 'all'} ? 'No car matches your search.' : 'No vehicles found.'">No vehicles found.</span>
+                                    <a th:if="${query.keyword != null or query.status != 'all'}" th:href="@{/admin/vehicles}" class="ml-1">Show all cars</a>
+                                </td>
                             </tr>
                             <tr th:each="v : ${vehicles}">
                                 <td class="font-weight-bold text-muted" th:text="'#' + ${v.id}">#1</td>
                                 <td>
-                                    <span class="admin-plate-badge"
-                                          th:text="${v.licensePlate != null ? v.licensePlate.plate : 'Unassigned'}">51A-123.45</span>
+                                    <a th:href="@{/admin/license-plates/vehicle/{id}(id=${v.id})}" class="text-decoration-none" title="Plate history">
+                                        <span class="admin-plate-badge"
+                                              th:text="${v.licensePlate}">51A-123.45</span>
+                                    </a>
                                     <small class="d-block text-muted mt-0.5" style="font-size: 11px;"
-                                           th:text="${v.licensePlate != null ? v.licensePlate.province : ''}">Ho Chi Minh City</small>
+                                           th:text="${v.province}">Ho Chi Minh City</small>
                                 </td>
                                 <td>
                                     <div class="font-weight-bold text-navy"
-                                         th:text="${v.vehicleType != null ? v.vehicleType.displayName : 'Unknown'}">
+                                         th:text="${v.displayName}">
                                         Toyota Vios
                                     </div>
                                     <small class="text-muted" th:text="'Color: ' + ${v.color}">Color: White</small>
@@ -118,6 +142,7 @@
                                 <td th:text="${v.year}">2023</td>
                                 <td>
                                     <form method="post" th:action="@{/admin/vehicles/{id}/odometer(id=${v.id})}" class="m-0">
+                                        <input type="hidden" name="returnTo" th:value="${listUrl}" />
                                         <div class="admin-odometer-wrap">
                                             <input type="number" name="odometer" th:value="${v.odometer}" min="0" required>
                                             <button type="submit" title="Save new odometer">✓</button>
@@ -133,6 +158,7 @@
                                     <div th:if="${v.status == 'available'}">
                                         <form method="post" th:action="@{/admin/vehicles/{id}/status(id=${v.id})}" class="m-0">
                                             <input type="hidden" name="status" value="maintenance" />
+                                            <input type="hidden" name="returnTo" th:value="${listUrl}" />
                                             <button type="submit" class="admin-btn btn-soft-warning">
                                                 Set Maintenance
                                             </button>
@@ -141,6 +167,7 @@
                                     <div th:if="${v.status == 'maintenance'}">
                                         <form method="post" th:action="@{/admin/vehicles/{id}/status(id=${v.id})}" class="m-0">
                                             <input type="hidden" name="status" value="available" />
+                                            <input type="hidden" name="returnTo" th:value="${listUrl}" />
                                             <button type="submit" class="admin-btn btn-soft-success">
                                                 Set Available
                                             </button>
@@ -162,6 +189,7 @@
                                         </a>
                                         <form method="post" th:action="@{/admin/vehicles/{id}/delete(id=${v.id})}" class="m-0"
                                               onsubmit="return confirm('Are you sure you want to delete this vehicle? (Blocked if active bookings or maintenance logs exist)');">
+                                            <input type="hidden" name="returnTo" th:value="${listUrl}" />
                                             <button type="submit" class="admin-btn btn-soft-danger">
                                                 Delete
                                             </button>
@@ -173,6 +201,8 @@
                     </table>
                 </div>
             </div>
+
+            <div th:replace="~{fragments/pagination :: pager(${nav})}"></div>
         </div>
     </div>
 </main>

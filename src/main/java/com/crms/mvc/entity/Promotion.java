@@ -56,4 +56,5 @@ public class Promotion {
 
     public String getUrlImagePromotion() { return urlImagePromotion; }
     public void setUrlImagePromotion(String urlImagePromotion) { this.urlImagePromotion = urlImagePromotion; }
+
 }

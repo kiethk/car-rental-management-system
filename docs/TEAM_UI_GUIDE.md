@@ -2,6 +2,8 @@
 
 All members (**Kiet, Phu, Phuc, Tri**) must follow this DriveNow Design System when building Thymeleaf views to ensure visual consistency across the entire application.
 
+> 💡 **QUY CHUẨN CSS**: Vui lòng đọc chi tiết [Quy chuẩn viết CSS & Đặt tên class chống trùng lặp (TEAM_CSS_GUIDE.md)](TEAM_CSS_GUIDE.md) để biết cách chia file `modules/*.css` và đặt tiền tố (prefix) tránh xung đột code.
+
 ---
 
 ## 1. Brand Design Tokens
@@ -68,7 +70,7 @@ All members (**Kiet, Phu, Phuc, Tri**) must follow this DriveNow Design System w
 
 ## 4. Template: Admin / Staff Pages
 
-*Use for: `/admin/vehicles`, `/admin/bookings`, `/admin/licenses`, `/admin/promotions`, `/admin/issues`*
+*Use for: `/admin/vehicles`, `/admin/bookings`, `/admin/promotions`, `/admin/issues`*
 
 Two-column layout: fixed left sidebar + right content area.
 
@@ -134,7 +136,6 @@ Two-column layout: fixed left sidebar + right content area.
 | **Phuc** | Inspection & Maintenance | `/admin/inspections` | `'inspections'` |
 | **Tri** | Promotions & Vouchers | `/admin/promotions` | `'promotions'` |
 | **Tri** | Incidents & Fines | `/admin/issues` | `'issues'` |
-| **Phu** | Driving License Review | `/admin/licenses` | `'licenses'` |
 | **Phu** | Account Management | `/admin/accounts` | `'accounts'` |
 
 ---

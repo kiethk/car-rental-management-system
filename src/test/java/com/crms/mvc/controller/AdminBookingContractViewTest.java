@@ -1,11 +1,22 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.dto.SessionAccount;
+import com.crms.mvc.util.CurrentAccount;
+import com.crms.mvc.support.TestSessions;
+import org.springframework.context.annotation.Import;
+import com.crms.mvc.support.PassThroughSessionAccountService;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.ContractDTO;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.entity.ContractTemplateStatus;
-import com.crms.mvc.repository.VehicleRepository;
+import com.crms.mvc.dto.BookingSummaryDTO;
+import com.crms.mvc.entity.Booking;
+import com.crms.mvc.entity.Payment;
+import com.crms.mvc.entity.Slot;
+import com.crms.mvc.entity.VehicleType;
+import com.crms.mvc.entity.Customer;
 import com.crms.mvc.service.BookingService;
+import com.crms.mvc.service.VehicleService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -22,20 +33,21 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Import(PassThroughSessionAccountService.class)
 @WebMvcTest(AdminBookingController.class)
 class AdminBookingContractViewTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private BookingService bookingService;
-    @MockitoBean private VehicleRepository vehicleRepository;
+    @MockitoBean private VehicleService vehicleService;
+    @MockitoBean private com.crms.mvc.service.PaymentService paymentService;
+    @MockitoBean private com.crms.mvc.service.HandoverService handoverService;
 
     @Test
     void confirmedBookingWithoutPdfOffersRetry() throws Exception {
         when(bookingService.getBookingDetailForAdmin(42L)).thenReturn(confirmedBooking());
-        when(vehicleRepository.findByStatus("available")).thenReturn(List.of());
+        when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
 
-        MockHttpSession staff = new MockHttpSession();
-        staff.setAttribute("employeeId", 2L);
-        staff.setAttribute("employeeRole", "staff");
+        MockHttpSession staff = TestSessions.staff(2L);
 
         mvc.perform(get("/admin/bookings/42").session(staff))
                 .andExpect(status().isOk())
@@ -87,5 +99,79 @@ class AdminBookingContractViewTest {
         booking.setFees(List.of());
         booking.setContract(contract);
         return booking;
+    }
+
+    @Test
+    void adminBookingsListShowsRefundTabAndAlert() throws Exception {
+        when(paymentService.countPendingRefunds()).thenReturn(1L);
+
+        BookingSummaryDTO summary = new BookingSummaryDTO();
+        summary.setId(42L);
+        summary.setCustomerName("Nguyen Van A");
+        summary.setVehicleTypeName("Toyota Vios");
+        summary.setStatus("cancelled");
+        summary.setHasPendingRefund(true);
+        summary.setPickupTime(OffsetDateTime.now().plusDays(2));
+        when(bookingService.getAllBookings("all")).thenReturn(List.of(summary));
+
+        MockHttpSession staff = new MockHttpSession();
+        staff.setAttribute(CurrentAccount.SESSION_KEY,
+                new SessionAccount(2L, SessionAccount.EMPLOYEE, "Staff Member", "staff@crms.test", "staff", null));
+
+        mvc.perform(get("/admin/bookings").session(staff))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/bookings/list"))
+                .andExpect(content().string(containsString("Cần hoàn cọc")))
+                .andExpect(content().string(containsString("Hoàn cọc ngay →")));
+    }
+
+    @Test
+    void adminBookingsListFilterRefundQueue() throws Exception {
+        when(paymentService.countPendingRefunds()).thenReturn(1L);
+
+        BookingSummaryDTO summary = new BookingSummaryDTO();
+        summary.setId(42L);
+        summary.setCustomerName("Nguyen Van A");
+        summary.setVehicleTypeName("Toyota Vios");
+        summary.setStatus("cancelled");
+        summary.setHasPendingRefund(true);
+        summary.setPickupTime(OffsetDateTime.now().plusDays(2));
+        when(bookingService.getAllBookings("refund")).thenReturn(List.of(summary));
+
+        MockHttpSession staff = new MockHttpSession();
+        staff.setAttribute(CurrentAccount.SESSION_KEY,
+                new SessionAccount(2L, SessionAccount.EMPLOYEE, "Staff Member", "staff@crms.test", "staff", null));
+
+        mvc.perform(get("/admin/bookings?status=refund").session(staff))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/bookings/list"))
+                .andExpect(content().string(containsString("Danh sách đơn chờ chuyển khoản hoàn tiền cọc")))
+                .andExpect(content().string(containsString("Hoàn cọc ngay →")));
+    }
+
+    @Test
+    void adminBookingsListFilterConfirmedStatus() throws Exception {
+        when(paymentService.countPendingRefunds()).thenReturn(0L);
+
+        BookingSummaryDTO summary = new BookingSummaryDTO();
+        summary.setId(7L);
+        summary.setCustomerName("Nguyen Van B");
+        summary.setVehicleTypeName("Honda City");
+        summary.setLicensePlate("51H-999.99");
+        summary.setStatus("confirmed");
+        summary.setHasPendingRefund(false);
+        summary.setPickupTime(OffsetDateTime.now().plusDays(1));
+        summary.setScheduledEndTime(OffsetDateTime.now().plusDays(2));
+        when(bookingService.getAllBookings("confirmed")).thenReturn(List.of(summary));
+
+        MockHttpSession staff = new MockHttpSession();
+        staff.setAttribute(CurrentAccount.SESSION_KEY,
+                new SessionAccount(2L, SessionAccount.EMPLOYEE, "Staff Member", "staff@crms.test", "staff", null));
+
+        mvc.perform(get("/admin/bookings?status=confirmed").session(staff))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/bookings/list"))
+                .andExpect(content().string(containsString("Honda City")))
+                .andExpect(content().string(containsString("Confirmed")));
     }
 }

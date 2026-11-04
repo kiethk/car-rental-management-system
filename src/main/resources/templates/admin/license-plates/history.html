@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Plate History — DriveNow Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container-fluid px-lg-5 my-4 flex-grow-1">
+    <div class="row">
+        <div class="col-md-3 col-lg-2">
+            <div th:replace="~{fragments/admin-sidebar :: sidebar(active='vehicles')}"></div>
+        </div>
+
+        <div class="col-md-9 col-lg-10">
+            <div th:if="${success}" class="alert alert-success border-0 rounded-lg shadow-sm" role="alert" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger border-0 rounded-lg shadow-sm" role="alert" th:text="${error}"></div>
+
+            <a th:href="@{/admin/license-plates}" class="small text-muted">← Plates &amp; registration</a>
+            <div class="mt-2 mb-4">
+                <h1 class="h3 font-weight-bold text-navy mb-1"
+                    th:text="'Plate history — car #' + ${vehicle.id} + ' (' + ${vehicle.vehicleType.displayName} + ')'">Plate history — car #1</h1>
+                <p class="text-muted small mb-0">
+                    A plate belongs to one car and is never reused. Putting a new plate on the car retires the current one and keeps it here
+                    with the period it was used. Bookings keep the plate recorded at handover.
+                </p>
+            </div>
+
+            <div class="row">
+                <!-- Every plate this car has had -->
+                <div class="col-lg-7 mb-4">
+                    <div class="card border-0 shadow-sm rounded-xl overflow-hidden bg-white">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle admin-table">
+                                <thead class="bg-surface-2 text-navy small font-weight-bold">
+                                    <tr>
+                                        <th class="border-top-0 py-3">Plate</th>
+                                        <th class="border-top-0 py-3">Province</th>
+                                        <th class="border-top-0 py-3">Used from</th>
+                                        <th class="border-top-0 py-3">Used until</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="p : ${history}">
+                                        <td>
+                                            <span class="admin-plate-badge" th:text="${p.plate}">51A-123.45</span>
+                                            <span th:if="${p.current}" class="admin-status-badge badge-success ml-1"
+                                                  style="height: 24px !important; min-height: 24px !important; font-size: 10px !important; padding: 0 6px !important;">Current</span>
+                                        </td>
+                                        <td th:text="${p.province != null ? p.province : '—'}">Ho Chi Minh City</td>
+                                        <td th:text="${#temporals.format(p.validFrom, 'dd/MM/yyyy HH:mm')}">24/10/2025 09:00</td>
+                                        <td th:text="${p.validTo != null ? #temporals.format(p.validTo, 'dd/MM/yyyy HH:mm') : 'now'}">now</td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(history)}">
+                                        <td colspan="4" class="text-center text-muted py-4">This car has no plate yet.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Put a new plate on the car -->
+                <div class="col-lg-5 mb-4">
+                    <div class="card border-0 shadow-sm rounded-xl bg-white p-4">
+                        <h2 class="h6 font-weight-bold text-navy text-uppercase mb-3" style="letter-spacing: 0.05em;">Put a new plate on this car</h2>
+                        <form th:action="@{/admin/license-plates/vehicle/{id}/change(id=${vehicle.id})}" th:object="${plateForm}" method="post">
+                            <div class="form-group mb-3">
+                                <label class="font-weight-bold small text-navy mb-1" for="plate">New plate number <span class="text-danger">*</span></label>
+                                <input type="text" id="plate" th:field="*{plate}" class="form-control rounded-lg font-weight-bold text-uppercase"
+                                       placeholder="e.g. 51K-987.65" required>
+                                <small class="text-danger" th:if="${#fields.hasErrors('plate')}" th:errors="*{plate}"></small>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="font-weight-bold small text-navy mb-1" for="province">Registration city / province</label>
+                                <input type="text" id="province" th:field="*{province}" class="form-control rounded-lg"
+                                       placeholder="e.g. Ho Chi Minh City">
+                                <small class="text-danger" th:if="${#fields.hasErrors('province')}" th:errors="*{province}"></small>
+                            </div>
+                            <p class="small text-muted">
+                                The new plate is valid from the moment you save. Not possible while the car is rented out.
+                            </p>
+                            <button type="submit" class="btn btn-navy font-weight-bold rounded-lg px-4 shadow-sm"
+                                    onclick="return confirm('Retire the current plate and start using the new one now?');">Change plate</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

@@ -1,7 +1,11 @@
 package com.crms.mvc.controller;
 
 import com.crms.mvc.entity.Promotion;
+import com.crms.mvc.dto.SessionAccount;
 import com.crms.mvc.service.PromotionService;
+import com.crms.mvc.support.PassThroughSessionAccountService;
+import com.crms.mvc.util.CurrentAccount;
+import org.springframework.context.annotation.Import;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -22,6 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Import(PassThroughSessionAccountService.class)
 @WebMvcTest(AdminPromotionController.class)
 class AdminPromotionControllerTest {
     @Autowired private MockMvc mvc;
@@ -72,9 +77,8 @@ class AdminPromotionControllerTest {
 
     private MockHttpSession adminSession() {
         MockHttpSession session = new MockHttpSession();
-        session.setAttribute("employeeId", 1L);
-        session.setAttribute("employeeName", "Admin Manager");
-        session.setAttribute("employeeRole", "admin");
+        session.setAttribute(CurrentAccount.SESSION_KEY,
+                new SessionAccount(1L, SessionAccount.EMPLOYEE, "Admin Manager", "admin@crms.test", "admin", null));
         return session;
     }
 

@@ -1,8 +1,10 @@
 package com.crms.mvc.controller;
 
 import com.crms.mvc.entity.Promotion;
-import com.crms.mvc.repository.VehicleTypeRepository;
 import com.crms.mvc.service.PromotionService;
+import com.crms.mvc.service.VehicleTypeService;
+import com.crms.mvc.support.PassThroughSessionAccountService;
+import org.springframework.context.annotation.Import;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -18,10 +20,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Import(PassThroughSessionAccountService.class)
 @WebMvcTest(HomeController.class)
 class HomeControllerTest {
     @Autowired private MockMvc mvc;
-    @MockitoBean private VehicleTypeRepository vehicleTypeRepository;
+    @MockitoBean private VehicleTypeService vehicleTypeService;
     @MockitoBean private PromotionService promotionService;
 
     @Test

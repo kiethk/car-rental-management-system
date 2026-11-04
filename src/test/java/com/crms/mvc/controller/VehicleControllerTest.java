@@ -1,5 +1,7 @@
 package com.crms.mvc.controller;
 
+import org.springframework.context.annotation.Import;
+import com.crms.mvc.support.PassThroughSessionAccountService;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.dto.VehicleDTO;
 import com.crms.mvc.service.ContractTemplateService;
@@ -21,12 +23,12 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Import(PassThroughSessionAccountService.class)
 @WebMvcTest(VehicleController.class)
 class VehicleControllerTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private VehicleService vehicleService;
     @MockitoBean private VehicleTypeService vehicleTypeService;
-    @MockitoBean private com.crms.mvc.repository.VehicleRepository vehicleRepository;
     @MockitoBean private ContractTemplateService contractTemplateService;
 
     private final VehicleDTO vehicle = new VehicleDTO(1L, "51A-123.45", "Toyota", "Vios", 2025, new BigDecimal("180000"), "available");

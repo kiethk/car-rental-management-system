@@ -24,6 +24,11 @@ skills-lock.json
 .cursor/
 .gemini/
 .trail/
+_bmad/
+.superpowers/
+.superpower/
 .github/copilot-instructions.md
 
 database/payment-card-example.txt
+docs/TEAM_UI_GUIDE.md
+docs/PROJECT_ROADMAP.md

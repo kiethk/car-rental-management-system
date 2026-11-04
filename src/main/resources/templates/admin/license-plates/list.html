@@ -49,14 +49,14 @@
             <!-- Page Header -->
             <div class="mb-4">
                 <h1 class="h3 font-weight-bold text-navy mb-1">License Plates & Registration Expiry</h1>
-                <p class="text-muted small mb-0">Monitor safety inspection expiration dates for every vehicle to proactively schedule re-inspections before expiry.</p>
+                <p class="text-muted small mb-0">Monitor inspection expiry for every car and see the plate it carries now. A car can change plate over time; open "History" to see every plate and the period it was used.</p>
             </div>
 
             <!-- Stats KPI Cards -->
             <div class="row g-3 mb-4">
                 <div class="col-sm-6 col-lg-3">
                     <div class="card border-0 shadow-sm rounded-xl p-3 bg-white">
-                        <span class="small font-weight-bold text-muted text-uppercase">Total Plates</span>
+                        <span class="small font-weight-bold text-muted text-uppercase">Total Cars</span>
                         <div class="h3 font-weight-bold text-navy mb-0 mt-1" th:text="${totalPlates}">0</div>
                     </div>
                 </div>
@@ -86,9 +86,9 @@
                     <table class="table table-hover mb-0 align-middle admin-table">
                         <thead class="bg-surface-2 text-navy small font-weight-bold">
                             <tr>
-                                <th class="border-top-0 py-3">License Plate</th>
+                                <th class="border-top-0 py-3">Current Plate</th>
                                 <th class="border-top-0 py-3">Province</th>
-                                <th class="border-top-0 py-3">Assigned Vehicle</th>
+                                <th class="border-top-0 py-3">Vehicle</th>
                                 <th class="border-top-0 py-3">Vehicle Status</th>
                                 <th class="border-top-0 py-3">Registration Expiry</th>
                                 <th class="border-top-0 py-3 text-center">Status</th>
@@ -98,24 +98,25 @@
                         <tbody>
                             <tr th:each="p : ${plates}">
                                 <td>
-                                    <span class="admin-plate-badge"
+                                    <span th:if="${p.plate != null}" class="admin-plate-badge"
                                           th:text="${p.plate}">51A-123.45</span>
+                                    <span th:if="${p.plate == null}" class="admin-status-badge badge-secondary" style="height: 24px !important; min-height: 24px !important; font-size: 10px !important; padding: 0 6px !important;">No plate</span>
+                                    <small th:if="${p.plateSince != null}" class="d-block text-muted"
+                                           th:text="'since ' + ${#temporals.format(p.plateSince, 'dd/MM/yyyy')}">since 24/10/2025</small>
                                 </td>
-                                <td th:text="${p.province != null ? p.province : 'Not updated'}">Ho Chi Minh City</td>
+                                <td th:text="${p.province != null ? p.province : '—'}">Ho Chi Minh City</td>
                                 <td>
-                                    <span th:if="${p.vehicleId != null}" class="font-weight-bold text-navy">
+                                    <span class="font-weight-bold text-navy">
                                         <a th:href="@{/admin/vehicles/{id}/edit(id=${p.vehicleId})}" class="text-navy text-decoration-none"
                                            th:text="'Vehicle #' + ${p.vehicleId} + ' (' + ${p.vehicleName} + ')'">
                                             Vehicle #1 (Toyota Vios)
                                         </a>
                                     </span>
-                                    <span th:if="${p.vehicleId == null}" class="admin-status-badge badge-secondary" style="height: 24px !important; min-height: 24px !important; font-size: 10px !important; padding: 0 6px !important;">Unassigned</span>
                                 </td>
                                 <td>
                                     <span th:if="${p.vehicleStatus == 'available'}" class="admin-status-badge badge-success" style="height: 24px !important; min-height: 24px !important; font-size: 10px !important; padding: 0 6px !important;">Available</span>
                                     <span th:if="${p.vehicleStatus == 'rented'}" class="admin-status-badge badge-warning text-dark" style="height: 24px !important; min-height: 24px !important; font-size: 10px !important; padding: 0 6px !important;">Rented</span>
                                     <span th:if="${p.vehicleStatus == 'maintenance'}" class="admin-status-badge badge-secondary" style="height: 24px !important; min-height: 24px !important; font-size: 10px !important; padding: 0 6px !important;">Maintenance</span>
-                                    <span th:if="${p.vehicleStatus == 'unassigned'}" class="text-muted small">—</span>
                                 </td>
                                 <td>
                                     <span class="font-weight-bold text-navy"
@@ -143,13 +144,16 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="d-inline-flex align-items-center justify-content-center" style="gap: 6px;">
-                                        <a th:if="${p.vehicleId != null}"
-                                           th:href="@{/admin/inspections/new(vehicleId=${p.vehicleId})}"
+                                        <a th:href="@{/admin/license-plates/vehicle/{id}(id=${p.vehicleId})}"
+                                           class="admin-btn btn-soft-secondary" title="Every plate this car has had">
+                                            History
+                                        </a>
+                                        <a th:href="@{/admin/inspections/new(vehicleId=${p.vehicleId})}"
                                            class="admin-btn btn-soft-secondary" title="Schedule state registry inspection">
                                             Inspection
                                         </a>
                                         <button type="button" class="admin-btn btn-soft-primary"
-                                                th:attr="data-id=${p.id},data-plate=${p.plate},data-province=${p.province},data-expiry=${p.registrationExpiry}"
+                                                th:attr="data-id=${p.vehicleId},data-plate=${p.plate != null ? p.plate : 'Vehicle #' + p.vehicleId},data-expiry=${p.registrationExpiry}"
                                                 onclick="openQuickEdit(this)">
                                             Edit Date
                                         </button>
@@ -177,10 +181,6 @@
                 </div>
                 <div class="modal-body p-4">
                     <div class="form-group mb-3">
-                        <label class="small font-weight-bold text-muted mb-1">Registration Province / City</label>
-                        <input type="text" id="modalProvince" name="province" class="form-control rounded-lg">
-                    </div>
-                    <div class="form-group mb-3">
                         <label class="small font-weight-bold text-muted mb-1">New Registration Expiry Date</label>
                         <input type="date" id="modalExpiry" name="registrationExpiry" class="form-control rounded-lg" required>
                         <small class="form-text text-muted">Update according to the official registry sticker on the windshield.</small>
@@ -201,11 +201,9 @@
     function openQuickEdit(btn) {
         var id = btn.getAttribute('data-id');
         var plate = btn.getAttribute('data-plate');
-        var province = btn.getAttribute('data-province');
         var expiry = btn.getAttribute('data-expiry');
-        document.getElementById('quickEditForm').action = '/admin/license-plates/' + id + '/quick-update';
-        document.getElementById('modalTitle').innerText = 'Update Plate: ' + plate;
-        document.getElementById('modalProvince').value = (province && province !== 'null') ? province : '';
+        document.getElementById('quickEditForm').action = '/admin/license-plates/vehicle/' + id + '/registration';
+        document.getElementById('modalTitle').innerText = 'Update Registration: ' + plate;
         document.getElementById('modalExpiry').value = (expiry && expiry !== 'null') ? expiry : '';
         
         var modal = document.getElementById('quickEditModal');

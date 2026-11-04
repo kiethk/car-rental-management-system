@@ -18,6 +18,8 @@ public class FileUploadServiceImpl implements FileUploadService {
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
     private static final Path LICENSE_UPLOAD_DIRECTORY =
             Path.of("uploads", "licenses").toAbsolutePath().normalize();
+    private static final Path HANDOVER_UPLOAD_DIRECTORY =
+            Path.of("uploads", "handovers").toAbsolutePath().normalize();
     private static final Path VEHICLE_UPLOAD_DIRECTORY =
             Path.of("uploads", "vehicles").toAbsolutePath().normalize();
     private static final Path PROMOTION_UPLOAD_DIRECTORY =
@@ -112,15 +114,45 @@ public class FileUploadServiceImpl implements FileUploadService {
         };
 
         String fileName = "promotion-" + UUID.randomUUID() + extension;
-        Path destination = PROMOTION_UPLOAD_DIRECTORY.resolve(fileName);
-
         try {
             Files.createDirectories(PROMOTION_UPLOAD_DIRECTORY);
-            Files.copy(image.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(image.getInputStream(), PROMOTION_UPLOAD_DIRECTORY.resolve(fileName));
             return "/uploads/promotions/" + fileName;
         } catch (IOException exception) {
             throw new IllegalStateException("Could not save promotion image", exception);
         }
+    }
+
+    @Override
+    public String saveHandoverImage(MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            throw new IllegalArgumentException("Handover image is required");
+        }
+
+        if (image.getSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("Image must be 5 MB or smaller");
+        }
+
+        String extension = switch (image.getContentType() == null ? "" : image.getContentType()) {
+            case "image/jpeg" -> ".jpg";
+            case "image/png" -> ".png";
+            case "image/webp" -> ".webp";
+            default -> throw new IllegalArgumentException("Only JPEG, PNG, and WebP images are allowed");
+        };
+
+        String fileName = UUID.randomUUID() + extension;
+        try {
+            Files.createDirectories(HANDOVER_UPLOAD_DIRECTORY);
+            Files.copy(image.getInputStream(), HANDOVER_UPLOAD_DIRECTORY.resolve(fileName));
+            return fileName;
+        } catch (IOException exception) {
+            throw new IllegalStateException("Could not save handover image", exception);
+        }
+    }
+
+    @Override
+    public Resource loadHandoverImage(String fileName) {
+        return loadFrom(HANDOVER_UPLOAD_DIRECTORY, fileName);
     }
 
     @Override

@@ -2,31 +2,53 @@ package com.crms.mvc.service.impl;
 
 import com.crms.mvc.config.VnPayConfig;
 import com.crms.mvc.entity.Booking;
-import com.crms.mvc.service.VnPayService;
-import jakarta.servlet.http.HttpServletRequest;
+import com.crms.mvc.entity.Payment;
+import com.crms.mvc.event.DepositConfirmedEvent;
+import com.crms.mvc.event.RefundCompletedEvent;
+import com.crms.mvc.repository.BookingRepository;
+import com.crms.mvc.repository.PaymentRepository;
+import com.crms.mvc.service.BookingFeeService;
+import com.crms.mvc.service.PaymentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 @Service
-public class VnPayServiceImpl implements VnPayService {
+@Transactional
+public class VnPayServiceImpl implements PaymentService {
 
     private static final Logger log = LoggerFactory.getLogger(VnPayServiceImpl.class);
 
+    private final PaymentRepository paymentRepository;
+    private final BookingRepository bookingRepository;
+    private final BookingFeeService bookingFeeService;
+    private final ApplicationEventPublisher eventPublisher;
     private final VnPayConfig vnPayConfig;
 
-    public VnPayServiceImpl(VnPayConfig vnPayConfig) {
+    public VnPayServiceImpl(PaymentRepository paymentRepository,
+            BookingRepository bookingRepository,
+            BookingFeeService bookingFeeService,
+            ApplicationEventPublisher eventPublisher,
+            VnPayConfig vnPayConfig) {
+        this.paymentRepository = paymentRepository;
+        this.bookingRepository = bookingRepository;
+        this.bookingFeeService = bookingFeeService;
+        this.eventPublisher = eventPublisher;
         this.vnPayConfig = vnPayConfig;
     }
 
     @Override
-    public String createDepositPaymentUrl(Booking booking, HttpServletRequest request) {
+    @Transactional(readOnly = true)
+    public String createDepositPaymentUrl(Booking booking, String clientIp) {
         long amountInCents = booking.getDepositAmount().multiply(new BigDecimal(100)).longValue();
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -37,7 +59,7 @@ public class VnPayServiceImpl implements VnPayService {
         String vnp_ExpireDate = formatter.format(cld.getTime());
 
         String vnp_TxnRef = booking.getId() + "_" + System.currentTimeMillis();
-        String vnp_IpAddr = VnPayConfig.getIpAddress(request);
+        String vnp_IpAddr = (clientIp != null && !clientIp.isBlank()) ? clientIp : "127.0.0.1";
 
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnPayConfig.getVersion());
@@ -68,14 +90,16 @@ public class VnPayServiceImpl implements VnPayService {
                         hashData.append('&');
                         query.append('&');
                     }
-                    hashData.append(fieldName).append('=').append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
-                    query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString())).append('=').append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                    hashData.append(fieldName).append('=')
+                            .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                    query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString())).append('=')
+                            .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
                 }
             }
 
             String vnp_SecureHash = VnPayConfig.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
             String paymentUrl = vnPayConfig.getPayUrl() + "?" + query.toString() + "&vnp_SecureHash=" + vnp_SecureHash;
-            log.info("Generated VNPay deposit payment URL for bookingId {}: {}", booking.getId(), paymentUrl);
+            log.info("Generated VNPay deposit payment URL for bookingId {}", booking.getId());
             return paymentUrl;
         } catch (Exception e) {
             log.error("Failed to generate VNPay payment URL for bookingId: {}", booking.getId(), e);
@@ -84,18 +108,20 @@ public class VnPayServiceImpl implements VnPayService {
     }
 
     @Override
-    public boolean verifyPaymentSignature(Map<String, String> vnpParams) {
-        String vnp_SecureHash = vnpParams.get("vnp_SecureHash");
+    @Transactional(readOnly = true)
+    public boolean verifyPaymentSignature(Map<String, String> queryParams) {
+        String vnp_SecureHash = queryParams.get("vnp_SecureHash");
         if (vnp_SecureHash == null || vnp_SecureHash.trim().isEmpty()) {
             log.warn("VNPay signature verification failed: missing vnp_SecureHash");
             return false;
         }
 
         Map<String, String> fields = new HashMap<>();
-        for (Map.Entry<String, String> entry : vnpParams.entrySet()) {
+        for (Map.Entry<String, String> entry : queryParams.entrySet()) {
             String key = entry.getKey();
             String val = entry.getValue();
-            if (key != null && key.startsWith("vnp_") && !key.equals("vnp_SecureHash") && !key.equals("vnp_SecureHashType")) {
+            if (key != null && key.startsWith("vnp_") && !key.equals("vnp_SecureHash")
+                    && !key.equals("vnp_SecureHashType")) {
                 if (val != null && !val.trim().isEmpty()) {
                     fields.put(key, val);
                 }
@@ -112,13 +138,14 @@ public class VnPayServiceImpl implements VnPayService {
                 if (hashData.length() > 0) {
                     hashData.append('&');
                 }
-                hashData.append(fieldName).append('=').append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                hashData.append(fieldName).append('=')
+                        .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
             }
 
             String calculatedHash = VnPayConfig.hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
             boolean matches = calculatedHash.equalsIgnoreCase(vnp_SecureHash);
             if (!matches) {
-                log.warn("VNPay signature mismatch: received={}, calculated={}, rawData={}", vnp_SecureHash, calculatedHash, hashData);
+                log.warn("VNPay signature mismatch: invalid signature received");
             }
             return matches;
         } catch (Exception e) {
@@ -126,5 +153,135 @@ public class VnPayServiceImpl implements VnPayService {
             return false;
         }
     }
-}
 
+    @Override
+    public Payment processDeposit(Long bookingId) {
+        return processDeposit(bookingId, null, "VNPAY");
+    }
+
+    @Override
+    public Payment processDeposit(Long bookingId, String transactionNo, String paymentMethod) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
+
+        if ("confirmed".equalsIgnoreCase(booking.getStatus())) {
+            return paymentRepository.findByBookingIdAndPaymentType(bookingId, "DEPOSIT").orElse(null);
+        }
+
+        Payment payment = new Payment();
+        payment.setBooking(booking);
+        payment.setPaymentType("DEPOSIT");
+        payment.setTransactionCode(
+                transactionNo != null ? transactionNo : "TXN-DEP-" + bookingId + "-" + System.currentTimeMillis());
+        payment.setPaymentMethod(paymentMethod != null ? paymentMethod : "VNPAY");
+        payment.setAmount(booking.getDepositAmount());
+        payment.setStatus("paid");
+        payment.setPaidAt(OffsetDateTime.now());
+        paymentRepository.save(payment);
+
+        booking.setStatus("confirmed");
+        bookingRepository.save(booking);
+
+        eventPublisher.publishEvent(new DepositConfirmedEvent(bookingId));
+
+        return payment;
+    }
+
+    @Override
+    public Payment recordFinalPayment(Long bookingId, BigDecimal amount, String paymentMethod) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
+
+        Payment finalPayment = new Payment();
+        finalPayment.setBooking(booking);
+        finalPayment.setPaymentType("FINAL");
+        finalPayment.setAmount(amount);
+        finalPayment.setStatus("paid");
+        finalPayment.setPaymentMethod(paymentMethod);
+        finalPayment.setTransactionCode("FINAL-" + bookingId + "-" + System.currentTimeMillis());
+        finalPayment.setPaidAt(OffsetDateTime.now());
+        return paymentRepository.save(finalPayment);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Payment> getPaymentsByBooking(Long bookingId) {
+        return paymentRepository.findByBookingIdOrderByPaidAtAsc(bookingId);
+    }
+
+    @Override
+    @Transactional
+    public Payment createPendingRefund(Long bookingId, BigDecimal amount, String bankCode, String accountNumber,
+            String accountHolder) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
+
+        Payment refund = new Payment();
+        refund.setBooking(booking);
+        refund.setPaymentType("REFUND");
+        refund.setAmount(amount != null ? amount
+                : (booking.getDepositAmount() != null ? booking.getDepositAmount() : BigDecimal.ZERO));
+        refund.setPaymentMethod("BANK_TRANSFER");
+        refund.setStatus("pending");
+
+        String cleanBank = (bankCode != null && !bankCode.isBlank()) ? bankCode.trim().toUpperCase() : "BANK";
+        String cleanAcc = (accountNumber != null && !accountNumber.isBlank()) ? accountNumber.trim() : "";
+        String cleanHolder = (accountHolder != null && !accountHolder.isBlank()) ? accountHolder.trim().toUpperCase()
+                : "";
+        String refInfo = cleanBank + ": " + cleanAcc + " - " + cleanHolder;
+        if (refInfo.length() > 100) {
+            refInfo = refInfo.substring(0, 100);
+        }
+        refund.setTransactionCode(refInfo);
+
+        return paymentRepository.save(refund);
+    }
+
+    @Override
+    @Transactional
+    public Payment confirmRefundCompleted(Long paymentId, Long employeeId, String transactionNo) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new NoSuchElementException("Payment not found: " + paymentId));
+
+        if (!"REFUND".equalsIgnoreCase(payment.getPaymentType())) {
+            throw new IllegalStateException("Payment is not a refund");
+        }
+        if (!"pending".equalsIgnoreCase(payment.getStatus())) {
+            return payment; // Idempotent
+        }
+
+        payment.setStatus("paid");
+        payment.setPaidAt(OffsetDateTime.now());
+        if (transactionNo != null && !transactionNo.isBlank()) {
+            payment.setTransactionCode(transactionNo.trim());
+        }
+
+        Payment saved = paymentRepository.save(payment);
+        eventPublisher.publishEvent(new RefundCompletedEvent(payment.getBooking().getId(), payment.getId()));
+        return saved;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Payment> getPendingRefund(Long bookingId) {
+        return paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(bookingId, "REFUND", "pending");
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Payment> getPendingRefunds() {
+        return paymentRepository.findByPaymentTypeAndStatus("REFUND", "pending");
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countPendingRefunds() {
+        return paymentRepository.countPendingRefunds();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Long> getPendingRefundBookingIds() {
+        return paymentRepository.findBookingIdsWithPendingRefund();
+    }
+}

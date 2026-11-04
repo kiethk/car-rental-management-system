@@ -1,101 +1,261 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Bookings — DriveNow</title>
-    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
-    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
-    <link rel="stylesheet" th:href="@{/css/app.css}">
-</head>
-<body class="d-flex flex-column min-vh-100 bg-surface">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Admin Bookings — DriveNow</title>
+        <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" th:href="@{/css/bootstrap.css}" />
+        <link rel="stylesheet" th:href="@{/css/drivenow.css}" />
+        <link rel="stylesheet" th:href="@{/css/app.css}" />
+    </head>
+    <body class="d-flex flex-column min-vh-100 bg-surface">
+        <div th:replace="~{fragments/header :: header}"></div>
 
-<div th:replace="~{fragments/header :: header}"></div>
-
-<main class="container-fluid px-lg-5 my-4 flex-grow-1">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3 col-lg-2">
-            <div th:replace="~{fragments/admin-sidebar :: sidebar(active='bookings')}"></div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="col-md-9 col-lg-10">
-            <div class="card card-drivenow border-0 p-4">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom">
-                    <div>
-                        <h1 class="h4 font-weight-bold text-navy mb-1">Rental Bookings Dispatcher</h1>
-                        <p class="text-muted small mb-0">Oversee customer reservations, assign physical cars, process branch handovers.</p>
-                    </div>
-
-                    <!-- Status Filter Tabs -->
-                    <div class="btn-group btn-group-sm mt-3 mt-md-0">
-                        <a th:href="@{/admin/bookings(status='all')}" th:class="'btn ' + (${currentStatus == 'all' or currentStatus == null} ? 'btn-navy' : 'btn-outline-secondary')">All</a>
-                        <a th:href="@{/admin/bookings(status='pending_payment')}" th:class="'btn ' + (${currentStatus == 'pending_payment'} ? 'btn-navy' : 'btn-outline-secondary')">Pending Deposit</a>
-                        <a th:href="@{/admin/bookings(status='confirmed')}" th:class="'btn ' + (${currentStatus == 'confirmed'} ? 'btn-navy' : 'btn-outline-secondary')">Confirmed</a>
-                        <a th:href="@{/admin/bookings(status='active')}" th:class="'btn ' + (${currentStatus == 'active'} ? 'btn-navy' : 'btn-outline-secondary')">Active Trips</a>
-                        <a th:href="@{/admin/bookings(status='completed')}" th:class="'btn ' + (${currentStatus == 'completed'} ? 'btn-navy' : 'btn-outline-secondary')">Completed</a>
-                    </div>
+        <main class="container-fluid px-lg-5 my-4 flex-grow-1">
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col-md-3 col-lg-2">
+                    <div th:replace="~{fragments/admin-sidebar :: sidebar(active='bookings')}"></div>
                 </div>
 
-                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                <!-- Main Content -->
+                <div class="col-md-9 col-lg-10">
+                    <div class="card card-drivenow border-0 p-4">
+                        <div
+                            class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom"
+                        >
+                            <div>
+                                <h1 class="h4 font-weight-bold text-navy mb-1">Rental Bookings Dispatcher</h1>
+                            </div>
 
-                <div class="table-responsive" th:unless="${#lists.isEmpty(bookings)}">
-                    <table class="table table-hover align-middle mb-0 admin-table">
-                        <thead class="thead-light">
-                            <tr>
-                                <th>#ID</th>
-                                <th>Customer</th>
-                                <th>Vehicle Type</th>
-                                <th>Assigned Plate</th>
-                                <th>Pickup Schedule</th>
-                                <th class="text-center">Status</th>
-                                <th class="text-center">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="b : ${bookings}">
-                                <td class="font-weight-bold text-navy">#<span th:text="${b.id}">1</span></td>
-                                <td>
-                                    <strong class="d-block" th:text="${b.customerName}">Customer Name</strong>
-                                </td>
-                                <td th:text="${b.vehicleTypeName}">Toyota Vios</td>
-                                <td>
-                                    <span class="admin-plate-badge" th:text="${b.licensePlate}">51A-123.45</span>
-                                </td>
-                                <td class="small" th:text="${#temporals.format(b.pickupTime, 'dd/MM/yyyy HH:mm')}">Date</td>
-                                <td class="text-center">
-                                    <span th:if="${b.status == 'pending_payment'}" class="admin-status-badge badge-warning text-dark">Pending Deposit</span>
-                                    <span th:if="${b.status == 'confirmed'}" class="admin-status-badge badge-info">Confirmed</span>
-                                    <span th:if="${b.status == 'active'}" class="admin-status-badge badge-primary">Active</span>
-                                    <span th:if="${b.status == 'completed'}" class="admin-status-badge badge-success">Completed</span>
-                                    <span th:if="${b.status == 'cancelled'}" class="admin-status-badge badge-secondary">Cancelled</span>
-                                </td>
-                                <td class="text-center">
-                                    <a th:href="@{/admin/bookings/{id}(id=${b.id})}" class="admin-btn btn-soft-primary">
-                                        Manage
-                                    </a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                            <!-- Status Filter Tabs -->
+                            <div class="btn-group btn-group-sm mt-3 mt-md-0 flex-wrap">
+                                <a
+                                    th:href="@{/admin/bookings(status='all')}"
+                                    th:class="'btn ' + (${currentStatus == 'all' or currentStatus == null} ? 'btn-navy' : 'btn-outline-secondary')"
+                                    >All</a
+                                >
+                                <a
+                                    th:href="@{/admin/bookings(status='refund')}"
+                                    th:class="'btn ' + (${currentStatus == 'refund'} ? 'btn-danger font-weight-bold text-white' : 'btn-outline-danger')"
+                                >
+                                    <span>Cần hoàn cọc</span>
+                                    <span
+                                        class="badge badge-pill badge-danger text-white ml-1"
+                                        th:if="${pendingRefundCount != null and pendingRefundCount > 0}"
+                                        th:text="${pendingRefundCount}"
+                                        style="background-color: #dc2626"
+                                        >1</span
+                                    >
+                                </a>
+                                <a
+                                    th:href="@{/admin/bookings(status='pending_payment')}"
+                                    th:class="'btn ' + (${currentStatus == 'pending_payment'} ? 'btn-navy' : 'btn-outline-secondary')"
+                                    >Pending Deposit</a
+                                >
+                                <a
+                                    th:href="@{/admin/bookings(status='confirmed')}"
+                                    th:class="'btn ' + (${currentStatus == 'confirmed'} ? 'btn-navy' : 'btn-outline-secondary')"
+                                    >Confirmed</a
+                                >
+                                <a
+                                    th:href="@{/admin/bookings(status='active')}"
+                                    th:class="'btn ' + (${currentStatus == 'active'} ? 'btn-navy' : 'btn-outline-secondary')"
+                                    >Active Trips</a
+                                >
+                                <a
+                                    th:href="@{/admin/bookings(status='completed')}"
+                                    th:class="'btn ' + (${currentStatus == 'completed'} ? 'btn-navy' : 'btn-outline-secondary')"
+                                    >Completed</a
+                                >
+                                <a
+                                    th:href="@{/admin/bookings(status='cancelled')}"
+                                    th:class="'btn ' + (${currentStatus == 'cancelled'} ? 'btn-navy' : 'btn-outline-secondary')"
+                                    >Cancelled</a
+                                >
+                            </div>
+                        </div>
 
-                <div th:if="${#lists.isEmpty(bookings)}" class="text-center py-5 text-muted">
-                    No bookings found matching current filter.
+                        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                        <!-- Attention Banner for Pending Refunds -->
+                        <div
+                            th:if="${pendingRefundCount != null and pendingRefundCount > 0 and currentStatus != 'refund'}"
+                            class="alert alert-warning border-warning d-flex flex-column flex-md-row align-items-md-center justify-content-between p-3 mb-4 rounded-lg shadow-sm"
+                            style="background-color: #fffbeb; border: 1px solid #fde68a"
+                        >
+                            <div class="d-flex align-items-center mb-2 mb-md-0">
+                                <span
+                                    style="
+                                        display: inline-flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        width: 38px;
+                                        height: 38px;
+                                        background-color: #fef3c7;
+                                        border-radius: 50%;
+                                        color: #d97706;
+                                        margin-right: 12px;
+                                        flex-shrink: 0;
+                                        font-size: 18px;
+                                    "
+                                >
+                                    ⚡
+                                </span>
+                                <div>
+                                    <strong class="text-navy"
+                                        >Đang có
+                                        <span class="text-danger font-weight-bold" th:text="${pendingRefundCount}"
+                                            >1</span
+                                        >
+                                        đơn đặt xe chờ chuyển tiền hoàn cọc!</strong
+                                    >
+                                    <div class="small text-muted">
+                                        Khách đã hủy đơn đúng hạn, nhân viên cần xử lý quét VietQR hoàn tiền cho khách
+                                        trong vòng 24h làm việc.
+                                    </div>
+                                </div>
+                            </div>
+                            <a
+                                th:href="@{/admin/bookings(status='refund')}"
+                                class="btn btn-warning btn-sm font-weight-bold text-navy px-3 text-nowrap shadow-sm"
+                                style="background-color: #f59e0b; border-color: #f59e0b"
+                            >
+                                Xử lý ngay →
+                            </a>
+                        </div>
+
+                        <!-- Active Refund Queue Header Notice -->
+                        <div
+                            th:if="${currentStatus == 'refund'}"
+                            class="alert alert-danger p-3 mb-4 rounded-lg shadow-sm d-flex align-items-center"
+                            style="background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca"
+                        >
+                            <div>
+                                <strong class="d-block" style="font-size: 15px"
+                                    >Danh sách đơn chờ chuyển khoản hoàn tiền cọc</strong
+                                >
+                            </div>
+                        </div>
+
+                        <div class="table-responsive" th:unless="${#lists.isEmpty(bookings)}">
+                            <table class="table table-hover align-middle mb-0 admin-table">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>#ID</th>
+                                        <th>Customer</th>
+                                        <th>Vehicle Type</th>
+                                        <th>Assigned Plate</th>
+                                        <th>Pickup Schedule</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="b : ${bookings}">
+                                        <td class="font-weight-bold text-navy">#<span th:text="${b.id}">1</span></td>
+                                        <td>
+                                            <strong class="d-block" th:text="${b.customerName}">Customer Name</strong>
+                                        </td>
+                                        <td th:text="${b.vehicleTypeName}">Toyota Vios</td>
+                                        <td>
+                                            <span class="admin-plate-badge" th:text="${b.licensePlate}"
+                                                >51A-123.45</span
+                                            >
+                                        </td>
+                                        <td
+                                            class="small"
+                                            th:text="${#temporals.format(b.pickupTime, 'dd/MM/yyyy HH:mm')}"
+                                        >
+                                            Date
+                                        </td>
+                                        <td class="text-center">
+                                            <span
+                                                th:if="${b.hasPendingRefund}"
+                                                class="admin-status-badge text-white font-weight-bold"
+                                                style="background-color: #dc2626; border-radius: 6px; padding: 4px 8px"
+                                            >
+                                                ⚡ Cần hoàn cọc
+                                            </span>
+                                            <span
+                                                th:if="${not b.hasPendingRefund and b.status == 'pending_payment'}"
+                                                class="admin-status-badge badge-warning text-dark"
+                                                >Pending Deposit</span
+                                            >
+                                            <span
+                                                th:if="${not b.hasPendingRefund and b.status == 'confirmed'}"
+                                                class="admin-status-badge badge-info"
+                                                >Confirmed</span
+                                            >
+                                            <span
+                                                th:if="${not b.hasPendingRefund and b.status == 'active'}"
+                                                class="admin-status-badge badge-primary"
+                                                >Active</span
+                                            >
+                                            <span
+                                                th:if="${not b.hasPendingRefund and b.status == 'completed'}"
+                                                class="admin-status-badge badge-success"
+                                                >Completed</span
+                                            >
+                                            <span
+                                                th:if="${not b.hasPendingRefund and b.status == 'cancelled'}"
+                                                class="admin-status-badge badge-secondary"
+                                                >Cancelled</span
+                                            >
+                                        </td>
+                                        <td class="text-center">
+                                            <a
+                                                th:if="${b.hasPendingRefund}"
+                                                th:href="@{/admin/bookings/{id}(id=${b.id})}"
+                                                class="btn btn-sm font-weight-bold text-nowrap text-white shadow-sm"
+                                                style="
+                                                    background-color: #dc2626;
+                                                    border-color: #dc2626;
+                                                    padding: 4px 12px;
+                                                    border-radius: 6px;
+                                                "
+                                            >
+                                                Hoàn cọc ngay →
+                                            </a>
+                                            <a
+                                                th:unless="${b.hasPendingRefund}"
+                                                th:href="@{/admin/bookings/{id}(id=${b.id})}"
+                                                class="admin-btn btn-soft-primary"
+                                            >
+                                                Manage
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div th:if="${#lists.isEmpty(bookings)}" class="text-center py-5 text-muted">
+                            <div th:if="${currentStatus == 'refund'}">
+                                <strong class="text-navy h5 d-block font-weight-bold"
+                                    >Không có đơn nào đang chờ hoàn tiền cọc!</strong
+                                >
+                                <span class="small text-muted"
+                                    >Tất cả các yêu cầu hoàn cọc của khách hàng đều đã được xử lý hoàn tất.</span
+                                >
+                            </div>
+                            <div th:unless="${currentStatus == 'refund'}">
+                                No bookings found matching current filter.
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-</main>
+        </main>
 
-<div th:replace="~{fragments/footer :: footer}"></div>
-
-</body>
+        <div th:replace="~{fragments/footer :: footer}"></div>
+    </body>
 </html>
-
