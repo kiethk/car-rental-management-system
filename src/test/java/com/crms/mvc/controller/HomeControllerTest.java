@@ -38,6 +38,20 @@ class HomeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("/uploads/promotions/welcome.png")))
                 .andExpect(content().string(containsString("WELCOME10")))
+                .andExpect(content().string(containsString("aria-label=\"Current promotions\"")))
+                .andExpect(content().string(not(containsString("images.unsplash.com"))));
+    }
+
+    @Test
+    void rotatesLocalVehicleImagesWhenThereAreNoPromotions() throws Exception {
+        when(promotionService.findActiveWithImages()).thenReturn(List.of());
+
+        mvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("/images/vehicles/vios.jpg")))
+                .andExpect(content().string(containsString("/images/vehicles/vfe34.jpg")))
+                .andExpect(content().string(containsString("Toyota Vios")))
+                .andExpect(content().string(containsString("aria-label=\"Featured rental cars\"")))
                 .andExpect(content().string(not(containsString("images.unsplash.com"))));
     }
 }

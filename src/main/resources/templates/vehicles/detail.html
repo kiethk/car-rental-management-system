@@ -87,6 +87,35 @@
                 </div>
             </div>
 
+            <section class="card border-0 shadow-sm rounded-2xl p-4 bg-white mb-4"
+                     th:if="${reviewSummary != null}">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                    <h4 class="h6 font-weight-bold text-navy mb-0">Customer Reviews</h4>
+                    <span class="small text-muted"
+                          th:text="${reviewSummary.reviewCount > 0 ? #numbers.formatDecimal(reviewSummary.averageRating, 1, 1) + ' / 5 · ' + reviewSummary.reviewCount + ' reviews' : 'No reviews yet'}">
+                        No reviews yet
+                    </span>
+                </div>
+                <div th:if="${reviewSummary.reviews.isEmpty()}" class="text-muted small">
+                    This model does not have any completed-trip reviews yet.
+                </div>
+                <article th:each="review : ${reviewSummary.reviews}" class="py-3 border-top">
+                    <div class="d-flex justify-content-between align-items-center gap-3">
+                        <span class="text-amber font-weight-bold"
+                              th:text="${'★'.repeat(review.rating) + '☆'.repeat(5 - review.rating)}">★★★★★</span>
+                        <time class="small text-muted" th:if="${review.createdAt != null}"
+                              th:datetime="${review.createdAt}"
+                              th:text="${#temporals.format(review.createdAt, 'dd/MM/yyyy')}">01/01/2026</time>
+                    </div>
+                    <p th:if="${review.comment != null and !review.comment.isBlank()}"
+                       class="small text-navy mb-0 mt-2"
+                       style="white-space: pre-wrap;"
+                       th:text="${review.comment}">Review comment</p>
+                    <p th:if="${review.comment == null or review.comment.isBlank()}"
+                       class="small text-muted mb-0 mt-2">Rating only</p>
+                </article>
+            </section>
+
             <!-- Features & Safety Commitments -->
             <div class="card border-0 shadow-sm rounded-2xl p-4 bg-white">
                 <h4 class="h6 font-weight-bold text-navy mb-3">Included Amenities & Service Standards</h4>
@@ -114,8 +143,9 @@
                     <h1 class="h3 font-weight-bold text-navy mb-1" th:text="${vehicle.displayName}">Toyota Vios 2023</h1>
                     <div class="d-flex align-items-center gap-1.5 small text-amber font-weight-semibold">
                         <span>★</span>
-                        <span>4.8</span>
-                        <span class="text-muted font-weight-normal">(124 customer reviews)</span>
+                        <span th:text="${reviewSummary != null and reviewSummary.reviewCount > 0 ? #numbers.formatDecimal(reviewSummary.averageRating, 1, 1) : '—'}">—</span>
+                        <span class="text-muted font-weight-normal"
+                              th:text="${'(' + (reviewSummary != null ? reviewSummary.reviewCount : 0) + ' customer reviews)'}">(0 customer reviews)</span>
                     </div>
                 </div>
 

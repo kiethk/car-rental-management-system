@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Promotions — DriveNow Admin</title>
+    <title>Quản lý khuyến mãi — DriveNow Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -24,11 +24,11 @@
             <div th:if="${error}" class="alert alert-danger border-0 rounded-lg shadow-sm" role="alert" th:text="${error}"></div>
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
                 <div>
-                    <h1 class="h3 font-weight-bold text-navy mb-1">Promotion Management</h1>
-                    <p class="text-muted small mb-0">Manage discount codes, validity dates, images, and quantities.</p>
+                    <h1 class="h3 font-weight-bold text-navy mb-1">Quản lý khuyến mãi</h1>
+                    <p class="text-muted small mb-0">Quản lý mã giảm giá, ngày hết hạn, hình ảnh và số lượng.</p>
                 </div>
                 <a th:href="@{/admin/promotions/new}" class="btn btn-navy font-weight-bold btn-sm px-3 py-2 rounded-lg shadow-sm mt-3 mt-md-0">
-                    + Add Promotion
+                    + Thêm khuyến mãi
                 </a>
             </div>
             <div class="card border-0 shadow-sm rounded-xl overflow-hidden bg-white">
@@ -36,22 +36,22 @@
                     <table class="table table-hover mb-0 align-middle admin-table">
                         <thead class="bg-surface-2 text-navy small font-weight-bold">
                         <tr>
-                            <th class="border-top-0 py-3">Image</th>
-                            <th class="border-top-0 py-3">Code</th>
-                            <th class="border-top-0 py-3">Discount</th>
-                            <th class="border-top-0 py-3">Start date</th>
-                            <th class="border-top-0 py-3">End date</th>
-                            <th class="border-top-0 py-3 text-center">Quantity</th>
-                            <th class="border-top-0 py-3 text-center">Status</th>
-                            <th class="border-top-0 py-3 text-center">Actions</th>
+                            <th class="border-top-0 py-3">Hình ảnh</th>
+                            <th class="border-top-0 py-3">Mã</th>
+                            <th class="border-top-0 py-3">Giảm giá</th>
+                            <th class="border-top-0 py-3">Ngày bắt đầu</th>
+                            <th class="border-top-0 py-3">Ngày kết thúc</th>
+                            <th class="border-top-0 py-3 text-center">Số lượng</th>
+                            <th class="border-top-0 py-3 text-center">Trạng thái</th>
+                            <th class="border-top-0 py-3 text-center">Hành động</th>
                         </tr>
                         </thead>
                         <tbody class="small text-navy">
                         <tr th:if="${#lists.isEmpty(promotions)}">
-                            <td colspan="8" class="text-center py-4 text-muted">No promotions found.</td>
+                            <td colspan="8" class="text-center py-4 text-muted">Không tìm thấy khuyến mãi nào.</td>
                         </tr>
                         <tr th:each="promotion : ${promotions}"
-                            th:with="promotionStatus=${promotion.quantity == 0 ? 'OUT OF STOCK' : (today.isBefore(promotion.startDate) ? 'UPCOMING' : (today.isAfter(promotion.endDate) ? 'EXPIRED' : 'ACTIVE'))}">
+                            th:with="promotionStatus=${promotion.quantity == 0 ? 'HẾT HÀNG' : (today.isBefore(promotion.startDate) ? 'SẮP DIỄN RA' : (today.isAfter(promotion.endDate) ? 'ĐÃ HẾT HẠN' : 'HOẠT ĐỘNG'))}">
                             <td>
                                 <img th:if="${promotion.urlImagePromotion != null and !promotion.urlImagePromotion.isBlank()}"
                                      th:src="${promotion.urlImagePromotion}" th:alt="${promotion.code}"
@@ -61,22 +61,22 @@
                             <td class="font-weight-bold" th:text="${promotion.code}">WELCOME10</td>
                             <td>
                                 <span th:text="${promotion.discountType == 'percent' ? #numbers.formatDecimal(promotion.discountValue, 0, 'POINT', 2, 'POINT') + '%' : #numbers.formatDecimal(promotion.discountValue, 0, 'COMMA', 0, 'POINT') + ' VND'}">10%</span>
-                                <small class="d-block text-muted text-capitalize" th:text="${promotion.discountType}">percent</small>
+                                <small class="d-block text-muted text-capitalize" th:text="${promotion.discountType == 'percent' ? 'Phần trăm' : 'Cố định'}">percent</small>
                             </td>
-                            <td th:text="${promotion.startDate}">2026-01-01</td>
-                            <td th:text="${promotion.endDate}">2026-12-31</td>
+                            <td th:text="${#temporals.format(promotion.startDate, 'dd/MM/yyyy')}">01/01/2026</td>
+                            <td th:text="${#temporals.format(promotion.endDate, 'dd/MM/yyyy')}">31/12/2026</td>
                             <td class="text-center" th:text="${promotion.quantity}">100</td>
                             <td class="text-center">
                                 <span class="badge badge-light border"
-                                      th:classappend="${promotionStatus == 'ACTIVE' ? 'text-success' : (promotionStatus == 'EXPIRED' or promotionStatus == 'OUT OF STOCK' ? 'text-danger' : 'text-muted')}"
-                                      th:text="${promotionStatus}">ACTIVE</span>
+                                      th:classappend="${promotionStatus == 'HOẠT ĐỘNG' ? 'text-success' : (promotionStatus == 'ĐÃ HẾT HẠN' or promotionStatus == 'HẾT HÀNG' ? 'text-danger' : 'text-muted')}"
+                                      th:text="${promotionStatus}">HOẠT ĐỘNG</span>
                             </td>
                             <td class="text-center">
                                 <div class="d-inline-flex align-items-center justify-content-center" style="gap: 6px;">
-                                    <a th:href="@{/admin/promotions/{id}/edit(id=${promotion.id})}" class="admin-btn btn-soft-primary">Edit</a>
+                                    <a th:href="@{/admin/promotions/{id}/edit(id=${promotion.id})}" class="admin-btn btn-soft-primary">Chỉnh sửa</a>
                                     <form method="post" th:action="@{/admin/promotions/{id}/delete(id=${promotion.id})}" class="m-0"
-                                          onsubmit="return confirm('Delete this promotion? Promotions linked to a booking cannot be deleted.');">
-                                        <button type="submit" class="admin-btn btn-soft-danger">Delete</button>
+                                          onsubmit="return confirm('Bạn có chắc muốn xóa khuyến mãi này? Các khuyến mãi đã liên kết với đơn đặt xe sẽ không thể xóa.');">
+                                        <button type="submit" class="admin-btn btn-soft-danger">Xóa</button>
                                     </form>
                                 </div>
                             </td>

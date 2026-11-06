@@ -34,6 +34,9 @@ import com.crms.mvc.entity.LicenseDocument;
 import com.crms.mvc.service.LicenseDocumentService;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.service.ContractTemplateService;
+import com.crms.mvc.dto.ReviewDTO;
+import com.crms.mvc.dto.ReviewFormDTO;
+import com.crms.mvc.service.ReviewService;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
@@ -44,6 +47,7 @@ public class BookingController {
     private final PricingService pricingService;
     private final LicenseDocumentService licenseDocumentService;
     private final ContractTemplateService contractTemplateService;
+    private final ReviewService reviewService;
 
     public BookingController(
             BookingService bookingService,
@@ -51,13 +55,15 @@ public class BookingController {
             VehicleTypeService vehicleTypeService,
             LicenseDocumentService licenseDocumentService,
             ContractTemplateService contractTemplateService,
-            PricingService pricingService) {
+            PricingService pricingService,
+            ReviewService reviewService) {
         this.bookingService = bookingService;
         this.paymentService = paymentService;
         this.vehicleTypeService = vehicleTypeService;
         this.licenseDocumentService = licenseDocumentService;
         this.contractTemplateService = contractTemplateService;
         this.pricingService = pricingService;
+        this.reviewService = reviewService;
     }
 
     // STEP 1 & 2: Choose rental schedule & filter available vehicle types
@@ -453,11 +459,41 @@ public class BookingController {
             model.addAttribute("freeCancellationHours", freeCancellationHours);
             model.addAttribute("cancelDeadline", cancelDeadline);
             model.addAttribute("cancelForm", new BookingCancelDTO());
+            if ("completed".equalsIgnoreCase(detail.getStatus())) {
+                boolean reviewEligible = reviewService.isEligibleForCustomer(bookingId, customerId);
+                model.addAttribute("reviewEligible", reviewEligible);
+                if (reviewEligible) {
+                    ReviewDTO review = reviewService.findForCustomer(bookingId, customerId);
+                    model.addAttribute("review", review);
+                    model.addAttribute("reviewForm", new ReviewFormDTO());
+                }
+            }
             return "bookings/detail";
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             return "redirect:/bookings/my-bookings";
         }
+    }
+
+    @PostMapping("/bookings/{id}/review")
+    public String submitReview(@PathVariable("id") Long bookingId,
+                               @Valid @ModelAttribute("reviewForm") ReviewFormDTO form,
+                               BindingResult result, HttpSession session, RedirectAttributes ra) {
+        Long customerId = CurrentAccount.customerId(session).orElse(null);
+        if (customerId == null) return "redirect:/login";
+
+        if (result.hasErrors()) {
+            ra.addFlashAttribute("error", result.getAllErrors().get(0).getDefaultMessage());
+            return "redirect:/bookings/" + bookingId;
+        }
+
+        try {
+            reviewService.submit(bookingId, customerId, form);
+            ra.addFlashAttribute("success", "Cảm ơn bạn đã chia sẻ đánh giá về chuyến đi!");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/bookings/" + bookingId;
     }
 
     // Hủy đơn

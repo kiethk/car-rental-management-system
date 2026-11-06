@@ -43,6 +43,13 @@
             </div>
         </div>
 
+        <div th:if="${success}" role="status"
+             style="margin: 0 0 16px; padding: 12px 16px; border: 1px solid #86efac; border-radius: 8px; background: #f0fdf4; color: #166534;"
+             th:text="${success}"></div>
+        <div th:if="${error}" role="alert"
+             style="margin: 0 0 16px; padding: 12px 16px; border: 1px solid #fca5a5; border-radius: 8px; background: #fef2f2; color: #991b1b;"
+             th:text="${error}"></div>
+
         <!-- 2-Column Content Layout -->
         <div class="detail-grid-layout">
 
@@ -194,6 +201,47 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <div class="surface-card" th:if="${reviewEligible}">
+                    <h2 class="card-title">Đánh giá dịch vụ</h2>
+                    <div th:if="${review == null}">
+                        <p style="color: #64748b; margin: 0 0 16px;">
+                            Chuyến đi đã hoàn thành. Hãy chia sẻ trải nghiệm của bạn để DriveNow phục vụ tốt hơn.
+                        </p>
+                        <form th:action="@{/bookings/{id}/review(id=${booking.id})}" th:object="${reviewForm}" method="post">
+                            <label for="reviewRating" style="display: block; font-weight: 600; margin-bottom: 6px;">Mức độ hài lòng</label>
+                            <select id="reviewRating" th:field="*{rating}" required
+                                    style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 14px;">
+                                <option value="">Chọn số sao</option>
+                                <option value="5">★★★★★ - Rất hài lòng</option>
+                                <option value="4">★★★★☆ - Hài lòng</option>
+                                <option value="3">★★★☆☆ - Bình thường</option>
+                                <option value="2">★★☆☆☆ - Chưa hài lòng</option>
+                                <option value="1">★☆☆☆☆ - Không hài lòng</option>
+                            </select>
+
+                            <label for="reviewComment" style="display: block; font-weight: 600; margin-bottom: 6px;">Nhận xét (không bắt buộc)</label>
+                            <textarea id="reviewComment" th:field="*{comment}" maxlength="1000" rows="4"
+                                      placeholder="Chia sẻ thêm về xe, quy trình nhận/trả xe hoặc dịch vụ..."
+                                      style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; resize: vertical;"></textarea>
+
+                            <button type="submit"
+                                    style="margin-top: 14px; padding: 10px 18px; border: 0; border-radius: 8px; background: #0f172a; color: white; font-weight: 600; cursor: pointer;">
+                                Gửi đánh giá
+                            </button>
+                        </form>
+                    </div>
+                    <div th:if="${review != null}">
+                        <div style="font-size: 20px; color: #d97706; letter-spacing: 2px;"
+                             th:text="${'★'.repeat(review.rating) + '☆'.repeat(5 - review.rating)}">★★★★★</div>
+                        <p th:if="${review.comment != null and !review.comment.isBlank()}"
+                           style="white-space: pre-wrap; margin: 10px 0 0; color: #334155;"
+                           th:text="${review.comment}">Nhận xét của khách hàng</p>
+                        <p style="font-size: 12px; color: #94a3b8; margin: 10px 0 0;"
+                           th:if="${review.createdAt != null}"
+                           th:text="${'Đã gửi ngày ' + #temporals.format(review.createdAt, 'dd/MM/yyyy HH:mm')}">Đã gửi ngày</p>
                     </div>
                 </div>
 
