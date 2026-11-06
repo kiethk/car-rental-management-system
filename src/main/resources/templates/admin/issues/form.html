@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${issueId != null ? 'Sửa sự cố #' + issueId : 'Ghi nhận sự cố'} + ' — DriveNow Admin'">Ghi nhận sự cố — DriveNow Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container-fluid px-lg-5 my-4 flex-grow-1">
+    <div class="row">
+        <div class="col-md-3 col-lg-2">
+            <div th:replace="~{fragments/admin-sidebar :: sidebar(active='issues')}"></div>
+        </div>
+
+        <div class="col-md-9 col-lg-10">
+            <div th:if="${error}" class="alert alert-danger border-0 rounded-lg shadow-sm" role="alert" th:text="${error}"></div>
+
+            <div th:replace="~{fragments/admin-components :: pageHeader(
+                title=${issueId != null ? 'Sửa sự cố #' + issueId : 'Ghi nhận sự cố'},
+                subtitle='Sự cố chỉ ghi nhận trách nhiệm tiền của khách. Phí để trống hoặc bằng 0 nghĩa là không tính phí.',
+                backUrl=${issueId != null ? '/admin/issues/' + issueId : '/admin/bookings/' + booking.id},
+                backText=${issueId != null ? 'Chi tiết sự cố' : 'Chi tiết đơn thuê'})}"></div>
+
+            <div class="admin-card mb-3">
+                <div class="admin-card-body">
+                    <div class="row">
+                        <div class="col-md-3"><span class="text-muted small d-block">Đơn thuê</span><strong class="font-mono" th:text="'#' + ${booking.id}">#42</strong></div>
+                        <div class="col-md-3"><span class="text-muted small d-block">Khách hàng</span><strong th:text="${booking.customerName}">Nguyễn Văn An</strong></div>
+                        <div class="col-md-3"><span class="text-muted small d-block">Xe</span><strong th:text="${booking.vehicleTypeName}">Vios</strong></div>
+                        <div class="col-md-3"><span class="text-muted small d-block">Biển số</span><strong class="font-mono" th:text="${booking.licensePlate}">51A-123.45</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <form th:action="${issueId != null ? '/admin/issues/' + issueId : '/admin/issues'}" th:object="${issueForm}" method="post">
+                <input type="hidden" th:field="*{bookingId}">
+
+                <div class="admin-card">
+                    <div class="admin-card-body">
+                        <div class="admin-form-group">
+                            <label class="admin-form-label" for="issueType">Loại sự cố (*)</label>
+                            <select id="issueType" th:field="*{issueType}" class="admin-form-select" required>
+                                <option th:each="t : ${issueTypes}" th:value="${t}" th:text="${t.label}">Hư hỏng</option>
+                            </select>
+                            <div class="text-danger small" th:if="${#fields.hasErrors('issueType')}" th:errors="*{issueType}"></div>
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label class="admin-form-label" for="subject">Tiêu đề (*)</label>
+                            <input id="subject" type="text" th:field="*{subject}" class="admin-form-input" maxlength="200"
+                                   placeholder="Ví dụ: Trầy xước cản trước" required>
+                            <div class="text-danger small" th:if="${#fields.hasErrors('subject')}" th:errors="*{subject}"></div>
+                        </div>
+
+                        <div class="admin-form-group">
+                            <label class="admin-form-label" for="description">Mô tả</label>
+                            <textarea id="description" th:field="*{description}" class="admin-form-textarea" rows="4"
+                                      placeholder="Diễn biến, vị trí hư hỏng, nội dung biên bản..."></textarea>
+                            <div class="text-danger small" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="admin-form-group">
+                                    <label class="admin-form-label" for="occurredAt">Xảy ra lúc (*)</label>
+                                    <input id="occurredAt" type="datetime-local" th:field="*{occurredAt}" class="admin-form-input" required>
+                                    <div class="admin-form-hint">Giờ Việt Nam. Với phạt nguội, nhập thời điểm vi phạm ghi trên biên bản.</div>
+                                    <div class="text-danger small" th:if="${#fields.hasErrors('occurredAt')}" th:errors="*{occurredAt}"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="admin-form-group">
+                                    <label class="admin-form-label" for="feeAmount">Phí bồi thường / phạt (VND) (*)</label>
+                                    <input id="feeAmount" type="number" th:field="*{feeAmount}" class="admin-form-input font-mono" min="1000" step="1000" placeholder="Ví dụ: 200000" required>
+                                    <div class="admin-form-hint">Mức phí bồi thường bắt buộc > 0. Email kèm link thanh toán sẽ được gửi ngay cho khách.</div>
+                                    <div class="text-danger small" th:if="${#fields.hasErrors('feeAmount')}" th:errors="*{feeAmount}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="admin-card-body border-top d-flex justify-content-end gap-2">
+                        <a th:href="${issueId != null ? '/admin/issues/' + issueId : '/admin/bookings/' + booking.id}" class="admin-btn admin-btn-secondary">Huỷ bỏ</a>
+                        <button type="submit" class="admin-btn admin-btn-primary" th:text="${issueId != null ? 'Lưu thay đổi' : 'Ghi nhận sự cố'}">Ghi nhận sự cố</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

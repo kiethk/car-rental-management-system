@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -44,6 +45,11 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     public VehicleInspection schedule(VehicleInspectionFormDTO dto) {
         Vehicle vehicle = vehicleRepository.findByIdWithDetails(dto.getVehicleId())
                 .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with ID: " + dto.getVehicleId()));
+        requireNotRetired(vehicle);
+
+        if (dto.getScheduledAt() != null && dto.getScheduledAt().isBefore(LocalDateTime.now().minusMinutes(5))) {
+            throw new IllegalArgumentException("Thời gian lên lịch đăng kiểm không được ở trong quá khứ");
+        }
 
         VehicleInspection inspection = new VehicleInspection();
         inspection.setVehicle(vehicle);
@@ -64,11 +70,12 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
                 .orElseThrow(() -> new IllegalArgumentException("Inspection schedule not found with ID: " + inspectionId));
 
         Vehicle vehicle = inspection.getVehicle();
-        if ("rented".equalsIgnoreCase(vehicle.getStatus())) {
+        requireNotRetired(vehicle);
+        if (Vehicle.STATUS_RENTED.equalsIgnoreCase(vehicle.getStatus())) {
             throw new IllegalStateException("Cannot inspect vehicle while it is currently rented!");
         }
 
-        vehicle.setStatus("maintenance");
+        vehicle.setStatus(Vehicle.STATUS_MAINTENANCE);
         vehicleRepository.save(vehicle);
     }
 
@@ -80,6 +87,11 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
         if (!"passed".equalsIgnoreCase(status) && !"failed".equalsIgnoreCase(status)) {
             throw new IllegalArgumentException("Inspection result must be either 'passed' or 'failed'");
         }
+        requireNotRetired(inspection.getVehicle());
+
+        if ("passed".equalsIgnoreCase(status) && newRegistrationExpiry != null && newRegistrationExpiry.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Hạn đăng kiểm mới không được ở trong quá khứ");
+        }
 
         inspection.setStatus(status.toLowerCase());
         inspection.setCompletedAt(OffsetDateTime.now(ZoneOffset.ofHours(7)));
@@ -90,7 +102,7 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
         Vehicle vehicle = inspection.getVehicle();
         if ("passed".equalsIgnoreCase(status)) {
             // Restore vehicle to available
-            vehicle.setStatus("available");
+            vehicle.setStatus(Vehicle.STATUS_AVAILABLE);
 
             // The new inspection sticker belongs to the vehicle, whatever plate it carries
             if (newRegistrationExpiry != null) {
@@ -98,11 +110,18 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
             }
         } else {
             // Keep in maintenance for repairs
-            vehicle.setStatus("maintenance");
+            vehicle.setStatus(Vehicle.STATUS_MAINTENANCE);
         }
 
         vehicleRepository.save(vehicle);
         vehicleInspectionRepository.save(inspection);
+    }
+
+    /** A retired vehicle is out of service for good; inspections must not bring it back. */
+    private void requireNotRetired(Vehicle vehicle) {
+        if (vehicle.isRetired()) {
+            throw new IllegalStateException("Vehicle has been retired; it can no longer be inspected");
+        }
     }
 
     @Override

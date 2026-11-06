@@ -6,14 +6,15 @@ import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
-public class SurchargeDTO {
+/** One Return charge row (cleaning, fuel shortfall, toll, other) entered when the vehicle comes back. */
+public class ReturnChargeDTO {
     private String feeType;
 
-    @DecimalMin(value = "0", message = "Surcharge cannot be negative")
-    @DecimalMax(value = "999999999999", message = "Surcharge is too large")
+    @DecimalMin(value = "0", message = "Phí trả xe không được âm")
+    @DecimalMax(value = "999999999999", message = "Phí trả xe quá lớn")
     private BigDecimal amount;
 
-    @Size(max = 200, message = "Surcharge description must be at most 200 characters")
+    @Size(max = 200, message = "Mô tả phí trả xe tối đa 200 ký tự")
     private String description;
 
     public String getFeeType() { return feeType; }

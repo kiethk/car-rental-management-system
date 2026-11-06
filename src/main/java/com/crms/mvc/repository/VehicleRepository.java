@@ -3,7 +3,9 @@ package com.crms.mvc.repository;
 import com.crms.mvc.entity.Vehicle;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -12,9 +14,22 @@ import java.util.List;
 import java.util.Optional;
 
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
-    /** Keyword (already a lower-case LIKE pattern) matches model, brand, current plate or colour. */
+    /**
+     * Locks every vehicle of a type (SELECT ... FOR UPDATE) so two bookings for that type are placed one after the
+     * other: the second waits, then sees the first one's vehicle as taken.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT v FROM Vehicle v WHERE v.vehicleType.id = :typeId")
+    List<Vehicle> lockByVehicleTypeId(@Param("typeId") Long typeId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT v FROM Vehicle v WHERE v.id = :id")
+    Optional<Vehicle> findByIdForUpdate(@Param("id") Long id);
+
+    /** Keyword (already a lower-case LIKE pattern) matches model, brand, "brand model" together, current plate or colour. */
     String ADMIN_SEARCH_FILTER = "WHERE (:status = 'all' OR v.status = :status) AND ("
             + "LOWER(vt.brand) LIKE :keyword ESCAPE '\\' OR LOWER(vt.name) LIKE :keyword ESCAPE '\\' "
+            + "OR LOWER(CONCAT(vt.brand, ' ', vt.name)) LIKE :keyword ESCAPE '\\' "
             + "OR LOWER(lp.plate) LIKE :keyword ESCAPE '\\' OR LOWER(v.color) LIKE :keyword ESCAPE '\\')";
 
     @Query(value = "SELECT v FROM Vehicle v JOIN FETCH v.vehicleType vt LEFT JOIN v.currentPlates lp " + ADMIN_SEARCH_FILTER,

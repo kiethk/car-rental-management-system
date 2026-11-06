@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sự cố — DriveNow Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/modules/issues.css}">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container-fluid px-lg-5 my-4 flex-grow-1">
+    <div class="row">
+        <div class="col-md-3 col-lg-2">
+            <div th:replace="~{fragments/admin-sidebar :: sidebar(active='issues')}"></div>
+        </div>
+
+        <div class="col-md-9 col-lg-10">
+            <div th:if="${success}" class="alert alert-success border-0 rounded-lg shadow-sm" role="alert" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger border-0 rounded-lg shadow-sm" role="alert" th:text="${error}"></div>
+
+            <div th:replace="~{fragments/admin-components :: pageHeader(
+                title='Quản lý sự cố',
+                subtitle='Va chạm, hư hỏng và phạt nguội phát sinh trong thời gian thuê. Ghi nhận sự cố từ trang chi tiết đơn thuê.',
+                backUrl=null,
+                backText=null)}"></div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-lg-3 issue-open-stat">
+                    <div th:replace="~{fragments/admin-components :: statCard(
+                        label='Đang mở', value=${openCount}, subtext='Sự cố khách chưa thanh toán', iconType='clock', variant='warning')}"></div>
+                </div>
+                <div class="col-lg-9">
+                    <div class="admin-card h-100">
+                    <div class="admin-card-header">
+                        <div class="admin-card-title-group">
+                            <h2 class="admin-card-title">Ghi nhận phạt nguội</h2>
+                            <p class="admin-card-subtitle">Nhập biển số và thời điểm vi phạm trên biên bản. Hệ thống tìm đơn thuê của xe tại thời điểm đó.</p>
+                        </div>
+                    </div>
+                    <div class="admin-card-body">
+                        <form th:action="@{/admin/issues/traffic-fine}" method="get" class="row align-items-end">
+                            <div class="col-md-4 admin-form-group">
+                                <label class="admin-form-label" for="plate">Biển số (*)</label>
+                                <input id="plate" type="text" name="plate" class="admin-form-input font-mono" placeholder="51A-123.45" required>
+                            </div>
+                            <div class="col-md-4 admin-form-group">
+                                <label class="admin-form-label" for="violationTime">Thời điểm vi phạm (*)</label>
+                                <input id="violationTime" type="datetime-local" name="occurredAt" class="admin-form-input" required>
+                            </div>
+                            <div class="col-md-4 admin-form-group">
+                                <button type="submit" class="admin-btn admin-btn-primary">Tra đơn thuê</button>
+                            </div>
+                        </form>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <form th:action="@{/admin/issues}" method="get" class="admin-card mb-3">
+                <div class="admin-card-body">
+                    <div class="row align-items-end">
+                        <div class="col-md-2 admin-form-group">
+                            <label class="admin-form-label" for="fStatus">Trạng thái</label>
+                            <select id="fStatus" name="status" class="admin-form-select">
+                                <option value="all" th:selected="${query.status == 'all'}">Tất cả</option>
+                                <option value="open" th:selected="${query.status == 'open'}">Đang mở</option>
+                                <option value="resolved" th:selected="${query.status == 'resolved'}">Đã chốt</option>
+                                <option value="cancelled" th:selected="${query.status == 'cancelled'}">Đã huỷ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 admin-form-group">
+                            <label class="admin-form-label" for="fType">Loại</label>
+                            <select id="fType" name="type" class="admin-form-select">
+                                <option value="all" th:selected="${query.type == 'all'}">Tất cả</option>
+                                <option th:each="t : ${issueTypes}" th:value="${t}" th:text="${t.label}"
+                                        th:selected="${query.type == t.name()}">Hư hỏng</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 admin-form-group">
+                            <label class="admin-form-label" for="fPlate">Biển số</label>
+                            <input id="fPlate" type="text" name="plate" th:value="${query.plate}" class="admin-form-input font-mono" placeholder="51A-123.45">
+                        </div>
+                        <div class="col-md-2 admin-form-group">
+                            <label class="admin-form-label" for="fBooking">Mã đơn</label>
+                            <input id="fBooking" type="number" name="bookingId" th:value="${query.bookingId}" class="admin-form-input font-mono" min="1">
+                        </div>
+                        <div class="col-md-2 admin-form-group">
+                            <label class="admin-form-label" for="fFrom">Từ ngày</label>
+                            <input id="fFrom" type="date" name="from" th:value="${query.from}" class="admin-form-input">
+                        </div>
+                        <div class="col-md-2 admin-form-group">
+                            <label class="admin-form-label" for="fTo">Đến ngày</label>
+                            <input id="fTo" type="date" name="to" th:value="${query.to}" class="admin-form-input">
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <a th:href="@{/admin/issues}" class="admin-btn admin-btn-secondary admin-btn-sm">Xoá lọc</a>
+                        <button type="submit" class="admin-btn admin-btn-primary admin-btn-sm">Lọc</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="admin-card">
+                <div class="admin-card-body p-0">
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã</th>
+                                    <th>Xảy ra lúc</th>
+                                    <th>Loại</th>
+                                    <th>Tiêu đề</th>
+                                    <th>Biển số</th>
+                                    <th>Đơn thuê</th>
+                                    <th>Khách hàng</th>
+                                    <th class="text-right">Phí</th>
+                                    <th>Trạng thái</th>
+                                    <th class="text-right">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="issue : ${issues}">
+                                    <td class="font-mono font-weight-bold" th:text="'#' + ${issue.id}">#1</td>
+                                    <td th:text="${#temporals.format(issue.occurredAt, 'dd/MM/yyyy HH:mm')}">30/10/2026 14:30</td>
+                                    <td th:text="${issue.issueType.label}">Hư hỏng</td>
+                                    <td th:text="${issue.subject}">Trầy cản trước</td>
+                                    <td class="font-mono" th:text="${issue.licensePlate}">51A-123.45</td>
+                                    <td>
+                                        <a th:href="@{/admin/bookings/{id}(id=${issue.bookingId})}" class="font-mono" th:text="'#' + ${issue.bookingId}">#42</a>
+                                    </td>
+                                    <td th:text="${issue.customerName}">Nguyễn Văn An</td>
+                                    <td class="text-right font-mono">
+                                        <span th:if="${issue.feeAmount != null}"
+                                              th:text="${#numbers.formatDecimal(issue.feeAmount, 0, 'POINT', 0, 'COMMA')} + ' đ'">200.000 đ</span>
+                                        <span th:if="${issue.feeAmount == null}" class="text-muted">—</span>
+                                    </td>
+                                    <td>
+                                        <div th:replace="~{fragments/admin-components :: statusBadge(
+                                            status=${issue.status.dbValue()},
+                                            label=${issue.status.label},
+                                            variant=${issue.status.name() == 'OPEN' ? 'warning' : (issue.status.name() == 'RESOLVED' ? 'success' : 'neutral')})}"></div>
+                                        <th:block th:if="${issue.status.name() == 'RESOLVED' and issue.feeAmount != null and !issue.feePaid}">
+                                            <div th:replace="~{fragments/admin-components :: statusBadge(status='owed', label='Chưa thanh toán', variant='danger')}"></div>
+                                        </th:block>
+                                    </td>
+                                    <td class="text-right">
+                                        <a th:href="@{/admin/issues/{id}(id=${issue.id})}" class="admin-btn admin-btn-secondary admin-btn-sm">Xem</a>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(issues)}">
+                                    <td colspan="10" class="text-center text-muted py-4">Chưa có sự cố nào được ghi nhận.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div th:replace="~{fragments/pagination :: pager(${nav})}"></div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

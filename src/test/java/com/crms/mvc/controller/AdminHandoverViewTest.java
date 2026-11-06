@@ -45,6 +45,7 @@ class AdminHandoverViewTest {
     @MockitoBean private VehicleService vehicleService;
     @MockitoBean private PaymentService paymentService;
     @MockitoBean private HandoverService handoverService;
+    @MockitoBean private com.crms.mvc.service.IssueService issueService;
 
     @BeforeEach
     void setUp() {
@@ -58,7 +59,7 @@ class AdminHandoverViewTest {
 
         mvc.perform(get("/admin/bookings/42").session(TestSessions.staff(2L)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Hand Over Vehicle")))
+                .andExpect(content().string(containsString("Bàn giao xe")))
                 .andExpect(content().string(containsString("name=\"licenseImage\"")))
                 .andExpect(content().string(containsString("name=\"idCardImage\"")))
                 .andExpect(content().string(not(containsString("assign-staff"))));
@@ -70,7 +71,7 @@ class AdminHandoverViewTest {
 
         mvc.perform(get("/admin/bookings/42").session(TestSessions.staff(3L)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Only that staff member or an admin")))
+                .andExpect(content().string(containsString("Chỉ nhân viên đó hoặc quản trị viên")))
                 .andExpect(content().string(not(containsString("name=\"licenseImage\""))));
     }
 
@@ -95,19 +96,22 @@ class AdminHandoverViewTest {
         HandoverRecordDTO record = new HandoverRecordDTO();
         record.setId(7L);
         record.setType("CHECK_IN");
-        record.setSubject("Handover: ODO 1200 km, fuel 80%");
+        record.setTypeLabel("Nhận xe");
+        record.setOdometer(1200);
+        record.setFuelPercent(80);
         record.setEmployeeName("Support Staff");
-        record.setReportedAt(OffsetDateTime.now());
-        record.setEvidence(true);
-        record.setSecondaryEvidence(true);
+        record.setRecordedAt(OffsetDateTime.now());
+        record.setLicenseImage(true);
+        record.setIdCardImage(true);
         summary.setRecords(List.of(record));
         stubBooking("active", summary);
 
         mvc.perform(get("/admin/bookings/42").session(TestSessions.staff(2L)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Record Vehicle Return")))
-                .andExpect(content().string(containsString("surcharges[0].amount")))
-                .andExpect(content().string(containsString("Handover: ODO 1200 km, fuel 80%")))
+                .andExpect(content().string(containsString("Ghi nhận trả xe")))
+                .andExpect(content().string(containsString("returnCharges[0].amount")))
+                .andExpect(content().string(not(containsString("DAMAGE_COMPENSATION"))))
+                .andExpect(content().string(containsString("ODO 1200 km · nhiên liệu 80%")))
                 .andExpect(content().string(containsString("/admin/bookings/42/records/7/evidence?secondary=true")));
     }
 
@@ -118,21 +122,21 @@ class AdminHandoverViewTest {
 
         mvc.perform(get("/admin/bookings/42").session(TestSessions.staff(2L)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Complete Settlement")))
-                .andExpect(content().string(containsString("Customer pays")))
+                .andExpect(content().string(containsString("Hoàn tất quyết toán")))
+                .andExpect(content().string(containsString("Khách cần thanh toán")))
                 .andExpect(content().string(containsString("name=\"paymentMethod\"")))
                 .andExpect(content().string(not(containsString("name=\"bankCode\""))))
-                .andExpect(content().string(not(containsString("Record Vehicle Return"))));
+                .andExpect(content().string(not(containsString("Ghi nhận trả xe"))));
     }
 
     @Test
-    void returnedBookingAsksForBankDetailsWhenRefundIsDue() throws Exception {
-        stubBooking("active", settlementSummary("-200000"));
+    void settlementNeverOffersARefund() throws Exception {
+        stubBooking("active", settlementSummary("0"));
 
         mvc.perform(get("/admin/bookings/42").session(TestSessions.staff(2L)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Refund to customer")))
-                .andExpect(content().string(containsString("name=\"bankCode\"")))
+                .andExpect(content().string(containsString("Hoàn tất quyết toán")))
+                .andExpect(content().string(not(containsString("name=\"bankCode\""))))
                 .andExpect(content().string(not(containsString("name=\"paymentMethod\""))));
     }
 

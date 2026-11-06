@@ -5,12 +5,15 @@ import java.time.OffsetDateTime;
 public class HandoverRecordDTO {
     private Long id;
     private String type;
-    private String subject;
-    private String status;
+    private String typeLabel;
+    private Integer odometer;
+    private Integer fuelPercent;
+    private String notes;
     private String employeeName;
-    private OffsetDateTime reportedAt;
-    private boolean evidence;
-    private boolean secondaryEvidence;
+    /** Already shifted to Vietnam time for display. */
+    private OffsetDateTime recordedAt;
+    private boolean licenseImage;
+    private boolean idCardImage;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -18,21 +21,27 @@ public class HandoverRecordDTO {
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
 
-    public String getSubject() { return subject; }
-    public void setSubject(String subject) { this.subject = subject; }
+    public String getTypeLabel() { return typeLabel; }
+    public void setTypeLabel(String typeLabel) { this.typeLabel = typeLabel; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public Integer getOdometer() { return odometer; }
+    public void setOdometer(Integer odometer) { this.odometer = odometer; }
+
+    public Integer getFuelPercent() { return fuelPercent; }
+    public void setFuelPercent(Integer fuelPercent) { this.fuelPercent = fuelPercent; }
+
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 
     public String getEmployeeName() { return employeeName; }
     public void setEmployeeName(String employeeName) { this.employeeName = employeeName; }
 
-    public OffsetDateTime getReportedAt() { return reportedAt; }
-    public void setReportedAt(OffsetDateTime reportedAt) { this.reportedAt = reportedAt; }
+    public OffsetDateTime getRecordedAt() { return recordedAt; }
+    public void setRecordedAt(OffsetDateTime recordedAt) { this.recordedAt = recordedAt; }
 
-    public boolean isEvidence() { return evidence; }
-    public void setEvidence(boolean evidence) { this.evidence = evidence; }
+    public boolean isLicenseImage() { return licenseImage; }
+    public void setLicenseImage(boolean licenseImage) { this.licenseImage = licenseImage; }
 
-    public boolean isSecondaryEvidence() { return secondaryEvidence; }
-    public void setSecondaryEvidence(boolean secondaryEvidence) { this.secondaryEvidence = secondaryEvidence; }
+    public boolean isIdCardImage() { return idCardImage; }
+    public void setIdCardImage(boolean idCardImage) { this.idCardImage = idCardImage; }
 }

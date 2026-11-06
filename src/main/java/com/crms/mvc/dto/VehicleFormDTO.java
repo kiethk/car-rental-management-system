@@ -41,8 +41,8 @@ public class VehicleFormDTO {
     private Integer odometer = 0;
 
     @NotBlank(message = "Vehicle status cannot be blank")
-    @Pattern(regexp = "^(available|maintenance)$", message = "Vehicle status must be 'available' or 'maintenance'")
-    private String status = "available";
+    @Pattern(regexp = "^(available|maintenance|retired)$", message = "Vehicle status must be 'available', 'maintenance' or 'retired'")
+    private String status = Vehicle.STATUS_AVAILABLE;
 
     public VehicleFormDTO() {}
 

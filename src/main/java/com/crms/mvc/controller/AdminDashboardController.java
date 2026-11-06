@@ -34,10 +34,11 @@ public class AdminDashboardController {
     @GetMapping({"/admin", "/admin/dashboard"})
     public String dashboard(Model model) {
         List<Vehicle> vehicles = vehicleService.findAll();
-        long totalVehicles = vehicles.size();
-        long availableVehicles = vehicles.stream().filter(v -> "available".equalsIgnoreCase(v.getStatus())).count();
-        long rentedVehicles = vehicles.stream().filter(v -> "rented".equalsIgnoreCase(v.getStatus())).count();
-        long maintenanceVehicles = vehicles.stream().filter(v -> "maintenance".equalsIgnoreCase(v.getStatus())).count();
+        long retiredVehicles = vehicles.stream().filter(Vehicle::isRetired).count();
+        long totalVehicles = vehicles.size() - retiredVehicles;
+        long availableVehicles = vehicles.stream().filter(v -> Vehicle.STATUS_AVAILABLE.equalsIgnoreCase(v.getStatus())).count();
+        long rentedVehicles = vehicles.stream().filter(v -> Vehicle.STATUS_RENTED.equalsIgnoreCase(v.getStatus())).count();
+        long maintenanceVehicles = vehicles.stream().filter(v -> Vehicle.STATUS_MAINTENANCE.equalsIgnoreCase(v.getStatus())).count();
 
         List<VehicleInspection> inspections = vehicleInspectionService.findAll();
         long scheduledInspections = inspections.stream().filter(i -> "scheduled".equalsIgnoreCase(i.getStatus())).count();
@@ -51,6 +52,7 @@ public class AdminDashboardController {
         long expiredCount = plates.stream().filter(p -> "EXPIRED".equals(p.getExpiryStatus())).count();
 
         model.addAttribute("totalVehicles", totalVehicles);
+        model.addAttribute("retiredVehicles", retiredVehicles);
         model.addAttribute("availableVehicles", availableVehicles);
         model.addAttribute("rentedVehicles", rentedVehicles);
         model.addAttribute("maintenanceVehicles", maintenanceVehicles);

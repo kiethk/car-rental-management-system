@@ -56,7 +56,8 @@ public class PageQueryDTO {
         if (word == null) {
             return "%";
         }
-        String escaped = word.toLowerCase()
+        // Collapse runs of spaces so "toyota   vios" matches "toyota vios".
+        String escaped = word.toLowerCase().replaceAll("\\s+", " ")
                 .replace("\\", "\\\\")
                 .replace("%", "\\%")
                 .replace("_", "\\_");

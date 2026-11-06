@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/drivenow.css}">
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/modules/issues.css}">
     <link rel="stylesheet" th:href="@{/css/modules/booking.css}" />
     
 </head>
@@ -129,6 +130,60 @@
                     </div>
                 </div>
 
+                <!-- Fees of issues found after the booking was settled: the customer pays them here -->
+                <div class="surface-card" th:if="${payableIssues != null and !payableIssues.isEmpty()}">
+                    <h2 class="card-title">Phí sự cố chưa thanh toán</h2>
+                    <p class="issue-section-hint">
+                        Bạn có thể thanh toán một lần cho tất cả qua VNPay. Khoản nào chưa thanh toán sẽ được thu cùng lúc quyết toán khi trả xe.
+                    </p>
+                    <div class="cost-row" th:each="issue : ${payableIssues}">
+                        <span th:text="${issue.subject}">Vượt đèn đỏ</span>
+                        <span class="issue-fee-amount">
+                            <span th:text="${#numbers.formatDecimal(issue.feeAmount, 0, 'COMMA', 0, 'POINT')}">800,000</span> đ
+                        </span>
+                    </div>
+                    <div class="cost-total-row">
+                        <span class="cost-total-label">Tổng cần thanh toán</span>
+                        <span class="cost-total-val">
+                            <span th:text="${#numbers.formatDecimal(payableTotal, 0, 'COMMA', 0, 'POINT')}">800,000</span> đ
+                        </span>
+                    </div>
+                    <form th:action="@{/bookings/{id}/pay-issue-fees(id=${booking.id})}" method="post">
+                        <button type="submit" class="btn-pay-now">Thanh toán phí phát sinh →</button>
+                    </form>
+                </div>
+
+                <!-- Issues charged on this booking (read-only for the customer) -->
+                <div class="surface-card" th:if="${issues != null and !issues.isEmpty()}">
+                    <h2 class="card-title">Sự cố trong chuyến thuê</h2>
+                    <p class="issue-section-hint">
+                        Các khoản phí dưới đây phát sinh từ sự cố ghi nhận trong thời gian bạn thuê xe.
+                    </p>
+                    <div th:each="issue : ${issues}" class="issue-item">
+                        <div class="issue-item-head">
+                            <div>
+                                <strong th:text="${issue.subject}">Trầy cản trước</strong>
+                                <div class="issue-item-meta">
+                                    <span th:text="${issue.issueType.label}">Hư hỏng</span> ·
+                                    <span th:text="${#temporals.format(issue.occurredAt, 'dd/MM/yyyy HH:mm')}">30/10/2026 14:30</span> ·
+                                    <span th:text="${issue.status.label}">Đã chốt</span>
+                                </div>
+                            </div>
+                            <div th:if="${issue.feeAmount != null}" class="issue-fee-amount">
+                                <span th:text="${#numbers.formatDecimal(issue.feeAmount, 0, 'COMMA', 0, 'POINT')}">200,000</span> đ
+                            </div>
+                        </div>
+                        <p th:if="${issue.description != null}" class="issue-description" th:text="${issue.description}">Mô tả</p>
+                        <div th:if="${!issue.evidences.isEmpty()}" class="issue-photo-row">
+                            <a th:each="photo : ${issue.evidences}" target="_blank" rel="noopener"
+                               th:href="@{/bookings/{bid}/issues/{iid}/evidences/{eid}(bid=${booking.id},iid=${issue.id},eid=${photo.id})}">
+                                <img th:src="@{/bookings/{bid}/issues/{iid}/evidences/{eid}(bid=${booking.id},iid=${issue.id},eid=${photo.id})}"
+                                     alt="Ảnh sự cố" class="issue-photo-thumb">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Card 2: Payment Ledger -->
                 <div class="surface-card">
                     <h2 class="card-title">Lịch sử giao dịch thanh toán</h2>
@@ -208,7 +263,7 @@
 
                     <div class="cost-row">
                         <span>Đơn giá theo giờ</span>
-                        <span style="font-family: 'JetBrains Mono', monospace; font-weight: 500; color: #0f172a;">
+                        <span class="issue-fee-amount">
                             <span th:text="${#numbers.formatDecimal(booking.pricePerHour, 0, 'COMMA', 0, 'POINT')}">160,000</span> đ/h
                         </span>
                     </div>

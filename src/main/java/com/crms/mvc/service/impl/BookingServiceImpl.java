@@ -27,6 +27,8 @@ import java.util.Set;
 @Service
 @Transactional
 public class BookingServiceImpl implements BookingService {
+    public static final int BUFFER_BETWEEN_RENTALS_HOURS = 1;
+
     private final BookingRepository bookingRepository;
     private final CustomerRepository customerRepository;
     private final SlotRepository slotRepository;
@@ -102,6 +104,9 @@ public class BookingServiceImpl implements BookingService {
             oldPending.setCancelledAt(OffsetDateTime.now());
             bookingRepository.save(oldPending);
         }
+
+        // Serialize bookings of the same vehicle type so two customers cannot both get the last free car.
+        vehicleRepository.lockByVehicleTypeId(type.getId());
 
         // 1. B2 + B3: Tìm xe thực tế có sẵn thông qua SlotService (loại trừ bảo trì và trùng giờ)
         List<Vehicle> availableVehicles = findAvailableVehiclesInTimeRange(type.getId(), start, end);
@@ -317,21 +322,23 @@ public class BookingServiceImpl implements BookingService {
     public void assignVehicle(Long bookingId, Long vehicleId) {
         Booking b = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
-        Vehicle v = vehicleRepository.findById(vehicleId)
+        Vehicle v = vehicleRepository.findByIdForUpdate(vehicleId)
                 .orElseThrow(() -> new NoSuchElementException("Vehicle not found: " + vehicleId));
 
         if (!v.getVehicleType().getId().equals(b.getSlot().getVehicleType().getId())) {
             throw new IllegalStateException("Vehicle type does not match booking request");
         }
-        if ("maintenance".equalsIgnoreCase(v.getStatus())) {
-            throw new IllegalStateException("Vehicle is currently under maintenance");
+        if ("maintenance".equalsIgnoreCase(v.getStatus()) || Vehicle.STATUS_RETIRED.equalsIgnoreCase(v.getStatus())) {
+            throw new IllegalStateException("Vehicle is not available for assignment");
         }
 
-        // B3: Chống gán xe trùng giờ với booking khác
+        // B3: Chống gán xe trùng giờ với booking khác (có buffer 1 tiếng)
+        OffsetDateTime bufferedStart = b.getPickupTime().minusHours(BUFFER_BETWEEN_RENTALS_HOURS);
+        OffsetDateTime bufferedEnd = b.getScheduledEndTime().plusHours(BUFFER_BETWEEN_RENTALS_HOURS);
         List<Long> bookedVehicleIds = bookingRepository.findBookedVehicleIdsInTimeRange(
-                b.getPickupTime(), b.getScheduledEndTime(), OffsetDateTime.now().minusMinutes(15));
+                bufferedStart, bufferedEnd, OffsetDateTime.now().minusMinutes(15), OffsetDateTime.now());
         if (bookedVehicleIds.contains(vehicleId) && (b.getVehicle() == null || !b.getVehicle().getId().equals(vehicleId))) {
-            throw new IllegalStateException("Xe này đã có lịch đặt khác trong cùng khung giờ.");
+            throw new IllegalStateException("Xe này đã có lịch đặt khác trong cùng khung giờ (yêu cầu cách nhau tối thiểu 1 tiếng).");
         }
 
         b.setVehicle(v);
@@ -356,6 +363,8 @@ public class BookingServiceImpl implements BookingService {
         if (b.getVehicle() != null) {
             d.setVehicleId(b.getVehicle().getId());
             d.setVehicleColor(b.getVehicle().getColor());
+            d.setVehicleRetired(Vehicle.STATUS_RETIRED.equalsIgnoreCase(b.getVehicle().getStatus()));
+            d.setVehicleOdometer(b.getVehicle().getOdometer());
         }
         d.setLicensePlate(resolvePlate(b));
 
@@ -457,10 +466,13 @@ public class BookingServiceImpl implements BookingService {
         List<Vehicle> allVehiclesOfType = vehicleRepository.findByVehicleTypeIdWithDetails(vehicleTypeId);
 
         OffsetDateTime cutoffTime = OffsetDateTime.now().minusMinutes(15);
-        List<Long> bookedVehicleIds = bookingRepository.findBookedVehicleIdsInTimeRange(startTime, endTime, cutoffTime);
+        OffsetDateTime bufferedStart = startTime.minusHours(BUFFER_BETWEEN_RENTALS_HOURS);
+        OffsetDateTime bufferedEnd = endTime.plusHours(BUFFER_BETWEEN_RENTALS_HOURS);
+        List<Long> bookedVehicleIds = bookingRepository.findBookedVehicleIdsInTimeRange(
+                bufferedStart, bufferedEnd, cutoffTime, OffsetDateTime.now());
 
         return allVehiclesOfType.stream()
-                .filter(v -> !"maintenance".equalsIgnoreCase(v.getStatus()))
+                .filter(v -> !"maintenance".equalsIgnoreCase(v.getStatus()) && !Vehicle.STATUS_RETIRED.equalsIgnoreCase(v.getStatus()))
                 .filter(v -> !bookedVehicleIds.contains(v.getId()))
                 .toList();
     }

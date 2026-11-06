@@ -24,7 +24,8 @@
         <p th:if="${subtitle != null}" class="admin-page-subtitle" th:text="${subtitle}">Mô tả chi tiết nội dung trang</p>
     </div>
     <!-- Slot for actions (buttons) -->
-    <div class="admin-page-actions" th:if="${actions != null}" th:insert="${actions}"></div>
+    <!-- th:insert runs before th:if on the same tag, so the guard has to sit on a wrapping block -->
+    <th:block th:if="${actions != null}"><div class="admin-page-actions" th:insert="${actions}"></div></th:block>
 </div>
 
 

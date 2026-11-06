@@ -1,6 +1,7 @@
 package com.crms.mvc.service;
 
 import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface FileUploadService {
@@ -20,4 +21,13 @@ public interface FileUploadService {
     String saveContractPdf(String contractNumber, byte[] content);
 
     Resource loadContractPdf(String fileName);
+
+    /** Stores one incident photo in a private folder (never publicly mapped) and returns its file name. */
+    String saveIssueEvidence(MultipartFile image);
+
+    Resource loadIssueEvidence(String fileName);
+
+    void deleteIssueEvidence(String fileName);
+
+    MediaType resolveMediaType(String fileName);
 }

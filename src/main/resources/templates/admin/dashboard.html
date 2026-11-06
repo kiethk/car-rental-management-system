@@ -43,6 +43,7 @@
                             <span class="badge badge-light border text-muted">Vehicles</span>
                         </div>
                         <div class="small text-muted mt-2">Physical car inventory in warehouse</div>
+                        <div class="small text-muted" th:if="${retiredVehicles > 0}" th:text="${retiredVehicles} + ' xe ngừng khai thác (không tính)'">1 xe ngừng khai thác (không tính)</div>
                     </div>
                 </div>
 
@@ -87,7 +88,7 @@
                     <div class="card border-0 shadow-sm rounded-xl p-4 bg-white h-100">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h2 class="h6 font-weight-bold text-navy mb-0">Registration & Inspection Alerts</h2>
-                            <a th:href="@{/admin/license-plates}" class="small text-amber font-weight-semibold">View Plates →</a>
+                            <a th:href="@{/admin/vehicles}" class="small text-amber font-weight-semibold">View Cars →</a>
                         </div>
                         <div class="row g-3">
                             <div class="col-6">

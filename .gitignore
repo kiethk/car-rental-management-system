@@ -30,5 +30,8 @@ _bmad/
 .github/copilot-instructions.md
 
 database/payment-card-example.txt
+
+# Local issue tracker (specs & tickets)
+.scratch/
 docs/TEAM_UI_GUIDE.md
 docs/PROJECT_ROADMAP.md

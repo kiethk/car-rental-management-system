@@ -41,9 +41,6 @@
                 <li class="nav-item">
                     <a class="nav-link font-weight-bold text-navy" th:href="@{/admin/vehicle-types}">Vehicle Models</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link font-weight-bold text-navy" th:href="@{/admin/license-plates}">License Plates & Registration</a>
-                </li>
             </ul>
 
             <!-- Page Header -->
@@ -96,6 +93,10 @@
                 <a th:href="${query.urlForStatus('/admin/vehicles', 'maintenance')}"
                    th:class="'btn btn-sm rounded-pill font-weight-bold ' + (${query.status == 'maintenance'} ? 'btn-secondary text-white' : 'btn-light text-navy')">
                     Maintenance (<span th:text="${statusCounts.getOrDefault('maintenance', 0)}">0</span>)
+                </a>
+                <a th:href="${query.urlForStatus('/admin/vehicles', 'retired')}"
+                   th:class="'btn btn-sm rounded-pill font-weight-bold ' + (${query.status == 'retired'} ? 'btn-dark text-white' : 'btn-light text-navy')">
+                    Ngừng khai thác (<span th:text="${statusCounts.getOrDefault('retired', 0)}">0</span>)
                 </a>
             </div>
 
@@ -153,6 +154,7 @@
                                     <span th:if="${v.status == 'available'}" class="admin-status-badge badge-success">Available</span>
                                     <span th:if="${v.status == 'rented'}" class="admin-status-badge badge-warning text-dark">Rented</span>
                                     <span th:if="${v.status == 'maintenance'}" class="admin-status-badge badge-secondary">Maintenance</span>
+                                    <span th:if="${v.status == 'retired'}" class="admin-status-badge badge-dark">Ngừng khai thác</span>
                                 </td>
                                 <td class="text-center">
                                     <div th:if="${v.status == 'available'}">
@@ -176,6 +178,18 @@
                                     <span th:if="${v.status == 'rented'}" class="admin-status-badge badge-light border text-muted">
                                         On Trip
                                     </span>
+                                    <span th:if="${v.status == 'retired'}" class="admin-status-badge badge-light border text-muted">
+                                        Đã ngừng khai thác
+                                    </span>
+                                    <form th:if="${(v.status == 'available' or v.status == 'maintenance') and (session.account != null and session.account.admin)}"
+                                          method="post" th:action="@{/admin/vehicles/{id}/status(id=${v.id})}" class="m-0 mt-1"
+                                          onsubmit="return confirm('Chuyển xe sang ngừng khai thác vĩnh viễn? Xe sẽ không bao giờ được cho thuê lại.');">
+                                        <input type="hidden" name="status" value="retired" />
+                                        <input type="hidden" name="returnTo" th:value="${listUrl}" />
+                                        <button type="submit" class="admin-btn btn-soft-danger">
+                                            Ngừng khai thác
+                                        </button>
+                                    </form>
                                 </td>
                                 <td class="text-center">
                                     <div class="d-inline-flex align-items-center justify-content-center" style="gap: 6px;">

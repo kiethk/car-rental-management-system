@@ -201,7 +201,7 @@ Cột "Cỡ": **S** nhỏ (dưới 1 giờ), **M** vừa, **L** lớn. "Luồng"
 - Giao diện hiển thị trước khi xác nhận hủy: "Bạn sẽ được hoàn X đ" hoặc "Cọc không được hoàn".
 
 ### E6. Trả xe và thanh toán cuối — Kiệt (B8)
-- Tiền còn lại = tổng tiền − cọc + phí trễ + phí phát sinh (`booking_fees`); nếu cọc lớn hơn tổng thì **hoàn phần chênh** (`REFUND`).
+- Tiền còn lại = tổng tiền − cọc + phí trễ + phí phát sinh (`booking_fees`). Cọc tối đa 100% tiền thuê nên số này không bao giờ âm; quyết toán không hoàn tiền.
 - Ghi phương thức thu tiền tại quầy (tiền mặt/chuyển khoản) thay vì tự đặt `VIETQR`; ghi số km và ghi chú khi trả xe (cập nhật `vehicles.odometer`); nếu xe có sự cố thì cho chuyển sang `maintenance` thay vì tự `available`.
 - Phí trễ tính theo quy tắc ở B4 và hệ số trong điều khoản khách đã đồng ý.
 

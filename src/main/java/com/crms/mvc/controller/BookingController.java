@@ -17,6 +17,14 @@ import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.PaymentService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import com.crms.mvc.entity.IssueStatus;
+import com.crms.mvc.dto.IssueDTO;
+import com.crms.mvc.service.IssueService;
+import com.crms.mvc.util.MediaUtils;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -44,6 +52,7 @@ public class BookingController {
     private final PricingService pricingService;
     private final LicenseDocumentService licenseDocumentService;
     private final ContractTemplateService contractTemplateService;
+    private final IssueService issueService;
 
     public BookingController(
             BookingService bookingService,
@@ -51,13 +60,15 @@ public class BookingController {
             VehicleTypeService vehicleTypeService,
             LicenseDocumentService licenseDocumentService,
             ContractTemplateService contractTemplateService,
-            PricingService pricingService) {
+            PricingService pricingService,
+            IssueService issueService) {
         this.bookingService = bookingService;
         this.paymentService = paymentService;
         this.vehicleTypeService = vehicleTypeService;
         this.licenseDocumentService = licenseDocumentService;
         this.contractTemplateService = contractTemplateService;
         this.pricingService = pricingService;
+        this.issueService = issueService;
     }
 
     // STEP 1 & 2: Choose rental schedule & filter available vehicle types
@@ -453,6 +464,22 @@ public class BookingController {
             model.addAttribute("freeCancellationHours", freeCancellationHours);
             model.addAttribute("cancelDeadline", cancelDeadline);
             model.addAttribute("cancelForm", new BookingCancelDTO());
+
+            List<IssueDTO> issues = issueService.findByBookingForCustomer(bookingId, customerId);
+            model.addAttribute("issues", issues);
+
+            boolean canPay = Booking.STATUS_ACTIVE.equalsIgnoreCase(detail.getStatus())
+                    || Booking.STATUS_COMPLETED.equalsIgnoreCase(detail.getStatus());
+            List<IssueDTO> payableIssues = issues.stream()
+                    .filter(i -> canPay && i.getStatus() == IssueStatus.OPEN && !i.isFeePaid()
+                            && i.getFeeAmount() != null && i.getFeeAmount().compareTo(BigDecimal.ZERO) > 0)
+                    .toList();
+            BigDecimal payableTotal = payableIssues.stream()
+                    .map(IssueDTO::getFeeAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            model.addAttribute("payableIssues", payableIssues);
+            model.addAttribute("payableTotal", payableTotal);
             return "bookings/detail";
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
@@ -497,5 +524,26 @@ public class BookingController {
             return "https://images.unsplash.com/photo-1619682817481-e994891cd1f5?auto=format&fit=crop&w=800&q=80";
         }
         return vt.getImageUrl();
+    }
+
+    @GetMapping("/bookings/{bookingId}/issues/{issueId}/evidences/{evidenceId}")
+    public ResponseEntity<Resource> getIssueEvidence(
+            @PathVariable("bookingId") Long bookingId,
+            @PathVariable("issueId") Long issueId,
+            @PathVariable("evidenceId") Long evidenceId,
+            HttpSession session) {
+        Long customerId = CurrentAccount.customerId(session).orElse(null);
+        if (customerId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        try {
+            Resource file = issueService.loadEvidenceForCustomer(issueId, evidenceId, customerId);
+            MediaType mediaType = MediaUtils.resolveMediaType(file.getFilename());
+            return ResponseEntity.ok()
+                    .contentType(mediaType)
+                    .body(file);
+        } catch (java.util.NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
