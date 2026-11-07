@@ -20,6 +20,7 @@ import jakarta.validation.Valid;
 import com.crms.mvc.entity.IssueStatus;
 import com.crms.mvc.dto.IssueDTO;
 import com.crms.mvc.service.IssueService;
+import com.crms.mvc.service.HandoverService;
 import com.crms.mvc.util.MediaUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -53,6 +54,7 @@ public class BookingController {
     private final LicenseDocumentService licenseDocumentService;
     private final ContractTemplateService contractTemplateService;
     private final IssueService issueService;
+    private final HandoverService handoverService;
 
     public BookingController(
             BookingService bookingService,
@@ -61,7 +63,8 @@ public class BookingController {
             LicenseDocumentService licenseDocumentService,
             ContractTemplateService contractTemplateService,
             PricingService pricingService,
-            IssueService issueService) {
+            IssueService issueService,
+            HandoverService handoverService) {
         this.bookingService = bookingService;
         this.paymentService = paymentService;
         this.vehicleTypeService = vehicleTypeService;
@@ -69,6 +72,7 @@ public class BookingController {
         this.contractTemplateService = contractTemplateService;
         this.pricingService = pricingService;
         this.issueService = issueService;
+        this.handoverService = handoverService;
     }
 
     // STEP 1 & 2: Choose rental schedule & filter available vehicle types
@@ -480,6 +484,7 @@ public class BookingController {
 
             model.addAttribute("payableIssues", payableIssues);
             model.addAttribute("payableTotal", payableTotal);
+            model.addAttribute("returnReceipt", handoverService.getReturnReceipt(bookingId));
             return "bookings/detail";
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());

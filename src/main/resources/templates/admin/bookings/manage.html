@@ -524,7 +524,6 @@
                                             <div th:each="row : ${#numbers.sequence(0, 3)}" class="d-flex mb-2 gap-2">
                                                 <select th:name="${'returnCharges[' + row + '].feeType'}" class="admin-form-select" aria-label="Loại phí trả xe">
                                                     <option value="CLEANING_FEE">Vệ sinh xe</option>
-                                                    <option value="FUEL_FEE">Bù nhiên liệu</option>
                                                     <option value="TOLL_FEE">Phí cầu đường</option>
                                                     <option value="OTHER_FEE">Khác</option>
                                                 </select>
