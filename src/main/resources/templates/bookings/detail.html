@@ -115,7 +115,7 @@
                         <div style="flex: 1; min-width: 250px;">
                             <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px;">Trạm nhận xe</div>
                             <div style="font-size: 14px; font-weight: 600; color: #0f172a;" th:text="${booking.stationAddress}">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</div>
-                            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Mở cửa hàng ngày: 07:00 - 22:00</div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Mở cửa hàng ngày: 06:00 - 22:00</div>
                         </div>
                         <div style="flex: 1; min-width: 250px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px;">
                             <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px;">Nhân viên phụ trách giao nhận xe</div>
@@ -279,7 +279,6 @@
                     <div class="deposit-amber-box">
                         <div>
                             <div class="deposit-box-label">Tiền cọc giữ xe</div>
-                            <div class="deposit-box-sub">Hoàn cọc khi kết thúc hợp đồng</div>
                         </div>
                         <div class="deposit-box-val">
                             <span th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}">720,000</span> đ

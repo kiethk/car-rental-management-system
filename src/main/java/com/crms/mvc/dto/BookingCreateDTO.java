@@ -22,10 +22,10 @@ public class BookingCreateDTO implements Serializable {
     private String promotionCode;
 
     // Clickwrap: the customer must accept exactly the template version shown on the checkout page.
-    @NotNull(message = "Rental terms version is missing")
+    @NotNull(message = "Thiếu phiên bản điều khoản thuê xe. Vui lòng tải lại trang.")
     private Long contractTemplateId;
 
-    @AssertTrue(message = "You must accept the rental terms to continue")
+    @AssertTrue(message = "Bạn cần đồng ý với điều khoản thuê xe để tiếp tục")
     private boolean acceptedTerms;
 
     public Long getVehicleTypeId() { return vehicleTypeId; }

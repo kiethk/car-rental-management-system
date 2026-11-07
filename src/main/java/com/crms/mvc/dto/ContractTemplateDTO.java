@@ -48,6 +48,14 @@ public class ContractTemplateDTO implements Serializable {
         return toPercent(lateFeeMultiplier);
     }
 
+    /**
+     * Last moment a booking under these terms can be cancelled with a full deposit refund.
+     * 0 hours means the customer may cancel for free right up to pickup.
+     */
+    public OffsetDateTime freeCancellationDeadline(OffsetDateTime pickupTime) {
+        return pickupTime.minusHours(freeCancellationHours);
+    }
+
     public boolean isEditable() {
         return status == ContractTemplateStatus.DRAFT;
     }

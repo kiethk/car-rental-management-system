@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="'Lịch xe ' + ${schedule.licensePlate} + ' — DriveNow'">Lịch xe — DriveNow</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/css/drivenow.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface">
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="crms-container py-8 flex-grow-1">
+
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0 mb-0">
+            <li class="breadcrumb-item"><a th:href="@{/vehicles}" class="text-muted text-decoration-none">Xe cho thuê</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/vehicles/{id}(id=${schedule.vehicleTypeId})}" class="text-muted text-decoration-none"
+                                           th:text="${schedule.vehicleTypeName}">Toyota Vios</a></li>
+            <li class="breadcrumb-item active text-navy font-weight-bold" th:text="${schedule.licensePlate}">51A-123.45</li>
+        </ol>
+    </nav>
+
+    <div class="card border-0 shadow-sm rounded-2xl p-4 bg-white mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+            <div>
+                <h1 class="h5 font-weight-bold text-navy mb-1">
+                    Lịch xe <span class="font-mono" th:text="${schedule.licensePlate}">51A-123.45</span>
+                </h1>
+                <p class="text-muted small mb-0">
+                    <span th:text="${schedule.vehicleTypeName}">Toyota Vios</span> · 30 ngày tới. Mỗi ô là một giờ.
+                    Hai lượt thuê luôn cách nhau ít nhất 1 giờ để kho nhận lại và chuẩn bị xe.
+                </p>
+            </div>
+            <div class="schedule-legend small text-muted">
+                <span><i class="schedule-swatch schedule-free"></i> Trống</span>
+                <span><i class="schedule-swatch schedule-booked"></i> Đã có người thuê</span>
+                <span><i class="schedule-swatch schedule-buffer"></i> Đệm 1 giờ</span>
+                <span><i class="schedule-swatch schedule-past"></i> Đã qua</span>
+            </div>
+        </div>
+
+        <div th:if="${schedule.vehicleStatus == 'maintenance'}" class="alert alert-warning small mb-3">
+            Xe đang bảo trì nên hiện chưa nhận đặt.
+        </div>
+
+        <div class="schedule-scroll">
+            <table class="schedule-grid">
+                <thead>
+                <tr>
+                    <th class="schedule-day-label">Ngày</th>
+                    <th th:each="h : ${#numbers.sequence(0, 23)}" th:text="${h}">0</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="day : ${schedule.days}">
+                    <th class="schedule-day-label" th:text="${#temporals.format(day.date, 'EEE dd/MM')}">T2 10/11</th>
+                    <td th:each="state, it : ${day.hours}"
+                        th:class="'schedule-' + ${#strings.toLowerCase(state.name())}"
+                        th:title="${#temporals.format(day.date, 'dd/MM')} + ' ' + ${it.index} + ':00'"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-2xl p-4 bg-white" th:unless="${schedule.vehicleStatus == 'maintenance'}">
+        <h2 class="h6 font-weight-bold text-navy mb-3">Đặt đúng xe này</h2>
+        <form th:action="@{/bookings/checkout}" method="get" class="row g-3 align-items-end">
+            <input type="hidden" name="vehicleTypeId" th:value="${schedule.vehicleTypeId}">
+            <input type="hidden" name="vehicleId" th:value="${schedule.vehicleId}">
+            <div class="col-sm-5">
+                <label class="small font-weight-bold text-navy" for="scheduleStart">Nhận xe</label>
+                <input id="scheduleStart" type="datetime-local" name="startTime" step="3600" class="form-control" required>
+            </div>
+            <div class="col-sm-5">
+                <label class="small font-weight-bold text-navy" for="scheduleEnd">Trả xe</label>
+                <input id="scheduleEnd" type="datetime-local" name="endTime" step="3600" class="form-control" required>
+            </div>
+            <div class="col-sm-2">
+                <button type="submit" class="btn btn-navy btn-block font-weight-bold">Đặt xe này</button>
+            </div>
+        </form>
+        <p class="text-muted small mt-2 mb-0">Chọn giờ chẵn trong các ô trống. Nếu xe không còn trống trong khung giờ đó, trang đặt xe sẽ báo để bạn chọn xe khác.</p>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

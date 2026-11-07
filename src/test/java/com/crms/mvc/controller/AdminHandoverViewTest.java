@@ -49,7 +49,6 @@ class AdminHandoverViewTest {
 
     @BeforeEach
     void setUp() {
-        when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
         when(paymentService.getPendingRefund(42L)).thenReturn(Optional.empty());
     }
 
@@ -63,6 +62,22 @@ class AdminHandoverViewTest {
                 .andExpect(content().string(containsString("name=\"licenseImage\"")))
                 .andExpect(content().string(containsString("name=\"idCardImage\"")))
                 .andExpect(content().string(not(containsString("assign-staff"))));
+    }
+
+    @Test
+    void staffCanSwapToAnotherCarFreeForTheRentalWindow() throws Exception {
+        stubBooking("confirmed", new HandoverSummaryDTO());
+        com.crms.mvc.entity.Vehicle spare = new com.crms.mvc.entity.Vehicle();
+        spare.setId(6L);
+        spare.setColor("Trắng");
+        spare.setYear(2024);
+        when(bookingService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(spare));
+
+        mvc.perform(get("/admin/bookings/42").session(TestSessions.staff(2L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("id=\"doi-xe\"")))
+                .andExpect(content().string(containsString("Đổi sang xe này")))
+                .andExpect(content().string(containsString("value=\"6\"")));
     }
 
     @Test

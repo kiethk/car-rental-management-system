@@ -8,6 +8,7 @@
                 th:action="@{/search}"
                 th:id="${formId != null ? formId : 'rental-schedule-form'}"
                 class="card-shadcn overflow-visible"
+                th:attr="data-server-error=${scheduleError}"
             >
                 <!-- Preserved filters on search page -->
                 <input
@@ -430,6 +431,15 @@
                     </div>
                 </div>
 
+                <!-- Schedule validation message (filled by the server on search, by script while editing) -->
+                <div
+                    id="rental-schedule-error"
+                    role="alert"
+                    th:text="${scheduleError}"
+                    th:classappend="${scheduleError == null} ? 'hidden'"
+                    class="mx-6 mb-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-700"
+                ></div>
+
                 <!-- Card Footer: Live Summary & Action -->
                 <div class="px-6 py-4 border-border/80 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div class="flex items-center gap-3 text-xs text-muted-foreground w-full sm:w-auto">
@@ -569,6 +579,21 @@
                             return year + "-" + month + "-" + day;
                         }
 
+                        function getMinAllowedPickupDateStr() {
+                            const now = new Date();
+                            if (now.getHours() >= 22) {
+                                const tmr = new Date(now);
+                                tmr.setDate(tmr.getDate() + 1);
+                                return toLocalDateString(tmr);
+                            }
+                            return toLocalDateString(now);
+                        }
+
+                        function getMinAllowedPickupHour() {
+                            const now = new Date();
+                            return now.getHours() + 1;
+                        }
+
                         function parseDate(str) {
                             if (!str) return new Date();
                             const parts = str.split("-");
@@ -605,10 +630,50 @@
                         }
 
                         // Render Hour Popovers (Dark theme)
-                        function renderHourOptions(popoverEl, currentVal, onSelect) {
+                        function renderHourOptions(popoverEl, currentVal, onSelect, type) {
                             popoverEl.innerHTML = "";
+                            const now = new Date();
+                            const todayStr = toLocalDateString(now);
+                            const isPickup = (type === "pickup");
                             hoursList.forEach((h) => {
                                 const item = document.createElement("div");
+                                const hVal = parseInt(h.split(":")[0], 10);
+                                let isDisabled = false;
+
+                                if (isPickup) {
+                                    const sDate = startDateInput.value || todayStr;
+                                    if (sDate === todayStr) {
+                                        const minH = getMinAllowedPickupHour();
+                                        if (hVal < minH) {
+                                            isDisabled = true;
+                                        }
+                                    }
+                                } else {
+                                    const eDate = endDateInput.value || startDateInput.value || todayStr;
+                                    const sDate = startDateInput.value || todayStr;
+                                    if (eDate === sDate) {
+                                        const sTimeH = parseInt((startTimeInput.value || "09:00").split(":")[0], 10);
+                                        if (hVal <= sTimeH) {
+                                            isDisabled = true;
+                                        }
+                                    } else if (eDate === todayStr) {
+                                        const minH = getMinAllowedPickupHour();
+                                        if (hVal < minH) {
+                                            isDisabled = true;
+                                        }
+                                    }
+                                }
+
+                                if (isDisabled) {
+                                    item.className = "hour-option-dark disabled";
+                                    item.style.opacity = "0.35";
+                                    item.style.cursor = "not-allowed";
+                                    item.style.pointerEvents = "none";
+                                    item.style.color = "#94a3b8";
+                                    item.innerHTML = "<span>" + formatHourDisplay(h) + "</span>";
+                                    popoverEl.appendChild(item);
+                                    return;
+                                }
                                 item.className = "hour-option-dark" + (h === currentVal ? " selected" : "");
                                 item.innerHTML =
                                     "<span>" +
@@ -634,7 +699,7 @@
                             const gridEl = isPickup ? pickupCalGrid : returnCalGrid;
                             const selectedDateStr = isPickup ? startDateInput.value : endDateInput.value;
                             const todayStr = toLocalDateString(new Date());
-                            const minAllowedStr = isPickup ? todayStr : startDateInput.value || todayStr;
+                            const minAllowedStr = isPickup ? getMinAllowedPickupDateStr() : (startDateInput.value || getMinAllowedPickupDateStr());
 
                             const year = viewDate.getFullYear();
                             const month = viewDate.getMonth();
@@ -699,9 +764,6 @@
                                         e.stopPropagation();
                                         if (isPickup) {
                                             startDateInput.value = dStr;
-                                            if (endDateInput.value < dStr) {
-                                                endDateInput.value = dStr;
-                                            }
                                         } else {
                                             endDateInput.value = dStr;
                                         }
@@ -748,26 +810,115 @@
                             }
                         }
 
-                        function updateAll() {
-                            const sDate = startDateInput.value || toLocalDateString(new Date());
-                            let eDate = endDateInput.value || sDate;
-                            const sTime = startTimeInput.value || "09:00";
-                            let eTime = endTimeInput.value || "18:00";
+                        const scheduleForm = startDateInput.closest("form");
+                        const scheduleErrorBox = document.getElementById("rental-schedule-error");
+                        const scheduleSubmitBtn = document.getElementById("rental-search-btn");
+                        const hasServerError = !!(scheduleForm && scheduleForm.getAttribute("data-server-error"));
+                        let isScheduleInitialized = false;
 
-                            if (eDate < sDate) {
-                                eDate = sDate;
-                                endDateInput.value = eDate;
+                        function toDateTime(dateStr, timeStr) {
+                            const d = parseDate(dateStr);
+                            d.setHours(parseInt(timeStr.split(":")[0], 10), 0, 0, 0);
+                            return d;
+                        }
+
+                        // Runs once, only to turn the default values of a fresh page into a bookable schedule.
+                        // After that the customer's choices are never changed silently.
+                        function normalizeInitialSchedule() {
+                            const now = new Date();
+                            const minPickupDateStr = getMinAllowedPickupDateStr();
+
+                            let sDate = startDateInput.value || minPickupDateStr;
+                            let sTime = startTimeInput.value || "09:00";
+                            if (sDate < minPickupDateStr) {
+                                sDate = minPickupDateStr;
                             }
-
-                            if (sDate === eDate) {
-                                const sh = parseInt(sTime.split(":")[0], 10);
-                                let eh = parseInt(eTime.split(":")[0], 10);
-                                if (eh <= sh) {
-                                    eh = Math.min(22, sh + 4);
-                                    eTime = (eh < 10 ? "0" : "") + eh + ":00";
-                                    endTimeInput.value = eTime;
+                            if (sDate === toLocalDateString(now)) {
+                                const minH = getMinAllowedPickupHour();
+                                if (parseInt(sTime.split(":")[0], 10) < minH) {
+                                    const nextValid = hoursList.find((h) => parseInt(h.split(":")[0], 10) >= minH);
+                                    if (nextValid) {
+                                        sTime = nextValid;
+                                    } else {
+                                        const tmr = new Date(now);
+                                        tmr.setDate(tmr.getDate() + 1);
+                                        sDate = toLocalDateString(tmr);
+                                        sTime = "09:00";
+                                    }
                                 }
                             }
+
+                            let eDate = endDateInput.value || sDate;
+                            let eTime = endTimeInput.value || "18:00";
+                            if (eDate < sDate) {
+                                eDate = sDate;
+                            }
+                            if (eDate === sDate) {
+                                const sh = parseInt(sTime.split(":")[0], 10);
+                                const eh = parseInt(eTime.split(":")[0], 10);
+                                if (eh <= sh) {
+                                    if (sh + 4 <= 22) {
+                                        eTime = String(sh + 4).padStart(2, "0") + ":00";
+                                    } else {
+                                        const nextDay = parseDate(sDate);
+                                        nextDay.setDate(nextDay.getDate() + 1);
+                                        eDate = toLocalDateString(nextDay);
+                                        eTime = "09:00";
+                                    }
+                                }
+                            }
+
+                            startDateInput.value = sDate;
+                            startTimeInput.value = sTime;
+                            endDateInput.value = eDate;
+                            endTimeInput.value = eTime;
+                        }
+
+                        // Returns an error message, or null when the schedule can be searched.
+                        function validateSchedule() {
+                            if (!startDateInput.value || !startTimeInput.value) {
+                                return "Vui l\u00F2ng ch\u1ECDn th\u1EDDi gian nh\u1EADn xe.";
+                            }
+                            if (!endDateInput.value || !endTimeInput.value) {
+                                return "Vui l\u00F2ng ch\u1ECDn th\u1EDDi gian tr\u1EA3 xe.";
+                            }
+                            const start = toDateTime(startDateInput.value, startTimeInput.value);
+                            const end = toDateTime(endDateInput.value, endTimeInput.value);
+                            if (start < new Date()) {
+                                return "Th\u1EDDi gian nh\u1EADn xe kh\u00F4ng \u0111\u01B0\u1EE3c \u1EDF trong qu\u00E1 kh\u1EE9.";
+                            }
+                            if (end <= start) {
+                                return "Th\u1EDDi gian tr\u1EA3 xe ph\u1EA3i sau th\u1EDDi gian nh\u1EADn xe.";
+                            }
+                            return null;
+                        }
+
+                        function renderScheduleValidation() {
+                            const message = validateSchedule();
+                            if (scheduleErrorBox) {
+                                scheduleErrorBox.textContent = message || "";
+                                scheduleErrorBox.classList.toggle("hidden", !message);
+                            }
+                            if (scheduleSubmitBtn) {
+                                scheduleSubmitBtn.disabled = !!message;
+                                scheduleSubmitBtn.classList.toggle("opacity-50", !!message);
+                                scheduleSubmitBtn.classList.toggle("cursor-not-allowed", !!message);
+                            }
+                            return message;
+                        }
+
+                        function updateAll() {
+                            if (!isScheduleInitialized) {
+                                isScheduleInitialized = true;
+                                if (!hasServerError) {
+                                    normalizeInitialSchedule();
+                                }
+                            }
+
+                            const sDate = startDateInput.value || getMinAllowedPickupDateStr();
+                            const sTime = startTimeInput.value || "09:00";
+                            const eDate = endDateInput.value || sDate;
+                            const eTime = endTimeInput.value || "18:00";
 
                             pickupDateDisplay.textContent = formatDisplayDate(sDate);
                             pickupHourDisplay.textContent = formatHourDisplay(sTime);
@@ -830,6 +981,7 @@
                             // Update preset buttons state in both calendars
                             updatePresetButtonsActiveState("pickup", sDate);
                             updatePresetButtonsActiveState("return", eDate);
+                            renderScheduleValidation();
                         }
 
                         // Pickup Date Trigger
@@ -865,7 +1017,7 @@
                                 renderHourOptions(pickupHourPopover, startTimeInput.value, (newHour) => {
                                     startTimeInput.value = newHour;
                                     updateAll();
-                                });
+                                }, "pickup");
                                 pickupHourPopover.classList.remove("hidden");
                             }
                         });
@@ -903,25 +1055,28 @@
                                 renderHourOptions(returnHourPopover, endTimeInput.value, (newHour) => {
                                     endTimeInput.value = newHour;
                                     updateAll();
-                                });
+                                }, "return");
                                 returnHourPopover.classList.remove("hidden");
                             }
                         });
 
                         // Preset Buttons inside Pickup Calendar Popover
                         document.querySelectorAll(".pickup-preset-btn").forEach((btn) => {
+                            const addDays = parseInt(btn.getAttribute("data-days"), 10);
+                            if (addDays === 0 && new Date().getHours() >= 22) {
+                                btn.classList.add("disabled");
+                                btn.style.opacity = "0.35";
+                                btn.style.pointerEvents = "none";
+                                btn.style.cursor = "not-allowed";
+                            }
                             btn.addEventListener("click", function (e) {
+                                if (addDays === 0 && new Date().getHours() >= 22) return;
                                 e.stopPropagation();
-                                const addDays = parseInt(this.getAttribute("data-days"), 10);
                                 const d = new Date();
                                 d.setDate(d.getDate() + addDays);
                                 const dStr = toLocalDateString(d);
                                 startDateInput.value = dStr;
                                 pickupViewDate = d;
-                                if (endDateInput.value < dStr) {
-                                    endDateInput.value = dStr;
-                                    returnViewDate = d;
-                                }
                                 updateAll();
                                 renderCalendar("pickup");
                                 closeAllPopovers();
@@ -955,6 +1110,14 @@
                                 closeAllPopovers();
                             }
                         });
+
+                        if (scheduleForm) {
+                            scheduleForm.addEventListener("submit", function (e) {
+                                if (renderScheduleValidation()) {
+                                    e.preventDefault();
+                                }
+                            });
+                        }
 
                         // Initialize on start
                         updateAll();

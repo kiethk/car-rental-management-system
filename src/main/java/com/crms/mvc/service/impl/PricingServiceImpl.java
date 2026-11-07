@@ -13,8 +13,6 @@ import java.time.temporal.Temporal;
 @Service
 public class PricingServiceImpl implements PricingService {
 
-    private static final int GRACE_PERIOD_MINUTES = 15;
-
     @Override
     public PriceQuoteDTO calculatePrice(Temporal startTime, Temporal endTime, BigDecimal pricePerHour, BigDecimal depositRate, BigDecimal discountAmount) {
         long rentalHours = calculateRentalHours(startTime, endTime);
@@ -40,13 +38,12 @@ public class PricingServiceImpl implements PricingService {
             return BigDecimal.ZERO;
         }
 
-        long lateMinutes = Duration.between(scheduledEndTime, actualReturnTime).toMinutes();
-        if (lateMinutes <= GRACE_PERIOD_MINUTES) {
+        // Only full late hours are charged: under 60 minutes is free, 1h59m late is one hour (see GLOSSARY "Ân hạn trả xe").
+        long lateHours = Duration.between(scheduledEndTime, actualReturnTime).toHours();
+        if (lateHours == 0) {
             return BigDecimal.ZERO;
         }
 
-        // Round up late hours
-        long lateHours = (lateMinutes + 59) / 60;
         BigDecimal multiplier = (lateFeeMultiplier != null && lateFeeMultiplier.compareTo(BigDecimal.ZERO) > 0)
                 ? lateFeeMultiplier
                 : BigDecimal.ONE;

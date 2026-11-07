@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -70,13 +72,38 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public void validateRentalSchedule(LocalDateTime start, LocalDateTime end) {
+        if (start == null) {
+            throw new IllegalArgumentException("Vui lòng chọn thời gian nhận xe.");
+        }
+        if (end == null) {
+            throw new IllegalArgumentException("Vui lòng chọn thời gian trả xe.");
+        }
+        if (!isWholeHour(start)) {
+            throw new IllegalArgumentException("Thời gian nhận xe phải là giờ chẵn, ví dụ 09:00.");
+        }
+        if (!isWholeHour(end)) {
+            throw new IllegalArgumentException("Thời gian trả xe phải là giờ chẵn, ví dụ 18:00.");
+        }
+        if (start.isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Thời gian nhận xe không được ở trong quá khứ.");
+        }
+        if (!end.isAfter(start)) {
+            throw new IllegalArgumentException("Thời gian trả xe phải sau thời gian nhận xe.");
+        }
+    }
+
+    /** Rentals are booked by the whole hour only: minutes, seconds and nanoseconds must all be zero. */
+    private static boolean isWholeHour(LocalDateTime time) {
+        return time.getMinute() == 0 && time.getSecond() == 0 && time.getNano() == 0;
+    }
+
+    @Override
     public Booking createBooking(Long customerId, BookingCreateDTO dto, String clientIp) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new NoSuchElementException("Customer not found: " + customerId));
 
-        if (dto.getStartTime().isAfter(dto.getEndTime()) || dto.getStartTime().isEqual(dto.getEndTime())) {
-            throw new IllegalStateException("Return time must be after pickup time");
-        }
+        validateRentalSchedule(dto.getStartTime(), dto.getEndTime());
 
         ZoneOffset defaultOffset = ZoneOffset.ofHours(7); // UTC+7 for Vietnam
         OffsetDateTime start = dto.getStartTime().atOffset(defaultOffset);
@@ -114,16 +141,15 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalStateException("Không còn xe trống thuộc dòng xe này trong khung giờ bạn đã chọn.");
         }
 
-        Vehicle assignedVehicle = null;
-        if (dto.getVehicleId() != null) {
-            assignedVehicle = availableVehicles.stream()
-                    .filter(v -> v.getId().equals(dto.getVehicleId()))
-                    .findFirst()
-                    .orElse(null);
-        }
-        if (assignedVehicle == null) {
-            assignedVehicle = availableVehicles.get(0);
-        }
+        // The plate the customer picked, or any free car of the type when they picked none.
+        // Never swap a picked plate silently: it may have been taken while they were on the checkout page.
+        Vehicle assignedVehicle = dto.getVehicleId() == null
+                ? availableVehicles.get(0)
+                : availableVehicles.stream()
+                        .filter(v -> v.getId().equals(dto.getVehicleId()))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException(
+                                "Xe bạn chọn vừa được đặt trong khung giờ này. Vui lòng chọn xe khác hoặc để hệ thống tự chọn."));
 
         // 2. Tạo Slot mới tương ứng
         Slot slot = createSlotForBooking(type.getId(), start, end);
@@ -293,16 +319,8 @@ public class BookingServiceImpl implements BookingService {
         boolean refundEligible = false;
         // B7 + B16: Hoàn cọc 100% nếu hủy trước mốc freeCancellationHours theo hợp đồng khách đã đồng ý
         if ("confirmed".equalsIgnoreCase(b.getStatus())) {
-            int freeHours = 72;
-            try {
-                ContractTemplateDTO terms = contractService.getTermsOfBooking(bookingId);
-                if (terms != null && terms.getFreeCancellationHours() > 0) {
-                    freeHours = terms.getFreeCancellationHours();
-                }
-            } catch (Exception ignored) {
-            }
-
-            OffsetDateTime cancelDeadline = b.getPickupTime().minusHours(freeHours);
+            OffsetDateTime cancelDeadline = contractService.getTermsOfBooking(bookingId)
+                    .freeCancellationDeadline(b.getPickupTime());
             if (!OffsetDateTime.now().isAfter(cancelDeadline)) {
                 String bank = (dto != null && dto.getBankCode() != null && !dto.getBankCode().isBlank()) ? dto.getBankCode().trim() : "BANK";
                 String acc = (dto != null && dto.getAccountNumber() != null && !dto.getAccountNumber().isBlank()) ? dto.getAccountNumber().trim() : "";
@@ -322,6 +340,10 @@ public class BookingServiceImpl implements BookingService {
     public void assignVehicle(Long bookingId, Long vehicleId) {
         Booking b = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
+        // A car can only be swapped before handover: afterwards the customer is driving the assigned one.
+        if (!"pending_payment".equalsIgnoreCase(b.getStatus()) && !"confirmed".equalsIgnoreCase(b.getStatus())) {
+            throw new IllegalStateException("Chỉ đổi được xe trước khi bàn giao (trạng thái đơn: " + b.getStatus() + ")");
+        }
         Vehicle v = vehicleRepository.findByIdForUpdate(vehicleId)
                 .orElseThrow(() -> new NoSuchElementException("Vehicle not found: " + vehicleId));
 
@@ -475,6 +497,66 @@ public class BookingServiceImpl implements BookingService {
                 .filter(v -> !"maintenance".equalsIgnoreCase(v.getStatus()) && !Vehicle.STATUS_RETIRED.equalsIgnoreCase(v.getStatus()))
                 .filter(v -> !bookedVehicleIds.contains(v.getId()))
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VehicleScheduleDTO getVehicleSchedule(Long vehicleId, LocalDate fromDate, int days) {
+        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+                .orElseThrow(() -> new NoSuchElementException("Vehicle not found: " + vehicleId));
+
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime from = fromDate.atStartOfDay().atOffset(ZoneOffset.ofHours(7));
+        OffsetDateTime to = from.plusDays(days);
+        List<OffsetDateTime[]> held = bookingRepository.findBookingsHoldingVehicle(vehicleId,
+                        from.minusHours(BUFFER_BETWEEN_RENTALS_HOURS), to.plusHours(BUFFER_BETWEEN_RENTALS_HOURS),
+                        now.minusMinutes(15))
+                .stream()
+                .map(b -> new OffsetDateTime[]{b.getPickupTime(), heldUntil(b, now)})
+                .toList();
+
+        List<VehicleScheduleDTO.Day> scheduleDays = new ArrayList<>();
+        for (int day = 0; day < days; day++) {
+            List<VehicleScheduleDTO.HourState> hours = new ArrayList<>(24);
+            for (int hour = 0; hour < 24; hour++) {
+                OffsetDateTime hourStart = from.plusDays(day).plusHours(hour);
+                hours.add(hourState(hourStart, hourStart.plusHours(1), held, now));
+            }
+            scheduleDays.add(new VehicleScheduleDTO.Day(fromDate.plusDays(day), hours));
+        }
+
+        VehicleScheduleDTO schedule = new VehicleScheduleDTO();
+        schedule.setVehicleId(vehicle.getId());
+        schedule.setLicensePlate(vehicle.getLicensePlate() != null ? vehicle.getLicensePlate().getPlate() : null);
+        schedule.setVehicleTypeId(vehicle.getVehicleType().getId());
+        schedule.setVehicleTypeName(vehicle.getVehicleType().getDisplayName());
+        schedule.setVehicleStatus(vehicle.getStatus());
+        schedule.setDays(scheduleDays);
+        return schedule;
+    }
+
+    /** A car out on a rental that has not come back stays held until it does, even past its scheduled end. */
+    private static OffsetDateTime heldUntil(Booking booking, OffsetDateTime now) {
+        boolean notBackYet = "active".equalsIgnoreCase(booking.getStatus()) && booking.getActualReturnTime() == null;
+        return notBackYet && now.isAfter(booking.getScheduledEndTime()) ? now : booking.getScheduledEndTime();
+    }
+
+    private static VehicleScheduleDTO.HourState hourState(OffsetDateTime start, OffsetDateTime end,
+                                                          List<OffsetDateTime[]> held, OffsetDateTime now) {
+        if (!end.isAfter(now)) {
+            return VehicleScheduleDTO.HourState.PAST;
+        }
+        if (held.stream().anyMatch(h -> overlaps(start, end, h[0], h[1]))) {
+            return VehicleScheduleDTO.HourState.BOOKED;
+        }
+        boolean inBuffer = held.stream().anyMatch(h ->
+                overlaps(start, end, h[0].minusHours(BUFFER_BETWEEN_RENTALS_HOURS), h[0])
+                        || overlaps(start, end, h[1], h[1].plusHours(BUFFER_BETWEEN_RENTALS_HOURS)));
+        return inBuffer ? VehicleScheduleDTO.HourState.BUFFER : VehicleScheduleDTO.HourState.FREE;
+    }
+
+    private static boolean overlaps(OffsetDateTime start, OffsetDateTime end, OffsetDateTime otherStart, OffsetDateTime otherEnd) {
+        return start.isBefore(otherEnd) && otherStart.isBefore(end);
     }
 
     @Override

@@ -43,11 +43,15 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT DISTINCT b FROM Booking b, Payment p WHERE p.booking = b AND p.paymentType = 'REFUND' AND p.status = 'pending' ORDER BY b.createdAt DESC")
     List<Booking> findBookingsWithPendingRefund();
 
+    /** Bookings that hold one car during [from, to): the same rule as findBookedVehicleIdsInTimeRange. */
     @Query("SELECT b FROM Booking b WHERE b.vehicle.id = :vehicleId " +
-           "AND b.id != COALESCE(:excludeBookingId, -1L) " +
-           "AND b.actualReturnTime IS NOT NULL ORDER BY b.actualReturnTime DESC")
-    List<Booking> findRecentReturnsByVehicle(@Param("vehicleId") Long vehicleId,
-                                            @Param("excludeBookingId") Long excludeBookingId);
+           "AND (b.status IN ('confirmed', 'active') OR (b.status = 'pending_payment' AND b.createdAt > :cutoffTime)) " +
+           "AND b.pickupTime < :to " +
+           "AND (b.scheduledEndTime > :from OR (b.status = 'active' AND b.actualReturnTime IS NULL))")
+    List<Booking> findBookingsHoldingVehicle(@Param("vehicleId") Long vehicleId,
+                                             @Param("from") OffsetDateTime from,
+                                             @Param("to") OffsetDateTime to,
+                                             @Param("cutoffTime") OffsetDateTime cutoffTime);
 
     long countByVehicleId(Long vehicleId);
 

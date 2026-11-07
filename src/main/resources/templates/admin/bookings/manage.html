@@ -312,12 +312,17 @@
                                 </div>
                             </div>
 
-                            <!-- 2. Action Bước 1: Gán xe vật lý (Assign Physical Car) -->
-                            <div class="admin-card" th:if="${booking.status == 'confirmed' and (booking.vehicleId == null or booking.vehicleRetired)}">
+                            <!-- 2. Action Bước 1: Gán xe vật lý, hoặc Đổi xe trước khi bàn giao -->
+                            <div class="admin-card" id="doi-xe" th:if="${booking.status == 'confirmed'}"
+                                 th:with="needsCar=${booking.vehicleId == null or booking.vehicleRetired}">
                                 <div class="admin-card-header">
                                     <div class="admin-card-title-group">
-                                        <h3 class="admin-card-title">Bước 1: Phân bổ xe vật lý</h3>
-                                        <p class="admin-card-subtitle">Chọn 1 xe trong kho phù hợp với dòng xe <strong th:text="${booking.vehicleTypeName}">Vios</strong></p>
+                                        <h3 class="admin-card-title" th:text="${needsCar ? 'Bước 1: Phân bổ xe vật lý' : 'Đổi xe'}">Đổi xe</h3>
+                                        <p class="admin-card-subtitle" th:if="${needsCar}">Chọn 1 xe trong kho phù hợp với dòng xe <strong th:text="${booking.vehicleTypeName}">Vios</strong></p>
+                                        <p class="admin-card-subtitle" th:unless="${needsCar}">
+                                            Xe đang gán: <strong th:text="${booking.licensePlate}">51A-123.45</strong>.
+                                            Đổi sang xe <span th:text="${booking.vehicleTypeName}">Vios</span> khác nếu xe này chưa về hoặc chưa sẵn sàng. Chỉ đổi được trước khi bàn giao.
+                                        </p>
                                     </div>
                                 </div>
                                 <div class="admin-card-body">
@@ -325,21 +330,22 @@
                                         Xe đã ngừng khai thác, cần gán lại xe khác cho đơn này.
                                     </div>
                                     <div th:if="${#lists.isEmpty(availableVehicles)}" class="admin-alert admin-alert-warning mb-3">
-                                        Hiện không có xe vật lý nào đang sẵn sàng (Available) cho dòng này.
+                                        Không còn xe <span th:text="${booking.vehicleTypeName}">Vios</span> nào trống trong khung giờ thuê của đơn này.
                                     </div>
 
                                     <form th:action="@{/admin/bookings/{id}/assign(id=${booking.id})}" method="post"
                                           th:unless="${#lists.isEmpty(availableVehicles)}">
                                         <div class="admin-form-group">
-                                            <label class="admin-form-label">Chọn xe vật lý trong kho (*)</label>
+                                            <label class="admin-form-label">Chọn xe trống trong khung giờ thuê (*)</label>
                                             <select name="vehicleId" class="admin-form-select" required>
-                                                <option value="" disabled selected>-- Chọn xe từ danh sách sẵn sàng --</option>
+                                                <option value="" disabled selected>-- Chọn xe --</option>
                                                 <option th:each="v : ${availableVehicles}" th:value="${v.id}"
                                                         th:text="${v.licensePlate != null ? v.licensePlate.plate : 'Chưa có biển'} + ' (' + ${v.color} + ', đời ' + ${v.year} + ')'">
                                                 </option>
                                             </select>
                                         </div>
-                                        <button type="submit" class="admin-btn admin-btn-primary w-100">
+                                        <button type="submit" class="admin-btn admin-btn-primary w-100"
+                                                th:text="${needsCar ? 'Xác nhận phân bổ xe này' : 'Đổi sang xe này'}">
                                             Xác nhận phân bổ xe này
                                         </button>
                                     </form>
@@ -401,6 +407,10 @@
                                     </div>
                                 </div>
                                 <div class="admin-card-body">
+                                    <div class="admin-alert admin-alert-info mb-3">
+                                        Xe bàn giao: <strong th:text="${booking.licensePlate}">51A-123.45</strong>.
+                                        Xe chưa về hoặc chưa sẵn sàng? <a href="#doi-xe">Đổi xe</a> trước khi bàn giao.
+                                    </div>
                                     <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs mb-3">
                                         <ul class="pl-3 mb-0 text-slate-600 space-y-1">
                                             <li>Kiểm tra bản gốc <strong>giấy phép lái xe (hạng B1/B2, còn hạn) và CCCD</strong>.</li>

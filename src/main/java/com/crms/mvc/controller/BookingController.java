@@ -153,20 +153,23 @@ public class BookingController {
             endDateTime = LocalDateTime.of(endDate, endTime);
         }
 
-        if (endDateTime.isBefore(startDateTime) || endDateTime.isEqual(startDateTime)) {
-            endDateTime = startDateTime.plusHours(4);
-            endDate = endDateTime.toLocalDate();
-            endTime = endDateTime.toLocalTime();
-        } else {
-            startDate = startDateTime.toLocalDate();
-            startTime = startDateTime.toLocalTime();
-            endDate = endDateTime.toLocalDate();
-            endTime = endDateTime.toLocalTime();
+        startDate = startDateTime.toLocalDate();
+        startTime = startDateTime.toLocalTime();
+        endDate = endDateTime.toLocalDate();
+        endTime = endDateTime.toLocalTime();
+
+        // Invalid times are reported back to the customer, never silently moved to another slot.
+        String scheduleError = null;
+        try {
+            bookingService.validateRentalSchedule(startDateTime, endDateTime);
+        } catch (IllegalArgumentException e) {
+            scheduleError = e.getMessage();
         }
 
         ZoneOffset offset = ZoneOffset.ofHours(7);
-        List<VehicleTypeSearchResultDTO> rawResults = bookingService.searchAvailableVehicleTypes(
-                startDateTime.atOffset(offset), endDateTime.atOffset(offset), category);
+        List<VehicleTypeSearchResultDTO> rawResults = scheduleError != null ? List.of()
+                : bookingService.searchAvailableVehicleTypes(
+                        startDateTime.atOffset(offset), endDateTime.atOffset(offset), category);
 
         // Filter by keyword, brand, transmission, seats, max price
         List<VehicleTypeSearchResultDTO> results = rawResults.stream()
@@ -199,6 +202,7 @@ public class BookingController {
         String durationDisplay = (rentalDays > 0 ? (rentalDays + "d ") : "")
                 + (remainingHours > 0 ? (remainingHours + "h") : (rentalDays == 0 ? "1h" : ""));
 
+        model.addAttribute("scheduleError", scheduleError);
         model.addAttribute("today", LocalDate.now().toString());
         model.addAttribute("selectedStartDate", startDate.toString());
         model.addAttribute("selectedEndDate", endDate.toString());
@@ -234,6 +238,7 @@ public class BookingController {
             @RequestParam(value = "startTime", required = false) String startStr,
             @RequestParam(value = "endTime", required = false) String endStr,
             @RequestParam(value = "date", required = false) String dateStr,
+            @RequestParam(value = "vehicleId", required = false) Long vehicleId,
             HttpSession session, Model model, RedirectAttributes ra) {
 
         Long customerId = CurrentAccount.customerId(session).orElse(null);
@@ -282,8 +287,11 @@ public class BookingController {
             endTime = LocalDateTime.of(eDate, e);
         }
 
-        if (endTime.isBefore(startTime) || endTime.isEqual(startTime)) {
-            endTime = startTime.plusHours(4);
+        try {
+            bookingService.validateRentalSchedule(startTime, endTime);
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("error", e.getMessage());
+            return "redirect:/search";
         }
 
         ZoneOffset offset = ZoneOffset.ofHours(7);
@@ -312,6 +320,14 @@ public class BookingController {
         form.setStartTime(startTime);
         form.setEndTime(endTime);
         form.setContractTemplateId(contractTerms.getId());
+        // Coming from a car's schedule page: pre-select that plate if it is free for these hours.
+        if (vehicleId != null) {
+            if (availableCars.stream().anyMatch(car -> car.getId().equals(vehicleId))) {
+                form.setVehicleId(vehicleId);
+            } else {
+                model.addAttribute("error", "Xe bạn chọn không trống trong khung giờ này. Hãy chọn xe khác bên dưới hoặc đổi giờ thuê.");
+            }
+        }
 
         LicenseDocument license = licenseDocumentService.getCustomerLicense(customerId);
         boolean hasValidLicense = licenseDocumentService.hasValidLicense(customerId, endTime.toLocalDate());
@@ -444,24 +460,16 @@ public class BookingController {
             BookingDetailDTO detail = bookingService.getBookingDetail(bookingId, customerId);
             model.addAttribute("booking", detail);
 
-            int freeCancellationHours = 72;
-            try {
-                ContractTemplateDTO terms = contractTemplateService.getActiveTemplate();
-                if (terms != null && terms.getFreeCancellationHours() > 0) {
-                    freeCancellationHours = terms.getFreeCancellationHours();
-                }
-            } catch (Exception ignored) {
-            }
-
-            OffsetDateTime nowVn = OffsetDateTime.now(ZoneOffset.ofHours(7));
-            OffsetDateTime cancelDeadline = detail.getPickupTime() != null
-                    ? detail.getPickupTime().minusHours(freeCancellationHours)
+            // Same rule as BookingService.cancelBooking: the terms the customer accepted, never the ACTIVE version.
+            ContractTemplateDTO acceptedTerms = detail.getContract() != null ? detail.getContract().getTerms() : null;
+            OffsetDateTime cancelDeadline = acceptedTerms != null && detail.getPickupTime() != null
+                    ? acceptedTerms.freeCancellationDeadline(detail.getPickupTime())
                     : null;
             boolean refundEligible = "confirmed".equalsIgnoreCase(detail.getStatus()) && cancelDeadline != null
-                    && !nowVn.isAfter(cancelDeadline);
+                    && !OffsetDateTime.now().isAfter(cancelDeadline);
 
             model.addAttribute("refundEligible", refundEligible);
-            model.addAttribute("freeCancellationHours", freeCancellationHours);
+            model.addAttribute("freeCancellationHours", acceptedTerms != null ? acceptedTerms.getFreeCancellationHours() : null);
             model.addAttribute("cancelDeadline", cancelDeadline);
             model.addAttribute("cancelForm", new BookingCancelDTO());
 

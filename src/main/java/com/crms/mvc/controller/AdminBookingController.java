@@ -18,7 +18,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.server.ResponseStatusException;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.service.BookingService;
-import com.crms.mvc.service.VehicleService;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.service.IssueService;
 import com.crms.mvc.service.PaymentService;
@@ -42,16 +41,14 @@ import com.crms.mvc.util.DateTimeUtils;
 @RequestMapping("/admin/bookings")
 public class AdminBookingController {
     private final BookingService bookingService;
-    private final VehicleService vehicleService;
     private final PaymentService paymentService;
     private final IssueService issueService;
     private final HandoverService handoverService;
 
-    public AdminBookingController(BookingService bookingService, VehicleService vehicleService,
+    public AdminBookingController(BookingService bookingService,
                                   PaymentService paymentService, IssueService issueService,
                                   HandoverService handoverService) {
         this.bookingService = bookingService;
-        this.vehicleService = vehicleService;
         this.paymentService = paymentService;
         this.issueService = issueService;
         this.handoverService = handoverService;
@@ -83,9 +80,11 @@ public class AdminBookingController {
 
         try {
             BookingDetailDTO detail = bookingService.getBookingDetailForAdmin(bookingId);
-            List<Vehicle> availableVehicles = vehicleService.findByStatusWithDetails(Vehicle.STATUS_AVAILABLE).stream()
-                    .filter(v -> v.getVehicleType().getId().equals(detail.getVehicleTypeId()))
-                    .toList();
+            // Same-type cars free for this booking's rental window (with the 1-hour buffer), like checkout uses.
+            List<Vehicle> availableVehicles = detail.getPickupTime() != null && detail.getScheduledEndTime() != null
+                    ? bookingService.findAvailableVehiclesInTimeRange(
+                            detail.getVehicleTypeId(), detail.getPickupTime(), detail.getScheduledEndTime())
+                    : List.of();
 
             model.addAttribute("booking", detail);
             model.addAttribute("availableVehicles", availableVehicles);
@@ -157,7 +156,7 @@ public class AdminBookingController {
             bookingService.assignVehicle(bookingId, vehicleId);
             ra.addFlashAttribute("success", "Đã gán xe cho đơn thuê.");
         } catch (Exception e) {
-            ra.addFlashAttribute("error", "Assignment failed: " + e.getMessage());
+            ra.addFlashAttribute("error", "Không đổi được xe: " + e.getMessage());
         }
         return "redirect:/admin/bookings/" + bookingId;
     }

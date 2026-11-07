@@ -128,7 +128,7 @@ class BookingContractFlowTest {
                         .param("contractTemplateId", "3"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern("/bookings/checkout?vehicleTypeId=1*"))
-                .andExpect(flash().attribute("error", "You must accept the rental terms to continue"));
+                .andExpect(flash().attribute("error", "Bạn cần đồng ý với điều khoản thuê xe để tiếp tục"));
 
         verify(bookingService, never()).createBooking(anyLong(), any(), any());
     }
@@ -212,6 +212,51 @@ class BookingContractFlowTest {
         mvc.perform(get("/bookings/42").session(customerSession))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("Sự cố trong chuyến thuê"))));
+    }
+
+    @Test
+    void checkoutFromACarSchedulePreselectsThatPlateOnlyWhenItIsFree() throws Exception {
+        VehicleType type = new VehicleType();
+        type.setId(1L);
+        type.setName("Vios");
+        type.setBrand("Toyota");
+        type.setPricePerHour(new BigDecimal("100000"));
+        Vehicle car = new Vehicle();
+        car.setId(9L);
+        car.setVehicleType(type);
+        when(vehicleTypeService.findById(1L)).thenReturn(Optional.of(type));
+        when(bookingService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(car));
+
+        String html = mvc.perform(get("/bookings/checkout").session(customerSession)
+                        .param("vehicleTypeId", "1").param("vehicleId", "9")
+                        .param("startTime", "2026-10-24T09:00").param("endTime", "2026-10-24T19:00"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        org.assertj.core.api.Assertions.assertThat(html).containsPattern("value=\"9\"\\s+class=\"sr-only\"\\s+checked=\"checked\"");
+
+        mvc.perform(get("/bookings/checkout").session(customerSession)
+                        .param("vehicleTypeId", "1").param("vehicleId", "8")
+                        .param("startTime", "2026-10-24T09:00").param("endTime", "2026-10-24T19:00"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Xe bạn chọn không trống trong khung giờ này")));
+    }
+
+    @Test
+    void refundEligibilityFollowsTheAcceptedTermsNotTheActiveVersion() throws Exception {
+        // Accepted 24h; the ACTIVE version (setUp) says 48h. Pickup is 30h away: free under the accepted terms only.
+        ContractTemplateDTO accepted = new ContractTemplateDTO();
+        accepted.setDepositRate(new BigDecimal("0.30"));
+        accepted.setLateFeeMultiplier(new BigDecimal("1.50"));
+        accepted.setFreeCancellationHours(24);
+        BookingDetailDTO booking = bookingWithContract("confirmed", true);
+        booking.getContract().setTerms(accepted);
+        booking.setPickupTime(OffsetDateTime.now().plusHours(30));
+        booking.setScheduledEndTime(booking.getPickupTime().plusHours(10));
+        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(booking);
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Bạn đang hủy trước thời hạn quy định")));
     }
 
     @Test

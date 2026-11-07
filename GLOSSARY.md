@@ -22,6 +22,10 @@ _Avoid_: Tiền thế chân, tiền bảo đảm
 Khoản phí nhân viên ghi nhận lúc nhận lại xe — vệ sinh, thiếu nhiên liệu, phí cầu đường, khác — không có biên bản, không gửi thông báo riêng, cộng thẳng vào Quyết toán. Hư hỏng không phải Phí trả xe mà phải lập Sự cố.
 _Avoid_: Phụ phí, surcharge
 
+**Ân hạn trả xe (Late return grace)**:
+Khách trả xe trễ dưới 1 giờ so với giờ trả dự kiến thì không bị tính phí trễ. Phí trễ chỉ tính theo số giờ trễ tròn: trễ 1 giờ 59 phút tính 1 giờ, trễ 2 giờ tính 2 giờ.
+_Avoid_: Làm tròn lên, phạt theo phút
+
 **Phí phát sinh sau quyết toán**:
 Phí sự cố (như phạt nguội) được phát hiện và lập biên bản sau khi đơn thuê đã hoàn tất trả xe, khách nhận email và thanh toán trực tuyến riêng.
 _Avoid_: Nợ, công nợ, phí bổ sung
@@ -65,14 +69,12 @@ _Avoid_: Hư nặng, hỏng hẳn
 ### Lịch trình & Bàn giao xe
 
 **Thời gian đệm chuyển ca (Rental Buffer Time)**:
-Khoảng cách tối thiểu bắt buộc là 1 giờ giữa hai lượt thuê liên tiếp trên cùng một phương tiện vật lý. Được phân bổ thành:
-1. 30 phút đầu: Vệ sinh xe, kiểm tra kỹ thuật sau khi ca thuê trước trả xe.
-2. 30 phút sau: Dự phòng và sẵn sàng bàn giao cho ca thuê tiếp theo (đón khách đúng giờ hoặc nhận sớm).
-_Avoid_: Giờ nghỉ, khoảng trống, downtime
+Khoảng cách tối thiểu 1 giờ giữa giờ kết thúc của lượt thuê trước và giờ bắt đầu của lượt thuê sau trên cùng một xe, dành cho kho nhận lại và chuẩn bị xe. Việc chuẩn bị xe diễn ra ngoài hệ thống. Xe không được giao sớm hơn giờ hẹn.
+_Avoid_: Giờ nghỉ, khoảng trống, downtime, nhận xe sớm
 
-**Khung giờ nhận sớm (Early Pickup Window)**:
-Khoảng thời gian tối đa 30 phút trước giờ nhận dự kiến (`scheduled_pickup_time - 30 phút`) mà khách có thể làm thủ tục nhận xe, với điều kiện tiên quyết là phương tiện đã ở trạng thái sẵn sàng (`available`).
-_Avoid_: Lấy xe tuỳ tiện, nhận xe bất cứ lúc nào
+**Đổi xe (Vehicle swap)**:
+Thay xe đã gán cho đơn thuê bằng một xe cùng loại còn trống trong khung giờ thuê, khi xe đang gán chưa về hoặc chưa sẵn sàng. Chỉ làm được trước khi Bàn giao; xe khách thực sự nhận là xe đang gán cho đơn tại lúc Bàn giao.
+_Avoid_: Gán lại, chuyển xe (sau khi đã giao)
 
 **Bàn giao (Handover)**:
 Biên bản ghi nhận lúc giao xe cho khách (nhận xe) hoặc nhận lại xe từ khách (trả xe): số km, mức nhiên liệu, ảnh giấy tờ, ghi chú. Không phải Sự cố và không mang phí.

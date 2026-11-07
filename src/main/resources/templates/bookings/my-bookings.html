@@ -56,9 +56,9 @@
         </div>
 
         <!-- Empty State -->
-        <div th:if="${bookings.isEmpty()}" class="bg-white rounded-lg border border-border p-12 text-center text-muted-foreground">
+        <div th:if="${bookings.isEmpty()}" class="bg-white rounded-xl border border-border py-16 px-6 text-center text-muted-foreground my-4 shadow-xs">
             <p class="text-base font-semibold text-navy mb-2">Không tìm thấy đơn đặt xe nào ở trạng thái này.</p>
-            <p class="text-sm mb-4">Bắt đầu hành trình mới bằng việc khám phá các dòng xe khả dụng của DriveNow.</p>
+            <p class="text-sm mb-6 max-w-md mx-auto">Bắt đầu hành trình mới bằng việc khám phá các dòng xe khả dụng của DriveNow.</p>
             <a th:href="@{/search}" class="bg-amber hover:bg-amber-dark text-white font-semibold px-6 py-2.5 rounded-md text-sm transition-all text-decoration-none inline-block">
                 Tìm xe ngay
             </a>

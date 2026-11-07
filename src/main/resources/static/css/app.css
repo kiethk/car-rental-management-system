@@ -2094,3 +2094,22 @@ body.sidebar-collapsed .admin-profile-menu {
   justify-content: flex-end;
   gap: 0.625rem;
 }
+
+/* Fallback padding utilities */
+.p-10 { padding: 2.5rem !important; }
+.p-12 { padding: 3rem !important; }
+.p-16 { padding: 4rem !important; }
+.p-20 { padding: 5rem !important; }
+/* Vehicle schedule (vehicles/schedule.html): one row per day, one cell per hour */
+.schedule-scroll { overflow-x: auto; }
+.schedule-grid { border-collapse: separate; border-spacing: 2px; font-size: 11px; min-width: 720px; }
+.schedule-grid th { color: var(--color-muted-foreground); font-weight: 600; text-align: center; padding: 2px; }
+.schedule-grid td { width: 24px; height: 20px; border-radius: 3px; }
+.schedule-day-label { text-align: left !important; white-space: nowrap; padding-right: 8px !important; }
+.schedule-free { background-color: #dcfce7; }
+.schedule-booked { background-color: var(--color-navy); }
+.schedule-buffer { background: repeating-linear-gradient(45deg, var(--color-amber-light), var(--color-amber-light) 3px, #fdba74 3px, #fdba74 6px); }
+.schedule-past { background-color: var(--color-surface-2); }
+.schedule-legend { display: flex; flex-wrap: wrap; gap: 12px; }
+.schedule-legend span { display: inline-flex; align-items: center; gap: 4px; }
+.schedule-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; }

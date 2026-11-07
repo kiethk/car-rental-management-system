@@ -130,6 +130,7 @@ VALUES
 ON CONFLICT (slot_id) DO NOTHING;
 
 -- 9. BOOKINGS
+-- pickup_time and scheduled_end_time are whole hours (minute :00), the same rule the booking form enforces.
 -- status: 'pending_payment' | 'confirmed' | 'active' | 'completed' | 'cancelled'
 INSERT INTO bookings (
     booking_id, customer_id, slot_id, vehicle_id, employee_id, promotion_id,
@@ -142,7 +143,7 @@ VALUES
     -- Booking 1: Completed
     (
         1, 1, 1, 1, 2, 1,
-        CURRENT_TIMESTAMP - INTERVAL '3 days', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days',
+        date_trunc('hour', CURRENT_TIMESTAMP) - INTERVAL '3 days', date_trunc('hour', CURRENT_TIMESTAMP) - INTERVAL '2 days', date_trunc('hour', CURRENT_TIMESTAMP) - INTERVAL '2 days',
         1350000.00,
         'completed', CURRENT_TIMESTAMP - INTERVAL '5 days',
         150000.00, 675000.00, 150000.00
@@ -150,7 +151,7 @@ VALUES
     -- Booking 2: Active rental
     (
         2, 2, 1, 2, 2, NULL,
-        CURRENT_TIMESTAMP - INTERVAL '4 hours', CURRENT_TIMESTAMP + INTERVAL '6 hours', NULL,
+        date_trunc('hour', CURRENT_TIMESTAMP) - INTERVAL '4 hours', date_trunc('hour', CURRENT_TIMESTAMP) + INTERVAL '6 hours', NULL,
         1500000.00,
         'active', CURRENT_TIMESTAMP - INTERVAL '1 day',
         150000.00, 750000.00, 0.00
@@ -158,7 +159,7 @@ VALUES
     -- Booking 3: Confirmed
     (
         3, 1, 3, 3, 2, 2,
-        CURRENT_TIMESTAMP + INTERVAL '1 day', CURRENT_TIMESTAMP + INTERVAL '1 day 10 hours', NULL,
+        date_trunc('hour', CURRENT_TIMESTAMP) + INTERVAL '1 day', date_trunc('hour', CURRENT_TIMESTAMP) + INTERVAL '1 day 10 hours', NULL,
         2900000.00,
         'confirmed', CURRENT_TIMESTAMP - INTERVAL '2 hours',
         300000.00, 1450000.00, 100000.00
@@ -197,7 +198,7 @@ VALUES
      || E'7. Bồi thường thiệt hại khi xe bị hư hỏng hoặc mất mát do lỗi của Bên B, căn cứ biên bản bàn giao và chi phí sửa chữa thực tế.\n'
      || E'8. Trả xe đúng thời hạn, đúng địa điểm, với mức nhiên liệu như khi nhận; tự chi trả phí cầu đường, bến bãi phát sinh.\n'
      || E'\nPhí phát sinh sau quyết toán\n'
-     || E'9. Các khoản phạt vi phạm giao thông (kể cả phạt nguội) hoặc thiệt hại phát sinh trong thời gian thuê nhưng được ghi nhận sau khi đã quyết toán vẫn thuộc trách nhiệm của Bên B. Bên A thông báo qua email kèm chứng từ, và Bên B thanh toán trong vòng 7 ngày kể từ ngày nhận thông báo.\n'
+     || E'9. Các khoản phạt vi phạm giao thông (kể cả phạt nguội) hoặc thiệt hại phát sinh trong thời gian thuê nhưng được ghi nhận sau khi đã quyết toán vẫn thuộc trách nhiệm của Bên B. Bên A thông báo qua email kèm chứng từ.\n'
      || E'\nXe hư hỏng không thể sửa chữa hoặc không thể thu hồi\n'
      || E'10. Áp dụng khi xe bị tổn thất toàn bộ (đơn vị giám định hoặc gara chính hãng kết luận không thể sửa chữa, hoặc chi phí sửa chữa vượt 70% giá trị xe), hoặc khi xe không thể thu hồi (mất cắp, bị chiếm giữ, Bên B không hoàn trả) do lỗi của Bên B. Khi đó Bên B bồi thường:\n'
      || E'a) Giá trị thị trường của xe tại thời điểm xảy ra sự việc, theo định giá của đơn vị thẩm định độc lập, trừ đi số tiền bảo hiểm Bên A thực nhận (nếu có);\n'
