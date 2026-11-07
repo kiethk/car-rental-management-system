@@ -56,6 +56,7 @@ class BookingContractFlowTest {
     @MockitoBean private LicenseDocumentService licenseDocumentService;
     @MockitoBean private ContractTemplateService contractTemplateService;
     @MockitoBean private com.crms.mvc.service.IssueService issueService;
+    @MockitoBean private com.crms.mvc.service.HandoverService handoverService;
 
     private MockHttpSession customerSession;
     private ContractTemplateDTO terms;
@@ -202,6 +203,44 @@ class BookingContractFlowTest {
                 .andExpect(content().string(containsString("Scratch on the bumper")))
                 .andExpect(content().string(containsString("200,000")))
                 .andExpect(content().string(containsString("/bookings/42/issues/7/evidences/3")));
+    }
+
+    @Test
+    void customerSeesTheReturnAndSettlementOfTheirBooking() throws Exception {
+        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        com.crms.mvc.dto.ReturnReceiptDTO receipt = new com.crms.mvc.dto.ReturnReceiptDTO();
+        receipt.setReturnedAt(OffsetDateTime.now());
+        receipt.setOdometer(12500);
+        receipt.setFuelPercent(70);
+        receipt.setRentalTotal(new BigDecimal("1500000"));
+        receipt.setDepositAmount(new BigDecimal("750000"));
+        receipt.setLines(List.of(
+                new com.crms.mvc.dto.ReturnReceiptLineDTO("Late return fee", new BigDecimal("300000"), false),
+                new com.crms.mvc.dto.ReturnReceiptLineDTO("Scratch", new BigDecimal("400000"), true)));
+        receipt.setSettled(true);
+        receipt.setAmountDue(new BigDecimal("1050000"));
+        receipt.setPaymentMethod("BANK_TRANSFER");
+        receipt.setPaidAt(OffsetDateTime.now());
+        when(handoverService.getReturnReceipt(42L)).thenReturn(receipt);
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Return &amp; settlement")))
+                .andExpect(content().string(containsString("12500 km · 70%")))
+                .andExpect(content().string(containsString("Late return fee")))
+                .andExpect(content().string(containsString("Paid earlier")))
+                .andExpect(content().string(containsString("1,050,000")))
+                .andExpect(content().string(containsString("Bank transfer")));
+    }
+
+    @Test
+    void noReturnSectionBeforeTheVehicleIsReturned() throws Exception {
+        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
+        when(handoverService.getReturnReceipt(42L)).thenReturn(null);
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("Return &amp; settlement"))));
     }
 
     @Test

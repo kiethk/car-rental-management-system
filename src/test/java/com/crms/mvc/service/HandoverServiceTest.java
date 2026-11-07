@@ -5,6 +5,7 @@ import com.crms.mvc.dto.CheckOutDTO;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.dto.HandoverSummaryDTO;
 import com.crms.mvc.dto.ReturnChargeDTO;
+import com.crms.mvc.dto.ReturnReceiptDTO;
 import com.crms.mvc.dto.SettlementDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.BookingFee;
@@ -38,6 +39,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -332,6 +334,83 @@ class HandoverServiceTest {
     }
 
     @Test
+    void negativeFinalAmountBlocksSettlement() {
+        Handover record = returnedBooking();
+        booking.setDepositAmount(new BigDecimal("1200000"));
+        SettlementDTO form = new SettlementDTO();
+        form.setPaymentMethod("CASH");
+
+        assertThrows(IllegalStateException.class, () -> handoverService.settle(10L, 2L, form));
+        verify(paymentService, never()).recordFinalPayment(any(), any(), any());
+        verify(paymentService, never()).createPendingRefund(any(), any(), any(), any(), any());
+        assertEquals("active", booking.getStatus());
+        assertFalse(record.isSettled());
+    }
+
+    @Test
+    void noReturnReceiptBeforeTheVehicleIsReturned() {
+        when(handoverRepository.findByBookingIdAndType(10L, HandoverType.CHECK_OUT)).thenReturn(Optional.empty());
+
+        assertNull(handoverService.getReturnReceipt(10L));
+    }
+
+    @Test
+    void returnReceiptBeforeSettlementShowsWhatIsStillOwed() {
+        returnedBooking();
+        booking.setActualReturnTime(OffsetDateTime.now());
+        BookingFee late = fee("150000");
+        late.setDescription("Late return fee");
+        BookingFee prepaid = fee("500000");
+        prepaid.setDescription("Scratch");
+        prepaid.setPayment(payment(Payment.TYPE_ISSUE_COMPENSATION, Payment.STATUS_PAID, "500000", "VNPAY"));
+        when(bookingFeeService.getFeesByBooking(10L)).thenReturn(List.of(late, prepaid));
+        when(bookingFeeService.getUnpaidFees(10L)).thenReturn(List.of(late));
+
+        ReturnReceiptDTO receipt = handoverService.getReturnReceipt(10L);
+
+        assertFalse(receipt.isSettled());
+        assertEquals(1300, receipt.getOdometer());
+        assertEquals(60, receipt.getFuelPercent());
+        assertEquals(2, receipt.getLines().size());
+        assertFalse(receipt.getLines().get(0).isPaidEarlier());
+        assertTrue(receipt.getLines().get(1).isPaidEarlier());
+        assertEquals(new BigDecimal("850000"), receipt.getAmountDue());
+    }
+
+    @Test
+    void returnReceiptAfterSettlementShowsTheFinalPayment() {
+        Handover record = returnedBooking();
+        record.setSettledAt(OffsetDateTime.now());
+        BookingFee late = fee("150000");
+        Payment finalPayment = payment(Payment.TYPE_FINAL, Payment.STATUS_PAID, "850000", "CASH");
+        late.setPayment(finalPayment);
+        when(bookingFeeService.getFeesByBooking(10L)).thenReturn(List.of(late));
+        when(paymentService.getPaymentsByBooking(10L)).thenReturn(List.of(
+                payment(Payment.TYPE_DEPOSIT, Payment.STATUS_PAID, "300000", "VNPAY"), finalPayment));
+
+        ReturnReceiptDTO receipt = handoverService.getReturnReceipt(10L);
+
+        assertTrue(receipt.isSettled());
+        assertFalse(receipt.getLines().get(0).isPaidEarlier());
+        assertEquals(new BigDecimal("850000"), receipt.getAmountDue());
+        assertEquals("Cash", receipt.getPaymentMethodLabel());
+        assertNotNull(receipt.getPaidAt());
+    }
+
+    @Test
+    void settledReceiptWithNoFinalPaymentHasNothingToPay() {
+        Handover record = returnedBooking();
+        record.setSettledAt(OffsetDateTime.now());
+        when(bookingFeeService.getFeesByBooking(10L)).thenReturn(List.of());
+        when(paymentService.getPaymentsByBooking(10L)).thenReturn(List.of());
+
+        ReturnReceiptDTO receipt = handoverService.getReturnReceipt(10L);
+
+        assertTrue(receipt.isNothingToPay());
+        assertNull(receipt.getPaymentMethod());
+    }
+
+    @Test
     void lockedEmployeeCannotBeAssigned() {
         Employee locked = employee(4L, "staff");
         locked.setActive(false);
@@ -364,6 +443,16 @@ class HandoverServiceTest {
         BookingFee fee = new BookingFee();
         fee.setAmount(new BigDecimal(amount));
         return fee;
+    }
+
+    private Payment payment(String type, String status, String amount, String method) {
+        Payment payment = new Payment();
+        payment.setPaymentType(type);
+        payment.setStatus(status);
+        payment.setAmount(new BigDecimal(amount));
+        payment.setPaymentMethod(method);
+        payment.setPaidAt(OffsetDateTime.now());
+        return payment;
     }
 
     private Employee employee(Long id, String role) {

@@ -6,6 +6,8 @@ import com.crms.mvc.dto.HandoverRecordDTO;
 import com.crms.mvc.dto.HandoverSummaryDTO;
 import com.crms.mvc.dto.SettlementDTO;
 import com.crms.mvc.dto.ReturnChargeDTO;
+import com.crms.mvc.dto.ReturnReceiptDTO;
+import com.crms.mvc.dto.ReturnReceiptLineDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Employee;
@@ -39,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -187,6 +190,10 @@ public class HandoverServiceImpl implements HandoverService {
         // full rent and there are no fees.
         List<BookingFee> unpaid = bookingFeeService.getUnpaidFees(bookingId);
         BigDecimal finalAmount = finalAmount(booking, unpaid);
+        if (finalAmount.signum() < 0) {
+            throw new IllegalStateException("The deposit is larger than the rental total and fees. "
+                    + "Check the booking amounts before settling.");
+        }
         if (finalAmount.signum() > 0) {
             if (form.getPaymentMethod() == null || !PAYMENT_METHODS.contains(form.getPaymentMethod())) {
                 throw new IllegalArgumentException("Vui lòng chọn tiền mặt hoặc chuyển khoản");
@@ -254,6 +261,47 @@ public class HandoverServiceImpl implements HandoverService {
 
     @Override
     @Transactional(readOnly = true)
+    public ReturnReceiptDTO getReturnReceipt(Long bookingId) {
+        Optional<Handover> returnRecord = handoverRepository.findByBookingIdAndType(bookingId, HandoverType.CHECK_OUT);
+        if (returnRecord.isEmpty()) {
+            return null;
+        }
+        Booking booking = findBooking(bookingId);
+        Handover record = returnRecord.get();
+
+        ReturnReceiptDTO receipt = new ReturnReceiptDTO();
+        OffsetDateTime returnedAt = booking.getActualReturnTime() != null
+                ? booking.getActualReturnTime() : record.getRecordedAt();
+        receipt.setReturnedAt(DateTimeUtils.toVietnamTime(returnedAt));
+        receipt.setOdometer(record.getOdometer());
+        receipt.setFuelPercent(record.getFuelPercent());
+        receipt.setNotes(record.getNotes());
+        receipt.setRentalTotal(booking.getTotalPrice());
+        receipt.setDepositAmount(booking.getDepositAmount());
+        for (BookingFee fee : bookingFeeService.getFeesByBooking(bookingId)) {
+            String description = hasText(fee.getDescription()) ? fee.getDescription() : fee.getFeeType();
+            receipt.getLines().add(new ReturnReceiptLineDTO(description, fee.getAmount(), isPaidEarlier(fee)));
+        }
+
+        receipt.setSettled(record.isSettled());
+        if (record.isSettled()) {
+            Optional<Payment> finalPayment = paymentService.getPaymentsByBooking(bookingId).stream()
+                    .filter(p -> Payment.TYPE_FINAL.equals(p.getPaymentType())
+                            && Payment.STATUS_PAID.equalsIgnoreCase(p.getStatus()))
+                    .findFirst();
+            receipt.setAmountDue(finalPayment.map(Payment::getAmount).orElse(BigDecimal.ZERO));
+            finalPayment.ifPresent(p -> {
+                receipt.setPaymentMethod(p.getPaymentMethod());
+                receipt.setPaidAt(DateTimeUtils.toVietnamTime(p.getPaidAt()));
+            });
+        } else {
+            receipt.setAmountDue(finalAmount(booking, bookingFeeService.getUnpaidFees(bookingId)).max(BigDecimal.ZERO));
+        }
+        return receipt;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Resource loadEvidence(Long bookingId, Long handoverId, boolean secondary) {
         Handover handover = handoverRepository.findByIdAndBookingId(handoverId, bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy biên bản: " + handoverId));
@@ -304,6 +352,13 @@ public class HandoverServiceImpl implements HandoverService {
         return booking.getTotalPrice()
                 .add(sum(unpaid))
                 .subtract(booking.getDepositAmount());
+    }
+
+    private boolean isPaidEarlier(BookingFee fee) {
+        Payment payment = fee.getPayment();
+        return payment != null
+                && Payment.STATUS_PAID.equalsIgnoreCase(payment.getStatus())
+                && !Payment.TYPE_FINAL.equals(payment.getPaymentType());
     }
 
     private BigDecimal sum(List<BookingFee> fees) {

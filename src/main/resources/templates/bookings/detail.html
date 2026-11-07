@@ -130,6 +130,51 @@
                     </div>
                 </div>
 
+                <div class="surface-card" th:if="${returnReceipt != null}" id="returnReceipt">
+                    <h2 class="card-title">Return &amp; settlement</h2>
+                    <div class="cost-row">
+                        <span>Returned at</span>
+                        <strong th:text="${#temporals.format(returnReceipt.returnedAt, 'HH:mm dd/MM/yyyy')}">18:30 24/10/2026</strong>
+                    </div>
+                    <div class="cost-row">
+                        <span>Odometer · fuel</span>
+                        <strong th:text="${returnReceipt.odometer + ' km · ' + returnReceipt.fuelPercent + '%'}">12,500 km · 80%</strong>
+                    </div>
+                    <div class="cost-row" th:if="${returnReceipt.notes != null}">
+                        <span>Staff notes</span>
+                        <span th:text="${returnReceipt.notes}">Clean, no new damage</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>Rental total</span>
+                        <span><span th:text="${#numbers.formatDecimal(returnReceipt.rentalTotal, 0, 'COMMA', 0, 'POINT')}">1,500,000</span> đ</span>
+                    </div>
+                    <div class="cost-row" th:each="line : ${returnReceipt.lines}">
+                        <span>
+                            <span th:text="${line.description}">Late return fee</span>
+                            <em th:if="${line.paidEarlier}" style="color: #059669; font-size: 12px;"> · Paid earlier</em>
+                        </span>
+                        <span th:style="${line.paidEarlier ? 'text-decoration: line-through; color: #94a3b8;' : ''}">
+                            <span th:text="${#numbers.formatDecimal(line.amount, 0, 'COMMA', 0, 'POINT')}">300,000</span> đ
+                        </span>
+                    </div>
+                    <div class="cost-row">
+                        <span>Deposit paid</span>
+                        <span>-<span th:text="${#numbers.formatDecimal(returnReceipt.depositAmount, 0, 'COMMA', 0, 'POINT')}">750,000</span> đ</span>
+                    </div>
+                    <div class="cost-total-row">
+                        <span class="cost-total-label" th:text="${returnReceipt.settled ? 'Paid at settlement' : 'To pay at the station'}">Paid at settlement</span>
+                        <span class="cost-total-val" th:if="${!returnReceipt.nothingToPay}">
+                            <span th:text="${#numbers.formatDecimal(returnReceipt.amountDue, 0, 'COMMA', 0, 'POINT')}">1,050,000</span> đ
+                        </span>
+                        <span class="cost-total-val" th:if="${returnReceipt.nothingToPay}">Nothing to pay</span>
+                    </div>
+                    <p class="issue-section-hint" th:if="${returnReceipt.settled and returnReceipt.paymentMethod != null}"
+                       th:text="${returnReceipt.paymentMethodLabel + ' · ' + #temporals.format(returnReceipt.paidAt, 'HH:mm dd/MM/yyyy')}">Cash · 18:40 24/10/2026</p>
+                    <p class="issue-section-hint" th:unless="${returnReceipt.settled}">
+                        Settlement is completed by staff at the station. Fees marked "Paid earlier" are not charged again.
+                    </p>
+                </div>
+
                 <!-- Fees of issues found after the booking was settled: the customer pays them here -->
                 <div class="surface-card" th:if="${payableIssues != null and !payableIssues.isEmpty()}">
                     <h2 class="card-title">Phí sự cố chưa thanh toán</h2>
