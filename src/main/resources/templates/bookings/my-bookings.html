@@ -81,6 +81,10 @@
                                     <h3 class="font-bold text-navy text-base" th:text="${b.vehicleTypeName}">Toyota Vios</h3>
                                     <!-- Status Pill -->
                                     <div th:replace="~{fragments/status-badge :: booking(status=${b.status})}"></div>
+                                    <span th:if="${b.overdueMinutes != null}"
+                                          class="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                                          style="background: #fee2e2; color: #b91c1c;"
+                                          th:text="'Quá hạn ' + ${b.overdueText}">Quá hạn 2 giờ</span>
                                 </div>
 
                                 <div class="text-xs text-muted-foreground">

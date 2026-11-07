@@ -32,7 +32,7 @@ class BookingPickedPlateTest {
                 bookingRepository, customerRepository, mock(SlotRepository.class), vehicleTypeRepository,
                 vehicleRepository, mock(EmployeeRepository.class), mock(PromotionRepository.class),
                 mock(PaymentService.class), mock(ContractService.class), contractTemplateService,
-                mock(BookingFeeService.class), mock(PricingService.class));
+                mock(BookingFeeService.class), mock(PricingService.class), mock(CompensationVoucherService.class));
 
         when(customerRepository.findById(1L)).thenReturn(Optional.of(new Customer()));
         VehicleType type = new VehicleType();
@@ -49,7 +49,7 @@ class BookingPickedPlateTest {
         when(vehicleRepository.findByVehicleTypeIdWithDetails(3L)).thenReturn(List.of(stillFree));
 
         BookingCreateDTO dto = new BookingCreateDTO();
-        LocalDateTime start = LocalDateTime.now().plusDays(2).truncatedTo(ChronoUnit.HOURS);
+        LocalDateTime start = LocalDateTime.now().plusDays(2).truncatedTo(ChronoUnit.HOURS).withHour(9);
         dto.setStartTime(start);
         dto.setEndTime(start.plusHours(5));
         dto.setVehicleTypeId(3L);

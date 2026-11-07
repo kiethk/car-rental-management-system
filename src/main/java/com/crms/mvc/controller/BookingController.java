@@ -473,7 +473,7 @@ public class BookingController {
             // Same rule as BookingService.cancelBooking: the terms the customer accepted, never the ACTIVE version.
             ContractTemplateDTO acceptedTerms = detail.getContract() != null ? detail.getContract().getTerms() : null;
             OffsetDateTime cancelDeadline = acceptedTerms != null && detail.getPickupTime() != null
-                    ? acceptedTerms.freeCancellationDeadline(detail.getPickupTime())
+                    ? acceptedTerms.freeCancellationUntil(detail.getPickupTime(), detail.getDepositPaidAt())
                     : null;
             boolean refundEligible = "confirmed".equalsIgnoreCase(detail.getStatus()) && cancelDeadline != null
                     && !OffsetDateTime.now().isAfter(cancelDeadline);

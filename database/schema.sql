@@ -163,6 +163,10 @@ CREATE TABLE contract_templates (
     deposit_rate NUMERIC(5,4) NOT NULL,
     late_fee_multiplier NUMERIC(5,2) NOT NULL,
     free_cancellation_hours INTEGER NOT NULL,
+    free_cancel_after_deposit_hours INTEGER NOT NULL DEFAULT 1,
+    pickup_wait_hours INTEGER NOT NULL DEFAULT 2,
+    compensation_voucher_percent INTEGER NOT NULL DEFAULT 10,
+    compensation_voucher_days INTEGER NOT NULL DEFAULT 90,
     status VARCHAR(20) NOT NULL,
     created_by BIGINT REFERENCES employees(employee_id),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -170,7 +174,11 @@ CREATE TABLE contract_templates (
     CHECK (status IN ('DRAFT','ACTIVE','ARCHIVED')),
     CHECK (deposit_rate > 0 AND deposit_rate <= 1),
     CHECK (late_fee_multiplier >= 1),
-    CHECK (free_cancellation_hours >= 0)
+    CHECK (free_cancellation_hours >= 0),
+    CHECK (free_cancel_after_deposit_hours >= 0),
+    CHECK (pickup_wait_hours >= 1),
+    CHECK (compensation_voucher_percent BETWEEN 0 AND 100),
+    CHECK (compensation_voucher_days >= 1)
 );
 
 -- Contract validity follows bookings.status; this table only stores the acceptance evidence and the PDF.

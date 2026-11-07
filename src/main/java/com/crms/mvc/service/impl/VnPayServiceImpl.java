@@ -401,6 +401,27 @@ public class VnPayServiceImpl implements PaymentService {
     }
 
     @Override
+    @Transactional
+    public Payment recordCounterRefund(Long bookingId, BigDecimal amount, String paymentMethod) {
+        if (!"CASH".equals(paymentMethod) && !Payment.METHOD_BANK_TRANSFER.equals(paymentMethod)) {
+            throw new IllegalArgumentException("Hình thức hoàn tiền phải là tiền mặt hoặc chuyển khoản");
+        }
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy đơn thuê: " + bookingId));
+        Payment refund = new Payment();
+        refund.setBooking(booking);
+        refund.setPaymentType(Payment.TYPE_REFUND);
+        refund.setAmount(amount);
+        refund.setPaymentMethod(paymentMethod);
+        refund.setStatus(Payment.STATUS_PAID);
+        refund.setTransactionCode("REFUND-" + bookingId + "-" + System.currentTimeMillis());
+        refund.setPaidAt(OffsetDateTime.now());
+        Payment saved = paymentRepository.save(refund);
+        eventPublisher.publishEvent(new RefundCompletedEvent(bookingId, saved.getId()));
+        return saved;
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Optional<Payment> getPendingRefund(Long bookingId) {
         return paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(bookingId, Payment.TYPE_REFUND, Payment.STATUS_PENDING);

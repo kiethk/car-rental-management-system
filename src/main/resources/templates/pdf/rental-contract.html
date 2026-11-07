@@ -128,7 +128,7 @@
         </td>
     </tr>
     <tr>
-        <td class="label">Biển số</td>
+        <td class="label" th:text="${doc.licensePlate != null ? 'Biển số (dự kiến)' : 'Biển số'}">Biển số (dự kiến)</td>
         <td th:text="${doc.licensePlate != null ? doc.licensePlate : 'Được xác định và ghi trong biên bản bàn giao khi nhận xe'}">51A-123.45</td>
     </tr>
     <tr th:if="${doc.vehicleColor != null}">
@@ -136,7 +136,7 @@
         <td th:text="${doc.vehicleColor} + ' / ' + ${doc.vehicleYear}">Trắng / 2024</td>
     </tr>
 </table>
-<p>Tình trạng xe, số km và mức nhiên liệu được ghi nhận trong biên bản bàn giao do hai bên xác nhận khi giao và nhận lại xe.</p>
+<p>Xe thực tế giao cho Bên B là xe ghi trong biên bản bàn giao. Nếu xe dự kiến chưa sẵn sàng khi đến giờ nhận, Bên A đổi xe theo điều khoản đổi xe khi bàn giao. Tình trạng xe, số km và mức nhiên liệu được ghi nhận trong biên bản bàn giao do hai bên xác nhận khi giao và nhận lại xe.</p>
 </div>
 
 <div class="keep-together">
@@ -193,6 +193,21 @@
 <p data-policy="cancellation" th:text="'1. Bên B hủy đặt xe trước thời điểm nhận xe ít nhất ' + ${doc.terms.freeCancellationHours}
             + ' giờ được hoàn lại 100% tiền đặt cọc. Hủy sau mốc này, tiền đặt cọc không được hoàn lại.'">
     1. Hủy trước 72 giờ được hoàn 100% tiền cọc.
+</p>
+<p data-policy="cancelAfterDeposit" th:if="${doc.terms.freeCancelAfterDepositHours != null and doc.terms.freeCancelAfterDepositHours > 0}"
+   th:text="'Ngoài ra, Bên B hủy đặt xe trong vòng ' + ${doc.terms.freeCancelAfterDepositHours}
+            + ' giờ kể từ khi thanh toán tiền đặt cọc và trước thời điểm nhận xe cũng được hoàn lại 100% tiền đặt cọc.'">
+    Hủy trong 1 giờ sau khi cọc được hoàn 100% tiền cọc.
+</p>
+<p data-policy="pickupWait" th:if="${doc.terms.pickupWaitHours != null}"
+   th:text="'Bên B không nhận xe trong vòng ' + ${doc.terms.pickupWaitHours}
+            + ' giờ kể từ thời điểm nhận xe tại Điều 2 (và không quá thời điểm trả xe) thì việc đặt xe tự hủy, tiền đặt cọc không được hoàn lại.'">
+    Không nhận xe trong 2 giờ thì đơn tự hủy, không hoàn cọc.
+</p>
+<p data-policy="compensationVoucher" th:if="${doc.terms.compensationVoucherPercent != null}"
+   th:text="'Trường hợp Bên A không còn xe cùng loại để giao, việc đặt xe được hủy, Bên B được hoàn 100% tiền đặt cọc và nhận voucher giảm '
+            + ${doc.terms.compensationVoucherPercent} + '% tiền thuê cho lần thuê sau, dùng 1 lần trong ' + ${doc.terms.compensationVoucherDays} + ' ngày.'">
+    Hết xe cùng loại: hoàn 100% cọc và tặng voucher giảm 10% trong 90 ngày.
 </p>
 <p data-policy="lateReturn" th:text="'2. Bên B trả xe sau thời điểm trả xe tại Điều 2 phải trả phí trễ hạn bằng ' + ${doc.terms.lateFeePercent}
             + '% đơn giá thuê cho mỗi giờ trễ, trừ trường hợp được Bên A đồng ý gia hạn trước.'">

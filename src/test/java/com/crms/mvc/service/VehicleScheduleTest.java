@@ -36,7 +36,7 @@ class VehicleScheduleTest {
                 bookingRepository, mock(CustomerRepository.class), mock(SlotRepository.class),
                 mock(VehicleTypeRepository.class), vehicleRepository, mock(EmployeeRepository.class),
                 mock(PromotionRepository.class), mock(PaymentService.class), mock(ContractService.class),
-                mock(ContractTemplateService.class), mock(BookingFeeService.class), mock(PricingService.class));
+                mock(ContractTemplateService.class), mock(BookingFeeService.class), mock(PricingService.class), mock(CompensationVoucherService.class));
 
         VehicleType type = new VehicleType();
         type.setId(1L);

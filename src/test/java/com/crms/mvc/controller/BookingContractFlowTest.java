@@ -352,6 +352,20 @@ class BookingContractFlowTest {
     }
 
     @Test
+    void anOverdueRentalShowsHowLateItIsAndTheLateFeeSoFar() throws Exception {
+        BookingDetailDTO booking = bookingWithContract("active", true);
+        booking.setLateReturn(new com.crms.mvc.dto.LateReturnDTO(135, 2, new BigDecimal("400000"),
+                OffsetDateTime.of(2026, 11, 7, 17, 0, 0, 0, ZoneOffset.ofHours(7))));
+        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(booking);
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Đã quá giờ trả xe <span>2 giờ 15 phút</span>")))
+                .andExpect(content().string(containsString("400,000 đ")))
+                .andExpect(content().string(containsString("17:00 07/11/2026")));
+    }
+
+    @Test
     void refundEligibilityFollowsTheAcceptedTermsNotTheActiveVersion() throws Exception {
         // Accepted 24h; the ACTIVE version (setUp) says 48h. Pickup is 30h away: free under the accepted terms only.
         ContractTemplateDTO accepted = new ContractTemplateDTO();
@@ -366,7 +380,7 @@ class BookingContractFlowTest {
 
         mvc.perform(get("/bookings/42").session(customerSession))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Bạn đang hủy trước thời hạn quy định")));
+                .andExpect(content().string(containsString("Bạn còn được hủy miễn phí đến")));
     }
 
     @Test

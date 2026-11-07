@@ -8,7 +8,7 @@
                 th:action="@{/search}"
                 th:id="${formId != null ? formId : 'rental-schedule-form'}"
                 class="card-shadcn overflow-visible"
-                th:attr="data-server-error=${scheduleError}"
+                th:attr="data-server-error=${scheduleError},data-open-hour=${openingHours != null ? openingHours.open : 6},data-close-hour=${openingHours != null ? openingHours.close : 22}"
             >
                 <!-- Preserved filters on search page -->
                 <input
@@ -86,7 +86,7 @@
                                                 <line x1="3" y1="10" x2="21" y2="10" />
                                             </svg>
                                             <span id="pickup-date-display" class="font-medium text-slate-800 truncate"
-                                                >22 Th10, 2026</span
+                                                >Thứ 5, 22/10/2026</span
                                             >
                                         </div>
                                         <svg
@@ -273,7 +273,7 @@
                                                 <line x1="3" y1="10" x2="21" y2="10" />
                                             </svg>
                                             <span id="return-date-display" class="font-medium text-slate-800 truncate"
-                                                >22 Th10, 2026</span
+                                                >Thứ 5, 22/10/2026</span
                                             >
                                         </div>
                                         <svg
@@ -461,7 +461,7 @@
                         </div>
                         <div>
                             <span class="font-bold text-slate-900 text-sm block" id="rental-itinerary"
-                                >Thứ 5, 22 Th10 09:00 → Thứ 5, 22 Th10 18:00 (9 giờ)</span
+                                >Thứ 5, 22/10/2026 09:00 → Thứ 5, 22/10/2026 18:00 (9 giờ)</span
                             >
                         </div>
                     </div>
@@ -536,41 +536,14 @@
                             "Tháng 11",
                             "Tháng 12",
                         ];
-                        const shortMonthNames = [
-                            "Th01",
-                            "Th02",
-                            "Th03",
-                            "Th04",
-                            "Th05",
-                            "Th06",
-                            "Th07",
-                            "Th08",
-                            "Th09",
-                            "Th10",
-                            "Th11",
-                            "Th12",
-                        ];
                         const dayNames = ["CN", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
 
-                        const hoursList = [
-                            "06:00",
-                            "07:00",
-                            "08:00",
-                            "09:00",
-                            "10:00",
-                            "11:00",
-                            "12:00",
-                            "13:00",
-                            "14:00",
-                            "15:00",
-                            "16:00",
-                            "17:00",
-                            "18:00",
-                            "19:00",
-                            "20:00",
-                            "21:00",
-                            "22:00",
-                        ];
+                        // Depot opening hours from crms.opening-hours.* (pickup and return both inside, whole hours).
+                        const hoursHost = document.querySelector("[data-open-hour]");
+                        const OPEN_HOUR = parseInt((hoursHost && hoursHost.getAttribute("data-open-hour")) || "6", 10);
+                        const CLOSE_HOUR = parseInt((hoursHost && hoursHost.getAttribute("data-close-hour")) || "22", 10);
+                        const hoursList = [];
+                        for (let h = OPEN_HOUR; h <= CLOSE_HOUR; h++) hoursList.push(String(h).padStart(2, "0") + ":00");
 
                         function toLocalDateString(d) {
                             const year = d.getFullYear();
@@ -581,7 +554,7 @@
 
                         function getMinAllowedPickupDateStr() {
                             const now = new Date();
-                            if (now.getHours() >= 22) {
+                            if (now.getHours() >= CLOSE_HOUR) {
                                 const tmr = new Date(now);
                                 tmr.setDate(tmr.getDate() + 1);
                                 return toLocalDateString(tmr);
@@ -600,18 +573,22 @@
                             return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
                         }
 
-                        function formatDisplayDate(dateStr) {
-                            if (!dateStr) return "";
-                            const d = parseDate(dateStr);
+                        // "Thứ 7, 07/11/2026": weekday first, then day/month/year as numbers.
+                        function formatNumericDate(d) {
                             return (
                                 dayNames[d.getDay()] +
                                 ", " +
-                                d.getDate() +
-                                " " +
-                                shortMonthNames[d.getMonth()] +
-                                " " +
+                                String(d.getDate()).padStart(2, "0") +
+                                "/" +
+                                String(d.getMonth() + 1).padStart(2, "0") +
+                                "/" +
                                 d.getFullYear()
                             );
+                        }
+
+                        function formatDisplayDate(dateStr) {
+                            if (!dateStr) return "";
+                            return formatNumericDate(parseDate(dateStr));
                         }
 
                         function formatHourDisplay(timeStr) {
@@ -959,22 +936,8 @@
                                     parseInt(eParts[1], 10) - 1,
                                     parseInt(eParts[2], 10),
                                 );
-                                const sTxt =
-                                    dayNames[sD.getDay()] +
-                                    ", " +
-                                    sD.getDate() +
-                                    " " +
-                                    shortMonthNames[sD.getMonth()] +
-                                    " " +
-                                    sTime;
-                                const eTxt =
-                                    dayNames[eD.getDay()] +
-                                    ", " +
-                                    eD.getDate() +
-                                    " " +
-                                    shortMonthNames[eD.getMonth()] +
-                                    " " +
-                                    eTime;
+                                const sTxt = formatNumericDate(sD) + " " + sTime;
+                                const eTxt = formatNumericDate(eD) + " " + eTime;
                                 itineraryText.textContent = sTxt + " → " + eTxt + " (" + totalHours + " giờ)";
                             }
 
@@ -1063,14 +1026,14 @@
                         // Preset Buttons inside Pickup Calendar Popover
                         document.querySelectorAll(".pickup-preset-btn").forEach((btn) => {
                             const addDays = parseInt(btn.getAttribute("data-days"), 10);
-                            if (addDays === 0 && new Date().getHours() >= 22) {
+                            if (addDays === 0 && new Date().getHours() >= CLOSE_HOUR) {
                                 btn.classList.add("disabled");
                                 btn.style.opacity = "0.35";
                                 btn.style.pointerEvents = "none";
                                 btn.style.cursor = "not-allowed";
                             }
                             btn.addEventListener("click", function (e) {
-                                if (addDays === 0 && new Date().getHours() >= 22) return;
+                                if (addDays === 0 && new Date().getHours() >= CLOSE_HOUR) return;
                                 e.stopPropagation();
                                 const d = new Date();
                                 d.setDate(d.getDate() + addDays);

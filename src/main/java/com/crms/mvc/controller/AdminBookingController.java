@@ -65,6 +65,7 @@ public class AdminBookingController {
 
         long pendingRefundCount = paymentService.countPendingRefunds();
         model.addAttribute("pendingRefundCount", pendingRefundCount);
+        model.addAttribute("overdueRentalCount", bookingService.countOverdueRentals());
 
         List<BookingSummaryDTO> list = bookingService.getAllBookings(status);
         model.addAttribute("bookings", list);
@@ -88,6 +89,7 @@ public class AdminBookingController {
 
             model.addAttribute("booking", detail);
             model.addAttribute("availableVehicles", availableVehicles);
+            model.addAttribute("overdueRentalCount", bookingService.countOverdueRentals());
             // Start both forms at the last reading the system has; staff only change it if the dashboard differs.
             CheckInDTO checkInForm = new CheckInDTO();
             checkInForm.setOdometer(detail.getVehicleOdometer());
@@ -157,6 +159,23 @@ public class AdminBookingController {
             ra.addFlashAttribute("success", "Đã gán xe cho đơn thuê.");
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Không đổi được xe: " + e.getMessage());
+        }
+        return "redirect:/admin/bookings/" + bookingId;
+    }
+
+    /** No car of the booked type is free: cancel and hand back the whole deposit at the counter. */
+    @PostMapping("/{id}/cancel-no-car")
+    public String cancelForUnavailableCar(@PathVariable("id") Long bookingId,
+                                          @RequestParam("refundMethod") String refundMethod,
+                                          HttpSession session, RedirectAttributes ra) {
+        Long employeeId = CurrentAccount.employeeId(session).orElse(null);
+        if (employeeId == null) return "redirect:/login";
+
+        try {
+            bookingService.cancelForUnavailableCar(bookingId, refundMethod);
+            ra.addFlashAttribute("success", "Đã huỷ đơn, hoàn 100% tiền cọc tại quầy và gửi khách voucher bù cho lần thuê sau.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Không huỷ được đơn: " + e.getMessage());
         }
         return "redirect:/admin/bookings/" + bookingId;
     }

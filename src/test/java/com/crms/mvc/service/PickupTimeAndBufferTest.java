@@ -209,7 +209,7 @@ class PickupTimeAndBufferTest {
                 bookingRepository, mock(CustomerRepository.class), mock(SlotRepository.class),
                 mock(VehicleTypeRepository.class), vehicleRepository, employeeRepository,
                 mock(PromotionRepository.class), paymentService, contractService,
-                mock(ContractTemplateService.class), bookingFeeService, pricingService);
+                mock(ContractTemplateService.class), bookingFeeService, pricingService, mock(CompensationVoucherService.class));
 
         Vehicle car = new Vehicle();
         car.setId(100L);

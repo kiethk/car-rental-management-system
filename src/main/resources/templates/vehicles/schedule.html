@@ -11,12 +11,51 @@
     <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
     <link rel="stylesheet" th:href="@{/css/drivenow.css}">
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <style>
+        .sch-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 1.25rem; box-shadow: 0 10px 30px -18px rgba(15, 23, 42, .25); }
+        .sch-plate { display: inline-block; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 700; letter-spacing: .02em;
+            padding: .2rem .6rem; border: 1.5px solid #0f172a; border-radius: .45rem; background: #fff; color: #0f172a; }
+        .sch-chip { display: inline-flex; align-items: center; gap: .4rem; padding: .3rem .65rem; border-radius: 999px;
+            background: #f8fafc; border: 1px solid #e2e8f0; font-size: 12px; color: #475569; white-space: nowrap; }
+        .sch-swatch { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+
+        .sch-free { background: #dcfce7; }
+        .sch-free.sch-closed { background: #f0fdf4; }
+        .sch-booked { background: #1e293b; }
+        .sch-buffer { background: repeating-linear-gradient(135deg, #fed7aa 0 4px, #fdba74 4px 8px); }
+        .sch-past { background: repeating-linear-gradient(135deg, #f1f5f9 0 4px, #e2e8f0 4px 8px); }
+        .sch-selected { background: #f97316 !important; box-shadow: inset 0 0 0 2px #c2410c; }
+
+        .sch-toolbar { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
+        .sch-week-btn { width: 2.25rem; height: 2.25rem; border-radius: 50%; border: 1px solid #e2e8f0; background: #fff; color: #0f172a;
+            font-size: 1.1rem; line-height: 1; transition: background-color .2s, box-shadow .2s, opacity .2s; }
+        .sch-week-btn:hover:not(:disabled) { background: #f1f5f9; box-shadow: 0 2px 8px rgba(15, 23, 42, .12); }
+        .sch-week-btn:disabled { opacity: .35; cursor: default; }
+
+        .sch-scroll { overflow-x: auto; padding-bottom: .25rem; }
+        .sch-grid { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 3px; table-layout: fixed; }
+        .sch-grid th { font-size: 11px; font-weight: 600; color: #64748b; text-align: center; padding: 0 0 .25rem; }
+        .sch-grid th.sch-closed-label { color: #cbd5e1; }
+        .sch-grid .sch-day { width: 84px; text-align: left; padding-right: .5rem; white-space: nowrap; }
+        .sch-day-name { display: block; font-size: 12px; font-weight: 700; color: #0f172a; line-height: 1.1; }
+        .sch-day-date { display: block; font-size: 11px; color: #64748b; font-weight: 500; }
+        .sch-today .sch-day-name::after { content: "Hôm nay"; margin-left: .35rem; font-size: 10px; font-weight: 600; color: #ea580c; }
+        .sch-grid td.sch-cell { height: 30px; border-radius: 6px; transition: transform .12s ease, box-shadow .12s ease; }
+        .sch-grid td.sch-free { cursor: pointer; }
+        .sch-grid td.sch-free:hover { transform: scale(1.08); box-shadow: 0 0 0 2px #16a34a; }
+        .sch-week[hidden] { display: none; }
+
+        .sch-hint { font-size: 13px; color: #64748b; }
+        .sch-message { font-size: 13px; color: #b91c1c; min-height: 1.2em; }
+        .sch-summary { font-weight: 700; color: #0f172a; }
+    </style>
 </head>
 <body class="d-flex flex-column min-vh-100 bg-surface">
 
 <div th:replace="~{fragments/header :: header}"></div>
 
-<main class="crms-container py-8 flex-grow-1">
+<main class="crms-container py-8 flex-grow-1"
+      th:with="dayNames=${ {'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'} }">
 
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb bg-transparent p-0 mb-0">
@@ -27,71 +66,227 @@
         </ol>
     </nav>
 
-    <div class="card border-0 shadow-sm rounded-2xl p-4 bg-white mb-4">
-        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+    <section class="sch-card p-4 p-md-5 mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
             <div>
-                <h1 class="h5 font-weight-bold text-navy mb-1">
-                    Lịch xe <span class="font-mono" th:text="${schedule.licensePlate}">51A-123.45</span>
-                </h1>
-                <p class="text-muted small mb-0">
-                    <span th:text="${schedule.vehicleTypeName}">Toyota Vios</span> · 30 ngày tới. Mỗi ô là một giờ.
-                    Hai lượt thuê luôn cách nhau ít nhất 1 giờ để kho nhận lại và chuẩn bị xe.
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <h1 class="h4 font-weight-bold text-navy mb-0">Lịch xe</h1>
+                    <span class="sch-plate" th:text="${schedule.licensePlate}">51A-123.45</span>
+                </div>
+                <p class="sch-hint mb-0">
+                    <span th:text="${schedule.vehicleTypeName}">Toyota Vios</span> · 30 ngày tới, mỗi ô là một giờ.
+                    Hai lượt thuê luôn cách nhau ít nhất 1 giờ để kho chuẩn bị xe.
                 </p>
             </div>
-            <div class="schedule-legend small text-muted">
-                <span><i class="schedule-swatch schedule-free"></i> Trống</span>
-                <span><i class="schedule-swatch schedule-booked"></i> Đã có người thuê</span>
-                <span><i class="schedule-swatch schedule-buffer"></i> Đệm 1 giờ</span>
-                <span><i class="schedule-swatch schedule-past"></i> Đã qua</span>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="sch-chip"><i class="sch-swatch sch-free"></i>Trống</span>
+                <span class="sch-chip"><i class="sch-swatch sch-booked"></i>Đã có người thuê</span>
+                <span class="sch-chip"><i class="sch-swatch sch-buffer"></i>Chuẩn bị xe (1 giờ)</span>
+                <span class="sch-chip"><i class="sch-swatch sch-past"></i>Đã qua</span>
+                <span class="sch-chip"><i class="sch-swatch sch-selected"></i>Bạn đang chọn</span>
             </div>
         </div>
 
-        <div th:if="${schedule.vehicleStatus == 'maintenance'}" class="alert alert-warning small mb-3">
+        <div th:if="${schedule.vehicleStatus == 'maintenance'}" class="alert alert-warning small mb-4">
             Xe đang bảo trì nên hiện chưa nhận đặt.
         </div>
 
-        <div class="schedule-scroll">
-            <table class="schedule-grid">
+        <div class="sch-toolbar mb-3">
+            <div class="font-weight-bold text-navy" id="sch-week-label">Tuần 1</div>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="sch-week-btn" id="sch-prev" aria-label="Tuần trước">‹</button>
+                <button type="button" class="sch-week-btn" id="sch-next" aria-label="Tuần sau">›</button>
+            </div>
+        </div>
+
+        <div class="sch-scroll">
+            <table class="sch-grid" id="sch-grid"
+                   th:attr="data-open-hour=${openingHours != null ? openingHours.open : 6},data-close-hour=${openingHours != null ? openingHours.close : 22}">
                 <thead>
                 <tr>
-                    <th class="schedule-day-label">Ngày</th>
-                    <th th:each="h : ${#numbers.sequence(0, 23)}" th:text="${h}">0</th>
+                    <th class="sch-day"></th>
+                    <th th:each="h : ${#numbers.sequence(0, 23)}"
+                        th:classappend="${h < (openingHours != null ? openingHours.open : 6) or h >= (openingHours != null ? openingHours.close : 22)} ? 'sch-closed-label'"
+                        th:text="${#numbers.formatInteger(h, 2)}">00</th>
                 </tr>
                 </thead>
-                <tbody>
-                <tr th:each="day : ${schedule.days}">
-                    <th class="schedule-day-label" th:text="${#temporals.format(day.date, 'EEE dd/MM')}">T2 10/11</th>
-                    <td th:each="state, it : ${day.hours}"
-                        th:class="'schedule-' + ${#strings.toLowerCase(state.name())}"
-                        th:title="${#temporals.format(day.date, 'dd/MM')} + ' ' + ${it.index} + ':00'"></td>
+                <tbody th:each="day, dayIt : ${schedule.days}" class="sch-week"
+                       th:attr="data-week=${dayIt.index / 7}">
+                <tr th:classappend="${dayIt.index == 0} ? 'sch-today'">
+                    <th class="sch-day">
+                        <span class="sch-day-name" th:text="${dayNames[day.date().dayOfWeek.value - 1]}">T7</span>
+                        <span class="sch-day-date" th:text="${#temporals.format(day.date(), 'dd/MM/yyyy')}">07/11/2026</span>
+                    </th>
+                    <td th:each="state, it : ${day.hours()}"
+                        class="sch-cell"
+                        th:classappend="'sch-' + ${#strings.toLowerCase(state.name())} + ${state.name() == 'FREE' and (it.index < (openingHours != null ? openingHours.open : 6) or it.index >= (openingHours != null ? openingHours.close : 22)) ? ' sch-closed' : ''}"
+                        th:attr="data-date=${day.date()},data-hour=${it.index},data-state=${#strings.toLowerCase(state.name())},
+                                 title=${dayNames[day.date().dayOfWeek.value - 1] + ' ' + #temporals.format(day.date(), 'dd/MM') + ' · '
+                                        + #numbers.formatInteger(it.index, 2) + ':00–' + #numbers.formatInteger(it.index + 1, 2) + ':00 · '
+                                        + (state.name() == 'FREE' ? 'Trống' : (state.name() == 'BOOKED' ? 'Đã có người thuê' : (state.name() == 'BUFFER' ? 'Chuẩn bị xe' : 'Đã qua')))}"></td>
                 </tr>
                 </tbody>
             </table>
         </div>
-    </div>
+        <p class="sch-hint mt-3 mb-0">Bấm một ô trống để chọn giờ nhận xe, rồi bấm ô trống thứ hai để chọn giờ trả xe.</p>
+    </section>
 
-    <div class="card border-0 shadow-sm rounded-2xl p-4 bg-white" th:unless="${schedule.vehicleStatus == 'maintenance'}">
-        <h2 class="h6 font-weight-bold text-navy mb-3">Đặt đúng xe này</h2>
-        <form th:action="@{/bookings/checkout}" method="get" class="row g-3 align-items-end">
+    <section class="sch-card p-4 p-md-5" th:unless="${schedule.vehicleStatus == 'maintenance'}">
+        <h2 class="h6 font-weight-bold text-navy mb-3">Đặt đúng xe <span th:text="${schedule.licensePlate}">51A-123.45</span></h2>
+        <form th:action="@{/bookings/checkout}" method="get" id="sch-form">
             <input type="hidden" name="vehicleTypeId" th:value="${schedule.vehicleTypeId}">
             <input type="hidden" name="vehicleId" th:value="${schedule.vehicleId}">
-            <div class="col-sm-5">
-                <label class="small font-weight-bold text-navy" for="scheduleStart">Nhận xe</label>
-                <input id="scheduleStart" type="datetime-local" name="startTime" step="3600" class="form-control" required>
+            <input type="hidden" name="startTime" id="sch-start">
+            <input type="hidden" name="endTime" id="sch-end">
+            <div class="row g-3 align-items-end">
+                <div class="col-6 col-md-3">
+                    <label class="small font-weight-bold text-navy mb-1" for="sch-start-date">Ngày nhận</label>
+                    <input type="date" id="sch-start-date" class="form-control" required>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="small font-weight-bold text-navy mb-1" for="sch-start-hour">Giờ nhận</label>
+                    <select id="sch-start-hour" class="form-control"></select>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="small font-weight-bold text-navy mb-1" for="sch-end-date">Ngày trả</label>
+                    <input type="date" id="sch-end-date" class="form-control" required>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="small font-weight-bold text-navy mb-1" for="sch-end-hour">Giờ trả</label>
+                    <select id="sch-end-hour" class="form-control"></select>
+                </div>
+                <div class="col-12 col-md-2">
+                    <button type="submit" class="btn btn-navy btn-block font-weight-bold">Đặt xe này</button>
+                </div>
             </div>
-            <div class="col-sm-5">
-                <label class="small font-weight-bold text-navy" for="scheduleEnd">Trả xe</label>
-                <input id="scheduleEnd" type="datetime-local" name="endTime" step="3600" class="form-control" required>
-            </div>
-            <div class="col-sm-2">
-                <button type="submit" class="btn btn-navy btn-block font-weight-bold">Đặt xe này</button>
+            <div class="d-flex flex-wrap justify-content-between gap-2 mt-3">
+                <span class="sch-summary" id="sch-summary"></span>
+                <span class="sch-message" id="sch-message"></span>
             </div>
         </form>
-        <p class="text-muted small mt-2 mb-0">Chọn giờ chẵn trong các ô trống. Nếu xe không còn trống trong khung giờ đó, trang đặt xe sẽ báo để bạn chọn xe khác.</p>
-    </div>
+    </section>
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
+<script>
+    (() => {
+        // Depot opening hours from crms.opening-hours.*: pickup and return both happen inside them.
+        const hoursHost = document.getElementById('sch-grid');
+        const OPEN = parseInt(hoursHost.dataset.openHour || '6', 10), CLOSE = parseInt(hoursHost.dataset.closeHour || '22', 10);
+        const pad2 = (n) => String(n).padStart(2, '0');
+        const weeks = Array.from(document.querySelectorAll('.sch-week'));
+        const weekCount = weeks.reduce((max, w) => Math.max(max, Number(w.dataset.week) + 1), 0);
+        const prev = document.getElementById('sch-prev');
+        const next = document.getElementById('sch-next');
+        const label = document.getElementById('sch-week-label');
+        let week = 0;
+
+        const showWeek = (w) => {
+            week = Math.max(0, Math.min(weekCount - 1, w));
+            const shown = weeks.filter((tb) => Number(tb.dataset.week) === week);
+            weeks.forEach((tb) => { tb.hidden = Number(tb.dataset.week) !== week; });
+            const first = shown[0].querySelector('.sch-day-date').textContent;
+            const last = shown[shown.length - 1].querySelector('.sch-day-date').textContent;
+            label.textContent = first.slice(0, 5) + ' – ' + last.slice(0, 5);
+            prev.disabled = week === 0;
+            next.disabled = week === weekCount - 1;
+        };
+        prev.addEventListener('click', () => showWeek(week - 1));
+        next.addEventListener('click', () => showWeek(week + 1));
+        if (weekCount) showWeek(0);
+
+        const form = document.getElementById('sch-form');
+        if (!form) return;
+        const startDate = document.getElementById('sch-start-date');
+        const startHour = document.getElementById('sch-start-hour');
+        const endDate = document.getElementById('sch-end-date');
+        const endHour = document.getElementById('sch-end-hour');
+        const summary = document.getElementById('sch-summary');
+        const message = document.getElementById('sch-message');
+        const pad = (n) => String(n).padStart(2, '0');
+
+        [startHour, endHour].forEach((select) => {
+            for (let h = OPEN; h <= CLOSE; h++) select.add(new Option(pad(h) + ':00', h));
+        });
+        const cells = Array.from(document.querySelectorAll('.sch-cell'));
+        const firstDate = cells.length ? cells[0].dataset.date : '';
+        const lastDate = cells.length ? cells[cells.length - 1].dataset.date : '';
+        [startDate, endDate].forEach((input) => { input.min = firstDate; input.max = lastDate; });
+
+        const toKey = (date, hour) => date + 'T' + pad(hour) + ':00';
+
+        // Paint the chosen window and say what is wrong with it, if anything.
+        const refresh = () => {
+            cells.forEach((c) => c.classList.remove('sch-selected'));
+            message.textContent = '';
+            summary.textContent = '';
+            if (!startDate.value || !endDate.value) return;
+            const start = toKey(startDate.value, Number(startHour.value));
+            const end = toKey(endDate.value, Number(endHour.value));
+            if (end <= start) {
+                message.textContent = 'Giờ trả xe phải sau giờ nhận xe.';
+                return;
+            }
+            let blocked = false;
+            cells.forEach((c) => {
+                const key = toKey(c.dataset.date, Number(c.dataset.hour));
+                if (key >= start && key < end) {
+                    c.classList.add('sch-selected');
+                    if (c.dataset.state !== 'free') blocked = true;
+                }
+            });
+            const hours = Math.round((new Date(end) - new Date(start)) / 3600000);
+            summary.textContent = startDate.value.split('-').reverse().join('/') + ' ' + pad(startHour.value) + ':00 → '
+                + endDate.value.split('-').reverse().join('/') + ' ' + pad(endHour.value) + ':00 (' + hours + ' giờ)';
+            if (blocked) message.textContent = 'Khung giờ này trùng giờ xe đã có người thuê hoặc thời gian chuẩn bị xe. Hãy chọn khung khác.';
+        };
+
+        // First click picks the pickup hour, second click the last hour of the rental.
+        let picking = 'start';
+        cells.forEach((c) => c.addEventListener('click', () => {
+            if (c.dataset.state !== 'free') return;
+            const hour = Number(c.dataset.hour);
+            if (picking === 'start') {
+                if (hour < OPEN || hour > CLOSE - 1) {
+                    message.textContent = 'Chỉ nhận xe từ ' + pad2(OPEN) + ':00 đến ' + pad2(CLOSE - 1) + ':00 để còn ít nhất 1 giờ thuê trước giờ đóng cửa.';
+                    return;
+                }
+                startDate.value = c.dataset.date;
+                startHour.value = hour;
+                endDate.value = c.dataset.date;
+                endHour.value = hour + 1;
+                picking = 'end';
+            } else {
+                const endAt = hour + 1;
+                const start = toKey(startDate.value, Number(startHour.value));
+                if (toKey(c.dataset.date, hour) < start) {
+                    picking = 'start';
+                    c.click();
+                    return;
+                }
+                if (endAt < OPEN || endAt > CLOSE) {
+                    message.textContent = 'Chỉ trả xe từ ' + pad2(OPEN) + ':00 đến ' + pad2(CLOSE) + ':00.';
+                    return;
+                }
+                endDate.value = c.dataset.date;
+                endHour.value = endAt;
+                picking = 'start';
+            }
+            refresh();
+        }));
+        [startDate, startHour, endDate, endHour].forEach((el) => el.addEventListener('change', refresh));
+
+        form.addEventListener('submit', (event) => {
+            refresh();
+            if (message.textContent) {
+                event.preventDefault();
+                return;
+            }
+            document.getElementById('sch-start').value = toKey(startDate.value, Number(startHour.value));
+            document.getElementById('sch-end').value = toKey(endDate.value, Number(endHour.value));
+        });
+    })();
+</script>
 </body>
 </html>

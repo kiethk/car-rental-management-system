@@ -193,7 +193,7 @@
                                     <div style="font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 8px;">
                                         📍 <span th:text="${booking.stationAddress}">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</span>
                                     </div>
-                                    <div style="font-size: 12px; color: #64748b; margin-top: -4px; margin-bottom: 8px;">Mở cửa hàng ngày: 06:00 - 22:00</div>
+                                    <div style="font-size: 12px; color: #64748b; margin-top: -4px; margin-bottom: 8px;">Mở cửa hàng ngày: <span th:text="${openingHours != null ? openingHours.label : '06:00 - 22:00'}">06:00 - 22:00</span></div>
                                     <div style="font-size: 13px; color: #334155;">
                                         👤 <span>Nhân viên bàn giao: </span><strong th:text="${booking.staffName}">Support Staff</strong>
                                         <span style="margin: 0 6px;">•</span>

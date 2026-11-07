@@ -98,8 +98,8 @@ class VehicleControllerTest {
         mvc.perform(get("/vehicles/cars/5/schedule")).andExpect(status().isOk())
                 .andExpect(view().name("vehicles/schedule"))
                 .andExpect(content().string(containsString("51A-123.45")))
-                .andExpect(content().string(containsString("class=\"schedule-booked\"")))
-                .andExpect(content().string(containsString("class=\"schedule-buffer\"")))
+                .andExpect(content().string(containsString("sch-cell sch-booked")))
+                .andExpect(content().string(containsString("sch-cell sch-buffer")))
                 .andExpect(content().string(containsString("name=\"vehicleId\" value=\"5\"")))
                 .andExpect(content().string(containsString("Đặt xe này")));
     }

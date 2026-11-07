@@ -67,6 +67,10 @@ public class ContractTemplateServiceImpl implements ContractTemplateService {
         draft.setDepositRate(active.getDepositRate());
         draft.setLateFeeMultiplier(active.getLateFeeMultiplier());
         draft.setFreeCancellationHours(active.getFreeCancellationHours());
+        draft.setFreeCancelAfterDepositHours(active.getFreeCancelAfterDepositHours());
+        draft.setPickupWaitHours(active.getPickupWaitHours());
+        draft.setCompensationVoucherPercent(active.getCompensationVoucherPercent());
+        draft.setCompensationVoucherDays(active.getCompensationVoucherDays());
         draft.setStatus(ContractTemplateStatus.DRAFT);
         draft.setCreatedBy(employee);
         draft.setCreatedAt(OffsetDateTime.now());
@@ -82,6 +86,10 @@ public class ContractTemplateServiceImpl implements ContractTemplateService {
         draft.setDepositRate(toRate(form.getDepositPercent(), 4));
         draft.setLateFeeMultiplier(toRate(form.getLateFeePercent(), 2));
         draft.setFreeCancellationHours(form.getFreeCancellationHours());
+        draft.setFreeCancelAfterDepositHours(form.getFreeCancelAfterDepositHours());
+        draft.setPickupWaitHours(form.getPickupWaitHours());
+        draft.setCompensationVoucherPercent(form.getCompensationVoucherPercent());
+        draft.setCompensationVoucherDays(form.getCompensationVoucherDays());
         return ContractTemplateDTO.fromEntity(draft);
     }
 

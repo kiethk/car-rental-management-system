@@ -21,6 +21,7 @@ public class Payment {
     public static final String METHOD_BANK_TRANSFER = "BANK_TRANSFER";
 
     public static final String ISSUE_TXN_PREFIX = "I";
+    /** How long an online payment may stay unpaid: the deposit of a new booking and an issue payment session. */
     public static final int PAYMENT_TIMEOUT_MINUTES = 15;
 
     @Id

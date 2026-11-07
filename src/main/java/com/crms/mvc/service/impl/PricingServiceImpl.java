@@ -1,7 +1,9 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.dto.LateReturnDTO;
 import com.crms.mvc.dto.PriceQuoteDTO;
 import com.crms.mvc.service.PricingService;
+import com.crms.mvc.util.DateTimeUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -49,5 +51,18 @@ public class PricingServiceImpl implements PricingService {
                 : BigDecimal.ONE;
 
         return pricePerHour.multiply(BigDecimal.valueOf(lateHours)).multiply(multiplier).setScale(0, RoundingMode.HALF_UP);
+    }
+
+    @Override
+    public LateReturnDTO describeLateReturn(OffsetDateTime scheduledEndTime, OffsetDateTime now, BigDecimal pricePerHour, BigDecimal lateFeeMultiplier) {
+        if (scheduledEndTime == null || now == null || !now.isAfter(scheduledEndTime)) {
+            return null;
+        }
+        Duration late = Duration.between(scheduledEndTime, now);
+        long chargedHours = late.toHours();
+        return new LateReturnDTO(late.toMinutes(), chargedHours,
+                calculateLateFee(scheduledEndTime, now, pricePerHour, lateFeeMultiplier),
+                // Shown to customers and staff, so always in Vietnam time whatever offset the database returned.
+                DateTimeUtils.toVietnamTime(scheduledEndTime.plusHours(chargedHours + 1)));
     }
 }

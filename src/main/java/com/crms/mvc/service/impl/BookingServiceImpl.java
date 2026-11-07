@@ -5,6 +5,7 @@ import com.crms.mvc.entity.*;
 import com.crms.mvc.repository.*;
 import com.crms.mvc.service.BookingFeeService;
 import com.crms.mvc.service.BookingService;
+import com.crms.mvc.service.CompensationVoucherService;
 import com.crms.mvc.service.ContractService;
 import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.service.PaymentService;
@@ -31,6 +32,13 @@ import java.util.Set;
 public class BookingServiceImpl implements BookingService {
     public static final int BUFFER_BETWEEN_RENTALS_HOURS = 1;
 
+    @org.springframework.beans.factory.annotation.Value("${crms.opening-hours.open:6}")
+    private int openingHour = com.crms.mvc.config.OpeningHours.DEFAULT.open();
+    @org.springframework.beans.factory.annotation.Value("${crms.opening-hours.close:22}")
+    private int closingHour = com.crms.mvc.config.OpeningHours.DEFAULT.close();
+    @org.springframework.beans.factory.annotation.Value("${crms.station.address:Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM}")
+    private String stationAddress = "Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM";
+
     private final BookingRepository bookingRepository;
     private final CustomerRepository customerRepository;
     private final SlotRepository slotRepository;
@@ -43,6 +51,7 @@ public class BookingServiceImpl implements BookingService {
     private final ContractTemplateService contractTemplateService;
     private final BookingFeeService bookingFeeService;
     private final PricingService pricingService;
+    private final CompensationVoucherService compensationVoucherService;
 
     public BookingServiceImpl(
             BookingRepository bookingRepository,
@@ -56,7 +65,8 @@ public class BookingServiceImpl implements BookingService {
             ContractService contractService,
             ContractTemplateService contractTemplateService,
             BookingFeeService bookingFeeService,
-            PricingService pricingService) {
+            PricingService pricingService,
+            CompensationVoucherService compensationVoucherService) {
         this.bookingRepository = bookingRepository;
         this.customerRepository = customerRepository;
         this.slotRepository = slotRepository;
@@ -69,6 +79,7 @@ public class BookingServiceImpl implements BookingService {
         this.contractTemplateService = contractTemplateService;
         this.bookingFeeService = bookingFeeService;
         this.pricingService = pricingService;
+        this.compensationVoucherService = compensationVoucherService;
     }
 
     @Override
@@ -84,6 +95,13 @@ public class BookingServiceImpl implements BookingService {
         }
         if (!isWholeHour(end)) {
             throw new IllegalArgumentException("Thời gian trả xe phải là giờ chẵn, ví dụ 18:00.");
+        }
+        com.crms.mvc.config.OpeningHours hours = new com.crms.mvc.config.OpeningHours(openingHour, closingHour);
+        if (!hours.contains(start)) {
+            throw new IllegalArgumentException("Giờ nhận xe phải trong giờ mở cửa của kho (" + hours.getLabel() + ").");
+        }
+        if (!hours.contains(end)) {
+            throw new IllegalArgumentException("Giờ trả xe phải trong giờ mở cửa của kho (" + hours.getLabel() + ").");
         }
         if (start.isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("Thời gian nhận xe không được ở trong quá khứ.");
@@ -119,8 +137,15 @@ public class BookingServiceImpl implements BookingService {
                     + "Please review and accept the new version.");
         }
 
-        // 0. Tự động hủy các đơn pending quá hạn (15 phút) của toàn hệ thống
-        bookingRepository.cancelExpiredPendingBookings(OffsetDateTime.now().minusMinutes(15));
+        // 0. Tự động hủy các đơn pending quá hạn thanh toán (Payment.PAYMENT_TIMEOUT_MINUTES) của toàn hệ thống
+        bookingRepository.cancelExpiredPendingBookings(OffsetDateTime.now().minusMinutes(Payment.PAYMENT_TIMEOUT_MINUTES));
+
+        // One person can only drive one car at a time (the contract forbids handing the car to another driver).
+        List<Booking> overlapping = bookingRepository.findPaidBookingsByCustomerAndTimeRange(customerId, start, end);
+        if (!overlapping.isEmpty()) {
+            throw new IllegalStateException("Bạn đã có đơn #" + overlapping.get(0).getId()
+                    + " trong khung giờ này. Mỗi khách chỉ thuê một xe tại một thời điểm.");
+        }
 
         // 0.1 Nếu khách hàng này đã có đơn 'pending_payment' trong cùng khung giờ,
         // hệ thống tự hủy đơn pending cũ đó để nhường chỗ cho lần tạo mới này!
@@ -159,8 +184,12 @@ public class BookingServiceImpl implements BookingService {
         Promotion appliedPromo = null;
 
         if (dto.getPromotionCode() != null && !dto.getPromotionCode().trim().isEmpty()) {
-            appliedPromo = promotionRepository.findByCodeIgnoreCase(dto.getPromotionCode().trim()).orElse(null);
-            if (appliedPromo != null && appliedPromo.getQuantity() != null && appliedPromo.getQuantity() > 0) {
+            appliedPromo = promotionRepository.findByCodeForUpdate(dto.getPromotionCode().trim())
+                    .filter(BookingServiceImpl::isUsableToday)
+                    .orElse(null);
+            if (appliedPromo != null) {
+                appliedPromo.setQuantity(appliedPromo.getQuantity() - 1);
+                promotionRepository.save(appliedPromo);
                 if ("percent".equalsIgnoreCase(appliedPromo.getDiscountType())) {
                     long roughHours = pricingService.calculateRentalHours(start, end);
                     BigDecimal gross = type.getPricePerHour().multiply(BigDecimal.valueOf(roughHours));
@@ -213,7 +242,7 @@ public class BookingServiceImpl implements BookingService {
     @Scheduled(fixedRate = 60000)
     @Transactional
     public void cancelExpiredPendingBookings() {
-        bookingRepository.cancelExpiredPendingBookings(OffsetDateTime.now().minusMinutes(15));
+        bookingRepository.cancelExpiredPendingBookings(OffsetDateTime.now().minusMinutes(Payment.PAYMENT_TIMEOUT_MINUTES));
     }
 
     @Override
@@ -233,6 +262,8 @@ public class BookingServiceImpl implements BookingService {
             s.setDepositAmount(b.getDepositAmount());
             s.setStatus(b.getStatus());
             s.setCustomerName(b.getCustomer() != null ? b.getCustomer().getName() : null);
+            s.setOverdueMinutes(overdueMinutes(b, OffsetDateTime.now()));
+            s.setPickupDeadline(awaitingPickupUntil(b, OffsetDateTime.now()));
             return s;
         }).toList();
     }
@@ -290,6 +321,8 @@ public class BookingServiceImpl implements BookingService {
             boolean isPendingRefund = pendingRefundSet.contains(b.getId());
             s.setStatus(isPendingRefund ? "pending_refund" : b.getStatus());
             s.setCustomerName(b.getCustomer() != null ? b.getCustomer().getName() : null);
+            s.setOverdueMinutes(overdueMinutes(b, OffsetDateTime.now()));
+            s.setPickupDeadline(awaitingPickupUntil(b, OffsetDateTime.now()));
             if (isPendingRefund) {
                 s.setHasPendingRefund(true);
                 s.setRefundAmount(b.getDepositAmount());
@@ -319,13 +352,16 @@ public class BookingServiceImpl implements BookingService {
         boolean refundEligible = false;
         // B7 + B16: Hoàn cọc 100% nếu hủy trước mốc freeCancellationHours theo hợp đồng khách đã đồng ý
         if ("confirmed".equalsIgnoreCase(b.getStatus())) {
+            OffsetDateTime depositPaidAt = paymentService.getPaymentsByBooking(bookingId).stream()
+                    .filter(p -> Payment.TYPE_DEPOSIT.equalsIgnoreCase(p.getPaymentType())
+                            && Payment.STATUS_PAID.equalsIgnoreCase(p.getStatus()))
+                    .map(Payment::getPaidAt)
+                    .filter(java.util.Objects::nonNull)
+                    .findFirst().orElse(null);
             OffsetDateTime cancelDeadline = contractService.getTermsOfBooking(bookingId)
-                    .freeCancellationDeadline(b.getPickupTime());
+                    .freeCancellationUntil(b.getPickupTime(), depositPaidAt);
             if (!OffsetDateTime.now().isAfter(cancelDeadline)) {
-                String bank = (dto != null && dto.getBankCode() != null && !dto.getBankCode().isBlank()) ? dto.getBankCode().trim() : "BANK";
-                String acc = (dto != null && dto.getAccountNumber() != null && !dto.getAccountNumber().isBlank()) ? dto.getAccountNumber().trim() : "";
-                String holder = (dto != null && dto.getAccountHolder() != null && !dto.getAccountHolder().isBlank()) ? dto.getAccountHolder().trim().toUpperCase() : "";
-                paymentService.createPendingRefund(bookingId, b.getDepositAmount(), bank, acc, holder);
+                refundDeposit(b, dto);
                 refundEligible = true;
             }
         }
@@ -334,6 +370,42 @@ public class BookingServiceImpl implements BookingService {
         b.setCancelledAt(OffsetDateTime.now());
         bookingRepository.save(b);
         return refundEligible;
+    }
+
+    @Override
+    @Transactional
+    public void cancelForUnavailableCar(Long bookingId, String refundMethod) {
+        Booking b = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
+        if (!"confirmed".equalsIgnoreCase(b.getStatus())) {
+            throw new IllegalStateException("Chỉ huỷ theo cách này với đơn đã đặt cọc và chưa bàn giao (trạng thái đơn: " + b.getStatus() + ")");
+        }
+        // Only when the company really has no car of the booked type left: otherwise staff swap the car instead,
+        // and a customer who no longer wants it cancels under the normal rules.
+        if (!findAvailableVehiclesInTimeRange(b.getSlot().getVehicleType().getId(), b.getPickupTime(), b.getScheduledEndTime()).isEmpty()) {
+            throw new IllegalStateException("Vẫn còn xe cùng loại trống trong khung giờ thuê: hãy đổi xe cho khách thay vì huỷ đơn.");
+        }
+        // The contract cannot be fulfilled: the whole deposit goes back at the counter, whatever the cancellation deadline.
+        paymentService.recordCounterRefund(bookingId, b.getDepositAmount(), refundMethod);
+        b.setStatus("cancelled");
+        b.setCancelledAt(OffsetDateTime.now());
+        bookingRepository.save(b);
+        compensationVoucherService.issueFor(b);
+    }
+
+    /** A promotion code applies only between its start and end dates (Vietnam time) and while it has uses left. */
+    private static boolean isUsableToday(Promotion promotion) {
+        java.time.LocalDate today = java.time.LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+        return promotion.getQuantity() != null && promotion.getQuantity() > 0
+                && (promotion.getStartDate() == null || !today.isBefore(promotion.getStartDate()))
+                && (promotion.getEndDate() == null || !today.isAfter(promotion.getEndDate()));
+    }
+
+    private void refundDeposit(Booking b, BookingCancelDTO dto) {
+        String bank = (dto != null && dto.getBankCode() != null && !dto.getBankCode().isBlank()) ? dto.getBankCode().trim() : "BANK";
+        String acc = (dto != null && dto.getAccountNumber() != null && !dto.getAccountNumber().isBlank()) ? dto.getAccountNumber().trim() : "";
+        String holder = (dto != null && dto.getAccountHolder() != null && !dto.getAccountHolder().isBlank()) ? dto.getAccountHolder().trim().toUpperCase() : "";
+        paymentService.createPendingRefund(b.getId(), b.getDepositAmount(), bank, acc, holder);
     }
 
     @Override
@@ -348,7 +420,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NoSuchElementException("Vehicle not found: " + vehicleId));
 
         if (!v.getVehicleType().getId().equals(b.getSlot().getVehicleType().getId())) {
-            throw new IllegalStateException("Vehicle type does not match booking request");
+            throw new IllegalStateException("Chỉ đổi được sang xe cùng loại với loại xe khách đã đặt.");
         }
         if ("maintenance".equalsIgnoreCase(v.getStatus()) || Vehicle.STATUS_RETIRED.equalsIgnoreCase(v.getStatus())) {
             throw new IllegalStateException("Vehicle is not available for assignment");
@@ -358,13 +430,44 @@ public class BookingServiceImpl implements BookingService {
         OffsetDateTime bufferedStart = b.getPickupTime().minusHours(BUFFER_BETWEEN_RENTALS_HOURS);
         OffsetDateTime bufferedEnd = b.getScheduledEndTime().plusHours(BUFFER_BETWEEN_RENTALS_HOURS);
         List<Long> bookedVehicleIds = bookingRepository.findBookedVehicleIdsInTimeRange(
-                bufferedStart, bufferedEnd, OffsetDateTime.now().minusMinutes(15), OffsetDateTime.now());
+                bufferedStart, bufferedEnd, OffsetDateTime.now().minusMinutes(Payment.PAYMENT_TIMEOUT_MINUTES), OffsetDateTime.now());
         if (bookedVehicleIds.contains(vehicleId) && (b.getVehicle() == null || !b.getVehicle().getId().equals(vehicleId))) {
             throw new IllegalStateException("Xe này đã có lịch đặt khác trong cùng khung giờ (yêu cầu cách nhau tối thiểu 1 tiếng).");
         }
 
         b.setVehicle(v);
         bookingRepository.save(b);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countOverdueRentals() {
+        return bookingRepository.countOverdueRentals(OffsetDateTime.now());
+    }
+
+    /** While a paid booking waits for its customer after the pickup time: when it will be cancelled; else null. */
+    private OffsetDateTime awaitingPickupUntil(Booking b, OffsetDateTime now) {
+        if (!"confirmed".equalsIgnoreCase(b.getStatus()) || b.getPickupTime() == null || now.isBefore(b.getPickupTime())) {
+            return null;
+        }
+        return awaitingPickupUntil(b, contractService.getTermsOfBooking(b.getId()), now);
+    }
+
+    private static OffsetDateTime awaitingPickupUntil(Booking b, ContractTemplateDTO terms, OffsetDateTime now) {
+        if (!"confirmed".equalsIgnoreCase(b.getStatus()) || b.getPickupTime() == null || now.isBefore(b.getPickupTime())) {
+            return null;
+        }
+        return DateTimeUtils.toVietnamTime(terms.pickupDeadline(b.getPickupTime(), b.getScheduledEndTime()));
+    }
+
+    /** An active rental whose car has not come back although its scheduled return time has passed. */
+    private static boolean isOverdue(Booking b, OffsetDateTime now) {
+        return "active".equalsIgnoreCase(b.getStatus()) && b.getActualReturnTime() == null
+                && b.getScheduledEndTime() != null && now.isAfter(b.getScheduledEndTime());
+    }
+
+    private static Long overdueMinutes(Booking b, OffsetDateTime now) {
+        return isOverdue(b, now) ? java.time.Duration.between(b.getScheduledEndTime(), now).toMinutes() : null;
     }
 
     private BookingDetailDTO mapToDetailDTO(Booking b) {
@@ -386,6 +489,7 @@ public class BookingServiceImpl implements BookingService {
             d.setVehicleId(b.getVehicle().getId());
             d.setVehicleColor(b.getVehicle().getColor());
             d.setVehicleRetired(Vehicle.STATUS_RETIRED.equalsIgnoreCase(b.getVehicle().getStatus()));
+            d.setVehicleStatus(b.getVehicle().getStatus());
             d.setVehicleOdometer(b.getVehicle().getOdometer());
         }
         d.setLicensePlate(resolvePlate(b));
@@ -420,6 +524,23 @@ public class BookingServiceImpl implements BookingService {
         d.setPayments(pDtos);
 
         contractService.findByBookingId(b.getId()).ifPresent(d::setContract);
+        if (d.getContract() != null && d.getContract().getTerms() != null) {
+            d.setPickupDeadline(awaitingPickupUntil(b, d.getContract().getTerms(), OffsetDateTime.now()));
+        }
+        if ("cancelled".equalsIgnoreCase(b.getStatus())) {
+            compensationVoucherService.findForBooking(b.getId()).ifPresent(v -> {
+                d.setCompensationVoucherCode(v.getCode());
+                d.setCompensationVoucherValidUntil(v.getEndDate());
+                d.setCompensationVoucherUsed(v.getQuantity() == null || v.getQuantity() <= 0);
+                d.setCompensationVoucherPercent(v.getDiscountValue() != null ? v.getDiscountValue().stripTrailingZeros() : null);
+            });
+        }
+        if (isOverdue(b, OffsetDateTime.now())) {
+            BigDecimal multiplier = d.getContract() != null && d.getContract().getTerms() != null
+                    ? d.getContract().getTerms().getLateFeeMultiplier() : null;
+            BigDecimal rate = b.getPricePerHour() != null ? b.getPricePerHour() : vt.getPricePerHour();
+            d.setLateReturn(pricingService.describeLateReturn(b.getScheduledEndTime(), OffsetDateTime.now(), rate, multiplier));
+        }
 
         List<BookingFee> fees = bookingFeeService.getFeesByBooking(b.getId());
         List<BookingDetailDTO.BookingFeeDTO> feeDtos = new ArrayList<>();
@@ -445,11 +566,11 @@ public class BookingServiceImpl implements BookingService {
             d.setStaffName(b.getEmployee().getName());
             d.setStaffPhone(b.getEmployee().getPhone());
             d.setStaffEmail(b.getEmployee().getEmail());
-            d.setStationAddress("Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM");
+            d.setStationAddress(stationAddress);
         } else {
             d.setStaffName("Bãi xe DriveNow (Quản lý)");
             d.setStaffPhone("1900 6868");
-            d.setStationAddress("Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM");
+            d.setStationAddress(stationAddress);
         }
 
         return d;
@@ -487,7 +608,7 @@ public class BookingServiceImpl implements BookingService {
     public List<Vehicle> findAvailableVehiclesInTimeRange(Long vehicleTypeId, OffsetDateTime startTime, OffsetDateTime endTime) {
         List<Vehicle> allVehiclesOfType = vehicleRepository.findByVehicleTypeIdWithDetails(vehicleTypeId);
 
-        OffsetDateTime cutoffTime = OffsetDateTime.now().minusMinutes(15);
+        OffsetDateTime cutoffTime = OffsetDateTime.now().minusMinutes(Payment.PAYMENT_TIMEOUT_MINUTES);
         OffsetDateTime bufferedStart = startTime.minusHours(BUFFER_BETWEEN_RENTALS_HOURS);
         OffsetDateTime bufferedEnd = endTime.plusHours(BUFFER_BETWEEN_RENTALS_HOURS);
         List<Long> bookedVehicleIds = bookingRepository.findBookedVehicleIdsInTimeRange(
@@ -510,7 +631,7 @@ public class BookingServiceImpl implements BookingService {
         OffsetDateTime to = from.plusDays(days);
         List<OffsetDateTime[]> held = bookingRepository.findBookingsHoldingVehicle(vehicleId,
                         from.minusHours(BUFFER_BETWEEN_RENTALS_HOURS), to.plusHours(BUFFER_BETWEEN_RENTALS_HOURS),
-                        now.minusMinutes(15))
+                        now.minusMinutes(Payment.PAYMENT_TIMEOUT_MINUTES))
                 .stream()
                 .map(b -> new OffsetDateTime[]{b.getPickupTime(), heldUntil(b, now)})
                 .toList();

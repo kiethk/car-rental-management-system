@@ -25,9 +25,24 @@ public interface BookingService {
     List<BookingSummaryDTO> getAllBookings(String status);
     void cancelBooking(Long bookingId, Long customerId);
     boolean cancelBooking(Long bookingId, Long customerId, BookingCancelDTO dto);
+    /**
+     * Đổi xe before handover: only to another car of the booked type, so the contract is still fulfilled.
+     * Never to another type, which would let a late return be used to get a better car at a cheaper price.
+     */
     void assignVehicle(Long bookingId, Long vehicleId);
 
+    /**
+     * No car of the booked type is free for this booking's rental window: the rental company cannot fulfil the
+     * contract, so cancel the confirmed booking and hand back 100% of the deposit at the counter (refundMethod CASH
+     * or BANK_TRANSFER), regardless of the free-cancellation deadline, and issue the customer the single-use
+     * voucher (CompensationVoucherService). Refused while a same-type car is free.
+     */
+    void cancelForUnavailableCar(Long bookingId, String refundMethod);
+
     long countTotalBookings();
+
+    /** Active rentals whose car is still out past its scheduled return time. */
+    long countOverdueRentals();
     Optional<Booking> findEntityById(Long id);
 
     /** Periodic task to cancel pending bookings exceeding 15-minute expiration */
