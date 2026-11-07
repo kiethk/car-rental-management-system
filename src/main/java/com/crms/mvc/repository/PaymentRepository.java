@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
+    boolean existsByBookingIdAndStatus(Long bookingId, String status);
+
     List<Payment> findByBookingId(Long bookingId);
 
     List<Payment> findByBookingIdOrderByPaidAtAsc(Long bookingId);

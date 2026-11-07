@@ -3,6 +3,7 @@ package com.crms.mvc.controller;
 import com.crms.mvc.dto.SessionAccount;
 import com.crms.mvc.support.PassThroughSessionAccountService;
 import com.crms.mvc.util.CurrentAccount;
+import com.crms.mvc.service.PromotionService;
 import org.springframework.context.annotation.Import;
 import com.crms.mvc.service.VehicleTypeService;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ class HeaderNavigationTest {
 
     @Autowired private MockMvc mvc;
     @MockitoBean private VehicleTypeService vehicleTypeService;
+    @MockitoBean private PromotionService promotionService;
 
     @Test
     void whenEmployeeViewsCustomerHome_showsBackToAdminAndHidesViewCustomerPage() throws Exception {
@@ -58,4 +60,3 @@ class HeaderNavigationTest {
                 .andExpect(content().string(not(containsString("Xem trang khách"))));
     }
 }
-

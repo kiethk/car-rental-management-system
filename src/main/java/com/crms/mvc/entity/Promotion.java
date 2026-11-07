@@ -30,6 +30,9 @@ public class Promotion {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
+    @Column(name = "url_image_promotion", length = 500)
+    private String urlImagePromotion;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -50,4 +53,8 @@ public class Promotion {
 
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
+
+    public String getUrlImagePromotion() { return urlImagePromotion; }
+    public void setUrlImagePromotion(String urlImagePromotion) { this.urlImagePromotion = urlImagePromotion; }
+
 }

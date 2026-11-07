@@ -6,6 +6,7 @@ import com.crms.mvc.support.PassThroughSessionAccountService;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.ContractDTO;
 import com.crms.mvc.dto.ContractTemplateDTO;
+import com.crms.mvc.dto.ReviewDTO;
 import com.crms.mvc.entity.ContractTemplateStatus;
 import com.crms.mvc.entity.LicensePlate;
 import com.crms.mvc.entity.Vehicle;
@@ -17,6 +18,7 @@ import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.service.LicenseDocumentService;
 import com.crms.mvc.service.PaymentService;
+import com.crms.mvc.service.ReviewService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +59,7 @@ class BookingContractFlowTest {
     @MockitoBean private ContractTemplateService contractTemplateService;
     @MockitoBean private com.crms.mvc.service.IssueService issueService;
     @MockitoBean private com.crms.mvc.service.HandoverService handoverService;
+    @MockitoBean private ReviewService reviewService;
 
     private MockHttpSession customerSession;
     private ContractTemplateDTO terms;
@@ -160,6 +163,74 @@ class BookingContractFlowTest {
                 .andExpect(content().string(containsString("CTR-20261023-0042")))
                 .andExpect(content().string(containsString("30%")))
                 .andExpect(content().string(containsString("150%")));
+    }
+
+    @Test
+    void completedBookingShowsReviewFormBelowPaymentLedger() throws Exception {
+        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        when(reviewService.isEligibleForCustomer(42L, 1L)).thenReturn(true);
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Đánh giá dịch vụ")))
+                .andExpect(content().string(containsString("Gửi đánh giá")))
+                .andExpect(content().string(containsString("/bookings/42/review")));
+
+        verify(reviewService).findForCustomer(42L, 1L);
+    }
+
+    @Test
+    void unfinishedBookingDoesNotShowReviewForm() throws Exception {
+        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("Đánh giá dịch vụ"))))
+                .andExpect(content().string(not(containsString("/bookings/42/review"))));
+
+        verify(reviewService, never()).findForCustomer(anyLong(), anyLong());
+        verify(reviewService, never()).isEligibleForCustomer(anyLong(), anyLong());
+    }
+
+    @Test
+    void completedBookingWithPendingTransactionDoesNotShowReviewForm() throws Exception {
+        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        when(reviewService.isEligibleForCustomer(42L, 1L)).thenReturn(false);
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("Đánh giá dịch vụ"))))
+                .andExpect(content().string(not(containsString("/bookings/42/review"))));
+
+        verify(reviewService, never()).findForCustomer(anyLong(), anyLong());
+    }
+
+    @Test
+    void completedBookingDisplaysPreviouslySubmittedReview() throws Exception {
+        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        when(reviewService.isEligibleForCustomer(42L, 1L)).thenReturn(true);
+        ReviewDTO review = new ReviewDTO();
+        review.setRating(4);
+        review.setComment("Xe sạch và nhân viên hỗ trợ tốt.");
+        when(reviewService.findForCustomer(42L, 1L)).thenReturn(review);
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("★★★★☆")))
+                .andExpect(content().string(containsString("Xe sạch và nhân viên hỗ trợ tốt.")))
+                .andExpect(content().string(not(containsString("Gửi đánh giá"))));
+    }
+
+    @Test
+    void customerCanSubmitReviewForCompletedBooking() throws Exception {
+        mvc.perform(post("/bookings/42/review").session(customerSession)
+                        .param("rating", "5")
+                        .param("comment", "Xe sạch, nhân viên hỗ trợ tốt."))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/bookings/42"))
+                .andExpect(flash().attribute("success", "Cảm ơn bạn đã chia sẻ đánh giá về chuyến đi!"));
+
+        verify(reviewService).submit(eq(42L), eq(1L), any());
     }
 
     @Test
