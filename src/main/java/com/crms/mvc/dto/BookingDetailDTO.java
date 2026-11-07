@@ -23,6 +23,8 @@ public class BookingDetailDTO implements Serializable {
     private String vehicleColor;
     /** True when the assigned vehicle has been retired, so the booking needs another vehicle. */
     private boolean vehicleRetired;
+    /** Status of the assigned car (available, rented, maintenance, retired); null when none is assigned. */
+    private String vehicleStatus;
     /** Last odometer reading the system has for the assigned vehicle; the next handover cannot go below it. */
     private Integer vehicleOdometer;
 
@@ -43,6 +45,14 @@ public class BookingDetailDTO implements Serializable {
 
     private List<PaymentDTO> payments;
     private ContractDTO contract;
+    private LateReturnDTO lateReturn;
+    /** Set while a paid booking waits for its customer after the pickup time: when it will be cancelled. */
+    private OffsetDateTime pickupDeadline;
+    /** Voucher bù issued when the booking was cancelled because no car of its type was left. */
+    private String compensationVoucherCode;
+    private java.time.LocalDate compensationVoucherValidUntil;
+    private boolean compensationVoucherUsed;
+    private java.math.BigDecimal compensationVoucherPercent;
     private List<BookingFeeDTO> fees;
 
     private Long staffId;
@@ -125,6 +135,12 @@ public class BookingDetailDTO implements Serializable {
     public Integer getVehicleOdometer() { return vehicleOdometer; }
     public void setVehicleOdometer(Integer vehicleOdometer) { this.vehicleOdometer = vehicleOdometer; }
 
+    public String getVehicleStatus() { return vehicleStatus; }
+    public void setVehicleStatus(String vehicleStatus) { this.vehicleStatus = vehicleStatus; }
+
+    /** The assigned car can be handed over now: the same check HandoverService.checkIn makes. */
+    public boolean isVehicleReadyForHandover() { return "available".equalsIgnoreCase(vehicleStatus); }
+
     public boolean isVehicleRetired() { return vehicleRetired; }
     public void setVehicleRetired(boolean vehicleRetired) { this.vehicleRetired = vehicleRetired; }
     public String getVehicleColor() { return vehicleColor; }
@@ -155,6 +171,32 @@ public class BookingDetailDTO implements Serializable {
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
     public List<PaymentDTO> getPayments() { return payments; }
     public void setPayments(List<PaymentDTO> payments) { this.payments = payments; }
+    /** Set only while the rental is active, the car is not back and its return time has passed. */
+    public String getCompensationVoucherCode() { return compensationVoucherCode; }
+    public void setCompensationVoucherCode(String code) { this.compensationVoucherCode = code; }
+    public java.time.LocalDate getCompensationVoucherValidUntil() { return compensationVoucherValidUntil; }
+    public void setCompensationVoucherValidUntil(java.time.LocalDate validUntil) { this.compensationVoucherValidUntil = validUntil; }
+    public boolean isCompensationVoucherUsed() { return compensationVoucherUsed; }
+    public java.math.BigDecimal getCompensationVoucherPercent() { return compensationVoucherPercent; }
+    public void setCompensationVoucherPercent(java.math.BigDecimal percent) { this.compensationVoucherPercent = percent; }
+    public void setCompensationVoucherUsed(boolean used) { this.compensationVoucherUsed = used; }
+
+    /** When the deposit was paid; null while it is unpaid. */
+    public OffsetDateTime getDepositPaidAt() {
+        if (payments == null) return null;
+        return payments.stream()
+                .filter(p -> "DEPOSIT".equalsIgnoreCase(p.getPaymentType()) && "paid".equalsIgnoreCase(p.getStatus()))
+                .map(PaymentDTO::getPaidAt)
+                .filter(java.util.Objects::nonNull)
+                .findFirst().orElse(null);
+    }
+
+    public OffsetDateTime getPickupDeadline() { return pickupDeadline; }
+    public void setPickupDeadline(OffsetDateTime pickupDeadline) { this.pickupDeadline = pickupDeadline; }
+
+    public LateReturnDTO getLateReturn() { return lateReturn; }
+    public void setLateReturn(LateReturnDTO lateReturn) { this.lateReturn = lateReturn; }
+
     public ContractDTO getContract() { return contract; }
     public void setContract(ContractDTO contract) { this.contract = contract; }
     public List<BookingFeeDTO> getFees() { return fees; }

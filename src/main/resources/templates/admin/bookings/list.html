@@ -201,6 +201,18 @@
                                                 >Active</span
                                             >
                                             <span
+                                                th:if="${b.pickupDeadline != null}"
+                                                class="admin-status-badge badge-warning d-block mt-1"
+                                                th:text="'Chưa đến nhận xe · hủy lúc ' + ${#temporals.format(b.pickupDeadline, 'HH:mm')}"
+                                                >Chưa đến nhận xe</span
+                                            >
+                                            <span
+                                                th:if="${b.overdueMinutes != null}"
+                                                class="admin-status-badge badge-danger d-block mt-1"
+                                                th:text="'Quá hạn ' + ${b.overdueText}"
+                                                >Quá hạn 2 giờ</span
+                                            >
+                                            <span
                                                 th:if="${not b.hasPendingRefund and b.status == 'completed'}"
                                                 class="admin-status-badge badge-success"
                                                 >Completed</span

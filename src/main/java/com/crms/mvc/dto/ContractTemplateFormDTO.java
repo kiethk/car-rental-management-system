@@ -37,6 +37,26 @@ public class ContractTemplateFormDTO {
     @Max(value = 720, message = "Free cancellation window cannot exceed 720 hours")
     private Integer freeCancellationHours;
 
+    @NotNull(message = "Free cancellation after deposit is required")
+    @Min(value = 0, message = "Free cancellation after deposit cannot be negative")
+    @Max(value = 24, message = "Free cancellation after deposit cannot exceed 24 hours")
+    private Integer freeCancelAfterDepositHours;
+
+    @NotNull(message = "Pickup wait is required")
+    @Min(value = 1, message = "Pickup wait must be at least 1 hour")
+    @Max(value = 24, message = "Pickup wait cannot exceed 24 hours")
+    private Integer pickupWaitHours;
+
+    @NotNull(message = "Compensation voucher percentage is required")
+    @Min(value = 0, message = "Compensation voucher cannot be negative")
+    @Max(value = 100, message = "Compensation voucher cannot exceed 100%")
+    private Integer compensationVoucherPercent;
+
+    @NotNull(message = "Compensation voucher validity is required")
+    @Min(value = 1, message = "Compensation voucher must be valid at least 1 day")
+    @Max(value = 365, message = "Compensation voucher cannot be valid more than 365 days")
+    private Integer compensationVoucherDays;
+
     public static ContractTemplateFormDTO fromTemplate(ContractTemplateDTO template) {
         ContractTemplateFormDTO form = new ContractTemplateFormDTO();
         form.setTitle(template.getTitle());
@@ -44,6 +64,10 @@ public class ContractTemplateFormDTO {
         form.setDepositPercent(template.getDepositPercent());
         form.setLateFeePercent(template.getLateFeePercent());
         form.setFreeCancellationHours(template.getFreeCancellationHours());
+        form.setFreeCancelAfterDepositHours(template.getFreeCancelAfterDepositHours());
+        form.setPickupWaitHours(template.getPickupWaitHours());
+        form.setCompensationVoucherPercent(template.getCompensationVoucherPercent());
+        form.setCompensationVoucherDays(template.getCompensationVoucherDays());
         return form;
     }
 
@@ -61,4 +85,16 @@ public class ContractTemplateFormDTO {
 
     public Integer getFreeCancellationHours() { return freeCancellationHours; }
     public void setFreeCancellationHours(Integer freeCancellationHours) { this.freeCancellationHours = freeCancellationHours; }
+
+    public Integer getFreeCancelAfterDepositHours() { return freeCancelAfterDepositHours; }
+    public void setFreeCancelAfterDepositHours(Integer hours) { this.freeCancelAfterDepositHours = hours; }
+
+    public Integer getPickupWaitHours() { return pickupWaitHours; }
+    public void setPickupWaitHours(Integer hours) { this.pickupWaitHours = hours; }
+
+    public Integer getCompensationVoucherPercent() { return compensationVoucherPercent; }
+    public void setCompensationVoucherPercent(Integer percent) { this.compensationVoucherPercent = percent; }
+
+    public Integer getCompensationVoucherDays() { return compensationVoucherDays; }
+    public void setCompensationVoucherDays(Integer days) { this.compensationVoucherDays = days; }
 }

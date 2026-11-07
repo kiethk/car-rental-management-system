@@ -44,6 +44,55 @@
             </div>
         </div>
 
+        <!-- Rental time started but the car was not picked up yet: until when the booking waits -->
+        <div th:if="${booking.pickupDeadline != null}" role="status"
+             style="margin: 0 0 16px; padding: 14px 16px; border: 1px solid #fcd34d; border-left: 4px solid #f59e0b; border-radius: 10px; background: #fffbeb; color: #78350f;">
+            <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">Giờ thuê dự kiến của bạn đã bắt đầu</div>
+            <div style="font-size: 13px;">
+                Vui lòng đến nhận xe trước <strong th:text="${#temporals.format(booking.pickupDeadline, 'HH:mm dd/MM/yyyy')}">11:00 08/11/2026</strong>.
+                Sau thời điểm này đơn sẽ tự hủy và tiền cọc không được hoàn lại. Giờ trả xe giữ nguyên như đã đặt.
+            </div>
+        </div>
+
+        <!-- Overdue rental: how late, the late fee so far, when the next hour counts -->
+        <div th:if="${booking.lateReturn != null}" role="alert" th:with="late=${booking.lateReturn}"
+             style="margin: 0 0 16px; padding: 14px 16px; border: 1px solid #fca5a5; border-left: 4px solid #dc2626; border-radius: 10px; background: #fef2f2; color: #7f1d1d;">
+            <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">
+                Đã quá giờ trả xe <span th:text="${late.lateText}">2 giờ 15 phút</span>
+            </div>
+            <div th:if="${late.inGrace}" style="font-size: 13px;">
+                Chưa tính phí trễ. Phí trễ bắt đầu tính từ
+                <strong th:text="${#temporals.format(late.nextChargeAt, 'HH:mm dd/MM/yyyy')}">15:00 07/11/2026</strong>
+                nếu xe vẫn chưa được trả.
+            </div>
+            <div th:unless="${late.inGrace}" style="font-size: 13px;">
+                Phí trễ hiện tại:
+                <strong th:text="${#numbers.formatDecimal(late.currentFee, 0, 'COMMA', 0, 'POINT')} + ' đ'">400,000 đ</strong>
+                (<span th:text="${late.chargedHours}">2</span> giờ). Giờ trễ tiếp theo bắt đầu tính lúc
+                <strong th:text="${#temporals.format(late.nextChargeAt, 'HH:mm dd/MM/yyyy')}">16:00 07/11/2026</strong>.
+                Vui lòng trả xe sớm nhất có thể.
+            </div>
+        </div>
+
+        <!-- Voucher bù: the booking was cancelled because no car of its type was left -->
+        <div th:if="${booking.compensationVoucherCode != null}"
+             style="margin: 0 0 16px; padding: 16px; border: 2px dashed #fdba74; border-radius: 12px; background: #fff7ed; color: #7c2d12;">
+            <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">DriveNow xin lỗi vì không giao được xe cho đơn này</div>
+            <div style="font-size: 13px; margin-bottom: 10px;">
+                Tiền cọc đã được hoàn đủ. Bạn nhận được voucher giảm <span th:text="${booking.compensationVoucherPercent} + '%'">10%</span> tiền thuê cho lần đặt xe tiếp theo.
+            </div>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+                <span style="font-family: Consolas, monospace; font-size: 18px; font-weight: 700; letter-spacing: 2px; padding: 6px 12px; background: #fff; border: 1px solid #fed7aa; border-radius: 8px; color: #0f172a;"
+                      th:text="${booking.compensationVoucherCode}">BU42-K7QM2X</span>
+                <span th:if="${booking.compensationVoucherUsed}" style="font-size: 12px; font-weight: 600; color: #64748b;">Đã sử dụng</span>
+                <span th:unless="${booking.compensationVoucherUsed}" style="font-size: 12px;">
+                    Dùng 1 lần · hạn đến <strong th:text="${#temporals.format(booking.compensationVoucherValidUntil, 'dd/MM/yyyy')}">05/02/2027</strong>
+                </span>
+                <a th:unless="${booking.compensationVoucherUsed}" th:href="@{/search}"
+                   style="margin-left: auto; font-size: 13px; font-weight: 700; color: #c2410c;">Đặt xe ngay →</a>
+            </div>
+        </div>
+
         <div th:if="${success}" role="status"
              style="margin: 0 0 16px; padding: 12px 16px; border: 1px solid #86efac; border-radius: 8px; background: #f0fdf4; color: #166534;"
              th:text="${success}"></div>
@@ -122,7 +171,7 @@
                         <div style="flex: 1; min-width: 250px;">
                             <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px;">Trạm nhận xe</div>
                             <div style="font-size: 14px; font-weight: 600; color: #0f172a;" th:text="${booking.stationAddress}">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</div>
-                            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Mở cửa hàng ngày: 07:00 - 22:00</div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Mở cửa hàng ngày: <span th:text="${openingHours != null ? openingHours.label : '06:00 - 22:00'}">06:00 - 22:00</span></div>
                         </div>
                         <div style="flex: 1; min-width: 250px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px;">
                             <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px;">Nhân viên phụ trách giao nhận xe</div>
@@ -372,7 +421,6 @@
                     <div class="deposit-amber-box">
                         <div>
                             <div class="deposit-box-label">Tiền cọc giữ xe</div>
-                            <div class="deposit-box-sub">Hoàn cọc khi kết thúc hợp đồng</div>
                         </div>
                         <div class="deposit-box-val">
                             <span th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}">720,000</span> đ
@@ -478,7 +526,7 @@
                                 </svg>
                                 <div>
                                     <strong>Đủ điều kiện hoàn 100% tiền cọc!</strong><br/>
-                                    Bạn đang hủy trước thời hạn quy định (trước <span th:text="${cancelDeadline != null ? #temporals.format(cancelDeadline, 'dd/MM/yyyy HH:mm') : '72h'}">72h</span>).
+                                    Bạn còn được hủy miễn phí đến <span th:text="${cancelDeadline != null ? #temporals.format(cancelDeadline, 'HH:mm dd/MM/yyyy') : ''}">10:00 07/11/2026</span>.
                                     Số tiền cọc <strong><span th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}">500,000</span> đ</strong> sẽ được hoàn lại vào tài khoản ngân hàng trong vòng 24h làm việc.
                                 </div>
                             </div>

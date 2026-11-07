@@ -39,8 +39,8 @@ class ContractDocumentGeneratorTest {
         engine.setTemplateResolver(resolver);
 
         generator = new OpenHtmlToPdfContractGenerator(engine,
-                new ClassPathResource("fonts/NotoSans-Regular.ttf"),
-                new ClassPathResource("fonts/NotoSans-Bold.ttf"));
+                new ClassPathResource("fonts/LiberationSerif-Regular.ttf"),
+                new ClassPathResource("fonts/LiberationSerif-Bold.ttf"));
     }
 
     @Test

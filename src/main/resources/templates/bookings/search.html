@@ -122,7 +122,7 @@
                 </div>
 
                 <!-- No Results State -->
-                <div th:if="${results.isEmpty()}" class="card-shadcn p-12 text-center text-muted-foreground bg-white rounded-xl">
+                <div th:if="${results.isEmpty()}" class="card-shadcn py-16 px-6 text-center text-muted-foreground bg-white rounded-xl my-4">
                     <div class="w-12 h-12 rounded-full bg-surface-2 text-muted-foreground flex items-center justify-center mx-auto mb-3">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
                     </div>
@@ -168,21 +168,6 @@
                                     <span class="capitalize" th:text="${v.fuelType == 'gasoline' ? 'Xăng' : (v.fuelType == 'diesel' ? 'Dầu' : (v.fuelType == 'electric' ? 'Điện' : v.fuelType))}">Xăng</span>
                                 </div>
 
-                                <!-- Included Features -->
-                                <div class="flex flex-wrap gap-3 text-xs text-muted-foreground pt-1">
-                                    <span class="inline-flex items-center gap-1 text-green-700">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                        Điều hòa 2 vùng
-                                    </span>
-                                    <span class="inline-flex items-center gap-1 text-green-700">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                        Camera lùi / Cảm biến
-                                    </span>
-                                    <span class="inline-flex items-center gap-1 text-green-700">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                        Kết nối Bluetooth
-                                    </span>
-                                </div>
                             </div>
 
                             <!-- Right: Pricing & Select Button (Divider moved left with 32px padding) -->

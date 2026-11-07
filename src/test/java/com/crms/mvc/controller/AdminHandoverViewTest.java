@@ -49,7 +49,6 @@ class AdminHandoverViewTest {
 
     @BeforeEach
     void setUp() {
-        when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
         when(paymentService.getPendingRefund(42L)).thenReturn(Optional.empty());
     }
 
@@ -63,6 +62,99 @@ class AdminHandoverViewTest {
                 .andExpect(content().string(containsString("name=\"licenseImage\"")))
                 .andExpect(content().string(containsString("name=\"idCardImage\"")))
                 .andExpect(content().string(not(containsString("assign-staff"))));
+    }
+
+    @Test
+    void staffCanSwapToAnotherCarFreeForTheRentalWindow() throws Exception {
+        stubBooking("confirmed", new HandoverSummaryDTO());
+        com.crms.mvc.entity.Vehicle spare = new com.crms.mvc.entity.Vehicle();
+        spare.setId(6L);
+        spare.setColor("Trắng");
+        spare.setYear(2024);
+        when(bookingService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(spare));
+
+        mvc.perform(get("/admin/bookings/42").session(TestSessions.staff(2L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("id=\"doi-xe\"")))
+                .andExpect(content().string(containsString("Đổi sang xe này")))
+                .andExpect(content().string(containsString("value=\"6\"")));
+    }
+
+    @Test
+    void withNoSameTypeCarLeftTheSwapCardOffersOnlyTheFullRefund() throws Exception {
+        stubBooking("confirmed", new HandoverSummaryDTO());
+        // findAvailableVehiclesInTimeRange is unstubbed: no car of the booked type is free.
+
+        mvc.perform(get("/admin/bookings/42").session(TestSessions.staff(2L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("nào trống trong khung giờ thuê của đơn này")))
+                .andExpect(content().string(containsString("Không còn xe cùng loại?")))
+                .andExpect(content().string(containsString("/admin/bookings/42/cancel-no-car")))
+                .andExpect(content().string(containsString("name=\"refundMethod\"")))
+                .andExpect(content().string(not(containsString("Nâng hạng"))))
+                .andExpect(content().string(not(containsString("accountNumber"))));
+    }
+
+    @Test
+    void whileASameTypeCarIsFreeThereIsNoFullRefundShortcut() throws Exception {
+        stubBooking("confirmed", new HandoverSummaryDTO());
+        com.crms.mvc.entity.Vehicle spare = new com.crms.mvc.entity.Vehicle();
+        spare.setId(6L);
+        when(bookingService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(spare));
+
+        mvc.perform(get("/admin/bookings/42").session(TestSessions.staff(2L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Đổi sang xe này")))
+                .andExpect(content().string(not(containsString("/admin/bookings/42/cancel-no-car"))));
+    }
+
+    @Test
+    void cancellingForAnUnavailableCarRefundsAtTheCounterByTheChosenMethod() throws Exception {
+        mvc.perform(post("/admin/bookings/42/cancel-no-car").session(TestSessions.staff(2L))
+                        .param("refundMethod", "BANK_TRANSFER"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/bookings/42"))
+                .andExpect(flash().attribute("success", "Đã huỷ đơn, hoàn 100% tiền cọc tại quầy và gửi khách voucher bù cho lần thuê sau."));
+        verify(bookingService).cancelForUnavailableCar(42L, "BANK_TRANSFER");
+    }
+
+    @Test
+    void staffSeeAnOverdueRentalWithItsLateFeeAndTheCustomerPhone() throws Exception {
+        stubBooking("active", new HandoverSummaryDTO());
+        BookingDetailDTO detail = bookingService.getBookingDetailForAdmin(42L);
+        detail.setCustomerPhone("0901234567");
+        detail.setLateReturn(new com.crms.mvc.dto.LateReturnDTO(70, 1, new BigDecimal("200000"), detail.getScheduledEndTime().plusHours(2)));
+        when(bookingService.countOverdueRentals()).thenReturn(1L);
+
+        mvc.perform(get("/admin/bookings/42").session(TestSessions.staff(2L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Xe đã quá giờ trả <span>1 giờ 10 phút</span>")))
+                .andExpect(content().string(containsString("200,000 đ")))
+                .andExpect(content().string(containsString("Số xe đã quá giờ trả")));
+    }
+
+    @Test
+    void aCarStillOutWithThePreviousCustomerBlocksTheHandoverButton() throws Exception {
+        stubBooking("confirmed", new HandoverSummaryDTO());
+        bookingService.getBookingDetailForAdmin(42L).setVehicleStatus("rented");
+
+        String html = mvc.perform(get("/admin/bookings/42").session(TestSessions.staff(2L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Chưa thể bàn giao xe")))
+                .andExpect(content().string(containsString("xe vẫn đang được khách trước sử dụng và chưa được trả.")))
+                .andReturn().getResponse().getContentAsString();
+        org.assertj.core.api.Assertions.assertThat(html)
+                .containsPattern("class=\"admin-btn admin-btn-success[^>]*disabled=\"disabled\"");
+    }
+
+    @Test
+    void aReadyCarCanBeHandedOver() throws Exception {
+        stubBooking("confirmed", new HandoverSummaryDTO());
+
+        mvc.perform(get("/admin/bookings/42").session(TestSessions.staff(2L)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Xe bàn giao: <strong class=\"font-mono\">51A-123.45</strong>")))
+                .andExpect(content().string(not(containsString("Chưa thể bàn giao xe"))));
     }
 
     @Test
@@ -205,6 +297,8 @@ class AdminHandoverViewTest {
         detail.setId(42L);
         detail.setStatus(status);
         detail.setVehicleId(5L);
+        detail.setVehicleStatus("available");
+        detail.setLicensePlate("51A-123.45");
         detail.setVehicleTypeId(1L);
         detail.setVehicleTypeName("Toyota Vios");
         detail.setCustomerName("Nguyen Van A");

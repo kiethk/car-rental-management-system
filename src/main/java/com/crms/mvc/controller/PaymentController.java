@@ -68,7 +68,7 @@ public class PaymentController {
         }
 
         // Hạn chót 15 phút: tự động hủy đơn và chặn thanh toán nếu quá 15 phút
-        if (booking.getCreatedAt() != null && booking.getCreatedAt().plusMinutes(15).isBefore(java.time.OffsetDateTime.now())) {
+        if (booking.getCreatedAt() != null && booking.getCreatedAt().plusMinutes(com.crms.mvc.entity.Payment.PAYMENT_TIMEOUT_MINUTES).isBefore(java.time.OffsetDateTime.now())) {
             bookingService.cancelBooking(bookingId, customerId);
             ra.addFlashAttribute("error", "Đơn đặt xe đã hết hạn thanh toán cọc sau 15 phút và đã tự động hủy.");
             return "redirect:/bookings/" + bookingId;

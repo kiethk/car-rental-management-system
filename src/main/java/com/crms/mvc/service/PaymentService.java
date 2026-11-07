@@ -42,6 +42,12 @@ public interface PaymentService {
 
     Payment createPendingRefund(Long bookingId, BigDecimal amount, String bankCode, String accountNumber, String accountHolder);
     Payment confirmRefundCompleted(Long paymentId, Long employeeId, String transactionNo);
+
+    /**
+     * Money handed back to a customer who is at the counter: recorded as an already paid refund, in cash or by
+     * bank transfer, and the customer is notified like any completed refund.
+     */
+    Payment recordCounterRefund(Long bookingId, BigDecimal amount, String paymentMethod);
     Optional<Payment> getPendingRefund(Long bookingId);
     List<Payment> getPendingRefunds();
     long countPendingRefunds();

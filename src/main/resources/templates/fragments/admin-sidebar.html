@@ -87,6 +87,14 @@
                         title="Số đơn cần hoàn tiền cọc"
                         >1</span
                     >
+                    <span
+                        class="admin-sidebar-badge-counter"
+                        style="background: #dc2626;"
+                        th:if="${overdueRentalCount != null and overdueRentalCount > 0}"
+                        th:text="${overdueRentalCount}"
+                        title="Số xe đã quá giờ trả"
+                        >1</span
+                    >
                 </a>
                 <a
                     th:href="@{/admin/contract-templates}"

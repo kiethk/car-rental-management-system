@@ -2094,3 +2094,9 @@ body.sidebar-collapsed .admin-profile-menu {
   justify-content: flex-end;
   gap: 0.625rem;
 }
+
+/* Fallback padding utilities */
+.p-10 { padding: 2.5rem !important; }
+.p-12 { padding: 3rem !important; }
+.p-16 { padding: 4rem !important; }
+.p-20 { padding: 5rem !important; }

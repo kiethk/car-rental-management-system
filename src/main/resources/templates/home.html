@@ -100,8 +100,7 @@
                 </div>
 
                 <div id="hero-carousel"
-                     class="promotion-carousel overflow-hidden border border-border/80 bg-surface shadow-md"
-                     style="border-radius: 1.5rem !important;"
+                     class="promotion-carousel overflow-hidden bg-surface"
                      th:attr="aria-label=${hasPromotionImages ? 'Current promotions' : 'Featured rental cars'}">
                     <article th:if="${hasPromotionImages}" th:each="promotion, iter : ${promotions}"
                              class="promotion-slide" th:classappend="${iter.index == 0 ? ' active' : ''}"
@@ -234,12 +233,30 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <style>
-    .promotion-carousel { position: relative; min-height: 240px; aspect-ratio: 11 / 7; }
-    .promotion-slide { display: none; position: absolute; inset: 0; }
-    .promotion-slide.active { display: block; }
+    /* Soft frame: a faint 1px ring and a diffuse shadow instead of a hard border; isolation keeps the
+       rounded corners clipping cleanly while slides move. */
+    .promotion-carousel { position: relative; min-height: 240px; aspect-ratio: 11 / 7;
+        border-radius: 1.75rem; isolation: isolate;
+        box-shadow: 0 0 0 1px rgba(15, 23, 42, .05), 0 18px 40px -18px rgba(15, 23, 42, .35); }
+    /* Slides sit side by side off-screen; the script slides the next one in and the current one out. */
+    .promotion-slide { position: absolute; inset: 0; transform: translateX(100%); visibility: hidden;
+        transition: transform .6s cubic-bezier(.4, 0, .2, 1); }
+    .promotion-slide.active { transform: translateX(0); visibility: visible; }
     .promotion-slide img { width: 100%; height: 100%; object-fit: cover; }
-    .promotion-controls { position: absolute; inset: 50% .75rem auto; display: flex; justify-content: space-between; transform: translateY(-50%); }
-    .promotion-controls button { width: 2.5rem; height: 2.5rem; border: 0; border-radius: 50%; color: #0a192f; background: white; font-size: 1.5rem; }
+    .promotion-controls { position: absolute; inset: 50% .75rem auto; display: flex; justify-content: space-between;
+        transform: translateY(-50%); pointer-events: none; z-index: 2; }
+    .promotion-controls button { pointer-events: auto; width: 2.5rem; height: 2.5rem; border: 0; border-radius: 50%;
+        color: #0a192f; background: rgba(255, 255, 255, .45); font-size: 1.5rem; line-height: 1; opacity: .55;
+        backdrop-filter: blur(4px); cursor: pointer;
+        transition: opacity .25s ease, background-color .25s ease, transform .25s ease, box-shadow .25s ease; }
+    .promotion-carousel:hover .promotion-controls button { opacity: .8; }
+    .promotion-controls button:hover,
+    .promotion-controls button:focus-visible { opacity: 1; background: #fff; transform: scale(1.1);
+        box-shadow: 0 6px 16px rgba(10, 25, 47, .25); outline: none; }
+    .promotion-controls button:active { transform: scale(.95); }
+    @media (prefers-reduced-motion: reduce) {
+        .promotion-slide, .promotion-controls button { transition: none; }
+    }
 </style>
 <script>
     (() => {
@@ -247,17 +264,62 @@
         if (!carousel) return;
         const slides = Array.from(carousel.querySelectorAll('.promotion-slide'));
         let current = 0;
-        const showSlide = (index) => {
-            slides[current].classList.remove('active');
-            slides[current].setAttribute('aria-hidden', 'true');
-            current = (index + slides.length) % slides.length;
-            slides[current].classList.add('active');
-            slides[current].setAttribute('aria-hidden', 'false');
+        let animating = false;
+        // direction 1 = next: the new slide enters from the right; -1 = previous: it enters from the left.
+        const showSlide = (index, direction) => {
+            if (animating || slides.length < 2) return;
+            const next = (index + slides.length) % slides.length;
+            if (next === current) return;
+            animating = true;
+            const from = slides[current];
+            const to = slides[next];
+
+            // Park the incoming slide just outside the frame without animating, then slide both.
+            to.style.transition = 'none';
+            to.style.transform = `translateX(${direction * 100}%)`;
+            to.style.visibility = 'visible';
+            void to.offsetWidth;
+            to.style.transition = '';
+            to.style.transform = 'translateX(0)';
+            from.style.transform = `translateX(${-direction * 100}%)`;
+
+            let finished = false;
+            const finish = () => {
+                if (finished) return;
+                finished = true;
+                from.classList.remove('active');
+                from.setAttribute('aria-hidden', 'true');
+                from.style.visibility = '';
+                from.style.transform = '';
+                to.classList.add('active');
+                to.setAttribute('aria-hidden', 'false');
+                to.style.visibility = '';
+                to.style.transform = '';
+                current = next;
+                animating = false;
+            };
+            to.addEventListener('transitionend', finish, { once: true });
+            window.setTimeout(finish, 700); // also finishes when transitions are off (reduced motion)
         };
+
+        let timer = null;
+        const startAutoplay = () => {
+            if (slides.length > 1) timer = window.setInterval(() => showSlide(current + 1, 1), 5000);
+        };
+        const stopAutoplay = () => window.clearInterval(timer);
+
         carousel.querySelectorAll('[data-promotion-direction]').forEach((button) => {
-            button.addEventListener('click', () => showSlide(current + Number(button.dataset.promotionDirection)));
+            button.addEventListener('click', () => {
+                const direction = Number(button.dataset.promotionDirection);
+                showSlide(current + direction, direction);
+                stopAutoplay();
+                startAutoplay();
+            });
         });
-        if (slides.length > 1) window.setInterval(() => showSlide(current + 1), 5000);
+        // Pause while the visitor is looking at a slide.
+        carousel.addEventListener('mouseenter', stopAutoplay);
+        carousel.addEventListener('mouseleave', () => { stopAutoplay(); startAutoplay(); });
+        startAutoplay();
     })();
 </script>
 

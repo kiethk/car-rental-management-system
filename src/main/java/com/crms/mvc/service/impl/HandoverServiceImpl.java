@@ -100,7 +100,7 @@ public class HandoverServiceImpl implements HandoverService {
         if (vehicle == null) {
             throw new IllegalStateException("Chưa thể bàn giao: đơn thuê chưa được gán xe");
         }
-        validateEarlyPickupAndVehicleAvailability(booking);
+        validatePickupTimeAndVehicle(booking, vehicle);
         if (handoverRepository.existsByBookingIdAndType(bookingId, HandoverType.CHECK_IN)) {
             throw new IllegalStateException("Đơn thuê này đã có biên bản bàn giao xe");
         }
@@ -392,53 +392,19 @@ public class HandoverServiceImpl implements HandoverService {
         return record;
     }
 
-    public static final int MAX_EARLY_PICKUP_MINUTES = 30;
-    public static final int CLEANING_WINDOW_MINUTES = 30;
-
-    private void validateEarlyPickupAndVehicleAvailability(Booking booking) {
-        OffsetDateTime now = OffsetDateTime.now();
+    /**
+     * The car is handed over from the scheduled pickup time, never earlier. Whether a returned car is clean
+     * is decided by staff in person; if the assigned car is not available, staff reassign another car first.
+     */
+    private void validatePickupTimeAndVehicle(Booking booking, Vehicle vehicle) {
         OffsetDateTime scheduledPickup = booking.getPickupTime();
-        Vehicle vehicle = booking.getVehicle();
-
-        // 1. Chỉ được nhận xe trước giờ hẹn tối đa 30 phút
-        if (scheduledPickup != null && now.isBefore(scheduledPickup.minusMinutes(MAX_EARLY_PICKUP_MINUTES))) {
-            throw new IllegalStateException(
-                    "Chỉ được phép nhận xe trước giờ hẹn tối đa 30 phút. Giờ nhận xe dự kiến là: "
-                            + DateTimeUtils.formatToVietnamTime(scheduledPickup) + ".");
+        if (scheduledPickup != null && OffsetDateTime.now().isBefore(scheduledPickup)) {
+            throw new IllegalStateException("Chưa đến giờ nhận xe. Chỉ được bàn giao từ "
+                    + DateTimeUtils.formatToVietnamTime(scheduledPickup) + ".");
         }
-
-        // 2. Xe phải ở trạng thái sẵn sàng (available)
-        if (vehicle != null && !Vehicle.STATUS_AVAILABLE.equalsIgnoreCase(vehicle.getStatus())) {
-            if (scheduledPickup != null && now.isBefore(scheduledPickup)) {
-                throw new IllegalStateException(
-                        "Phương tiện hiện đang trong quy trình kiểm tra và vệ sinh sau ca thuê trước. "
-                                + "Quý khách vui lòng nhận xe vào đúng khung giờ dự kiến ("
-                                + DateTimeUtils.formatToVietnamTime(scheduledPickup)
-                                + "), hoặc đổi sang phương tiện cùng loại khác biển số nếu muốn nhận ngay.");
-            } else {
-                throw new IllegalStateException(
-                        "Phương tiện chưa sẵn sàng bàn giao (trạng thái hiện tại: " + vehicle.getStatus()
-                                + "). Vui lòng kiểm tra lại tình trạng xe hoặc đổi sang xe khác cùng loại.");
-            }
-        }
-
-        // 3. Cơ chế suy diễn thời gian (Computed State): Xe vừa trả của ca trước chưa đủ 30 phút dọn rửa
-        if (vehicle != null && vehicle.getId() != null) {
-            List<Booking> recentReturns = bookingRepository.findRecentReturnsByVehicle(vehicle.getId(), booking.getId());
-            if (!recentReturns.isEmpty()) {
-                Booking latestReturn = recentReturns.get(0);
-                if (latestReturn.getActualReturnTime() != null) {
-                    OffsetDateTime cleaningDoneAt = latestReturn.getActualReturnTime().plusMinutes(CLEANING_WINDOW_MINUTES);
-                    if (now.isBefore(cleaningDoneAt)) {
-                        throw new IllegalStateException(
-                                "Phương tiện hiện đang trong quy trình kiểm tra và vệ sinh sau ca thuê trước (dự kiến hoàn tất lúc "
-                                        + DateTimeUtils.formatToVietnamTime(cleaningDoneAt) + "). "
-                                        + (scheduledPickup != null ? "Quý khách vui lòng nhận xe vào đúng khung giờ dự kiến ("
-                                        + DateTimeUtils.formatToVietnamTime(scheduledPickup) + ")" : "Quý khách vui lòng đợi trong giây lát")
-                                        + ", hoặc liên hệ nhân viên để được hỗ trợ đổi sang phương tiện cùng loại khác biển số nếu muốn nhận ngay.");
-                    }
-                }
-            }
+        if (!Vehicle.STATUS_AVAILABLE.equalsIgnoreCase(vehicle.getStatus())) {
+            throw new IllegalStateException("Xe được gán chưa sẵn sàng bàn giao (trạng thái: " + vehicle.getStatus()
+                    + "). Hãy đổi sang xe khác cùng loại cho đơn này.");
         }
     }
 

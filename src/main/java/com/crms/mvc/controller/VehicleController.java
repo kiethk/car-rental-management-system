@@ -3,8 +3,10 @@ package com.crms.mvc.controller;
 import com.crms.mvc.dto.PhysicalCarItemDTO;
 import com.crms.mvc.dto.VehicleReviewSummaryDTO;
 import com.crms.mvc.dto.VehicleDTO;
+import com.crms.mvc.dto.VehicleScheduleDTO;
 import com.crms.mvc.dto.VehicleSearchFilterDTO;
 import com.crms.mvc.entity.Vehicle;
+import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.service.ReviewService;
 import com.crms.mvc.service.VehicleService;
@@ -17,7 +19,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Controller
 public class VehicleController {
@@ -25,15 +30,21 @@ public class VehicleController {
     private final VehicleService vehicleService;
     private final VehicleTypeService vehicleTypeService;
     private final ContractTemplateService contractTemplateService;
+    private final BookingService bookingService;
     private final ReviewService reviewService;
+
+    /** How far ahead a customer can see one car's schedule. */
+    static final int SCHEDULE_DAYS = 30;
 
     public VehicleController(VehicleService vehicleService,
                              VehicleTypeService vehicleTypeService,
                              ContractTemplateService contractTemplateService,
+                             BookingService bookingService,
                              ReviewService reviewService) {
         this.vehicleService = vehicleService;
         this.vehicleTypeService = vehicleTypeService;
         this.contractTemplateService = contractTemplateService;
+        this.bookingService = bookingService;
         this.reviewService = reviewService;
     }
 
@@ -71,5 +82,21 @@ public class VehicleController {
         }
 
         return "vehicles/detail";
+    }
+
+    /** One car's schedule for the next 30 days, so a customer who wants that exact car can find a free window. */
+    @GetMapping("/vehicles/cars/{vehicleId}/schedule")
+    public String schedule(@PathVariable Long vehicleId, Model model) {
+        VehicleScheduleDTO schedule;
+        try {
+            schedule = bookingService.getVehicleSchedule(vehicleId, LocalDate.now(ZoneOffset.ofHours(7)), SCHEDULE_DAYS);
+        } catch (NoSuchElementException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found!");
+        }
+        if (Vehicle.STATUS_RETIRED.equalsIgnoreCase(schedule.getVehicleStatus())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle is retired");
+        }
+        model.addAttribute("schedule", schedule);
+        return "vehicles/schedule";
     }
 }
