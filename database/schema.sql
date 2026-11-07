@@ -101,6 +101,7 @@ CREATE TABLE promotions (
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     quantity INTEGER NOT NULL,
+    url_image_promotion VARCHAR(500),
     CHECK (discount_type IN ('percent','fixed')),
     CHECK (discount_value >= 0),
     CHECK (discount_type <> 'percent' OR discount_value <= 100),

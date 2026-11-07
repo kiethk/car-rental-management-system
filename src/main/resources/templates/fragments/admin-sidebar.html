@@ -3,7 +3,7 @@
     <body>
         <!--
     Admin Clean Light Flush Collapsible Sidebar Fragment
-    Pass active param: 'dashboard', 'bookings', 'contracts', 'vehicles', 'inspections', 'licenses', 'profile', 'accounts'
+    Pass active param: 'dashboard', 'bookings', 'contracts', 'vehicles', 'inspections', 'license-plates', 'licenses', 'profile', 'accounts', 'promotions', 'issues'
 -->
         <nav th:fragment="sidebar(active)" class="admin-sidebar-nav" aria-label="Menu quản trị hệ thống">
             <!-- Top Bar: Title & Toggle Button -->
@@ -161,14 +161,16 @@
             <!-- 4. TIỆN ÍCH & DỊCH VỤ -->
             <div class="admin-sidebar-group">
                 <div class="admin-sidebar-heading">Tiện ích & Dịch vụ</div>
-                <!-- Voucher (Task Trí) -->
-                <div class="admin-sidebar-link-disabled" title="Voucher & Ưu đãi (Trí đang phát triển)">
+                <a
+                    th:href="@{/admin/promotions}"
+                    th:class="'admin-sidebar-link ' + (${active == 'promotions'} ? 'active' : '')"
+                    title="Voucher & Ưu đãi"
+                >
                     <svg class="admin-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                     </svg>
                     <span class="admin-nav-label">Voucher & Ưu đãi</span>
-                    <span class="admin-sidebar-badge-soon">Trí</span>
-                </div>
+                </a>
                 <a
                     th:href="@{/admin/issues}"
                     th:class="'admin-sidebar-link ' + (${active == 'issues'} ? 'active' : '')"

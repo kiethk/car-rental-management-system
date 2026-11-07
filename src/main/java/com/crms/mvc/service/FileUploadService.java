@@ -13,6 +13,8 @@ public interface FileUploadService {
 
     Resource loadVehicleImage(String fileName);
 
+    String savePromotionImage(MultipartFile image);
+
     String saveHandoverImage(MultipartFile image);
 
     Resource loadHandoverImage(String fileName);

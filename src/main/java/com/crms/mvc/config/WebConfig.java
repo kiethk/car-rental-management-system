@@ -49,5 +49,13 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry.addResourceHandler("/uploads/vehicles/**")
                 .addResourceLocations(vehiclePath);
+
+        String promotionPath = Path.of("uploads", "promotions").toAbsolutePath().normalize().toUri().toString();
+        if (!promotionPath.endsWith("/")) {
+            promotionPath += "/";
+        }
+
+        registry.addResourceHandler("/uploads/promotions/**")
+                .addResourceLocations(promotionPath);
     }
 }

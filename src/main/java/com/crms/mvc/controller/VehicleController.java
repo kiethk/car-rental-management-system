@@ -1,12 +1,14 @@
 package com.crms.mvc.controller;
 
 import com.crms.mvc.dto.PhysicalCarItemDTO;
+import com.crms.mvc.dto.VehicleReviewSummaryDTO;
 import com.crms.mvc.dto.VehicleDTO;
 import com.crms.mvc.dto.VehicleScheduleDTO;
 import com.crms.mvc.dto.VehicleSearchFilterDTO;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.ContractTemplateService;
+import com.crms.mvc.service.ReviewService;
 import com.crms.mvc.service.VehicleService;
 import com.crms.mvc.service.VehicleTypeService;
 import org.springframework.http.HttpStatus;
@@ -29,6 +31,7 @@ public class VehicleController {
     private final VehicleTypeService vehicleTypeService;
     private final ContractTemplateService contractTemplateService;
     private final BookingService bookingService;
+    private final ReviewService reviewService;
 
     /** How far ahead a customer can see one car's schedule. */
     static final int SCHEDULE_DAYS = 30;
@@ -36,11 +39,13 @@ public class VehicleController {
     public VehicleController(VehicleService vehicleService,
                              VehicleTypeService vehicleTypeService,
                              ContractTemplateService contractTemplateService,
-                             BookingService bookingService) {
+                             BookingService bookingService,
+                             ReviewService reviewService) {
         this.vehicleService = vehicleService;
         this.vehicleTypeService = vehicleTypeService;
         this.contractTemplateService = contractTemplateService;
         this.bookingService = bookingService;
+        this.reviewService = reviewService;
     }
 
     @GetMapping("/vehicles")
@@ -62,6 +67,9 @@ public class VehicleController {
         model.addAttribute("contractTerms", contractTemplateService.getActiveTemplate());
 
         if (vehicle.getVehicleTypeId() != null) {
+            VehicleReviewSummaryDTO reviewSummary =
+                    reviewService.findPublicReviewsForVehicleType(vehicle.getVehicleTypeId());
+            model.addAttribute("reviewSummary", reviewSummary);
             List<Vehicle> cars = vehicleService.findByVehicleTypeIdWithDetails(vehicle.getVehicleTypeId());
             List<PhysicalCarItemDTO> physicalCars = cars.stream().map(v -> new PhysicalCarItemDTO(
                     v.getId(),

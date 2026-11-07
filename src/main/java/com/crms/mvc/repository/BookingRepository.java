@@ -55,6 +55,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     long countByVehicleId(Long vehicleId);
 
+    boolean existsByPromotionId(Long promotionId);
+
     /**
      * Vehicles taken during [startTime, endTime). A rental that is active but not returned yet keeps its vehicle
      * until at least {@code now}, even past its scheduled end, because the car has not physically come back.
