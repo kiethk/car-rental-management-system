@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Browse Cars — DriveNow</title>
+    <title>Danh sách xe — DriveNow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -60,7 +60,7 @@
     <!-- Top Hero Banner with Rounded Corners (Unified with Rent page) -->
     <div class="crms-hero-banner">
         <div>
-            <h1>Explore Our Self-Drive Cars</h1>
+            <h1>Khám phá đội xe tự lái</h1>
             <p>Choose from our modern collection of sedans, SUVs, MPVs, and electric vehicles. Thoroughly inspected and sanitized before every trip.</p>
         </div>
     </div>
@@ -72,13 +72,13 @@
             <div class="card border-0 shadow-sm rounded-xl p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                     <h5 class="font-weight-bold text-navy mb-0">Filter Cars</h5>
-                    <a th:href="@{/vehicles}" class="text-muted small text-decoration-none">Reset</a>
+                    <a th:href="@{/vehicles}" class="text-muted small text-decoration-none">Đặt lại</a>
                 </div>
 
                 <form method="get" th:action="@{/vehicles}" id="filterForm">
                     <!-- Keyword search -->
                     <div class="form-group mb-3">
-                        <label class="small font-weight-bold text-muted mb-1">Search Keyword</label>
+                        <label class="small font-weight-bold text-muted mb-1">Từ khóa tìm kiếm</label>
                         <input type="text" name="keyword" th:value="${filter.keyword}"
                                class="form-control form-control-sm rounded-lg"
                                placeholder="Model or brand...">
@@ -138,15 +138,15 @@
             <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                 <div>
                     <h2 class="h5 font-weight-bold text-navy mb-0">Available Car Models</h2>
-                    <span class="small text-muted">Showing <strong class="text-navy" th:text="${totalCount}">0</strong> car models found</span>
+                    <span class="small text-muted">Showing <strong class="text-navy" th:text="${totalCount}">0</strong> dòng xe được tìm thấy</span>
                 </div>
                 <!-- Sort: belongs to the filter form, so every filter already chosen is kept when the order changes -->
                 <div class="d-flex align-items-center" style="gap: 8px;">
                     <label for="sortSelect" class="small font-weight-bold text-muted mb-0 text-nowrap">Sort by</label>
                     <select id="sortSelect" name="sortBy" form="filterForm" class="form-control form-control-sm rounded-lg"
                             style="width: auto;" onchange="document.getElementById('filterForm').submit()">
-                        <option value="price_asc" th:selected="${filter.sortBy == 'price_asc'}">Price: low to high</option>
-                        <option value="price_desc" th:selected="${filter.sortBy == 'price_desc'}">Price: high to low</option>
+                        <option value="price_asc" th:selected="${filter.sortBy == 'price_asc'}">Giá: từ thấp đến cao</option>
+                        <option value="price_desc" th:selected="${filter.sortBy == 'price_desc'}">Giá: từ cao đến thấp</option>
                         <option value="name_asc" th:selected="${filter.sortBy == 'name_asc'}">Name: A → Z</option>
                         <option value="name_desc" th:selected="${filter.sortBy == 'name_desc'}">Name: Z → A</option>
                     </select>
@@ -159,7 +159,7 @@
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto text-muted"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 11l2-6h10l2 6"/></svg>
                 </div>
                 <h4 class="font-weight-bold text-navy mb-2">No cars match your criteria</h4>
-                <p class="text-muted small max-w-md mx-auto mb-4">Try loosening your filter parameters or search terms to see available vehicles.</p>
+                <p class="text-muted small max-w-md mx-auto mb-4">Hãy thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm để xem các xe phù hợp.</p>
                 <div>
                     <a th:href="@{/vehicles}" class="btn btn-navy btn-sm px-4 py-2 font-weight-bold rounded-lg text-decoration-none">
                         Reset Filters

@@ -329,7 +329,7 @@
                                             </svg>
                                         </div>
                                         <div>
-                                            <span class="font-bold text-emerald-950">Driving License on File</span>
+                                            <span class="font-bold text-emerald-950">Giấy phép lái xe đã lưu</span>
                                             <span
                                                 class="text-emerald-800 font-mono ml-1"
                                                 th:if="${customerLicense != null}"
@@ -404,13 +404,13 @@
                                                 <line x1="9" y1="9" x2="15" y2="15" />
                                             </svg>
                                         </div>
-                                        <span class="font-bold text-red-950">License Expires Before Return</span>
+                                        <span class="font-bold text-red-950">GPLX hết hạn trước ngày trả xe</span>
                                     </div>
                                     <a
                                         th:href="@{/licenses/my-license}"
                                         class="btn-outline-shadcn inline-flex items-center justify-center gap-1.5 py-1 px-3 text-xs font-semibold whitespace-nowrap text-decoration-none"
                                     >
-                                        <span>Update License</span>
+                                        <span>Cập nhật GPLX</span>
                                         <svg
                                             class="w-3.5 h-3.5"
                                             viewBox="0 0 24 24"
@@ -606,7 +606,7 @@
                                                 th:href="@{/licenses/my-license}"
                                                 class="inline-flex items-center gap-1 text-xs font-bold text-amber-700 hover:text-amber-800 hover:underline"
                                             >
-                                                <span th:text="${licenseExpired} ? 'Update your driver license to unlock booking →' : 'Upload driver license to unlock booking →'">Upload driver license to unlock booking →</span>
+                                                <span th:text="${licenseExpired} ? 'Update your driver license to unlock booking →' : 'Tải lên GPLX để mở khóa đặt xe →'">Tải lên GPLX để mở khóa đặt xe →</span>
                                             </a>
                                         </div>
                                     </div>

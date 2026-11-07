@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${vehicleForm.id != null ? 'Edit Vehicle #' + vehicleForm.id : 'Add New Vehicle'} + ' — DriveNow Admin'">Vehicle Management</title>
+    <title th:text="${vehicleForm.id != null ? 'Edit Vehicle #' + vehicleForm.id : 'Add New Vehicle'} + ' — DriveNow Admin'">Quản lý xe</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -37,7 +37,7 @@
                             th:text="${vehicleForm.id != null ? 'Edit Vehicle #' + vehicleForm.id : 'Add New Car'}">
                             Add New Vehicle
                         </h1>
-                        <p class="text-muted small mb-0">Configure physical car specifications. A car keeps every plate it has had; the plate on the car now is the one without an end date.</p>
+                        <p class="text-muted small mb-0">Cấu hình thông số xe thực tế. Một xe lưu lại toàn bộ biển số từng gắn; biển số hiện tại là biển số không có ngày kết thúc.</p>
                     </div>
                     <a th:href="@{/admin/vehicles}" class="btn btn-outline-secondary btn-sm rounded-lg">
                         Back to Cars
@@ -60,7 +60,7 @@
                         <div class="col-md-6 form-group mb-3">
                             <label class="font-weight-bold small text-navy mb-1">Vehicle Model <span class="text-danger">*</span></label>
                             <select th:field="*{vehicleTypeId}" class="form-control rounded-lg" required>
-                                <option value="" disabled selected>-- Select vehicle model from catalog --</option>
+                                <option value="" disabled selected>-- Chọn dòng xe từ danh mục --</option>
                                 <option th:each="vt : ${vehicleTypes}" th:value="${vt.id}"
                                         th:text="${vt.displayName + ' (' + vt.seats + ' seats, ' + #numbers.formatDecimal(vt.pricePerHour, 0, 'COMMA', 0, 'POINT') + ' đ/h)'}"></option>
                             </select>
@@ -93,9 +93,9 @@
                         <div class="col-md-4 form-group mb-3">
                             <label class="font-weight-bold small text-navy mb-1">Initial Status <span class="text-danger">*</span></label>
                             <select th:field="*{status}" class="form-control rounded-lg" required>
-                                <option value="available">Available for rent</option>
+                                <option value="available">Sẵn sàng cho thuê</option>
                                 <option value="maintenance">In maintenance / Inspection</option>
-                                <option th:if="${vehicleForm.status == 'rented'}" value="rented" disabled>Rented (Managed by booking lifecycle)</option>
+                                <option th:if="${vehicleForm.status == 'rented'}" value="rented" disabled>Đang cho thuê (Quản lý theo vòng đời đơn đặt)</option>
                                 <option th:if="${vehicleForm.id != null and (vehicleForm.status == 'retired' or (session.account != null and session.account.admin))}"
                                         value="retired">Ngừng khai thác (vĩnh viễn, không thể hoàn tác)</option>
                             </select>
@@ -109,8 +109,8 @@
                                 2. License Plate & Registration
                             </h5>
                             <a th:if="${vehicleForm.id != null}" th:href="@{/admin/license-plates/vehicle/{id}(id=${vehicleForm.id})}"
-                               class="btn btn-outline-secondary btn-sm rounded-lg">Change plate / history</a>
-                            <span th:if="${vehicleForm.id == null}" class="badge badge-light border text-muted">First plate of this car</span>
+                               class="btn btn-outline-secondary btn-sm rounded-lg">Đổi biển số / Lịch sử</a>
+                            <span th:if="${vehicleForm.id == null}" class="badge badge-light border text-muted">Biển số đầu tiên của xe này</span>
                         </div>
 
 
@@ -120,7 +120,7 @@
                                 <label class="font-weight-bold small text-navy mb-1">Plate Number <span class="text-danger">*</span></label>
                                 <input type="text" id="plateInput" th:field="*{plate}" class="form-control rounded-lg font-weight-bold text-uppercase"
                                        placeholder="e.g. 51K-987.65" required th:readonly="${vehicleForm.id != null}">
-                                <small th:if="${vehicleForm.id != null}" class="text-muted" style="font-size: 11px;">To put a different plate on this car use "Change plate / history" so the old plate stays in the record.</small>
+                                <small th:if="${vehicleForm.id != null}" class="text-muted" style="font-size: 11px;">Để gắn biển số khác cho xe này, hãy dùng mục "Đổi biển số / Lịch sử" để lưu lại lịch sử.</small>
                                 <small class="text-danger" th:if="${#fields.hasErrors('plate')}" th:errors="*{plate}"></small>
                             </div>
 
@@ -135,13 +135,13 @@
                             <div class="col-md-4 form-group mb-3">
                                 <label class="font-weight-bold small text-navy mb-1">Registration Expiry Date</label>
                                 <input type="date" id="expiryInput" th:field="*{registrationExpiry}" class="form-control rounded-lg">
-                                <small class="text-muted" style="font-size: 11px;">Inspection sticker of the car; it does not change when the plate changes</small>
+                                <small class="text-muted" style="font-size: 11px;">Tem đăng kiểm của xe; tem này không thay đổi khi đổi biển số</small>
                             </div>
                         </div>
                     </div>
 
                     <div class="d-flex justify-content-end gap-2 pt-3 border-top">
-                        <a th:href="@{/admin/vehicles}" class="btn btn-light px-4 rounded-lg">Cancel</a>
+                        <a th:href="@{/admin/vehicles}" class="btn btn-light px-4 rounded-lg">Hủy bỏ</a>
                         <button type="submit" class="btn btn-navy font-weight-bold px-4 rounded-lg shadow-sm">
                             Save Vehicle
                         </button>

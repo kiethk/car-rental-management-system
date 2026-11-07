@@ -57,9 +57,9 @@
                                 <div class="text-xs font-bold text-navy" th:text="${account.name}">Customer Name</div>
                                 <div class="text-[11px] text-muted-foreground truncate" th:text="${account.email != null ? account.email : ''}">customer@gmail.com</div>
                                 <div class="flex items-center gap-1.5 mt-1.5">
-                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-white text-muted-foreground border border-border">Customer</span>
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-white text-muted-foreground border border-border">Khách hàng</span>
                                     <span th:if="${licenseOnFile}" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>License on file
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Đã có GPLX
                                     </span>
                                 </div>
                             </div>
@@ -78,8 +78,8 @@
                                         <svg class="w-4 h-4 text-muted-foreground flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                         <span>Giấy phép lái xe</span>
                                     </div>
-                                    <span th:if="${licenseOnFile}" class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">Uploaded</span>
-                                    <span th:if="${!licenseOnFile}" class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold border border-slate-200">Upload</span>
+                                    <span th:if="${licenseOnFile}" class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">Đã tải lên</span>
+                                    <span th:if="${!licenseOnFile}" class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold border border-slate-200">Tải lên</span>
                                 </a>
                             </div>
                             
@@ -144,7 +144,7 @@
                                 </a>
                                 <a th:href="@{/admin/profile}" class="crms-dropdown-item header-dropdown-item">
                                     <svg class="w-4 h-4 text-muted-foreground flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
-                                    <span>Account Settings</span>
+                                    <span>Cài đặt tài khoản</span>
                                 </a>
                             </div>
                             

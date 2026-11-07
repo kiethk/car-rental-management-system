@@ -44,10 +44,10 @@ class AdminAccountControllerTest {
         mvc.perform(get("/admin/accounts").param("type", "employee").session(TestSessions.admin(1L)))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/accounts/list"))
-                .andExpect(content().string(containsString("Account Management")))
+                .andExpect(content().string(containsString("Quản lý tài khoản")))
                 .andExpect(content().string(containsString("Locked Staff")))
-                .andExpect(content().string(containsString("Your account")))
-                .andExpect(content().string(containsString("Activate")))
+                .andExpect(content().string(containsString("Tài khoản của bạn")))
+                .andExpect(content().string(containsString("Kích hoạt")))
                 .andExpect(content().string(not(containsString("/admin/accounts/employee/1/status"))));
     }
 
@@ -85,7 +85,7 @@ class AdminAccountControllerTest {
     void employeeFormRendersAndDuplicateEmailIsShown() throws Exception {
         mvc.perform(get("/admin/accounts/employees/new").session(TestSessions.admin(1L)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Temporary Password")));
+                .andExpect(content().string(containsString("Mật khẩu tạm thời")));
 
         org.mockito.Mockito.doThrow(new IllegalArgumentException("Email is already in use"))
                 .when(accountManagementService).createEmployee(any());

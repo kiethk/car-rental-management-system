@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Schedule Vehicle Inspection — DriveNow Admin</title>
+    <title>Lên lịch kiểm định — Quản trị DriveNow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -33,8 +33,8 @@
             <div class="card border-0 shadow-sm rounded-xl p-4 p-md-5 bg-white max-w-4xl">
                 <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
                     <div>
-                        <h1 class="h4 font-weight-bold text-navy mb-1">Schedule Vehicle Inspection & Maintenance</h1>
-                        <p class="text-muted small mb-0">Set up an appointment to bring vehicle to authorized inspection station.</p>
+                        <h1 class="h4 font-weight-bold text-navy mb-1">Lên lịch kiểm định & bảo dưỡng xe</h1>
+                        <p class="text-muted small mb-0">Đặt lịch hẹn đưa xe đến trạm đăng kiểm hoặc xưởng dịch vụ.</p>
                     </div>
                     <a th:href="@{/admin/inspections}" class="btn btn-outline-secondary btn-sm rounded-lg">
                         Back to List
@@ -45,9 +45,9 @@
                     <div class="row g-3">
                         <!-- Select vehicle -->
                         <div class="col-md-12 form-group mb-3">
-                            <label class="font-weight-bold small text-navy mb-1">Select Vehicle for Inspection / Maintenance <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold small text-navy mb-1">Chọn phương tiện cần kiểm định / bảo dưỡng <span class="text-danger">*</span></label>
                             <select th:field="*{vehicleId}" class="form-control rounded-lg" required>
-                                <option value="" disabled selected>-- Select an available car --</option>
+                                <option value="" disabled selected>-- Chọn xe đang sẵn sàng --</option>
                                 <option th:each="v : ${vehicles}" th:value="${v.id}"
                                         th:text="'Vehicle #' + ${v.id} + ' — ' + ${v.vehicleType.displayName} + ' — Plate: ' + (${v.licensePlate != null} ? ${v.licensePlate.plate} : 'Unassigned') + ' (Status: ' + ${v.status} + ')'"></option>
                             </select>
@@ -59,7 +59,7 @@
                             <label class="font-weight-bold small text-navy mb-1">Appointment Date & Time <span class="text-danger">*</span></label>
                             <input type="datetime-local" th:field="*{scheduledAt}" class="form-control rounded-lg" required>
                             <small class="text-danger" th:if="${#fields.hasErrors('scheduledAt')}" th:errors="*{scheduledAt}"></small>
-                            <small class="form-text text-muted">Planned time for dispatching vehicle to the inspection center.</small>
+                            <small class="form-text text-muted">Thời gian dự kiến đưa xe tới trung tâm kiểm định.</small>
                         </div>
 
                         <!-- Notes / Checklist -->
@@ -71,7 +71,7 @@
                     </div>
 
                     <div class="d-flex justify-content-end gap-2 pt-3 border-top">
-                        <a th:href="@{/admin/inspections}" class="btn btn-light px-4 rounded-lg">Cancel</a>
+                        <a th:href="@{/admin/inspections}" class="btn btn-light px-4 rounded-lg">Hủy bỏ</a>
                         <button type="submit" class="btn btn-navy font-weight-bold px-4 rounded-lg shadow-sm">
                             Save Appointment
                         </button>

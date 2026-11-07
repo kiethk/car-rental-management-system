@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${vehicle.displayName + ' — DriveNow'}">Vehicle Details — DriveNow</title>
+    <title th:text="${vehicle.displayName + ' — DriveNow'}">Chi tiết dòng xe — DriveNow</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +22,7 @@
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb bg-transparent p-0 mb-0">
             <li class="breadcrumb-item"><a th:href="@{/}" class="text-muted text-decoration-none">Home</a></li>
-            <li class="breadcrumb-item"><a th:href="@{/vehicles}" class="text-muted text-decoration-none">Browse Cars</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/vehicles}" class="text-muted text-decoration-none">Danh sách xe</a></li>
             <li class="breadcrumb-item active text-navy font-weight-bold" th:text="${vehicle.displayName}">Toyota Vios</li>
         </ol>
     </nav>
@@ -55,17 +55,17 @@
             <!-- Physical Cars in Fleet of this Model -->
             <div class="card border-0 shadow-sm rounded-2xl p-4 bg-white mb-4" th:if="${physicalCars != null and not #lists.isEmpty(physicalCars)}">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="h6 font-weight-bold text-navy mb-0">Available Cars of this Model (<span th:text="${physicalCars.size()}">0</span>)</h4>
+                    <h4 class="h6 font-weight-bold text-navy mb-0">Các xe hiện có thuộc dòng này (<span th:text="${physicalCars.size()}">0</span>)</h4>
                     <span class="text-xs text-muted">Physical cars of this model in inventory</span>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-sm table-hover mb-0 align-middle">
                         <thead class="bg-surface-2 text-muted text-uppercase" style="font-size: 11px;">
                             <tr>
-                                <th class="border-top-0 py-2">License Plate</th>
+                                <th class="border-top-0 py-2">Biển số xe</th>
                                 <th class="border-top-0 py-2">Color</th>
                                 <th class="border-top-0 py-2">Year</th>
-                                <th class="border-top-0 py-2 text-center">Status</th>
+                                <th class="border-top-0 py-2 text-center">Trạng thái</th>
                             </tr>
                         </thead>
                         <tbody class="small text-navy">
@@ -110,9 +110,9 @@
                     <p th:if="${review.comment != null and !review.comment.isBlank()}"
                        class="small text-navy mb-0 mt-2"
                        style="white-space: pre-wrap;"
-                       th:text="${review.comment}">Review comment</p>
+                       th:text="${review.comment}">Nội dung nhận xét</p>
                     <p th:if="${review.comment == null or review.comment.isBlank()}"
-                       class="small text-muted mb-0 mt-2">Rating only</p>
+                       class="small text-muted mb-0 mt-2">Chỉ chấm sao</p>
                 </article>
             </section>
 
@@ -145,7 +145,7 @@
                         <span>★</span>
                         <span th:text="${reviewSummary != null and reviewSummary.reviewCount > 0 ? #numbers.formatDecimal(reviewSummary.averageRating, 1, 1) : '—'}">—</span>
                         <span class="text-muted font-weight-normal"
-                              th:text="${'(' + (reviewSummary != null ? reviewSummary.reviewCount : 0) + ' customer reviews)'}">(0 customer reviews)</span>
+                              th:text="${'(' + (reviewSummary != null ? reviewSummary.reviewCount : 0) + ' customer reviews)'}">(0 đánh giá)</span>
                     </div>
                 </div>
 
@@ -153,14 +153,14 @@
                 <div class="bg-surface rounded-xl p-3 mb-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="small text-muted d-block">Hourly rental rate</span>
+                            <span class="small text-muted d-block">Đơn giá thuê theo giờ</span>
                             <div class="h3 font-weight-bold text-navy mb-0">
                                 <span th:text="${#numbers.formatDecimal(vehicle.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span>
                                 <span class="small text-muted font-weight-normal">VND / hr</span>
                             </div>
                         </div>
                         <div class="text-right">
-                            <span data-policy="deposit" class="badge badge-light border text-navy font-weight-bold px-2 py-1" th:text="${contractTerms.depositPercent} + '% Deposit'">50% Deposit</span>
+                            <span data-policy="deposit" class="badge badge-light border text-navy font-weight-bold px-2 py-1" th:text="${contractTerms.depositPercent} + '% Deposit'">Tiền cọc 50%</span>
                         </div>
                     </div>
                 </div>
@@ -195,7 +195,7 @@
                     <div class="font-weight-bold text-navy mb-1">Reservation & Cancellation Policy:</div>
                     <ul class="mb-0 pl-3 text-muted">
                         <!-- Values come from the active rental terms version (Admin > Rental Terms) -->
-                        <li data-policy="deposit" th:text="${contractTerms.depositPercent} + '% security deposit required to confirm booking slot.'">50% security deposit required to confirm booking slot.</li>
+                        <li data-policy="deposit" th:text="${contractTerms.depositPercent} + '% security deposit required to confirm booking slot.'">Yêu cầu đặt cọc 50% để hoàn tất giữ chỗ thuê xe.</li>
                         <li data-policy="cancellation" th:text="'100% refund for cancellations at least ' + ${contractTerms.freeCancellationHours} + ' hours prior to scheduled pickup.'">100% refund for cancellations at least 72 hours prior to scheduled pickup.</li>
                         <li data-policy="lateReturn" th:text="'Late return: ' + ${contractTerms.lateFeePercent} + '% of the hourly rate for each hour late.'">Late return: 200% of the hourly rate for each hour late.</li>
                     </ul>

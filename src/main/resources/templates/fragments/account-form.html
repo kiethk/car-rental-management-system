@@ -3,35 +3,35 @@
 <body>
 
 <div th:fragment="form(action)">
-    <div class="alert alert-success py-2 small" th:if="${param.updated}">Your account was updated successfully.</div>
+    <div class="alert alert-success py-2 small" th:if="${param.updated}">Tài khoản của bạn đã được cập nhật thành công.</div>
     <div class="alert alert-danger py-2 small" th:if="${error}" th:text="${error}"></div>
 
     <form method="post" th:action="@{${action}}" th:object="${profileForm}">
-        <h2 class="h6 font-weight-bold text-navy mb-3">Account Information</h2>
+        <h2 class="h6 font-weight-bold text-navy mb-3">Thông tin tài khoản</h2>
 
         <div class="form-group mb-3">
-            <label for="name" class="small font-weight-bold text-navy mb-1">Full Name</label>
+            <label for="name" class="small font-weight-bold text-navy mb-1">Họ và tên</label>
             <input id="name" type="text" th:value="*{name}" class="form-control rounded-lg bg-light" readonly>
         </div>
 
         <div class="form-group mb-3">
-            <label for="email" class="small font-weight-bold text-navy mb-1">Email Address</label>
+            <label for="email" class="small font-weight-bold text-navy mb-1">Địa chỉ Email</label>
             <input id="email" type="email" th:value="*{email}" class="form-control rounded-lg bg-light" readonly>
         </div>
 
         <div class="form-group mb-4">
-            <label for="phone" class="small font-weight-bold text-navy mb-1">Phone Number <span class="text-danger">*</span></label>
+            <label for="phone" class="small font-weight-bold text-navy mb-1">Số điện thoại <span class="text-danger">*</span></label>
             <input id="phone" type="tel" th:field="*{phone}" class="form-control rounded-lg"
                    th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'"
                    pattern="(0[0-9]{9}|\+84[0-9]{9})" maxlength="13" required>
             <div class="invalid-feedback" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
         </div>
 
-        <h2 class="h6 font-weight-bold text-navy mb-1 pt-3 border-top">Change Password</h2>
-        <p class="text-muted small mb-3">Leave these fields empty to keep your current password.</p>
+        <h2 class="h6 font-weight-bold text-navy mb-1 pt-3 border-top">Đổi mật khẩu</h2>
+        <p class="text-muted small mb-3">Để trống các trường này nếu bạn muốn giữ nguyên mật khẩu hiện tại.</p>
 
         <div class="form-group mb-3">
-            <label for="currentPassword" class="small font-weight-bold text-navy mb-1">Current Password</label>
+            <label for="currentPassword" class="small font-weight-bold text-navy mb-1">Mật khẩu hiện tại</label>
             <input id="currentPassword" type="password" th:field="*{currentPassword}" class="form-control rounded-lg"
                    th:classappend="${#fields.hasErrors('currentPassword') or #fields.hasErrors('currentPasswordProvided')} ? 'is-invalid'"
                    maxlength="255" autocomplete="current-password">
@@ -40,7 +40,7 @@
         </div>
 
         <div class="form-group mb-3">
-            <label for="newPassword" class="small font-weight-bold text-navy mb-1">New Password</label>
+            <label for="newPassword" class="small font-weight-bold text-navy mb-1">Mật khẩu mới</label>
             <input id="newPassword" type="password" th:field="*{newPassword}" class="form-control rounded-lg"
                    th:classappend="${#fields.hasErrors('newPassword') or #fields.hasErrors('newPasswordLongEnough') or #fields.hasErrors('newPasswordDifferent')} ? 'is-invalid'"
                    maxlength="255" autocomplete="new-password">
@@ -50,7 +50,7 @@
         </div>
 
         <div class="form-group mb-4">
-            <label for="confirmPassword" class="small font-weight-bold text-navy mb-1">Confirm New Password</label>
+            <label for="confirmPassword" class="small font-weight-bold text-navy mb-1">Xác nhận mật khẩu mới</label>
             <input id="confirmPassword" type="password" th:field="*{confirmPassword}" class="form-control rounded-lg"
                    th:classappend="${#fields.hasErrors('confirmPassword') or #fields.hasErrors('passwordConfirmed')} ? 'is-invalid'"
                    maxlength="255" autocomplete="new-password">
@@ -58,7 +58,7 @@
             <div class="invalid-feedback" th:if="${#fields.hasErrors('passwordConfirmed')}" th:errors="*{passwordConfirmed}"></div>
         </div>
 
-        <button class="btn btn-navy font-weight-bold px-4 rounded-lg shadow-sm" type="submit">Save Changes</button>
+        <button class="btn btn-navy font-weight-bold px-4 rounded-lg shadow-sm" type="submit">Lưu thay đổi</button>
     </form>
 </div>
 
