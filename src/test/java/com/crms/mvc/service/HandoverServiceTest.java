@@ -169,13 +169,13 @@ class HandoverServiceTest {
         CheckOutDTO form = checkOutForm(1300);
         form.setReturnCharges(List.of(
                 returnCharge("CLEANING_FEE", "50000", "Interior cleaning"),
-                returnCharge("FUEL_FEE", null, null)));
+                returnCharge("TOLL_FEE", null, null)));
 
         handoverService.checkOut(10L, 2L, form);
 
         verify(bookingFeeService).recordFee(10L, "LATE_FEE", new BigDecimal("150000"), "Phí trả xe trễ", null);
         verify(bookingFeeService).recordFee(10L, "CLEANING_FEE", new BigDecimal("50000"), "Interior cleaning", null);
-        verify(bookingFeeService, never()).recordFee(eq(10L), eq("FUEL_FEE"), any(), any(), any());
+        verify(bookingFeeService, never()).recordFee(eq(10L), eq("TOLL_FEE"), any(), any(), any());
         ArgumentCaptor<Handover> saved = ArgumentCaptor.forClass(Handover.class);
         verify(handoverRepository).save(saved.capture());
         assertEquals(HandoverType.CHECK_OUT, saved.getValue().getType());
@@ -227,6 +227,17 @@ class HandoverServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> handoverService.checkOut(10L, 2L, form));
         verify(handoverRepository, never()).save(any());
+    }
+
+    @Test
+    void fuelIsNeverCharged() {
+        booking.setStatus("active");
+        CheckOutDTO form = checkOutForm(1300);
+        form.setReturnCharges(List.of(returnCharge("FUEL_FEE", "100000", "Refuel")));
+
+        assertThrows(IllegalArgumentException.class, () -> handoverService.checkOut(10L, 2L, form));
+        verify(handoverRepository, never()).save(any());
+        verify(bookingFeeService, never()).recordFee(any(), any(), any(), any(), any());
     }
 
     @Test

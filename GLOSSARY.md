@@ -19,7 +19,7 @@ Phần tiền thuê khách trả trước khi đặt xe, theo tỷ lệ trong đ
 _Avoid_: Tiền thế chân, tiền bảo đảm
 
 **Phí trả xe (Return charge)**:
-Khoản phí nhân viên ghi nhận lúc nhận lại xe — vệ sinh, thiếu nhiên liệu, phí cầu đường, khác — không có biên bản, không gửi thông báo riêng, cộng thẳng vào Quyết toán. Hư hỏng không phải Phí trả xe mà phải lập Sự cố.
+Khoản phí nhân viên ghi nhận lúc nhận lại xe — vệ sinh, phí cầu đường, khác — không có biên bản, không gửi thông báo riêng, cộng thẳng vào Quyết toán. Hư hỏng không phải Phí trả xe mà phải lập Sự cố. Không thu tiền bù nhiên liệu: mức nhiên liệu chỉ được ghi trong Bàn giao.
 _Avoid_: Phụ phí, surcharge
 
 **Phí phát sinh sau quyết toán**:

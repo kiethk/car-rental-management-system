@@ -51,7 +51,6 @@ public class HandoverServiceImpl implements HandoverService {
     /** Return charge types and their Vietnamese labels. Damage is never a Return charge: it must be recorded as an Issue. */
     private static final Map<String, String> RETURN_CHARGE_LABELS = Map.of(
             "CLEANING_FEE", "Phí vệ sinh xe",
-            "FUEL_FEE", "Phí bù nhiên liệu",
             "TOLL_FEE", "Phí cầu đường",
             "OTHER_FEE", "Phí khác");
     private static final Set<String> PAYMENT_METHODS = Set.of("CASH", "BANK_TRANSFER");
