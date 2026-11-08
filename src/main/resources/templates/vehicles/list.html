@@ -138,7 +138,7 @@
             <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                 <div>
                     <h2 class="h5 font-weight-bold text-navy mb-0">Danh sách dòng xe</h2>
-                    <span class="small text-muted">Showing <strong class="text-navy" th:text="${totalCount}">0</strong> dòng xe được tìm thấy</span>
+                    <span class="small text-muted">Tìm thấy <strong class="text-navy" th:text="${totalCount}">0</strong> dòng xe</span>
                 </div>
                 <!-- Sort: belongs to the filter form, so every filter already chosen is kept when the order changes -->
                 <div class="d-flex align-items-center" style="gap: 8px;">
@@ -220,12 +220,10 @@
                                 <div class="d-flex gap-2">
                                     <a th:href="@{/vehicles/{id}(id=${v.id})}"
                                        class="car-action-btn-secondary">
-                                        Details
-                                    </a>
+                                        Chi tiết</a>
                                     <a th:href="@{/search(keyword=${v.displayName})}"
                                        class="car-action-btn-primary">
-                                        Rent Now
-                                    </a>
+                                        Thuê ngay</a>
                                 </div>
                             </div>
                         </div>

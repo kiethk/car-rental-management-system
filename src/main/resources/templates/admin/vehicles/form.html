@@ -40,7 +40,7 @@
                         <p class="text-muted small mb-0">Cấu hình thông số xe thực tế. Một xe lưu lại toàn bộ biển số từng gắn; biển số hiện tại là biển số không có ngày kết thúc.</p>
                     </div>
                     <a th:href="@{/admin/vehicles}" class="btn btn-outline-secondary btn-sm rounded-lg">
-                        Back to Cars
+                        Quay lại danh sách xe
                     </a>
                 </div>
 
@@ -52,13 +52,13 @@
 
                     <!-- SECTION 1: PHYSICAL VEHICLE SPECS -->
                     <h5 class="h6 font-weight-bold text-navy text-uppercase mb-3" style="letter-spacing: 0.05em;">
-                        1. Physical Vehicle Details
+                        1. Thông tin xe thực tế
                     </h5>
 
                     <div class="row g-3 mb-4">
                         <!-- Vehicle Model -->
                         <div class="col-md-6 form-group mb-3">
-                            <label class="font-weight-bold small text-navy mb-1">Vehicle Model <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold small text-navy mb-1">Dòng xe <span class="text-danger">*</span></label>
                             <select th:field="*{vehicleTypeId}" class="form-control rounded-lg" required>
                                 <option value="" disabled selected>-- Chọn dòng xe từ danh mục --</option>
                                 <option th:each="vt : ${vehicleTypes}" th:value="${vt.id}"
@@ -69,32 +69,32 @@
 
                         <!-- Color -->
                         <div class="col-md-6 form-group mb-3">
-                            <label class="font-weight-bold small text-navy mb-1">Color <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold small text-navy mb-1">Màu sắc <span class="text-danger">*</span></label>
                             <input type="text" th:field="*{color}" class="form-control rounded-lg"
-                                   placeholder="e.g. White, Black, Silver, Pearl White..." required>
+                                   placeholder="Ví dụ: Trắng, Đen, Bạc, Đỏ..." required>
                             <small class="text-danger" th:if="${#fields.hasErrors('color')}" th:errors="*{color}"></small>
                         </div>
 
                         <!-- Manufacturing Year -->
                         <div class="col-md-4 form-group mb-3">
-                            <label class="font-weight-bold small text-navy mb-1">Manufacturing Year <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold small text-navy mb-1">Năm sản xuất <span class="text-danger">*</span></label>
                             <input type="number" th:field="*{year}" class="form-control rounded-lg" min="1990" max="2100" required>
                             <small class="text-danger" th:if="${#fields.hasErrors('year')}" th:errors="*{year}"></small>
                         </div>
 
                         <!-- Current Odometer -->
                         <div class="col-md-4 form-group mb-3">
-                            <label class="font-weight-bold small text-navy mb-1">Current Odometer (km) <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold small text-navy mb-1">Số km đã đi (Odometer) <span class="text-danger">*</span></label>
                             <input type="number" th:field="*{odometer}" class="form-control rounded-lg" min="0" placeholder="0" required>
                             <small class="text-danger" th:if="${#fields.hasErrors('odometer')}" th:errors="*{odometer}"></small>
                         </div>
 
                         <!-- Status -->
                         <div class="col-md-4 form-group mb-3">
-                            <label class="font-weight-bold small text-navy mb-1">Initial Status <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold small text-navy mb-1">Trạng thái ban đầu <span class="text-danger">*</span></label>
                             <select th:field="*{status}" class="form-control rounded-lg" required>
                                 <option value="available">Sẵn sàng cho thuê</option>
-                                <option value="maintenance">In maintenance / Inspection</option>
+                                <option value="maintenance">Đang bảo dưỡng / Kiểm định</option>
                                 <option th:if="${vehicleForm.status == 'rented'}" value="rented" disabled>Đang cho thuê (Quản lý theo vòng đời đơn đặt)</option>
                                 <option th:if="${vehicleForm.id != null and (vehicleForm.status == 'retired' or (session.account != null and session.account.admin))}"
                                         value="retired">Ngừng khai thác (vĩnh viễn, không thể hoàn tác)</option>
@@ -106,7 +106,7 @@
                     <div class="p-3 bg-surface rounded-xl border mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="h6 font-weight-bold text-navy text-uppercase mb-0" style="letter-spacing: 0.05em;">
-                                2. License Plate & Registration
+                                2. Biển số xe & Đăng kiểm
                             </h5>
                             <a th:if="${vehicleForm.id != null}" th:href="@{/admin/license-plates/vehicle/{id}(id=${vehicleForm.id})}"
                                class="btn btn-outline-secondary btn-sm rounded-lg">Đổi biển số / Lịch sử</a>
@@ -117,7 +117,7 @@
                         <div class="row g-3">
                             <!-- Plate number -->
                             <div class="col-md-4 form-group mb-3">
-                                <label class="font-weight-bold small text-navy mb-1">Plate Number <span class="text-danger">*</span></label>
+                                <label class="font-weight-bold small text-navy mb-1">Biển số xe <span class="text-danger">*</span></label>
                                 <input type="text" id="plateInput" th:field="*{plate}" class="form-control rounded-lg font-weight-bold text-uppercase"
                                        placeholder="e.g. 51K-987.65" required th:readonly="${vehicleForm.id != null}">
                                 <small th:if="${vehicleForm.id != null}" class="text-muted" style="font-size: 11px;">Để gắn biển số khác cho xe này, hãy dùng mục "Đổi biển số / Lịch sử" để lưu lại lịch sử.</small>
@@ -126,14 +126,14 @@
 
                             <!-- Province -->
                             <div class="col-md-4 form-group mb-3">
-                                <label class="font-weight-bold small text-navy mb-1">Registration City / Province</label>
+                                <label class="font-weight-bold small text-navy mb-1">Tỉnh / Thành phố đăng ký</label>
                                 <input type="text" id="provinceInput" th:field="*{province}" class="form-control rounded-lg"
                                        placeholder="e.g. Ho Chi Minh City, Hanoi..." th:readonly="${vehicleForm.id != null}">
                             </div>
 
                             <!-- Expiry date -->
                             <div class="col-md-4 form-group mb-3">
-                                <label class="font-weight-bold small text-navy mb-1">Registration Expiry Date</label>
+                                <label class="font-weight-bold small text-navy mb-1">Ngày hết hạn đăng kiểm</label>
                                 <input type="date" id="expiryInput" th:field="*{registrationExpiry}" class="form-control rounded-lg">
                                 <small class="text-muted" style="font-size: 11px;">Tem đăng kiểm của xe; tem này không thay đổi khi đổi biển số</small>
                             </div>
@@ -143,7 +143,7 @@
                     <div class="d-flex justify-content-end gap-2 pt-3 border-top">
                         <a th:href="@{/admin/vehicles}" class="btn btn-light px-4 rounded-lg">Hủy bỏ</a>
                         <button type="submit" class="btn btn-navy font-weight-bold px-4 rounded-lg shadow-sm">
-                            Save Vehicle
+                            Lưu thông tin xe
                         </button>
                     </div>
                 </form>

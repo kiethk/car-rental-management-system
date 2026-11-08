@@ -42,11 +42,11 @@
                 <div th:if="${canEdit}" class="d-flex gap-2 mt-3 mt-md-0">
                     <form th:action="@{/admin/contract-templates/{id}/delete(id=${template.id})}" method="post">
                         <button type="submit" class="btn btn-outline-secondary btn-sm"
-                                onclick="return confirm('Delete this draft?');">Xóa bản nháp</button>
+                                onclick="return confirm('Xóa bản nháp này?');">Xóa bản nháp</button>
                     </form>
                     <form th:action="@{/admin/contract-templates/{id}/activate(id=${template.id})}" method="post">
                         <button type="submit" class="btn btn-amber btn-sm font-weight-bold"
-                                onclick="return confirm('Activate the saved draft? All new bookings will use it immediately. Unsaved changes in the form are not included.');">
+                                onclick="return confirm('Kích hoạt bản nháp đã lưu? Tất cả đơn đặt mới sẽ áp dụng ngay lập tức.');">
                             Activate saved draft
                         </button>
                     </form>

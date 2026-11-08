@@ -44,10 +44,10 @@
                 </div>
 
                 <div class="p-4">
-                    <h3 class="h5 font-weight-bold text-navy mb-2">Model Overview</h3>
+                    <h3 class="h5 font-weight-bold text-navy mb-2">Tổng quan dòng xe</h3>
                     <p class="text-muted mb-0 leading-relaxed"
-                       th:text="${vehicle.description != null and !vehicle.description.isBlank() ? vehicle.description : 'Modern, comfortable and fuel-efficient vehicle, maintained and sanitized thoroughly before every departure.'}">
-                        Model overview...
+                       th:text="${vehicle.description != null and !vehicle.description.isBlank() ? vehicle.description : 'Dòng xe hiện đại, vận hành êm ái, tiết kiệm nhiên liệu, được kiểm tra và khử khuẩn kỹ lưỡng trước mỗi chuyến đi.'}">
+                        Đang cập nhật...
                     </p>
                 </div>
             </div>
@@ -97,7 +97,7 @@
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
                     <h4 class="h6 font-weight-bold text-navy mb-0">Đánh giá từ khách hàng</h4>
                     <span class="small text-muted"
-                          th:text="${reviewSummary.reviewCount > 0 ? #numbers.formatDecimal(reviewSummary.averageRating, 1, 1) + ' / 5 · ' + reviewSummary.reviewCount + ' reviews' : 'Chưa có đánh giá nào'}">
+                          th:text="${reviewSummary.reviewCount > 0 ? #numbers.formatDecimal(reviewSummary.averageRating, 1, 1) + ' / 5 · ' + reviewSummary.reviewCount + ' đánh giá' : 'Chưa có đánh giá nào'}">
                         Chưa có đánh giá nào
                     </span>
                 </div>
@@ -208,7 +208,7 @@
                 <div class="space-y-2">
                     <a th:href="@{/search(keyword=${vehicle.displayName})}"
                        class="btn btn-navy btn-block py-2.5 font-weight-bold rounded-lg shadow-sm text-decoration-none">
-                        Rent This Car Model
+                        Thuê dòng xe này ngay
                     </a>
                     <a th:href="@{/vehicles}" class="btn btn-outline-secondary btn-block py-2 rounded-lg text-decoration-none">
                         ← Khám phá các dòng xe khác

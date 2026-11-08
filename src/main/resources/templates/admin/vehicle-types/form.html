@@ -40,7 +40,7 @@
                         <p class="text-muted small mb-0">Cấu hình thông số kỹ thuật, giá thuê và hình ảnh cho dòng xe này.</p>
                     </div>
                     <a th:href="@{/admin/vehicle-types}" class="btn btn-outline-secondary btn-sm rounded-lg">
-                        Back to Models
+                        Quay lại danh mục dòng xe
                     </a>
                 </div>
 
@@ -54,7 +54,7 @@
                     <div class="row g-3">
                         <!-- Model Name -->
                         <div class="col-md-6 form-group mb-3">
-                            <label class="font-weight-bold small text-navy mb-1">Model Name <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold small text-navy mb-1">Tên dòng xe <span class="text-danger">*</span></label>
                             <input type="text" th:field="*{name}" class="form-control rounded-lg"
                                    placeholder="e.g. Vios 2023, CR-V 2024, VF8..." required>
                             <small class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></small>
@@ -62,7 +62,7 @@
 
                         <!-- Brand -->
                         <div class="col-md-6 form-group mb-3">
-                            <label class="font-weight-bold small text-navy mb-1">Brand <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold small text-navy mb-1">Hãng sản xuất <span class="text-danger">*</span></label>
                             <input type="text" th:field="*{brand}" class="form-control rounded-lg"
                                    placeholder="e.g. Toyota, Honda, VinFast, Hyundai..." required>
                             <small class="text-danger" th:if="${#fields.hasErrors('brand')}" th:errors="*{brand}"></small>
@@ -70,7 +70,7 @@
 
                         <!-- Category -->
                         <div class="col-md-4 form-group mb-3">
-                            <label class="font-weight-bold small text-navy mb-1">Category <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold small text-navy mb-1">Phân khúc xe <span class="text-danger">*</span></label>
                             <select th:field="*{category}" class="form-control rounded-lg" required>
                                 <option value="sedan">Sedan</option>
                                 <option value="suv">SUV / Crossover</option>
@@ -83,21 +83,21 @@
 
                         <!-- Seats -->
                         <div class="col-md-4 form-group mb-3">
-                            <label class="font-weight-bold small text-navy mb-1">Seats <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold small text-navy mb-1">Số chỗ ngồi <span class="text-danger">*</span></label>
                             <input type="number" th:field="*{seats}" class="form-control rounded-lg" min="1" max="50" required>
                             <small class="text-danger" th:if="${#fields.hasErrors('seats')}" th:errors="*{seats}"></small>
                         </div>
 
                         <!-- Price Per Hour -->
                         <div class="col-md-4 form-group mb-3">
-                            <label class="font-weight-bold small text-navy mb-1">Hourly Rate (VND) <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold small text-navy mb-1">Đơn giá thuê theo giờ (VNĐ) <span class="text-danger">*</span></label>
                             <input type="number" step="1000" th:field="*{pricePerHour}" class="form-control rounded-lg" min="0" placeholder="e.g. 150000" required>
                             <small class="text-danger" th:if="${#fields.hasErrors('pricePerHour')}" th:errors="*{pricePerHour}"></small>
                         </div>
 
                         <!-- Transmission -->
                         <div class="col-md-6 form-group mb-3">
-                            <label class="font-weight-bold small text-navy mb-1">Transmission <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold small text-navy mb-1">Hộp số <span class="text-danger">*</span></label>
                             <select th:field="*{transmission}" class="form-control rounded-lg" required>
                                 <option value="automatic">Automatic</option>
                                 <option value="manual">Manual</option>
@@ -107,7 +107,7 @@
 
                         <!-- Fuel Type -->
                         <div class="col-md-6 form-group mb-3">
-                            <label class="font-weight-bold small text-navy mb-1">Fuel Type <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold small text-navy mb-1">Loại nhiên liệu <span class="text-danger">*</span></label>
                             <select th:field="*{fuelType}" class="form-control rounded-lg" required>
                                 <option value="gasoline">Gasoline</option>
                                 <option value="diesel">Diesel</option>
@@ -137,7 +137,7 @@
                                     <small class="form-text text-muted mt-1">Formats: JPG, PNG, WebP (Saved to uploads/)</small>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="small font-weight-bold text-navy mb-1 d-block">Option 2: Direct Image URL</label>
+                                    <label class="small font-weight-bold text-navy mb-1 d-block">Cách 2: Đường dẫn ảnh trực tiếp (URL)</label>
                                     <input type="url" id="imageUrlInput" th:field="*{imageUrl}" class="form-control form-control-sm rounded-lg"
                                            placeholder="https://images.unsplash.com/...">
                                     <small id="imageUrlHelp" class="form-text text-muted">Paste an online image link if not uploading a file.</small>
@@ -156,14 +156,14 @@
                         <div class="col-12 form-group mb-4">
                             <label class="font-weight-bold small text-navy mb-1">Mô tả & Chi tiết</label>
                             <textarea th:field="*{description}" rows="3" class="form-control rounded-lg"
-                                      placeholder="Key features, specifications, and comfort highlights..."></textarea>
+                                      placeholder="Các tính năng chính, thông số kỹ thuật, tiện nghi nổi bật..."></textarea>
                         </div>
                     </div>
 
                     <div class="d-flex justify-content-end gap-2 pt-3 border-top">
                         <a th:href="@{/admin/vehicle-types}" class="btn btn-light px-4 rounded-lg">Hủy bỏ</a>
                         <button type="submit" class="btn btn-navy font-weight-bold px-4 rounded-lg shadow-sm">
-                            Save Dòng xe
+                            Lưu dòng xe
                         </button>
                     </div>
                 </form>

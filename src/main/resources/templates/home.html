@@ -62,39 +62,39 @@
             <div class="grid items-center gap-8 lg:grid-cols-2 lg:gap-16">
                 <div>
                     <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-amber">
-                        Car Rental / Ho Chi Minh City
+                        DỊCH VỤ THUÊ XE / TP. HỒ CHÍ MINH
                     </p>
                     <h1 class="font-heading text-4xl leading-[1.12] text-navy sm:text-5xl lg:text-[54px]">
-                        Your next journey.
+                        Hành trình của bạn.
                         <br />
-                        <span class="text-muted-foreground">On your terms.</span>
+                        <span class="text-muted-foreground">Theo cách của bạn.</span>
                     </h1>
                     <p class="mt-5 max-w-md text-base leading-7 text-muted-foreground">
-                        A modern car for every plan, for as long as you need. Pick your hours, collect at our central station, and hit the open road.
+                        Đa dạng các dòng xe hiện đại cho mọi nhu cầu. Linh hoạt chọn giờ thuê, nhận xe nhanh tại bãi trung tâm và khởi hành ngay.
                     </p>
                     <div class="mt-6 flex flex-wrap gap-x-6 gap-y-3 text-sm text-navy">
                         <span class="inline-flex items-center gap-2">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>
-                            Hourly rentals
+                            Thuê xe theo giờ
                         </span>
                         <span class="inline-flex items-center gap-2">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>
-                            Transparent rates
+                            Giá cả minh bạch
                         </span>
                         <span class="inline-flex items-center gap-2">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>
-                            Immediate pickup
+                            Nhận xe nhanh chóng
                         </span>
                     </div>
 
                     <!-- Dual CTAs: Choose a car to rent & Explore our cars -->
                     <div class="mt-8 flex flex-wrap items-center gap-4">
                         <a th:href="@{/search}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-navy px-6 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-navy-light transition-all text-decoration-none">
-                            <span>Rent a Car</span>
+                            <span>Thuê xe ngay</span>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
                         </a>
                         <a th:href="@{/vehicles}" class="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-white px-6 py-3.5 text-sm font-semibold text-navy hover:bg-surface hover:border-gray-300 transition-all text-decoration-none">
-                            <span>Explore Cars</span>
+                            <span>Xem danh sách xe</span>
                         </a>
                     </div>
                 </div>
@@ -127,7 +127,7 @@
     <!-- How It Works Section -->
     <section class="border-b border-border py-12 sm:py-16">
         <div class="crms-container">
-            <h2 class="font-heading text-2xl text-navy sm:text-3xl mb-8">How it works</h2>
+            <h2 class="font-heading text-2xl text-navy sm:text-3xl mb-8">Quy trình thuê xe</h2>
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <div class="rounded-xl border border-border bg-white p-6 shadow-2xs">
                     <span class="font-mono text-2xl font-bold text-amber">01</span>
@@ -146,7 +146,7 @@
                 </div>
                 <div class="rounded-xl border border-border bg-white p-6 shadow-2xs">
                     <span class="font-mono text-2xl font-bold text-amber">04</span>
-                    <h3 class="mt-3 text-base font-semibold text-navy">Return & settle</h3>
+                    <h3 class="mt-3 text-base font-semibold text-navy">Trả xe & Quyết toán</h3>
                     <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Trả xe tại bãi, thanh toán chi phí phát sinh (nếu có) và nhận hoàn trả tiền cọc tự động.</p>
                 </div>
             </div>
@@ -215,12 +215,10 @@
                             <div class="flex items-center gap-2">
                                 <a th:href="@{/vehicles/{id}(id=${vt.id})}"
                                    class="car-action-btn-secondary">
-                                    Details
-                                </a>
+                                    Chi tiết</a>
                                 <a th:href="@{/search(keyword=${vt.displayName})}"
                                    class="car-action-btn-primary">
-                                    Rent Now
-                                </a>
+                                    Thuê ngay</a>
                             </div>
                         </div>
                     </div>

@@ -39,7 +39,7 @@
                         <p class="text-muted small mb-0">Ghi nhận kết quả đăng kiểm chính thức sau khi xe hoàn tất kiểm tra tại trạm.</p>
                     </div>
                     <a th:href="@{/admin/inspections}" class="btn btn-outline-secondary btn-sm rounded-lg">
-                        Back to Inspections
+                        Quay lại danh sách kiểm định
                     </a>
                 </div>
 
@@ -88,7 +88,7 @@
                         <!-- Passed Section: Renew registration expiry -->
                         <div id="passedSection" class="col-12 form-group mb-3 p-3 bg-light rounded-xl border border-success">
                             <label class="font-weight-bold small text-success mb-1">
-                                New Registration Expiry Date <span class="text-danger">*</span>
+                                Hạn đăng kiểm mới <span class="text-danger">*</span>
                             </label>
                             <input type="date" id="expiryInput" name="newRegistrationExpiry"
                                    th:value="${resultForm.newRegistrationExpiry}"
@@ -114,7 +114,7 @@
                     <div class="d-flex justify-content-end gap-2 pt-3 border-top">
                         <a th:href="@{/admin/inspections}" class="btn btn-light px-4 rounded-lg">Hủy bỏ</a>
                         <button type="submit" class="btn btn-navy font-weight-bold px-4 rounded-lg shadow-sm">
-                            Save Inspection Result
+                            Lưu kết quả kiểm định
                         </button>
                     </div>
                 </form>
