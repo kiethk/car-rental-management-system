@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>DriveNow — Self-Drive Car Rental in Ho Chi Minh City</title>
+    <title>DriveNow — Dịch vụ thuê xe tự lái tại TP. Hồ Chí Minh</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -131,23 +131,23 @@
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <div class="rounded-xl border border-border bg-white p-6 shadow-2xs">
                     <span class="font-mono text-2xl font-bold text-amber">01</span>
-                    <h3 class="mt-3 text-base font-semibold text-navy">Pick your car model</h3>
-                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Browse vehicle models and select the exact rental hours that suit your itinerary.</p>
+                    <h3 class="mt-3 text-base font-semibold text-navy">Chọn dòng xe phù hợp</h3>
+                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Khám phá các dòng xe đa dạng và lựa chọn khung giờ thuê chính xác theo lịch trình của bạn.</p>
                 </div>
                 <div class="rounded-xl border border-border bg-white p-6 shadow-2xs">
                     <span class="font-mono text-2xl font-bold text-amber">02</span>
-                    <h3 class="mt-3 text-base font-semibold text-navy">Reserve & deposit</h3>
-                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Confirm your reservation, review digital contract, and place a 50% deposit.</p>
+                    <h3 class="mt-3 text-base font-semibold text-navy">Đặt xe & Đặt cọc</h3>
+                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Xác nhận lịch đặt, xem hợp đồng điện tử và đặt cọc 50% qua VNPay.</p>
                 </div>
                 <div class="rounded-xl border border-border bg-white p-6 shadow-2xs">
                     <span class="font-mono text-2xl font-bold text-amber">03</span>
-                    <h3 class="mt-3 text-base font-semibold text-navy">Collect vehicle</h3>
-                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Complete quick identity verification and collect your sanitized car keys.</p>
+                    <h3 class="mt-3 text-base font-semibold text-navy">Nhận xe tại bãi</h3>
+                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Hoàn tất xác thực danh tính nhanh chóng và nhận chìa khóa xe đã được vệ sinh sạch sẽ.</p>
                 </div>
                 <div class="rounded-xl border border-border bg-white p-6 shadow-2xs">
                     <span class="font-mono text-2xl font-bold text-amber">04</span>
                     <h3 class="mt-3 text-base font-semibold text-navy">Return & settle</h3>
-                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Drop off car at the warehouse, finalize payments, and receive automatic deposit release.</p>
+                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Trả xe tại bãi, thanh toán chi phí phát sinh (nếu có) và nhận hoàn trả tiền cọc tự động.</p>
                 </div>
             </div>
         </div>
@@ -158,10 +158,10 @@
         <div class="crms-container">
             <div class="flex justify-between items-end mb-8">
                 <div>
-                    <h2 class="font-heading text-2xl text-navy sm:text-3xl">Featured Cars</h2>
-                    <p class="text-sm text-muted-foreground mt-1">Explore popular vehicle models available in Ho Chi Minh City</p>
+                    <h2 class="font-heading text-2xl text-navy sm:text-3xl">Dòng xe nổi bật</h2>
+                    <p class="text-sm text-muted-foreground mt-1">Các mẫu xe được ưa chuộng và sẵn sàng phục vụ tại TP. Hồ Chí Minh</p>
                 </div>
-                <a th:href="@{/vehicles}" class="text-sm font-semibold text-amber hover:underline text-decoration-none">Explore our cars →</a>
+                <a th:href="@{/vehicles}" class="text-sm font-semibold text-amber hover:underline text-decoration-none">Xem tất cả dòng xe →</a>
             </div>
 
             <!-- Unified Rectangle Card Grid -->
@@ -182,7 +182,7 @@
                             <div class="flex items-center gap-1.5 text-xs text-amber font-semibold">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                                 <span>4.8</span>
-                                <span class="text-muted-foreground font-normal">(124 reviews)</span>
+                                <span class="text-muted-foreground font-normal">(124 đánh giá)</span>
                             </div>
                         </div>
 
@@ -190,22 +190,22 @@
                         <div class="text-xs text-muted-foreground font-medium mb-2">
                             <span class="text-navy font-semibold uppercase" th:text="${vt.category}">Sedan</span>
                             <span class="mx-1">·</span>
-                            <span th:text="${vt.seats + ' seats'}">5 seats</span>
+                            <span th:text="${vt.seats + ' chỗ'}">5 seats</span>
                             <span class="mx-1">·</span>
-                            <span class="capitalize" th:text="${vt.transmission}">Automatic</span>
+                            <span th:text="${vt.transmission == 'automatic' ? 'Số tự động' : (vt.transmission == 'manual' ? 'Số sàn' : vt.transmission)}">Số tự động</span>
                             <span class="mx-1">·</span>
-                            <span class="capitalize" th:text="${vt.fuelType}">Gasoline</span>
+                            <span th:text="${vt.fuelType == 'gasoline' ? 'Xăng' : (vt.fuelType == 'diesel' ? 'Dầu' : (vt.fuelType == 'electric' ? 'Điện' : vt.fuelType))}">Xăng</span>
                         </div>
 
                         <p class="text-xs text-muted-foreground line-clamp-2 mb-4 leading-relaxed flex-grow"
-                           th:text="${vt.description != null ? vt.description : 'Clean, dependable, and efficient drive for city travel and weekend getaways.'}">
+                           th:text="${vt.description != null ? vt.description : 'Xe sạch sẽ, vận hành êm ái, tiết kiệm nhiên liệu cho chuyến đi nội thành hoặc dã ngoại cuối tuần.'}">
                             Car description...
                         </p>
 
                         <!-- Footer: Hourly Rate + Action Buttons -->
                         <div class="pt-3 border-t border-border flex justify-between items-center mt-auto">
                             <div>
-                                <span class="text-[11px] text-muted-foreground block">Hourly rate</span>
+                                <span class="text-[11px] text-muted-foreground block">Đơn giá thuê</span>
                                 <div class="font-bold text-navy text-base">
                                     <span th:text="${#numbers.formatDecimal(vt.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span>
                                     <span class="text-xs font-normal text-muted-foreground">đ/h</span>

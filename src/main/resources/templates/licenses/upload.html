@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Driving License — DriveNow</title>
+    <title>Giấy phép lái xe — DriveNow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -20,8 +20,8 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="mb-4">
-                <h1 class="h3 font-weight-bold text-navy mb-1">Customer Driving License</h1>
-                <p class="text-muted small mb-0">Upload your valid driver's license to unlock self-drive car reservations</p>
+                <h1 class="h3 font-weight-bold text-navy mb-1">Giấy phép lái xe của bạn</h1>
+                <p class="text-muted small mb-0">Tải lên ảnh GPLX hợp lệ để mở khóa tính năng đặt thuê xe tự lái</p>
             </div>
 
             <div th:if="${error}" class="alert alert-danger py-2" th:text="${error}"></div>
@@ -31,7 +31,7 @@
 
             <section th:if="${currentLicense != null}" class="card card-drivenow border shadow-sm p-4 bg-white rounded-xl mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2 class="h5 font-weight-bold text-navy mb-0">Current License</h2>
+                    <h2 class="h5 font-weight-bold text-navy mb-0">GPLX hiện tại</h2>
                     <span th:if="${!licenseExpired}" class="badge badge-success px-3 py-1 font-weight-bold">Uploaded</span>
                     <span th:if="${licenseExpired}" class="badge badge-danger px-3 py-1 font-weight-bold">Expired</span>
                 </div>
@@ -39,10 +39,10 @@
                 <div class="row align-items-center">
                     <div class="col-md-6 mb-3 mb-md-0">
                         <dl class="row mb-0 small">
-                            <dt class="col-5 text-muted mb-2">License Number:</dt>
+                            <dt class="col-5 text-muted mb-2">Số GPLX:</dt>
                             <dd class="col-7 font-mono font-weight-bold text-navy mb-2" th:text="${currentLicense.licenseNumber}"></dd>
 
-                            <dt class="col-5 text-muted mb-2">License Class:</dt>
+                            <dt class="col-5 text-muted mb-2">Hạng GPLX:</dt>
                             <dd class="col-7 mb-2"><span class="badge badge-light border text-navy font-weight-bold" th:text="${currentLicense.licenseClass}"></span></dd>
 
                             <dt class="col-5 text-muted mb-2">Expiry Date:</dt>
@@ -97,7 +97,7 @@
                         </div>
                     </div>
                     <div class="pt-3 border-top mt-2">
-                        <button type="submit" class="btn btn-navy font-weight-bold px-4 rounded-lg shadow-sm">Upload License</button>
+                        <button type="submit" class="btn btn-navy font-weight-bold px-4 rounded-lg shadow-sm">Tải lên GPLX</button>
                     </div>
                 </form>
             </section>

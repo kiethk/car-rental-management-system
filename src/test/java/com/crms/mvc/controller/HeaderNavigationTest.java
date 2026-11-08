@@ -44,7 +44,7 @@ class HeaderNavigationTest {
                 .andExpect(content().string(containsString("/admin/dashboard")))
                 .andExpect(content().string(containsString("Xem trước (Nhân viên)")))
                 .andExpect(content().string(not(containsString("Xem trang khách"))))
-                .andExpect(content().string(containsString("Browse Cars")));
+                .andExpect(content().string(containsString("Danh sách xe")));
     }
 
     @Test

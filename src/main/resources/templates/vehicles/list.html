@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Browse Cars — DriveNow</title>
+    <title>Danh sách xe — DriveNow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -60,8 +60,8 @@
     <!-- Top Hero Banner with Rounded Corners (Unified with Rent page) -->
     <div class="crms-hero-banner">
         <div>
-            <h1>Explore Our Self-Drive Cars</h1>
-            <p>Choose from our modern collection of sedans, SUVs, MPVs, and electric vehicles. Thoroughly inspected and sanitized before every trip.</p>
+            <h1>Khám phá đội xe tự lái</h1>
+            <p>Đa dạng các dòng xe sedan, SUV, MPV và xe điện đời mới. Kiểm tra kỹ thuật và khử khuẩn sạch sẽ trước mỗi chuyến đi.</p>
         </div>
     </div>
 
@@ -71,24 +71,24 @@
         <div class="crms-sidebar mb-4">
             <div class="card border-0 shadow-sm rounded-xl p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                    <h5 class="font-weight-bold text-navy mb-0">Filter Cars</h5>
-                    <a th:href="@{/vehicles}" class="text-muted small text-decoration-none">Reset</a>
+                    <h5 class="font-weight-bold text-navy mb-0">Bộ lọc xe</h5>
+                    <a th:href="@{/vehicles}" class="text-muted small text-decoration-none">Đặt lại</a>
                 </div>
 
                 <form method="get" th:action="@{/vehicles}" id="filterForm">
                     <!-- Keyword search -->
                     <div class="form-group mb-3">
-                        <label class="small font-weight-bold text-muted mb-1">Search Keyword</label>
+                        <label class="small font-weight-bold text-muted mb-1">Từ khóa tìm kiếm</label>
                         <input type="text" name="keyword" th:value="${filter.keyword}"
                                class="form-control form-control-sm rounded-lg"
-                               placeholder="Model or brand...">
+                               placeholder="Tên xe hoặc hãng...">
                     </div>
 
                     <!-- Brand filter -->
                     <div class="form-group mb-3">
-                        <label class="small font-weight-bold text-muted mb-1">Make / Brand</label>
+                        <label class="small font-weight-bold text-muted mb-1">Hãng xe</label>
                         <select name="brand" class="form-control form-control-sm rounded-lg">
-                            <option value="all" th:selected="${filter.brand == null or filter.brand == 'all'}">All Brands</option>
+                            <option value="all" th:selected="${filter.brand == null or filter.brand == 'all'}">Tất cả hãng xe</option>
                             <option th:each="b : ${brands}" th:value="${b}" th:text="${b}"
                                      th:selected="${filter.brand != null and filter.brand.equalsIgnoreCase(b)}"></option>
                         </select>
@@ -96,9 +96,9 @@
 
                     <!-- Category filter -->
                     <div class="form-group mb-3">
-                        <label class="small font-weight-bold text-muted mb-1">Category</label>
+                        <label class="small font-weight-bold text-muted mb-1">Phân khúc</label>
                         <select name="category" class="form-control form-control-sm rounded-lg">
-                            <option value="all" th:selected="${filter.category == null or filter.category == 'all'}">All Categories</option>
+                            <option value="all" th:selected="${filter.category == null or filter.category == 'all'}">Tất cả phân khúc</option>
                             <option th:each="c : ${categories}" th:value="${c}" th:text="${#strings.capitalize(c)}"
                                     th:selected="${filter.category != null and filter.category.equalsIgnoreCase(c)}"></option>
                         </select>
@@ -106,27 +106,27 @@
 
                     <!-- Seats filter -->
                     <div class="form-group mb-3">
-                        <label class="small font-weight-bold text-muted mb-1">Seats</label>
+                        <label class="small font-weight-bold text-muted mb-1">Số chỗ ngồi</label>
                         <select name="seats" class="form-control form-control-sm rounded-lg">
-                            <option value="0" th:selected="${filter.seats == null or filter.seats == 0}">Any Seats</option>
-                            <option value="4" th:selected="${filter.seats == 4}">4 Seats</option>
-                            <option value="5" th:selected="${filter.seats == 5}">5 Seats</option>
-                            <option value="7" th:selected="${filter.seats == 7}">7+ Seats</option>
+                            <option value="0" th:selected="${filter.seats == null or filter.seats == 0}">Tất cả chỗ ngồi</option>
+                            <option value="4" th:selected="${filter.seats == 4}">4 chỗ</option>
+                            <option value="5" th:selected="${filter.seats == 5}">5 chỗ</option>
+                            <option value="7" th:selected="${filter.seats == 7}">7+ chỗ</option>
                         </select>
                     </div>
 
                     <!-- Transmission filter -->
                     <div class="form-group mb-3">
-                        <label class="small font-weight-bold text-muted mb-1">Transmission</label>
+                        <label class="small font-weight-bold text-muted mb-1">Hộp số</label>
                         <select name="transmission" class="form-control form-control-sm rounded-lg">
-                            <option value="all" th:selected="${filter.transmission == null or filter.transmission == 'all'}">All Transmissions</option>
-                            <option value="automatic" th:selected="${filter.transmission == 'automatic'}">Automatic</option>
-                            <option value="manual" th:selected="${filter.transmission == 'manual'}">Manual</option>
+                            <option value="all" th:selected="${filter.transmission == null or filter.transmission == 'all'}">Tất cả hộp số</option>
+                            <option value="automatic" th:selected="${filter.transmission == 'automatic'}">Số tự động</option>
+                            <option value="manual" th:selected="${filter.transmission == 'manual'}">Số sàn</option>
                         </select>
                     </div>
 
                     <button type="submit" class="btn btn-navy btn-sm btn-block py-2 font-weight-bold shadow-sm rounded-lg">
-                        Apply Filters
+                        Áp dụng bộ lọc
                     </button>
                 </form>
             </div>
@@ -137,18 +137,18 @@
             <!-- Results Bar -->
             <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
                 <div>
-                    <h2 class="h5 font-weight-bold text-navy mb-0">Available Car Models</h2>
-                    <span class="small text-muted">Showing <strong class="text-navy" th:text="${totalCount}">0</strong> car models found</span>
+                    <h2 class="h5 font-weight-bold text-navy mb-0">Danh sách dòng xe</h2>
+                    <span class="small text-muted">Showing <strong class="text-navy" th:text="${totalCount}">0</strong> dòng xe được tìm thấy</span>
                 </div>
                 <!-- Sort: belongs to the filter form, so every filter already chosen is kept when the order changes -->
                 <div class="d-flex align-items-center" style="gap: 8px;">
-                    <label for="sortSelect" class="small font-weight-bold text-muted mb-0 text-nowrap">Sort by</label>
+                    <label for="sortSelect" class="small font-weight-bold text-muted mb-0 text-nowrap">Sắp xếp theo</label>
                     <select id="sortSelect" name="sortBy" form="filterForm" class="form-control form-control-sm rounded-lg"
                             style="width: auto;" onchange="document.getElementById('filterForm').submit()">
-                        <option value="price_asc" th:selected="${filter.sortBy == 'price_asc'}">Price: low to high</option>
-                        <option value="price_desc" th:selected="${filter.sortBy == 'price_desc'}">Price: high to low</option>
-                        <option value="name_asc" th:selected="${filter.sortBy == 'name_asc'}">Name: A → Z</option>
-                        <option value="name_desc" th:selected="${filter.sortBy == 'name_desc'}">Name: Z → A</option>
+                        <option value="price_asc" th:selected="${filter.sortBy == 'price_asc'}">Giá: từ thấp đến cao</option>
+                        <option value="price_desc" th:selected="${filter.sortBy == 'price_desc'}">Giá: từ cao đến thấp</option>
+                        <option value="name_asc" th:selected="${filter.sortBy == 'name_asc'}">Tên: A → Z</option>
+                        <option value="name_desc" th:selected="${filter.sortBy == 'name_desc'}">Tên: Z → A</option>
                     </select>
                 </div>
             </div>
@@ -158,11 +158,11 @@
                 <div class="mb-3 text-muted">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto text-muted"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 11l2-6h10l2 6"/></svg>
                 </div>
-                <h4 class="font-weight-bold text-navy mb-2">No cars match your criteria</h4>
-                <p class="text-muted small max-w-md mx-auto mb-4">Try loosening your filter parameters or search terms to see available vehicles.</p>
+                <h4 class="font-weight-bold text-navy mb-2">Không tìm thấy xe nào phù hợp</h4>
+                <p class="text-muted small max-w-md mx-auto mb-4">Hãy thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm để xem các xe phù hợp.</p>
                 <div>
                     <a th:href="@{/vehicles}" class="btn btn-navy btn-sm px-4 py-2 font-weight-bold rounded-lg text-decoration-none">
-                        Reset Filters
+                        Đặt lại bộ lọc
                     </a>
                 </div>
             </div>
@@ -187,7 +187,7 @@
                                 <div class="d-flex align-items-center gap-1 small text-amber font-weight-semibold">
                                     <span>★</span>
                                     <span>4.8</span>
-                                    <span class="text-muted font-weight-normal">(124 reviews)</span>
+                                    <span class="text-muted font-weight-normal">(124 đánh giá)</span>
                                 </div>
                             </div>
 
@@ -195,22 +195,22 @@
                             <div class="small text-muted font-weight-medium mb-2" style="font-size: 0.8125rem;">
                                 <span class="text-navy font-weight-bold text-uppercase" th:text="${v.category}">Sedan</span>
                                 <span class="mx-1">·</span>
-                                <span th:text="${v.seats + ' seats'}">5 seats</span>
+                                <span th:text="${v.seats + ' chỗ'}">5 seats</span>
                                 <span class="mx-1">·</span>
-                                <span class="text-capitalize" th:text="${v.transmission}">Automatic</span>
+                                <span th:text="${v.transmission == 'automatic' ? 'Số tự động' : (v.transmission == 'manual' ? 'Số sàn' : v.transmission)}">Số tự động</span>
                                 <span class="mx-1">·</span>
-                                <span class="text-capitalize" th:text="${v.fuelType}">Gasoline</span>
+                                <span th:text="${v.fuelType == 'gasoline' ? 'Xăng' : (v.fuelType == 'diesel' ? 'Dầu' : (v.fuelType == 'electric' ? 'Điện' : v.fuelType))}">Xăng</span>
                             </div>
 
                             <p class="small text-muted mb-3 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.5rem;"
-                               th:text="${v.description != null ? v.description : 'Clean, dependable, and efficient drive for city travel and weekend getaways.'}">
+                               th:text="${v.description != null ? v.description : 'Xe sạch sẽ, vận hành êm ái, tiết kiệm nhiên liệu cho chuyến đi nội thành hoặc dã ngoại cuối tuần.'}">
                                 Car description...
                             </p>
 
                             <!-- Price & Action (Bottom) -->
                             <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
                                 <div>
-                                    <span class="small text-muted d-block" style="font-size: 0.75rem;">Hourly rate</span>
+                                    <span class="small text-muted d-block" style="font-size: 0.75rem;">Đơn giá thuê</span>
                                     <div class="font-weight-bold text-navy" style="font-size: 1.15rem;">
                                         <span th:text="${#numbers.formatDecimal(v.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span>
                                         <span class="small font-weight-normal text-muted">đ/h</span>

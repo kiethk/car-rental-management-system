@@ -36,7 +36,7 @@
                         <h1 class="h4 font-weight-bold text-navy mb-1" th:text="'Record Result — Inspection #' + ${inspection.id}">
                             Record Inspection Result
                         </h1>
-                        <p class="text-muted small mb-0">Record official test results after the vehicle completes the registry station inspection.</p>
+                        <p class="text-muted small mb-0">Ghi nhận kết quả đăng kiểm chính thức sau khi xe hoàn tất kiểm tra tại trạm.</p>
                     </div>
                     <a th:href="@{/admin/inspections}" class="btn btn-outline-secondary btn-sm rounded-lg">
                         Back to Inspections
@@ -105,14 +105,14 @@
 
                         <!-- Inspection Notes -->
                         <div class="col-12 form-group mb-4">
-                            <label class="font-weight-bold small text-navy mb-1">Inspection Notes & Certificate Details</label>
+                            <label class="font-weight-bold small text-navy mb-1">Ghi chú kiểm định & Chi tiết giấy chứng nhận</label>
                             <textarea name="notes" rows="3" class="form-control rounded-lg"
                                       placeholder="e.g. Passed all safety and emissions checks. Or if failed: Rear brake pads worn out, headlamp alignment required..."></textarea>
                         </div>
                     </div>
 
                     <div class="d-flex justify-content-end gap-2 pt-3 border-top">
-                        <a th:href="@{/admin/inspections}" class="btn btn-light px-4 rounded-lg">Cancel</a>
+                        <a th:href="@{/admin/inspections}" class="btn btn-light px-4 rounded-lg">Hủy bỏ</a>
                         <button type="submit" class="btn btn-navy font-weight-bold px-4 rounded-lg shadow-sm">
                             Save Inspection Result
                         </button>
