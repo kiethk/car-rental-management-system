@@ -177,10 +177,10 @@
                             <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px;">Nhân viên phụ trách giao nhận xe</div>
                             <div style="font-size: 15px; font-weight: 700; color: #002B49;" th:text="${booking.staffName}">Nhân viên hỗ trợ</div>
                             <div style="font-size: 13px; color: #334155; margin-top: 4px;">
-                                <span>📞 Hotline / Zalo: </span><strong th:text="${booking.staffPhone}">0977777777</strong>
+                                <span>Hotline / Zalo: </span><strong th:text="${booking.staffPhone}">0977777777</strong>
                             </div>
                             <div style="font-size: 12px; color: #64748b; margin-top: 2px;" th:if="${booking.staffEmail != null}">
-                                <span>✉️ Email: </span><span th:text="${booking.staffEmail}">staff@crms.com</span>
+                                <span>Email: </span><span th:text="${booking.staffEmail}">staff@crms.com</span>
                             </div>
                         </div>
                     </div>
@@ -299,10 +299,10 @@
                         <table class="ledger-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 30%;">Mã giao dịch</th>
+                                    <th style="width: 22%;">Mã giao dịch</th>
                                     <th style="width: 30%;">Loại giao dịch · Kênh</th>
-                                    <th style="width: 22%;">Số tiền</th>
-                                    <th style="width: 18%;">Trạng thái</th>
+                                    <th style="width: 20%;">Số tiền</th>
+                                    <th style="width: 28%; text-align: right;">Trạng thái</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -327,23 +327,23 @@
                                             <span th:text="${(p.paymentType == 'REFUND' ? '+' : '') + #numbers.formatDecimal(p.amount, 0, 'COMMA', 0, 'POINT')}">720,000</span> đ
                                         </div>
                                     </td>
-                                    <td>
-                                        <span th:if="${p.status == 'paid' and p.paymentType == 'REFUND'}" class="status-pill-paid" style="background: #ecfdf5; color: #047857; border-color: #a7f3d0;">
+                                    <td style="text-align: right; white-space: nowrap;">
+                                        <span th:if="${p.status == 'paid' and p.paymentType == 'REFUND'}" class="status-pill-paid" style="background: #ecfdf5; color: #047857; border-color: #a7f3d0; white-space: nowrap;">
                                             ✓ Đã hoàn cọc
                                         </span>
-                                        <span th:if="${p.status == 'paid' and p.paymentType != 'REFUND'}" class="status-pill-paid">
+                                        <span th:if="${p.status == 'paid' and p.paymentType != 'REFUND'}" class="status-pill-paid" style="white-space: nowrap;">
                                             ✓ Đã thanh toán
                                         </span>
                                         <span th:if="${p.status == 'pending' and p.paymentType == 'REFUND'}"
-                                              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300">
+                                              class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300 whitespace-nowrap">
                                             ⏳ Đang xử lý hoàn cọc
                                         </span>
                                         <span th:if="${p.status == 'pending' and p.paymentType != 'REFUND'}"
-                                              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                              class="inline-flex items-center px-2.5 py-1 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">
                                             Chờ thanh toán
                                         </span>
                                         <span th:if="${p.status != 'paid' and p.status != 'pending'}"
-                                              class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200"
+                                              class="inline-flex items-center px-2.5 py-1 rounded text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200 whitespace-nowrap"
                                               th:text="${p.status}">
                                             Thất bại
                                         </span>
@@ -426,8 +426,7 @@
                     <!-- Amber Security Deposit Box -->
                     <div class="deposit-amber-box">
                         <div>
-                            <div class="deposit-box-label font-bold text-slate-800">Tiền cọc giữ xe</div>
-                            <span class="text-xs text-slate-500 font-medium" th:if="${booking.status != 'pending_payment'}">✓ Đã thanh toán</span>
+                            <span class="text-xs text-slate-500 font-medium" th:if="${booking.status != 'pending_payment'}">✓ Đã thanh toán tiền cọc</span>
                             <span class="text-xs text-amber-600 font-medium" th:if="${booking.status == 'pending_payment'}">Chờ thanh toán cọc</span>
                         </div>
                         <div class="deposit-box-val font-extrabold" th:classappend="${booking.status != 'pending_payment'} ? 'text-emerald-600' : 'text-amber-600'">
@@ -436,7 +435,7 @@
                     </div>
 
                     <!-- Remaining balance at station -->
-                    <div class="flex justify-between items-center py-2.5 px-3 rounded-lg bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 mt-2"
+                    <div class="flex justify-between items-center py-2.5 px-3 rounded-lg bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 mt-2 mb-2"
                          th:if="${booking.totalPrice != null and booking.depositAmount != null}">
                         <span>Tiền thuê còn lại (khi nhận xe)</span>
                         <span class="font-bold text-slate-900 text-sm" style="font-family: 'JetBrains Mono', monospace;"
@@ -516,8 +515,8 @@
                     </details>
 
                     <a th:if="${booking.contract.issued}" th:href="@{/bookings/{id}/contract(id=${booking.id})}"
-                       target="_blank" rel="noopener" class="btn-download-contract mt-3 flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                       target="_blank" rel="noopener" class="btn-download-contract">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; flex-shrink: 0; color: #047857;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         <span>Tải hợp đồng thuê xe (PDF)</span>
                     </a>
                     <div th:if="${!booking.contract.issued and booking.status != 'pending_payment' and booking.status != 'cancelled'}"

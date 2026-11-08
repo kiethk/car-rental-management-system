@@ -515,8 +515,12 @@
 }
 
 .btn-download-contract {
-    display: block;
-    margin-top: 14px;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 12px;
     padding: 10px 16px;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
@@ -526,11 +530,14 @@
     color: #0f172a !important;
     text-decoration: none !important;
     background-color: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     transition: all 0.15s ease;
 }
 
 .btn-download-contract:hover {
     background-color: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a !important;
 }
 
 /* --- Vehicle Thumbnail Strip & Meta --- */
@@ -973,12 +980,13 @@
     color: #047857;
     border: 1px solid #a7f3d0;
     border-radius: 4px;
-    padding: 2px 7px;
+    padding: 3px 8px;
     font-size: 11px;
     font-weight: 600;
     display: inline-flex;
     align-items: center;
-    gap: 3px;
+    gap: 4px;
+    white-space: nowrap;
 }
 
 .status-pill-pending {
