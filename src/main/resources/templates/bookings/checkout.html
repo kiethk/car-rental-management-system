@@ -128,11 +128,11 @@
                                             Toyota Vios 2023
                                         </h2>
                                         <div class="text-xs text-slate-500 flex items-center gap-2 mt-1 capitalize">
-                                            <span th:text="${vehicleType.seats + ' Seats'}">5 Seats</span>
+                                            <span th:text="${vehicleType.seats + ' chỗ'}">5 chỗ</span>
                                             <span>·</span>
-                                            <span th:text="${vehicleType.transmission}">Automatic</span>
+                                            <span th:text="${vehicleType.transmission == 'automatic' ? 'Số tự động' : (vehicleType.transmission == 'manual' ? 'Số sàn' : vehicleType.transmission)}">Số tự động</span>
                                             <span>·</span>
-                                            <span th:text="${vehicleType.fuelType}">Gasoline</span>
+                                            <span th:text="${vehicleType.fuelType == 'gasoline' ? 'Xăng' : (vehicleType.fuelType == 'diesel' ? 'Dầu' : (vehicleType.fuelType == 'electric' ? 'Điện' : (vehicleType.fuelType == 'hybrid' ? 'Hybrid' : vehicleType.fuelType)))}">Xăng</span>
                                         </div>
                                     </div>
                                 </div>

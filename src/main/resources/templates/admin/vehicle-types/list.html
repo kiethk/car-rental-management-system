@@ -107,9 +107,9 @@
                                     <span class="badge badge-light border text-uppercase" th:text="${vt.category}">Sedan</span>
                                 </td>
                                 <td class="text-center small">
-                                    <span th:text="${vt.seats + ' seats'}">5 seats</span> ·
-                                    <span class="text-capitalize" th:text="${vt.transmission}">Automatic</span> ·
-                                    <span class="text-capitalize" th:text="${vt.fuelType}">Gasoline</span>
+                                    <span th:text="${vt.seats + ' chỗ'}">5 chỗ</span> ·
+                                    <span class="text-capitalize" th:text="${vt.transmission == 'automatic' ? 'Số tự động' : (vt.transmission == 'manual' ? 'Số sàn' : vt.transmission)}">Số tự động</span> ·
+                                    <span class="text-capitalize" th:text="${vt.fuelType == 'gasoline' ? 'Xăng' : (vt.fuelType == 'diesel' ? 'Dầu' : (vt.fuelType == 'electric' ? 'Điện' : (vt.fuelType == 'hybrid' ? 'Hybrid' : vt.fuelType)))}">Xăng</span>
                                 </td>
                                 <td class="text-right font-weight-bold text-navy">
                                     <span th:text="${#numbers.formatDecimal(vt.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span> VND
