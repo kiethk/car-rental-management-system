@@ -20,10 +20,10 @@
 
             <!-- Desktop Nav for Customers, Guests & Previewing Staff (shown on customer-facing pages) -->
             <nav th:if="${isAdminPage == null or !isAdminPage}" class="header-customer-only hidden lg:flex items-center gap-1">
-                <a th:href="@{/}" class="crms-nav-link header-nav-link" data-nav="home">Home</a>
-                <a th:href="@{/vehicles}" class="crms-nav-link header-nav-link" data-nav="vehicles">Browse Cars</a>
-                <a th:href="@{/search}" class="crms-nav-link header-nav-link" data-nav="search">Rent a Car</a>
-                <a th:if="${account != null and account.customer}" th:href="@{/bookings/my-bookings}" class="crms-nav-link header-nav-link" data-nav="bookings">My Bookings</a>
+                <a th:href="@{/}" class="crms-nav-link header-nav-link" data-nav="home">Trang chủ</a>
+                <a th:href="@{/vehicles}" class="crms-nav-link header-nav-link" data-nav="vehicles">Danh sách xe</a>
+                <a th:href="@{/search}" class="crms-nav-link header-nav-link" data-nav="search">Thuê xe ngay</a>
+                <a th:if="${account != null and account.customer}" th:href="@{/bookings/my-bookings}" class="crms-nav-link header-nav-link" data-nav="bookings">Chuyến đi của tôi</a>
             </nav>
 
             <!-- Right side -->

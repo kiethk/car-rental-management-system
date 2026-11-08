@@ -183,7 +183,7 @@
                             <div class="flex items-center gap-1.5 text-xs text-amber font-semibold">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                                 <span>4.8</span>
-                                <span class="text-muted-foreground font-normal">(124 reviews)</span>
+                                <span class="text-muted-foreground font-normal">(124 đánh giá)</span>
                             </div>
                         </div>
 
@@ -191,22 +191,22 @@
                         <div class="text-xs text-muted-foreground font-medium mb-2">
                             <span class="text-navy font-semibold uppercase" th:text="${vt.category}">Sedan</span>
                             <span class="mx-1">·</span>
-                            <span th:text="${vt.seats + ' seats'}">5 seats</span>
+                            <span th:text="${vt.seats + ' chỗ'}">5 seats</span>
                             <span class="mx-1">·</span>
-                            <span class="capitalize" th:text="${vt.transmission}">Automatic</span>
+                            <span th:text="${vt.transmission == 'automatic' ? 'Số tự động' : (vt.transmission == 'manual' ? 'Số sàn' : vt.transmission)}">Số tự động</span>
                             <span class="mx-1">·</span>
-                            <span class="capitalize" th:text="${vt.fuelType}">Gasoline</span>
+                            <span th:text="${vt.fuelType == 'gasoline' ? 'Xăng' : (vt.fuelType == 'diesel' ? 'Dầu' : (vt.fuelType == 'electric' ? 'Điện' : vt.fuelType))}">Xăng</span>
                         </div>
 
                         <p class="text-xs text-muted-foreground line-clamp-2 mb-4 leading-relaxed flex-grow"
-                           th:text="${vt.description != null ? vt.description : 'Clean, dependable, and efficient drive for city travel and weekend getaways.'}">
+                           th:text="${vt.description != null ? vt.description : 'Xe sạch sẽ, vận hành êm ái, tiết kiệm nhiên liệu cho chuyến đi nội thành hoặc dã ngoại cuối tuần.'}">
                             Car description...
                         </p>
 
                         <!-- Footer: Hourly Rate + Action Buttons -->
                         <div class="pt-3 border-t border-border flex justify-between items-center mt-auto">
                             <div>
-                                <span class="text-[11px] text-muted-foreground block">Hourly rate</span>
+                                <span class="text-[11px] text-muted-foreground block">Đơn giá thuê</span>
                                 <div class="font-bold text-navy text-base">
                                     <span th:text="${#numbers.formatDecimal(vt.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span>
                                     <span class="text-xs font-normal text-muted-foreground">đ/h</span>
