@@ -61,10 +61,12 @@
                                 class="inline-flex items-center gap-1.5 font-bold text-slate-900 bg-slate-100 px-3 py-1 rounded-full border border-slate-300"
                             >
                                 <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                Kiểm tra & Xác nhận
+                                Xác nhận
                             </span>
                             <span class="text-slate-300">→</span>
                             <span class="text-slate-400 font-medium">Đặt cọc</span>
+                            <span class="text-slate-300">→</span>
+                            <span class="text-slate-400 font-medium">Đã xác nhận cọc</span>
                         </div>
                     </div>
                 </div>
@@ -109,21 +111,32 @@
                                         class="w-28 h-20 rounded-xl object-cover bg-slate-100 flex-shrink-0 border border-slate-200 shadow-2xs"
                                     />
                                     <div class="flex-1 min-w-0">
-                                        <!-- Name on top, specs as compact chips underneath -->
-                                        <h2
-                                            class="font-bold text-slate-900 text-xl leading-tight truncate"
-                                            th:text="${vehicleType.brand != null and vehicleType.name.toLowerCase().startsWith(vehicleType.brand.toLowerCase()) ? vehicleType.name : (vehicleType.brand + ' ' + vehicleType.name)}"
-                                        >
-                                            Toyota Vios 2023
-                                        </h2>
-                                        <div class="flex flex-wrap items-center gap-x-2 mt-1.5 text-sm text-slate-500">
-                                            <span class="uppercase" th:text="${vehicleType.category}">Sedan</span>
-                                            <span>·</span>
-                                            <span th:text="${vehicleType.seats + ' chỗ'}">5 chỗ</span>
-                                            <span>·</span>
-                                            <span th:replace="~{fragments/labels :: transmission(${vehicleType.transmission})}">Số tự động</span>
-                                            <span>·</span>
-                                            <span th:replace="~{fragments/labels :: fuel(${vehicleType.fuelType})}">Xăng</span>
+                                        <!-- Name on top, subtle category badge inline -->
+                                        <div class="flex items-center gap-2">
+                                            <h2
+                                                class="font-bold text-slate-900 text-xl leading-tight truncate"
+                                                th:text="${vehicleType.brand != null and vehicleType.name.toLowerCase().startsWith(vehicleType.brand.toLowerCase()) ? vehicleType.name : (vehicleType.brand + ' ' + vehicleType.name)}"
+                                            >
+                                                Toyota Vios 2023
+                                            </h2>
+                                            <span class="car-category-badge"
+                                                  style="font-size: 10px; line-height: 1; padding: 2px 5px; font-weight: 600; text-transform: uppercase; background-color: #f1f5f9; color: #64748b; border-radius: 4px;"
+                                                  th:text="${vehicleType.category}">Sedan</span>
+                                        </div>
+                                        <!-- Specs Micro-Badges: Seats, Transmission, Fuel -->
+                                        <div class="flex flex-wrap items-center gap-2 mt-2.5">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-50 text-slate-700 border border-slate-200/80">
+                                                <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                                <span th:text="${vehicleType.seats + ' chỗ'}">5 chỗ</span>
+                                            </span>
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-50 text-slate-700 border border-slate-200/80">
+                                                <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                                                <span th:replace="~{fragments/labels :: transmission(${vehicleType.transmission})}">Số tự động</span>
+                                            </span>
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-50 text-slate-700 border border-slate-200/80">
+                                                <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 22h12M4 9h10M4 22V4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v18M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L19.4 6.4a2 2 0 0 0-1.4-.4H16"/></svg>
+                                                <span th:replace="~{fragments/labels :: fuel(${vehicleType.fuelType})}">Xăng</span>
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -299,7 +312,7 @@
                             <!-- CARD 2: Driver Verification -->
                             <div class="checkout-section">
                                 <label class="block text-xs font-bold text-slate-800 uppercase tracking-wide mb-3"
-                                    >Giấy phép lái xe (GPLX) <span class="normal-case font-medium text-slate-400">· không bắt buộc</span></label>
+                                    >Giấy phép lái xe (GPLX)</label>
 
                                 <div
                                     th:if="${hasValidLicense}"
@@ -436,20 +449,10 @@
                                     <div class="flex justify-between items-center text-slate-600">
                                         <span>Thời lượng thuê xe</span>
                                         <span class="font-bold text-slate-900"
-                                            ><span th:text="${rentalHours}">9</span> hours</span
+                                            ><span th:text="${rentalHours}">9</span> giờ</span
                                         >
                                     </div>
-                                    <div class="flex justify-between items-center pt-2.5 text-slate-600">
-                                        <span>Tiền thuê cơ bản</span>
-                                        <span class="font-bold text-slate-900"
-                                            ><span
-                                                id="rentalSubtotalDisplay"
-                                                th:text="${#numbers.formatDecimal(estimatedTotal, 0, 'COMMA', 0, 'POINT')}"
-                                                >1,350,000</span
-                                            >
-                                            đ</span
-                                        >
-                                    </div>
+
 
                                     <!-- Applied Discount Row (WELCOME10 (-10%) and amount both in emerald green) -->
                                     <div
@@ -465,10 +468,10 @@
                                     </div>
 
                                     <!-- Net Total Fee -->
-                                    <div class="flex justify-between items-center pt-2.5 border-t border-slate-100">
-                                        <span class="font-bold text-slate-900 text-sm">Tổng tiền thuê dự kiến</span>
-                                        <span class="font-extrabold text-slate-900 text-base"
-                                            ><span
+                                    <div class="flex justify-between items-center pt-3 border-t border-slate-100">
+                                        <span class="font-bold text-slate-900 text-base">Tổng tiền thuê dự kiến</span>
+                                        <span class="font-black font-bold  text-slate-900"
+                                            ><span class="font-bold  text-xl text-slate-900 text-base"
                                                 id="totalRentalFeeDisplay"
                                                 th:text="${#numbers.formatDecimal(estimatedTotal, 0, 'COMMA', 0, 'POINT')}"
                                                 >1,350,000</span
@@ -490,7 +493,6 @@
                                             id="promoInput"
                                             type="text"
                                             th:field="*{promotionCode}"
-                                            placeholder="WELCOME10, GIAM100K..."
                                             class="input-shadcn flex-1 text-xs uppercase font-semibold tracking-wider placeholder:normal-case placeholder:font-normal placeholder:tracking-normal"
                                             onkeydown="
                                                 if (event.key === 'Enter') {
@@ -505,6 +507,7 @@
                                             class="px-3.5 py-2 rounded-lg border border-slate-300 hover:border-slate-900 bg-white hover:bg-slate-50 text-xs font-bold text-slate-800 transition-colors shadow-2xs whitespace-nowrap cursor-pointer active:scale-95"
                                         >Áp dụng</button>
                                     </div>
+                                    <p id="promoFeedback" class="text-xs font-medium hidden mt-1"></p>
                                 </div>
 
                                 <!-- Deposit Due Card (Zero line-wrap on đ currency) -->
@@ -526,7 +529,7 @@
                                                 th:text="${#numbers.formatDecimal(depositAmount, 0, 'COMMA', 0, 'POINT')}"
                                                 >675,000</span
                                             >
-                                            <span class="text-xs font-bold text-slate-500">đ</span>
+                                            <span class="text-xs font-bold text-slate-900">đ</span>
                                         </div>
                                     </div>
                                     <div
@@ -596,18 +599,7 @@
                                         </svg>
                                         <span data-policy="cancellation" th:text="'Miễn phí hủy chuyến trước thời điểm nhận xe ' + ${contractTerms.freeCancellationHours} + ' giờ'">Miễn phí hủy chuyến trước 72 giờ</span>
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <svg
-                                            class="w-4 h-4 text-emerald-600 flex-shrink-0"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="2.5"
-                                        >
-                                            <polyline points="20 6 9 17 4 12" />
-                                        </svg>
-                                        <span>Cứu hộ khẩn cấp 24/7 trong suốt hành trình</span>
-                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -615,8 +607,6 @@
                 </form>
             </div>
         </main>
-
-        <div th:replace="~{fragments/footer :: footer}"></div>
 
         <script th:inline="javascript">
             function togglePlatePicker() {
@@ -643,6 +633,7 @@
 
             function applyPromoCode() {
                 const input = document.getElementById("promoInput");
+                const feedback = document.getElementById("promoFeedback");
                 const discountRow = document.getElementById("discountRow");
                 const discountLabel = document.getElementById("discountLabel");
                 const discountAmountDisplay = document.getElementById("discountAmountDisplay");
@@ -651,11 +642,23 @@
                 const remainingBalanceDisplay = document.getElementById("remainingBalanceDisplay");
 
                 if (!input) return;
-                const code = input.value.trim().toUpperCase();
+                let code = input.value.trim().toUpperCase();
+
+                // Auto-correct common typo: WELCOM10 -> WELCOME10
+                if (code === "WELCOM10") {
+                    code = "WELCOME10";
+                    input.value = "WELCOME10";
+                }
 
                 if (!code) {
-                    discountRow.classList.add("hidden");
-                    discountRow.classList.remove("flex");
+                    if (feedback) {
+                        feedback.classList.add("hidden");
+                        feedback.textContent = "";
+                    }
+                    if (discountRow) {
+                        discountRow.classList.add("hidden");
+                        discountRow.classList.remove("flex");
+                    }
                     totalRentalFeeDisplay.textContent = formatVND(baseRentalTotal);
                     const dep = Math.round(baseRentalTotal * depositRate);
                     depositDueDisplay.textContent = formatVND(dep);
@@ -684,19 +687,33 @@
 
                     discountLabel.textContent = label;
                     discountAmountDisplay.textContent = formatVND(discount);
-                    discountRow.classList.remove("hidden");
-                    discountRow.classList.add("flex");
+                    if (discountRow) {
+                        discountRow.classList.remove("hidden");
+                        discountRow.classList.add("flex");
+                    }
 
                     totalRentalFeeDisplay.textContent = formatVND(newTotal);
                     depositDueDisplay.textContent = formatVND(newDeposit);
                     remainingBalanceDisplay.textContent = formatVND(newRemaining);
+
+                    if (feedback) {
+                        feedback.textContent = "✓ Đã áp dụng mã " + code + " (Giảm " + formatVND(discount) + " đ)";
+                        feedback.className = "text-xs font-semibold text-emerald-600 mt-1 block";
+                    }
                 } else {
-                    discountRow.classList.add("hidden");
-                    discountRow.classList.remove("flex");
+                    if (discountRow) {
+                        discountRow.classList.add("hidden");
+                        discountRow.classList.remove("flex");
+                    }
                     totalRentalFeeDisplay.textContent = formatVND(baseRentalTotal);
                     const dep = Math.round(baseRentalTotal * depositRate);
                     depositDueDisplay.textContent = formatVND(dep);
                     remainingBalanceDisplay.textContent = formatVND(baseRentalTotal - dep);
+
+                    if (feedback) {
+                        feedback.textContent = 'Mã "' + code + '" không hợp lệ hoặc đã hết hạn.';
+                        feedback.className = "text-xs font-semibold text-rose-500 mt-1 block";
+                    }
                 }
             }
 

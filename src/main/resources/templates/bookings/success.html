@@ -38,7 +38,7 @@
                         <span class="inline-flex items-center gap-1 text-slate-500 font-medium">
                             <svg class="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <polyline points="20 6 9 17 4 12" />
-                            </svg> Kiểm tra & Xác nhận
+                            </svg> Xác nhận
                         </span>
                         <span class="text-slate-300">→</span>
                         <span class="inline-flex items-center gap-1 text-slate-500 font-medium">
@@ -110,16 +110,7 @@
                                         </div>
                                         <div class="timeline-content">
                                             <div class="timeline-title">Nhận xe tại trạm bãi</div>
-                                            <div class="timeline-desc" th:text="${booking.stationAddress != null ? booking.stationAddress : 'Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM'}">Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM</div>
-                                            <div class="timeline-desc">
-                                                Thanh toán số tiền còn lại
-                                                <span
-                                                    style="font-weight: 600; color: #0f172a"
-                                                    th:text="${#numbers.formatDecimal(booking.totalPrice - booking.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"
-                                                    >675,000 đ</span
-                                                >
-                                                khi nhận xe
-                                            </div>
+
                                             <div
                                                 class="duration-tag"
                                                 th:with="diffHours=${T(java.time.Duration).between(booking.pickupTime, booking.scheduledEndTime).toHours()}"
@@ -176,7 +167,7 @@
                                             <line x1="12" y1="8" x2="12" y2="12" />
                                             <line x1="12" y1="16" x2="12.01" y2="16" />
                                         </svg>
-                                        Lưu ý trước giờ nhận xe
+                                         Lưu ý trước giờ nhận xe
                                     </div>
                                     <div class="space-y-2 mt-2">
                                         <div class="flex items-start gap-2.5 text-xs text-slate-700">
@@ -194,13 +185,13 @@
                                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; margin-top: 16px; margin-bottom: 16px;">
                                     <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 6px;">Trạm nhận xe & Nhân viên bàn giao</div>
                                     <div style="font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 8px;">
-                                        📍 <span th:text="${booking.stationAddress}">Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM</span>
+                                        📍 <span th:text="${booking.stationAddress}">Kho xe DriveNow - ĐH FPT TP.HCM (Khu Công nghệ cao, TP. Thủ Đức)</span>
                                     </div>
                                     <div style="font-size: 12px; color: #64748b; margin-top: -4px; margin-bottom: 8px;">Mở cửa hàng ngày: <span th:text="${openingHours != null ? openingHours.label : '24/24'}">24/24</span></div>
                                     <div style="font-size: 13px; color: #334155;">
-                                        👤 <span>Nhân viên bàn giao: </span><strong th:text="${booking.staffName}">Nhân viên hỗ trợ</strong>
+                                        <span>Nhân viên bàn giao: </span><strong th:text="${booking.staffName}">Nhân viên hỗ trợ</strong>
                                         <span style="margin: 0 6px;">•</span>
-                                        📞 <span>Số điện thoại: </span><strong style="color: #002B49;" th:text="${booking.staffPhone}">0977777777</strong>
+                                        <span>Số điện thoại: </span><strong style="color: #002B49;" th:text="${booking.staffPhone}">0977777777</strong>
                                     </div>
                                 </div>
 
@@ -323,6 +314,5 @@
             </div>
         </main>
 
-        <div th:replace="~{fragments/footer :: footer}"></div>
     </body>
 </html>

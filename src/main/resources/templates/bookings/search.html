@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/drivenow.css}">
-    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css(v='2.2')}">
 </head>
 <body class="bg-surface text-navy min-h-screen flex flex-col">
 
@@ -113,12 +113,6 @@
 
             <!-- Right Results List -->
             <div class="crms-content">
-                <!-- Result Counter -->
-                <div class="flex items-center justify-between mb-4 pb-2 border-b border-border">
-                    <p class="text-sm text-muted-foreground">
-                        Hiển thị <span class="font-bold text-navy" th:text="${results.size()}">3</span> dòng xe sẵn sàng trong khung giờ bạn chọn
-                    </p>
-                </div>
 
                 <!-- No Results State -->
                 <div th:if="${results.isEmpty()}" class="card-shadcn py-16 px-6 text-center text-muted-foreground bg-white rounded-xl my-4">
@@ -134,8 +128,8 @@
                 <!-- Horizontal Car Cards (Clean, synchronized design with Estimated Cost) -->
                 <div class="space-y-4">
                     <div th:each="v : ${results}" class="car-card-row group bg-white border border-border rounded-xl overflow-hidden hover:shadow-md transition-shadow">
-                        <!-- Left: Image (No corner badge per requirement) -->
-                        <div class="car-card-img-wrap" style="width: 260px; height: 180px; background-color: #f1f5f9; flex-shrink: 0; overflow: hidden;">
+                        <!-- Left: Image (Full height of the card) -->
+                        <div class="car-card-img-wrap">
                             <img th:src="${v.imageUrl != null and !v.imageUrl.isBlank() ? v.imageUrl : '/images/car-rental-logo.svg'}"
                                  th:alt="${v.displayName}"
                                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -145,43 +139,55 @@
                         <!-- Middle & Right details -->
                         <div class="car-card-details-wrap">
                             <div class="car-card-info-col">
-                                <!-- Car Name & Rating -->
+                                <!-- Row 1: Car Name & Subtle Category Tag -->
                                 <div>
-                                    <h3 class="font-bold text-navy text-lg leading-tight"
-                                        th:text="${v.displayName}">Toyota Vios 2023</h3>
-                                    <div class="text-xs text-muted-foreground mt-1"><span th:replace="~{fragments/labels :: rating(${ratings[v.id]})}">★ 4.8 (12 đánh giá)</span></div>
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="font-bold text-navy text-xl leading-snug group-hover:text-amber transition-colors"
+                                            th:text="${v.displayName}">Toyota Vios 2023</h3>
+                                        <span class="car-category-badge" style="font-size: 10px; line-height: 1; padding: 2px 5px; font-weight: 600; text-transform: uppercase; background-color: #f1f5f9; color: #64748b; border-radius: 4px;"
+                                              th:text="${v.category}">Sedan</span>
+                                    </div>
+                                    <!-- Row 2: Star rating below car name -->
+                                    <div class="text-xs text-muted-foreground mt-1">
+                                        <span th:replace="~{fragments/labels :: rating(${ratings[v.id]})}">★ 5.0 (1 đánh giá)</span>
+                                    </div>
                                 </div>
 
-                                <!-- Specs Micro-Badges: Category, Seats, Transmission, Fuel -->
-                                <div class="text-xs text-muted-foreground font-medium my-2">
-                                    <span class="text-navy font-bold uppercase" th:text="${v.category}">Sedan</span>
-                                    <span class="mx-1">·</span>
-                                    <span th:text="${v.seats + ' chỗ'}">5 chỗ</span>
-                                    <span class="mx-1">·</span>
-                                    <span th:replace="~{fragments/labels :: transmission(${v.transmission})}">Số tự động</span>
-                                    <span class="mx-1">·</span>
-                                    <span th:replace="~{fragments/labels :: fuel(${v.fuelType})}">Xăng</span>
+                                <!-- Row 3: Specs Micro-Badges (Seats, Transmission, Fuel) -->
+                                <div class="flex flex-wrap items-center gap-2 mt-4">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-50 text-slate-700 border border-slate-200/80">
+                                        <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                        <span th:text="${v.seats + ' chỗ'}">5 chỗ</span>
+                                    </span>
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-50 text-slate-700 border border-slate-200/80">
+                                        <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                                        <span th:replace="~{fragments/labels :: transmission(${v.transmission})}">Số tự động</span>
+                                    </span>
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-50 text-slate-700 border border-slate-200/80">
+                                        <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 22h12M4 9h10M4 22V4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v18M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L19.4 6.4a2 2 0 0 0-1.4-.4H16"/></svg>
+                                        <span th:replace="~{fragments/labels :: fuel(${v.fuelType})}">Xăng</span>
+                                    </span>
                                 </div>
-
                             </div>
 
-                            <!-- Right: Pricing & Select Button (Divider moved left with 32px padding) -->
+                            <!-- Right: Pricing & Select Button -->
                             <div class="car-card-pricing-col">
                                 <div class="price-box">
-                                    <div class="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Tổng tiền thuê tạm tính</div>
-                                    <div class="text-xl sm:text-2xl font-extrabold text-navy tracking-tight">
+                                    <div class="text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">Tổng tiền tạm tính</div>
+                                    <div class="text-xl sm:text-2xl font-extrabold text-navy tracking-tight whitespace-nowrap">
                                         <span th:text="${#numbers.formatDecimal(v.estimatedTotal, 0, 'COMMA', 0, 'POINT')}">1,350,000</span> <span class="text-sm font-semibold text-muted-foreground">đ</span>
                                     </div>
-                                    <div class="text-xs text-muted-foreground mt-0.5">
+                                    <div class="text-xs text-muted-foreground mt-0.5 whitespace-nowrap">
                                         <span th:text="${#numbers.formatDecimal(v.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span> đ / giờ
                                     </div>
 
-                                    <!-- Available status: black text on white bg, right aligned, margin-top, slightly bold -->
-                                    <div class="car-card-available-text">
-                                        <span th:if="${v.availableCount > 0}">
-                                            Còn <span th:text="${v.availableCount}">3</span> xe khả dụng
+                                    <!-- Available status -->
+                                    <div class="car-card-available-text whitespace-nowrap">
+                                        <span th:if="${v.availableCount > 0}" class="inline-flex items-center gap-1.5 text-slate-800 font-bold text-xs">
+                                            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                                            <span>Còn <span th:text="${v.availableCount}">3</span> xe khả dụng</span>
                                         </span>
-                                        <span th:if="${v.availableCount == 0}" class="text-slate-500">
+                                        <span th:if="${v.availableCount == 0}" class="text-slate-400 text-xs">
                                             Hết xe tạm thời
                                         </span>
                                     </div>
@@ -190,10 +196,10 @@
                                 <div class="action-box">
                                     <a th:if="${v.availableCount > 0}"
                                        th:href="@{/bookings/checkout(vehicleTypeId=${v.id}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, startTime=${selectedStart}, endTime=${selectedEnd})}"
-                                       class="btn-navy w-full text-xs font-bold py-2.5 px-5 rounded-lg shadow-xs transition-all text-decoration-none text-center block">
+                                       class="btn-navy w-full text-xs font-bold py-2.5 px-5 rounded-lg shadow-xs transition-all text-decoration-none text-center block whitespace-nowrap">
                                         Chọn xe này &rarr;
                                     </a>
-                                    <button th:if="${v.availableCount == 0}" disabled class="w-full bg-surface-2 text-muted-foreground text-xs font-semibold py-2.5 px-5 rounded-lg cursor-not-allowed">
+                                    <button th:if="${v.availableCount == 0}" disabled class="w-full bg-surface-2 text-muted-foreground text-xs font-semibold py-2.5 px-5 rounded-lg cursor-not-allowed whitespace-nowrap">
                                         Hết xe tạm thời
                                     </button>
                                 </div>
