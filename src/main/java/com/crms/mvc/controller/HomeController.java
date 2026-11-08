@@ -37,10 +37,9 @@ public class HomeController {
         model.addAttribute("today", LocalDate.now().toString());
         model.addAttribute("tomorrow", LocalDate.now().plusDays(1).toString());
 
-        // The home page shows the first 6 models and a "view all" button with the total.
+        // The home page shows the first 6 models; the heading link leads to the full list.
         List<VehicleType> allVehicles = vehicleTypeService.findAll();
         model.addAttribute("featuredVehicles", allVehicles.stream().limit(6).toList());
-        model.addAttribute("totalVehicleCount", allVehicles.size());
         // Star ratings come from the reviews in the database, one query for all models.
         model.addAttribute("ratings", reviewService != null ? reviewService.ratingsByVehicleType() : Map.of());
 
