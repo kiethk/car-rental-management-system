@@ -175,7 +175,6 @@ ON CONFLICT (booking_id) DO NOTHING;
 INSERT INTO contract_templates (contract_template_id, version_no, title, terms_content,
                                 deposit_rate, late_fee_multiplier, free_cancellation_hours,
                                 free_cancel_after_deposit_hours, pickup_wait_hours,
-                                compensation_voucher_percent, compensation_voucher_days,
                                 status, created_by, created_at, activated_at)
 VALUES
     (1, 1, 'Hợp đồng thuê xe ô tô tự lái',
@@ -189,7 +188,7 @@ VALUES
      || E'6. Không giao xe cho người khác điều khiển khi chưa được Bên A đồng ý; không cầm cố, thế chấp, cho thuê lại xe; không dùng xe để chở hàng cấm hoặc đua xe.\n'
      || E'7. Bồi thường thiệt hại khi xe bị hư hỏng hoặc mất mát do lỗi của Bên B, căn cứ biên bản bàn giao và chi phí sửa chữa thực tế.\n'
      || E'8. Trả xe đúng thời hạn, đúng địa điểm; tự chi trả phí cầu đường, bến bãi phát sinh.',
-     0.5000, 2.00, 72, 1, 2, 10, 90,
+     0.5000, 2.00, 72, 1, 2,
      'ARCHIVED', 1, CURRENT_TIMESTAMP - INTERVAL '30 days', CURRENT_TIMESTAMP - INTERVAL '30 days'),
     (2, 2, 'Hợp đồng thuê xe ô tô tự lái',
      E'Quyền và nghĩa vụ của Bên A\n'
@@ -212,9 +211,9 @@ VALUES
      || E'Khoản bồi thường được thanh toán riêng, ngoài tiền thuê.\n'
      || E'\nĐổi xe khi bàn giao\n'
      || E'11. Biển số ghi trong hợp đồng là xe dự kiến. Nếu đến giờ nhận xe mà xe dự kiến chưa sẵn sàng, Bên A giao cho Bên B xe khác cùng loại xe đã đặt, giá thuê giữ nguyên; việc đổi xe này không làm thay đổi hợp đồng. Bên B muốn hủy thì áp dụng điều khoản hủy đặt xe như thông thường.\n'
-     || E'12. Nếu không còn xe cùng loại để giao, việc đặt xe được hủy và Bên A hoàn lại cho Bên B 100% tiền cọc ngay tại điểm giao xe, kể cả khi đã quá thời hạn hủy miễn phí, và tặng Bên B một voucher bù cho lần thuê sau theo mức ghi tại mục chính sách đặt cọc và hủy đặt xe (không quy đổi thành tiền mặt).\n'
+     || E'12. Nếu không còn xe cùng loại để giao, việc đặt xe được hủy và Bên A hoàn lại cho Bên B 100% tiền cọc ngay tại điểm giao xe, kể cả khi đã quá thời hạn hủy miễn phí.\n'
      || E'13. Xe thực tế giao cho Bên B là xe ghi trong biên bản bàn giao; mọi quyền và nghĩa vụ theo hợp đồng này áp dụng cho xe đó.',
-     0.5000, 2.00, 72, 1, 2, 10, 90,
+     0.5000, 2.00, 72, 1, 2,
      'ACTIVE', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (contract_template_id) DO NOTHING;
 
@@ -250,10 +249,10 @@ ON CONFLICT (review_id) DO UPDATE SET comment = EXCLUDED.comment;
 
 -- 14. VEHICLE_INSPECTIONS
 -- status: 'scheduled' | 'passed' | 'failed'
-INSERT INTO vehicle_inspections (vehicle_inspection_id, vehicle_id, scheduled_at, completed_at, status, notes)
+INSERT INTO vehicle_inspections (vehicle_inspection_id, vehicle_id, scheduled_date, completed_at, status, notes)
 VALUES 
-    (1, 1, CURRENT_TIMESTAMP - INTERVAL '10 days', CURRENT_TIMESTAMP - INTERVAL '10 days', 'passed', 'Bảo dưỡng định kỳ 10.000km, xe vận hành hoàn hảo.'),
-    (2, 4, CURRENT_TIMESTAMP - INTERVAL '1 day', NULL, 'scheduled', 'Lịch chẩn đoán pin xe điện và hệ thống cảm biến ADAS.')
+    (1, 1, CURRENT_DATE - 10, CURRENT_TIMESTAMP - INTERVAL '10 days', 'passed', 'Bảo dưỡng định kỳ 10.000km, xe vận hành hoàn hảo.'),
+    (2, 4, CURRENT_DATE - 1, NULL, 'scheduled', 'Lịch chẩn đoán pin xe điện và hệ thống cảm biến ADAS.')
 ON CONFLICT (vehicle_inspection_id) DO UPDATE SET notes = EXCLUDED.notes;
 
 -- 15. ISSUES

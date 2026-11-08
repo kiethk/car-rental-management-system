@@ -223,7 +223,7 @@
                                 <span class="badge badge-light border text-navy font-weight-bold"
                                       th:text="${ins.vehicle.licensePlate != null ? ins.vehicle.licensePlate.plate : 'N/A'}">51A-123.45</span>
                             </td>
-                            <td th:text="${#temporals.format(ins.scheduledAt, 'yyyy-MM-dd HH:mm')}">2026-10-25 09:00</td>
+                            <td th:text="${#temporals.format(ins.scheduledDate, 'yyyy-MM-dd')}">2026-10-25</td>
                             <td>
                                 <span th:if="${ins.status == 'scheduled'}" class="badge badge-warning text-dark px-2 py-1">Đã lên lịch</span>
                                 <span th:if="${ins.status == 'passed'}" class="badge badge-success px-2 py-1">Đạt</span>

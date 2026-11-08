@@ -8,7 +8,11 @@ import jakarta.validation.constraints.Size;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /** What staff type when recording or editing an Issue. The fee is optional; empty or 0 means no fee. */
 public class IssueFormDTO {
@@ -34,6 +38,9 @@ public class IssueFormDTO {
     @DecimalMin(value = "1000", message = "Phí bồi thường tối thiểu là 1.000 VNĐ")
     private BigDecimal feeAmount;
 
+    /** Photos staff add while recording the Issue (create only; later photos go through the Issue page). */
+    private List<MultipartFile> images = new ArrayList<>();
+
     public Long getBookingId() { return bookingId; }
     public void setBookingId(Long bookingId) { this.bookingId = bookingId; }
 
@@ -51,4 +58,7 @@ public class IssueFormDTO {
 
     public BigDecimal getFeeAmount() { return feeAmount; }
     public void setFeeAmount(BigDecimal feeAmount) { this.feeAmount = feeAmount; }
+
+    public List<MultipartFile> getImages() { return images; }
+    public void setImages(List<MultipartFile> images) { this.images = images; }
 }

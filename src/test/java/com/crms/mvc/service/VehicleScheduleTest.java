@@ -36,7 +36,7 @@ class VehicleScheduleTest {
                 bookingRepository, mock(CustomerRepository.class), mock(SlotRepository.class),
                 mock(VehicleTypeRepository.class), vehicleRepository, mock(EmployeeRepository.class),
                 mock(PromotionRepository.class), mock(PaymentService.class), mock(ContractService.class),
-                mock(ContractTemplateService.class), mock(BookingFeeService.class), mock(PricingService.class), mock(CompensationVoucherService.class));
+                mock(ContractTemplateService.class), mock(BookingFeeService.class), mock(PricingService.class));
 
         VehicleType type = new VehicleType();
         type.setId(1L);
@@ -88,7 +88,7 @@ class VehicleScheduleTest {
         car.setRegistrationExpiry(day.plusDays(1));
         com.crms.mvc.entity.VehicleInspection inspection = new com.crms.mvc.entity.VehicleInspection();
         inspection.setVehicle(car);
-        inspection.setScheduledAt(day.plusDays(1).atTime(9, 0).atOffset(VN));
+        inspection.setScheduledDate(day.plusDays(1));
         inspection.setStatus("scheduled");
         when(vehicleRepository.findScheduledInspectionsByVehicleId(5L)).thenReturn(List.of(inspection));
 
@@ -105,7 +105,7 @@ class VehicleScheduleTest {
         Vehicle car = vehicleRepository.findById(5L).get();
         com.crms.mvc.entity.VehicleInspection inspection = new com.crms.mvc.entity.VehicleInspection();
         inspection.setVehicle(car);
-        inspection.setScheduledAt(day.atTime(9, 0).atOffset(VN));
+        inspection.setScheduledDate(day);
         inspection.setStatus("scheduled");
         when(vehicleRepository.findScheduledInspectionsByVehicleId(5L)).thenReturn(List.of(inspection));
         Booking booking = new Booking();

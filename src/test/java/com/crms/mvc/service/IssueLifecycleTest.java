@@ -107,7 +107,7 @@ class IssueLifecycleTest {
     }
 
     @Test
-    void cancellingInsideTheGracePeriodSendsNothing() {
+    void cancellingAnIssueTheCustomerWasNeverToldAboutSendsNothing() {
         Issue issue = issue(IssueStatus.OPEN);
         BookingFee fee = feeOf(issue, null);
 
@@ -116,19 +116,6 @@ class IssueLifecycleTest {
         assertEquals(IssueStatus.CANCELLED, issue.getStatus());
         verify(bookingFeeRepository).delete(fee);
         verify(eventPublisher, never()).publishEvent(any());
-    }
-
-    // ---- notice grace period ----
-
-    @Test
-    void issuesPastTheGracePeriodAreAnnouncedOnce() {
-        Issue due = issue(IssueStatus.OPEN);
-        when(issueRepository.findByStatusAndNotifiedAtIsNullAndReportedAtBefore(any(), any())).thenReturn(List.of(due));
-
-        service.sendDueNotices();
-
-        assertNotNull(due.getNotifiedAt());
-        verify(eventPublisher).publishEvent(new IssueFeeDueEvent(7L));
     }
 
     @Test

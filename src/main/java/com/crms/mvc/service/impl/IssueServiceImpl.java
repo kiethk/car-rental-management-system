@@ -16,6 +16,8 @@ import com.crms.mvc.entity.LicensePlate;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.event.IssueCancelledEvent;
 import com.crms.mvc.event.IssueFeeDueEvent;
+import com.crms.mvc.event.IssueUpdatedEvent;
+import com.crms.mvc.event.PaymentReceivedEvent;
 import com.crms.mvc.repository.BookingFeeRepository;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.EmployeeRepository;
@@ -33,7 +35,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,6 +43,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -55,8 +57,6 @@ public class IssueServiceImpl implements IssueService {
 
     private static final int FEE_DESCRIPTION_MAX = 255;
     private static final int MAX_PHOTOS = 10;
-    /** Seconds after recording an Issue before the customer is emailed, so a mistaken Issue can be cancelled silently. */
-    public static final int NOTICE_GRACE_SECONDS = 30;
 
     private final IssueRepository issueRepository;
     private final BookingRepository bookingRepository;
@@ -123,19 +123,12 @@ public class IssueServiceImpl implements IssueService {
         Issue saved = issueRepository.save(issue);
 
         syncFee(saved, fee);
-        // No email yet: sendDueNotices() tells the customer once the grace period has passed.
+        attachPhotos(saved, form.getImages());
+        // The customer is told at once; a mistake is corrected by editing the Issue, which emails what changed.
+        saved.setNotifiedAt(OffsetDateTime.now());
+        issueRepository.save(saved);
+        eventPublisher.publishEvent(new IssueFeeDueEvent(saved.getId()));
         return saved;
-    }
-
-    @Override
-    @Scheduled(fixedDelay = 10_000)
-    public void sendDueNotices() {
-        OffsetDateTime graceEnded = OffsetDateTime.now().minusSeconds(NOTICE_GRACE_SECONDS);
-        for (Issue issue : issueRepository.findByStatusAndNotifiedAtIsNullAndReportedAtBefore(IssueStatus.OPEN, graceEnded)) {
-            issue.setNotifiedAt(OffsetDateTime.now());
-            issueRepository.save(issue);
-            eventPublisher.publishEvent(new IssueFeeDueEvent(issue.getId()));
-        }
     }
 
     @Override
@@ -149,7 +142,9 @@ public class IssueServiceImpl implements IssueService {
                 issue.getIssueType().getLabel(),
                 issue.getSubject(),
                 DateTimeUtils.toVietnamTime(issue.getOccurredAt()),
-                findFee(issue.getId()).map(BookingFee::getAmount).orElse(null)));
+                findFee(issue.getId()).map(BookingFee::getAmount).orElse(null),
+                issue.getEvidences() == null ? List.of()
+                        : issue.getEvidences().stream().map(IssueEvidence::getFileName).toList()));
     }
 
     @Override
@@ -161,6 +156,10 @@ public class IssueServiceImpl implements IssueService {
         }
         BigDecimal fee = requireFeePositive(form.getFeeAmount());
 
+        IssueUpdatedEvent before = new IssueUpdatedEvent(issue.getId(), issue.getIssueType().getLabel(),
+                issue.getSubject(), issue.getDescription(), issue.getOccurredAt(),
+                findFee(issue.getId()).map(BookingFee::getAmount).orElse(null));
+
         applyDetails(issue, form);
         Issue saved = issueRepository.save(issue);
 
@@ -168,9 +167,9 @@ public class IssueServiceImpl implements IssueService {
         invalidatePendingPayments(issue.getBooking().getId());
 
         syncFee(saved, fee);
-        // Inside the grace period the customer has not been told yet; the one notice will carry the new fee.
-        if (saved.getNotifiedAt() != null) {
-            eventPublisher.publishEvent(new IssueFeeDueEvent(saved.getId()));
+        // Tell the customer what changed, but only when something did (and only if they were told of the Issue).
+        if (saved.getNotifiedAt() != null && changedSince(before, saved, fee)) {
+            eventPublisher.publishEvent(before);
         }
         return saved;
     }
@@ -206,7 +205,9 @@ public class IssueServiceImpl implements IssueService {
         issue.setStatus(IssueStatus.RESOLVED);
         issue.setResolutionNote(note != null && !note.isBlank() ? note.trim() : "Đã thanh toán trực tiếp tại quầy (" + method + ")");
         issue.setResolvedAt(OffsetDateTime.now());
-        return issueRepository.save(issue);
+        Issue resolved = issueRepository.save(issue);
+        eventPublisher.publishEvent(PaymentReceivedEvent.of(issue.getBooking(), savedPayment, PaymentReceivedEvent.Kind.ISSUE_FEES));
+        return resolved;
     }
 
     @Override
@@ -237,7 +238,7 @@ public class IssueServiceImpl implements IssueService {
         findFee(issue.getId()).ifPresent(bookingFeeRepository::delete);
         Issue saved = issueRepository.save(issue);
 
-        // Cancelled inside the grace period: the customer never heard of it, so there is nothing to retract.
+        // An Issue the customer was never told about has nothing to retract.
         if (saved.getNotifiedAt() != null) {
             eventPublisher.publishEvent(new IssueCancelledEvent(saved.getId(), text));
         }
@@ -446,6 +447,38 @@ public class IssueServiceImpl implements IssueService {
             throw new IllegalArgumentException("Thời gian sự cố không được trước thời gian nhận xe của chuyến thuê");
         }
         issue.setOccurredAt(occurred);
+    }
+
+    /** Saves the photos staff attached while recording the Issue; if one is refused, none stay on disk. */
+    private void attachPhotos(Issue issue, List<MultipartFile> images) {
+        List<MultipartFile> photos = images == null ? List.of()
+                : images.stream().filter(image -> image != null && !image.isEmpty()).toList();
+        if (photos.size() > MAX_PHOTOS) {
+            throw new IllegalArgumentException("Một sự cố chỉ được có tối đa " + MAX_PHOTOS + " ảnh bằng chứng");
+        }
+        List<String> stored = new ArrayList<>();
+        try {
+            for (MultipartFile photo : photos) {
+                String fileName = fileUploadService.saveIssueEvidence(photo);
+                stored.add(fileName);
+                IssueEvidence evidence = new IssueEvidence();
+                evidence.setIssue(issue);
+                evidence.setFileName(fileName);
+                evidence.setUploadedAt(OffsetDateTime.now());
+                issueEvidenceRepository.save(evidence);
+            }
+        } catch (RuntimeException e) {
+            stored.forEach(fileUploadService::deleteIssueEvidence);
+            throw e;
+        }
+    }
+
+    private boolean changedSince(IssueUpdatedEvent before, Issue after, BigDecimal newFee) {
+        return !java.util.Objects.equals(before.previousTypeLabel(), after.getIssueType().getLabel())
+                || !java.util.Objects.equals(before.previousSubject(), after.getSubject())
+                || !java.util.Objects.equals(before.previousDescription(), after.getDescription())
+                || before.previousOccurredAt() == null || !before.previousOccurredAt().isEqual(after.getOccurredAt())
+                || before.previousFeeAmount() == null || before.previousFeeAmount().compareTo(newFee) != 0;
     }
 
     private BigDecimal requireFeePositive(BigDecimal amount) {

@@ -265,7 +265,7 @@
                                                     <line x1="12" y1="16" x2="12.01" y2="16" />
                                                 </svg>
                                                 <div class="leading-relaxed text-[11px]">
-                                                    <strong class="font-semibold text-amber-950">Lưu ý:</strong> Hệ thống ưu tiên cấp đúng biển số bạn đã chọn. Nếu đến giờ nhận mà xe chưa sẵn sàng, DriveNow đổi cho bạn xe khác cùng loại với giá giữ nguyên; nếu không còn xe cùng loại, đơn được hủy, bạn được hoàn 100% tiền cọc và nhận voucher giảm <span th:text="${contractTerms.compensationVoucherPercent} + '%'">10%</span> cho lần thuê sau.
+                                                    <strong class="font-semibold text-amber-950">Lưu ý:</strong> Hệ thống ưu tiên cấp đúng biển số bạn đã chọn. Nếu đến giờ nhận mà xe chưa sẵn sàng, DriveNow đổi cho bạn xe khác cùng loại với giá giữ nguyên; nếu không còn xe cùng loại, đơn được hủy, bạn được hoàn 100% tiền cọc.
                                                 </div>
                                             </div>
 
@@ -779,7 +779,7 @@
                 <!-- Modal Body: exactly the version the customer is about to accept -->
                 <div class="terms-modal-body space-y-6 text-xs leading-relaxed text-slate-700">
                     <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                        <div><strong>Bên A (bên cho thuê):</strong> Công ty TNHH DriveNow Mobility Việt Nam • 120 Trường Chinh, Tân Bình, TP. Hồ Chí Minh • Hotline 1800 6868</div>
+                        <div><strong>Bên A (bên cho thuê):</strong> Công ty TNHH DriveNow Mobility Việt Nam • <span th:text="${stationAddress}">Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM</span> • Hotline 1800 6868</div>
                         <div><strong>Bên B (bên thuê):</strong> <span th:text="${session.account != null ? session.account.name : 'Khách hàng'}">Khách hàng</span>, tài khoản đã xác minh giấy phép lái xe trên DriveNow</div>
                     </div>
 

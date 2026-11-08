@@ -29,19 +29,23 @@ public class OpenHtmlToPdfContractGenerator implements ContractDocumentGenerator
     private final ITemplateEngine templateEngine;
     private final Resource regularFont;
     private final Resource boldFont;
+    private final String stationAddress;
 
     public OpenHtmlToPdfContractGenerator(ITemplateEngine templateEngine,
                                           @Value("${crms.contract.font.regular}") Resource regularFont,
-                                          @Value("${crms.contract.font.bold}") Resource boldFont) {
+                                          @Value("${crms.contract.font.bold}") Resource boldFont,
+                                          @Value("${crms.station.address:Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM}") String stationAddress) {
         this.templateEngine = templateEngine;
         this.regularFont = regularFont;
         this.boldFont = boldFont;
+        this.stationAddress = stationAddress;
     }
 
     @Override
     public byte[] generatePdf(ContractDocumentDTO document) {
         Context context = new Context(VIETNAMESE);
         context.setVariable("doc", document);
+        context.setVariable("stationAddress", stationAddress);
         String xhtml = templateEngine.process(TEMPLATE, context);
 
         try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {

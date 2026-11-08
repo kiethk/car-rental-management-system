@@ -54,12 +54,12 @@
                             <small class="text-danger" th:if="${#fields.hasErrors('vehicleId')}" th:errors="*{vehicleId}"></small>
                         </div>
 
-                        <!-- Date & Time appointment -->
+                        <!-- Appointment date -->
                         <div class="col-md-12 form-group mb-3">
-                            <label class="font-weight-bold small text-navy mb-1">Ngày giờ hẹn <span class="text-danger">*</span></label>
-                            <input type="datetime-local" th:field="*{scheduledAt}" class="form-control rounded-lg" required>
-                            <small class="text-danger" th:if="${#fields.hasErrors('scheduledAt')}" th:errors="*{scheduledAt}"></small>
-                            <small class="form-text text-muted">Thời gian dự kiến đưa xe đến trạm đăng kiểm. Cả ngày hẹn sẽ bị khóa, xe không nhận đơn thuê trong ngày đó.</small>
+                            <label class="font-weight-bold small text-navy mb-1">Ngày hẹn <span class="text-danger">*</span></label>
+                            <input type="date" th:field="*{scheduledDate}" class="form-control rounded-lg" required>
+                            <small class="text-danger" th:if="${#fields.hasErrors('scheduledDate')}" th:errors="*{scheduledDate}"></small>
+                            <small class="form-text text-muted">Ngày dự kiến đưa xe đến trạm đăng kiểm. Cả ngày hẹn sẽ bị khóa, xe không nhận đơn thuê trong ngày đó.</small>
                         </div>
 
                         <!-- Notes / Checklist -->

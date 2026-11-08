@@ -108,7 +108,7 @@
                                 </td>
                                 <td>
                                     <span class="font-weight-bold text-navy"
-                                          th:text="${#temporals.format(ins.scheduledAt, 'dd/MM/yyyy HH:mm')}">2026-10-25 09:00</span>
+                                          th:text="${#temporals.format(ins.scheduledDate, 'dd/MM/yyyy')}">2026-10-25 09:00</span>
                                 </td>
                                 <td>
                                     <span th:if="${ins.completedAt != null}"

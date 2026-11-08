@@ -114,7 +114,7 @@ class AdminHandoverViewTest {
                         .param("refundMethod", "BANK_TRANSFER"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/bookings/42"))
-                .andExpect(flash().attribute("success", "Đã huỷ đơn, hoàn 100% tiền cọc tại quầy và gửi khách voucher bù cho lần thuê sau."));
+                .andExpect(flash().attribute("success", "Đã huỷ đơn, hoàn 100% tiền cọc tại quầy."));
         verify(bookingService).cancelForUnavailableCar(42L, "BANK_TRANSFER");
     }
 

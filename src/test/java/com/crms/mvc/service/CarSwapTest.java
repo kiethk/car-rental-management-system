@@ -28,7 +28,6 @@ class CarSwapTest {
     private final BookingRepository bookingRepository = mock(BookingRepository.class);
     private final VehicleRepository vehicleRepository = mock(VehicleRepository.class);
     private final PaymentService paymentService = mock(PaymentService.class);
-    private final CompensationVoucherService voucherService = mock(CompensationVoucherService.class);
     private BookingServiceImpl service;
 
     private final VehicleType booked = type(1L, "100000");
@@ -41,7 +40,7 @@ class CarSwapTest {
                 bookingRepository, mock(CustomerRepository.class), mock(SlotRepository.class),
                 mock(VehicleTypeRepository.class), vehicleRepository, mock(EmployeeRepository.class),
                 mock(PromotionRepository.class), paymentService, mock(ContractService.class),
-                mock(ContractTemplateService.class), mock(BookingFeeService.class), mock(PricingService.class), voucherService);
+                mock(ContractTemplateService.class), mock(BookingFeeService.class), mock(PricingService.class));
 
         Slot slot = new Slot();
         slot.setVehicleType(booked);
@@ -85,7 +84,6 @@ class CarSwapTest {
 
         assertThat(booking.getStatus()).isEqualTo("cancelled");
         verify(paymentService).recordCounterRefund(10L, new BigDecimal("500000"), "CASH");
-        verify(voucherService).issueFor(booking);
         verify(paymentService, never()).createPendingRefund(any(), any(), any(), any(), any());
     }
 
@@ -98,7 +96,6 @@ class CarSwapTest {
                 .hasMessageContaining("đổi xe");
         assertThat(booking.getStatus()).isEqualTo("confirmed");
         verify(paymentService, never()).recordCounterRefund(any(), any(), any());
-        verify(voucherService, never()).issueFor(any());
     }
 
     @Test

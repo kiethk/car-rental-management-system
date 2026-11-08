@@ -36,7 +36,7 @@ public class PickupNotifier {
     private OffsetDateTime lastRun = OffsetDateTime.now();
 
     public PickupNotifier(BookingRepository bookingRepository, ContractService contractService, CustomerMailer mailer,
-                          @Value("${crms.station.address:Kho xe DriveNow - ĐH FPT TP.HCM (Khu Công nghệ cao, TP. Thủ Đức)}") String stationAddress) {
+                          @Value("${crms.station.address:Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM}") String stationAddress) {
         this.bookingRepository = bookingRepository;
         this.contractService = contractService;
         this.mailer = mailer;

@@ -95,10 +95,12 @@ public class AdminIssueController {
         }
         try {
             Issue created = issueService.create(form, actorOf(session));
-            ra.addFlashAttribute("success", "Đã ghi nhận sự cố #" + created.getId() + ".");
+            ra.addFlashAttribute("success", "Đã ghi nhận sự cố #" + created.getId() + " và gửi email thông báo cho khách.");
             return "redirect:" + LIST_PATH + "/" + created.getId();
         } catch (IllegalStateException | IllegalArgumentException | NoSuchElementException ex) {
             ra.addFlashAttribute("error", ex.getMessage());
+            // The uploaded files belong to this request only; staff pick the photos again.
+            form.setImages(new java.util.ArrayList<>());
             ra.addFlashAttribute("issueForm", form);
             return "redirect:" + LIST_PATH + "/new?bookingId=" + form.getBookingId();
         }

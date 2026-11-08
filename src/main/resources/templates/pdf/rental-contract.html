@@ -78,7 +78,7 @@
 <h2>BÊN CHO THUÊ (BÊN A)</h2>
 <table>
     <tr><td class="label">Tên đơn vị</td><td>Công ty TNHH DriveNow Mobility Việt Nam</td></tr>
-    <tr><td class="label">Địa chỉ</td><td>120 Trường Chinh, phường Tân Bình, TP. Hồ Chí Minh</td></tr>
+    <tr><td class="label">Địa chỉ</td><td th:text="${stationAddress}">Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM</td></tr>
     <tr><td class="label">Hotline</td><td>1800 6868</td></tr>
 </table>
 </div>
@@ -204,10 +204,8 @@
             + ' giờ kể từ thời điểm nhận xe tại Điều 2 (và không quá thời điểm trả xe) thì việc đặt xe tự hủy, tiền đặt cọc không được hoàn lại.'">
     Không nhận xe trong 2 giờ thì đơn tự hủy, không hoàn cọc.
 </p>
-<p data-policy="compensationVoucher" th:if="${doc.terms.compensationVoucherPercent != null}"
-   th:text="'Trường hợp Bên A không còn xe cùng loại để giao, việc đặt xe được hủy, Bên B được hoàn 100% tiền đặt cọc và nhận voucher giảm '
-            + ${doc.terms.compensationVoucherPercent} + '% tiền thuê cho lần thuê sau, dùng 1 lần trong ' + ${doc.terms.compensationVoucherDays} + ' ngày.'">
-    Hết xe cùng loại: hoàn 100% cọc và tặng voucher giảm 10% trong 90 ngày.
+<p data-policy="noCarRefund">
+    Trường hợp Bên A không còn xe cùng loại để giao, việc đặt xe được hủy và Bên B được hoàn 100% tiền đặt cọc.
 </p>
 <p data-policy="lateReturn" th:text="'2. Bên B trả xe sau thời điểm trả xe tại Điều 2 phải trả phí trễ hạn bằng ' + ${doc.terms.lateFeePercent}
             + '% đơn giá thuê cho mỗi giờ trễ, trừ trường hợp được Bên A đồng ý gia hạn trước.'">

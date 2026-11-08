@@ -121,26 +121,6 @@
                                         <small class="form-text text-muted">Quá mốc này đơn tự hủy và mất cọc.</small>
                                         <div class="text-danger small" th:errors="*{pickupWaitHours}"></div>
                                     </div>
-                                    <div class="col-sm-6 mb-3">
-                                        <label class="font-weight-bold text-navy mb-1" style="font-size: 14px;" for="compensationVoucherPercent">Voucher đền bù</label>
-                                        <div class="input-group">
-                                            <input id="compensationVoucherPercent" type="number" step="1" min="0" max="100" th:field="*{compensationVoucherPercent}"
-                                                   class="form-control" th:classappend="${#fields.hasErrors('compensationVoucherPercent')} ? 'is-invalid'">
-                                            <div class="input-group-append"><span class="input-group-text">%</span></div>
-                                        </div>
-                                        <small class="form-text text-muted">Giảm giá lần thuê sau khi bên cho thuê hết xe.</small>
-                                        <div class="text-danger small" th:errors="*{compensationVoucherPercent}"></div>
-                                    </div>
-                                    <div class="col-sm-6 mb-3">
-                                        <label class="font-weight-bold text-navy mb-1" style="font-size: 14px;" for="compensationVoucherDays">Hạn dùng voucher</label>
-                                        <div class="input-group">
-                                            <input id="compensationVoucherDays" type="number" step="1" min="1" max="365" th:field="*{compensationVoucherDays}"
-                                                   class="form-control" th:classappend="${#fields.hasErrors('compensationVoucherDays')} ? 'is-invalid'">
-                                            <div class="input-group-append"><span class="input-group-text">ngày</span></div>
-                                        </div>
-                                        <small class="form-text text-muted">Số ngày voucher còn hiệu lực.</small>
-                                        <div class="text-danger small" th:errors="*{compensationVoucherDays}"></div>
-                                    </div>
                             </div>
 
                             <h3 class="h6 font-weight-bold text-navy mt-2 mb-3">Nội dung điều khoản</h3>

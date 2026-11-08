@@ -64,8 +64,7 @@ class FreeCancellationTest {
         BookingServiceImpl service = new BookingServiceImpl(bookings, mock(CustomerRepository.class),
                 mock(SlotRepository.class), mock(VehicleTypeRepository.class), mock(VehicleRepository.class),
                 mock(EmployeeRepository.class), mock(PromotionRepository.class), payments, contracts,
-                mock(ContractTemplateService.class), mock(BookingFeeService.class), mock(PricingService.class),
-                mock(CompensationVoucherService.class));
+                mock(ContractTemplateService.class), mock(BookingFeeService.class), mock(PricingService.class));
 
         Customer customer = new Customer();
         customer.setId(1L);

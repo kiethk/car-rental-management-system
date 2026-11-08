@@ -61,6 +61,6 @@ class OpeningHoursTest {
                 mock(SlotRepository.class), mock(VehicleTypeRepository.class), mock(VehicleRepository.class),
                 mock(EmployeeRepository.class), mock(PromotionRepository.class), mock(PaymentService.class),
                 mock(ContractService.class), mock(ContractTemplateService.class), mock(BookingFeeService.class),
-                mock(PricingService.class), mock(CompensationVoucherService.class));
+                mock(PricingService.class));
     }
 }

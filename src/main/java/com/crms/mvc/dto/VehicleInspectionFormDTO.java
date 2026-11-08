@@ -19,9 +19,10 @@ public class VehicleInspectionFormDTO {
     private String vehiclePlate;
     private String vehicleName;
 
-    @NotNull(message = "Vui lòng chọn thời gian đăng kiểm")
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private LocalDateTime scheduledAt = LocalDateTime.now();
+    /** The day the car goes in for inspection; the whole day is blocked for rentals, so no time is asked. */
+    @NotNull(message = "Vui lòng chọn ngày đăng kiểm")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate scheduledDate = LocalDate.now();
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime completedAt;
@@ -49,8 +50,8 @@ public class VehicleInspectionFormDTO {
                 dto.setVehicleName(inspection.getVehicle().getVehicleType().getBrand() + " " + inspection.getVehicle().getVehicleType().getName());
             }
         }
-        if (inspection.getScheduledAt() != null) {
-            dto.setScheduledAt(inspection.getScheduledAt().toLocalDateTime());
+        if (inspection.getScheduledDate() != null) {
+            dto.setScheduledDate(inspection.getScheduledDate());
         }
         if (inspection.getCompletedAt() != null) {
             dto.setCompletedAt(inspection.getCompletedAt().toLocalDateTime());
@@ -72,8 +73,8 @@ public class VehicleInspectionFormDTO {
     public String getVehicleName() { return vehicleName; }
     public void setVehicleName(String vehicleName) { this.vehicleName = vehicleName; }
 
-    public LocalDateTime getScheduledAt() { return scheduledAt; }
-    public void setScheduledAt(LocalDateTime scheduledAt) { this.scheduledAt = scheduledAt; }
+    public LocalDate getScheduledDate() { return scheduledDate; }
+    public void setScheduledDate(LocalDate scheduledDate) { this.scheduledDate = scheduledDate; }
 
     public LocalDateTime getCompletedAt() { return completedAt; }
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
