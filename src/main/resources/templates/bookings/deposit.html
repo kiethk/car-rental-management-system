@@ -67,8 +67,7 @@
                         <!-- Title & Holding Timer -->
                         <div class="card-header-row">
                             <div class="holding-badge">
-                                <span class="pulse-dot"></span>
-                                <span>Đang giữ chỗ xe · <strong id="depositTimer" class="font-mono" th:data-created-at="${booking.createdAt}" th:data-expires-at="${booking.createdAt != null ? booking.createdAt.plusMinutes(15) : ''}">15:00</strong></span>
+                                <span>Đang giữ chỗ xe: <strong id="depositTimer" class="font-mono" th:data-created-at="${booking.createdAt}" th:data-expires-at="${booking.createdAt != null ? booking.createdAt.plusMinutes(15) : ''}">15:00</strong></span>
                             </div>
                         </div>
 
@@ -80,7 +79,7 @@
                                 </span>
                             </div>
                             <div style="font-size: 13px; color: #64748b;">
-                                Cổng thanh toán điện tử VNPAY
+                                Cổng thanh toán điện tử
                             </div>
                         </div>
 

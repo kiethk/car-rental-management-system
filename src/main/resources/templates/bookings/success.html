@@ -110,16 +110,6 @@
                                         </div>
                                         <div class="timeline-content">
                                             <div class="timeline-title">Nhận xe tại trạm bãi</div>
-
-                                            <div class="timeline-desc">
-                                                Thanh toán số tiền còn lại
-                                                <span
-                                                    style="font-weight: 600; color: #0f172a"
-                                                    th:text="${#numbers.formatDecimal(booking.totalPrice - booking.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"
-                                                    >675,000 đ</span
-                                                >
-                                                khi nhận xe
-                                            </div>
                                             <div
                                                 class="duration-tag"
                                                 th:with="diffHours=${T(java.time.Duration).between(booking.pickupTime, booking.scheduledEndTime).toHours()}"
@@ -323,6 +313,5 @@
             </div>
         </main>
 
-        <div th:replace="~{fragments/footer :: footer}"></div>
     </body>
 </html>

@@ -312,7 +312,7 @@
                             <!-- CARD 2: Driver Verification -->
                             <div class="checkout-section">
                                 <label class="block text-xs font-bold text-slate-800 uppercase tracking-wide mb-3"
-                                    >Giấy phép lái xe (GPLX) <span class="normal-case font-medium text-slate-400">· không bắt buộc</span></label>
+                                    >Giấy phép lái xe (GPLX)</label>
 
                                 <div
                                     th:if="${hasValidLicense}"
@@ -452,17 +452,7 @@
                                             ><span th:text="${rentalHours}">9</span> giờ</span
                                         >
                                     </div>
-                                    <div class="flex justify-between items-center pt-2.5 text-slate-600">
-                                        <span>Tiền thuê cơ bản</span>
-                                        <span class="font-bold text-slate-900"
-                                            ><span
-                                                id="rentalSubtotalDisplay"
-                                                th:text="${#numbers.formatDecimal(estimatedTotal, 0, 'COMMA', 0, 'POINT')}"
-                                                >1,350,000</span
-                                            >
-                                            đ</span
-                                        >
-                                    </div>
+
 
                                     <!-- Applied Discount Row (WELCOME10 (-10%) and amount both in emerald green) -->
                                     <div
@@ -480,8 +470,8 @@
                                     <!-- Net Total Fee -->
                                     <div class="flex justify-between items-center pt-3 border-t border-slate-100">
                                         <span class="font-bold text-slate-900 text-base">Tổng tiền thuê dự kiến</span>
-                                        <span class="font-black text-slate-900 text-xl"
-                                            ><span
+                                        <span class="font-black font-bold  text-slate-900"
+                                            ><span class="font-bold  text-xl text-slate-900 text-base"
                                                 id="totalRentalFeeDisplay"
                                                 th:text="${#numbers.formatDecimal(estimatedTotal, 0, 'COMMA', 0, 'POINT')}"
                                                 >1,350,000</span
@@ -503,7 +493,6 @@
                                             id="promoInput"
                                             type="text"
                                             th:field="*{promotionCode}"
-                                            placeholder="WELCOME10, GIAM100K..."
                                             class="input-shadcn flex-1 text-xs uppercase font-semibold tracking-wider placeholder:normal-case placeholder:font-normal placeholder:tracking-normal"
                                             onkeydown="
                                                 if (event.key === 'Enter') {
@@ -540,7 +529,7 @@
                                                 th:text="${#numbers.formatDecimal(depositAmount, 0, 'COMMA', 0, 'POINT')}"
                                                 >675,000</span
                                             >
-                                            <span class="text-xs font-bold text-slate-500">đ</span>
+                                            <span class="text-xs font-bold text-slate-900">đ</span>
                                         </div>
                                     </div>
                                     <div
