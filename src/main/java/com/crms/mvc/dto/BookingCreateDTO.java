@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public class BookingCreateDTO implements Serializable {
-    @NotNull(message = "Vui lòng chọn mẫu xe")
+    @NotNull(message = "Vui lòng chọn dòng xe")
     private Long vehicleTypeId;
 
     @NotNull(message = "Vui lòng chọn giờ nhận xe")

@@ -17,6 +17,22 @@ public final class InspectionRules {
     private InspectionRules() {
     }
 
+    /** Why a single day cannot be rented, for the schedule grid. */
+    public enum DayBlock { NONE, INSPECTION_DAY, EXPIRED }
+
+    /**
+     * Whether one day is closed to rentals: the day of a scheduled inspection, or a day after the registration
+     * expired with no inspection scheduled before it. Same rules as {@link #blocksRental}, for a one-day rental.
+     */
+    public static DayBlock blockOn(LocalDate registrationExpiry, List<LocalDate> inspectionDays, LocalDate day) {
+        if (inspectionDays.contains(day)) {
+            return DayBlock.INSPECTION_DAY;
+        }
+        boolean expired = registrationExpiry != null && day.isAfter(registrationExpiry);
+        boolean inspectedBefore = inspectionDays.stream().anyMatch(d -> d.isBefore(day));
+        return expired && !inspectedBefore ? DayBlock.EXPIRED : DayBlock.NONE;
+    }
+
     /**
      * @param registrationExpiry the car's registration expiry date, may be null (unknown: not restricted)
      * @param inspectionDays     days of the car's scheduled (not yet done) inspections

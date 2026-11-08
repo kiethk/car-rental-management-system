@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${vehicle.displayName + ' — DriveNow'}">Chi tiết xe — DriveNow</title>
+    <title th:text="${vehicle.displayName + ' — DriveNow'}">Chi tiết dòng xe — DriveNow</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,10 +44,10 @@
                 </div>
 
                 <div class="p-4">
-                    <h3 class="h5 font-weight-bold text-navy mb-2">Giới thiệu mẫu xe</h3>
+                    <h3 class="h5 font-weight-bold text-navy mb-2">Tổng quan dòng xe</h3>
                     <p class="text-muted mb-0 leading-relaxed"
-                       th:text="${vehicle.description != null and !vehicle.description.isBlank() ? vehicle.description : 'Xe đời mới, thoải mái và tiết kiệm nhiên liệu, được bảo dưỡng và vệ sinh kỹ trước mỗi chuyến đi.'}">
-                        Giới thiệu mẫu xe...
+                       th:text="${vehicle.description != null and !vehicle.description.isBlank() ? vehicle.description : 'Dòng xe hiện đại, vận hành êm ái, tiết kiệm nhiên liệu, được kiểm tra và khử khuẩn kỹ lưỡng trước mỗi chuyến đi.'}">
+                        Đang cập nhật...
                     </p>
                 </div>
             </div>
@@ -55,16 +55,16 @@
             <!-- Physical Cars in Fleet of this Model -->
             <div class="card border-0 shadow-sm rounded-2xl p-4 bg-white mb-4" th:if="${physicalCars != null and not #lists.isEmpty(physicalCars)}">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="h6 font-weight-bold text-navy mb-0">Các xe thuộc mẫu này (<span th:text="${physicalCars.size()}">0</span>)</h4>
-                    <span class="text-xs text-muted">Các xe thực tế của mẫu này trong đội xe</span>
+                    <h4 class="h6 font-weight-bold text-navy mb-0">Các xe hiện có thuộc dòng này (<span th:text="${physicalCars.size()}">0</span>)</h4>
+                    <span class="text-xs text-muted">Các xe thực tế của dòng này tại kho bãi</span>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-sm table-hover mb-0 align-middle">
                         <thead class="bg-surface-2 text-muted text-uppercase" style="font-size: 11px;">
                             <tr>
-                                <th class="border-top-0 py-2">Biển số</th>
-                                <th class="border-top-0 py-2">Màu</th>
-                                <th class="border-top-0 py-2">Năm SX</th>
+                                <th class="border-top-0 py-2">Biển số xe</th>
+                                <th class="border-top-0 py-2">Màu sắc</th>
+                                <th class="border-top-0 py-2">Năm sản xuất</th>
                                 <th class="border-top-0 py-2 text-center">Trạng thái</th>
                                 <th class="border-top-0 py-2 text-right">Lịch</th>
                             </tr>
@@ -79,7 +79,7 @@
                                 <td th:text="${car.year}">2023</td>
                                 <td class="text-center">
                                     <span th:if="${car.status == 'available'}" class="badge badge-success px-2 py-1 font-weight-semibold">Sẵn sàng</span>
-                                    <span th:if="${car.status == 'rented'}" class="badge badge-warning text-dark px-2 py-1 font-weight-semibold">Đang cho thuê</span>
+                                    <span th:if="${car.status == 'rented'}" class="badge badge-warning text-dark px-2 py-1 font-weight-semibold">Đang thuê</span>
                                     <span th:if="${car.status == 'maintenance'}" class="badge badge-secondary px-2 py-1 font-weight-semibold">Bảo dưỡng</span>
                                 </td>
                                 <td class="text-right">
@@ -95,14 +95,14 @@
             <section class="card border-0 shadow-sm rounded-2xl p-4 bg-white mb-4"
                      th:if="${reviewSummary != null}">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-                    <h4 class="h6 font-weight-bold text-navy mb-0">Đánh giá của khách hàng</h4>
+                    <h4 class="h6 font-weight-bold text-navy mb-0">Đánh giá từ khách hàng</h4>
                     <span class="small text-muted"
-                          th:text="${reviewSummary.reviewCount > 0 ? #numbers.formatDecimal(reviewSummary.averageRating, 1, 1) + ' / 5 · ' + reviewSummary.reviewCount + ' đánh giá' : 'Chưa có đánh giá'}">
-                        Chưa có đánh giá
+                          th:text="${reviewSummary.reviewCount > 0 ? #numbers.formatDecimal(reviewSummary.averageRating, 1, 1) + ' / 5 · ' + reviewSummary.reviewCount + ' đánh giá' : 'Chưa có đánh giá nào'}">
+                        Chưa có đánh giá nào
                     </span>
                 </div>
                 <div th:if="${reviewSummary.reviews.isEmpty()}" class="text-muted small">
-                    Mẫu xe này chưa có đánh giá nào từ các chuyến đi đã hoàn thành.
+                    Dòng xe này hiện chưa có đánh giá nào từ các chuyến đi đã hoàn thành.
                 </div>
                 <article th:each="review : ${reviewSummary.reviews}" class="py-3 border-top">
                     <div class="d-flex justify-content-between align-items-center gap-3">
@@ -115,7 +115,7 @@
                     <p th:if="${review.comment != null and !review.comment.isBlank()}"
                        class="small text-navy mb-0 mt-2"
                        style="white-space: pre-wrap;"
-                       th:text="${review.comment}">Nội dung đánh giá</p>
+                       th:text="${review.comment}">Nội dung nhận xét</p>
                     <p th:if="${review.comment == null or review.comment.isBlank()}"
                        class="small text-muted mb-0 mt-2">Chỉ chấm sao</p>
                 </article>
@@ -126,10 +126,16 @@
                 <h4 class="h6 font-weight-bold text-navy mb-3">Tiêu chuẩn dịch vụ</h4>
                 <div class="row g-3">
                     <div class="col-sm-6 d-flex align-items-center gap-2 text-muted small">
-                        <span class="badge badge-success-light text-success p-1 rounded">✓</span> Nhận và trả xe tại bãi xe trung tâm
+                        <span class="badge badge-success-light text-success p-1 rounded">✓</span> Nhận & trả xe trực tiếp tại kho bãi trung tâm
                     </div>
                     <div class="col-sm-6 d-flex align-items-center gap-2 text-muted small">
-                        <span class="badge badge-success-light text-success p-1 rounded">✓</span> Xe được kiểm tra an toàn toàn diện
+                        <span class="badge badge-success-light text-success p-1 rounded">✓</span> Đạt chứng nhận đăng kiểm an toàn kỹ thuật
+                    </div>
+<div class="col-sm-6 d-flex align-items-center gap-2 text-muted small">
+                        <span class="badge badge-success-light text-success p-1 rounded">✓</span> Điều hòa tự động & Kết nối Bluetooth thông minh
+                    </div>
+                    <div class="col-sm-6 d-flex align-items-center gap-2 text-muted small">
+                        <span class="badge badge-success-light text-success p-1 rounded">✓</span> Camera lùi & Cảm biến đỗ xe
                     </div>
                 </div>
             </div>
@@ -158,11 +164,12 @@
                                 <span class="small text-muted font-weight-normal">đ / giờ</span>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
                 <!-- Technical Specs Table -->
-                <h4 class="h6 font-weight-bold text-navy mb-3">Thông số mẫu xe</h4>
+                <h4 class="h6 font-weight-bold text-navy mb-3">Thông số kỹ thuật dòng xe</h4>
                 <div class="table-responsive mb-4">
                     <table class="table table-sm table-borderless mb-0">
                         <tbody>
@@ -188,10 +195,10 @@
 
                 <!-- Policy Alert -->
                 <div class="alert alert-light border rounded-xl small mb-4">
-                    <div class="font-weight-bold text-navy mb-1">Chính sách đặt cọc và hủy đặt xe:</div>
+<div class="font-weight-bold text-navy mb-1">Chính sách đặt cọc và hủy đặt xe:</div>
                     <ul class="mb-0 pl-3 text-muted">
                         <!-- Values come from the active rental terms version (Admin > Rental Terms); wording matches fragments/contract-terms -->
-                        <li data-policy="deposit" th:text="'Đặt cọc ' + ${contractTerms.depositPercent} + '% tổng giá trị đơn thuê khi đặt xe; phần còn lại thanh toán khi trả xe.'">Đặt cọc 50% tổng giá trị đơn thuê khi đặt xe; phần còn lại thanh toán khi trả xe.</li>
+                        <li data-policy="deposit" th:text="'Đặt cọc ' + ${contractTerms.depositPercent} + '% tổng giá trị đơn thuê khi đặt xe; phần còn lại thanh toán khi nhận xe.'">Đặt cọc 50% tổng giá trị đơn thuê khi đặt xe; phần còn lại thanh toán khi nhận xe.</li>
                         <li data-policy="cancellation" th:text="'Hủy trước giờ nhận xe ít nhất ' + ${contractTerms.freeCancellationHours} + ' giờ: hoàn 100% tiền cọc.'">Hủy trước giờ nhận xe ít nhất 72 giờ: hoàn 100% tiền cọc.</li>
                         <li data-policy="lateReturn" th:text="'Trả xe trễ: mỗi giờ trễ tính ' + ${contractTerms.lateFeePercent} + '% đơn giá thuê theo giờ.'">Trả xe trễ: mỗi giờ trễ tính 200% đơn giá thuê theo giờ.</li>
                     </ul>
@@ -201,10 +208,10 @@
                 <div class="space-y-2">
                     <a th:href="@{/search(keyword=${vehicle.displayName})}"
                        class="btn btn-navy btn-block py-2.5 font-weight-bold rounded-lg shadow-sm text-decoration-none">
-                        Thuê mẫu xe này
+                        Thuê dòng xe này ngay
                     </a>
                     <a th:href="@{/vehicles}" class="btn btn-outline-secondary btn-block py-2 rounded-lg text-decoration-none">
-                        ← Xem các xe khác
+                        ← Khám phá các dòng xe khác
                     </a>
                 </div>
             </div>

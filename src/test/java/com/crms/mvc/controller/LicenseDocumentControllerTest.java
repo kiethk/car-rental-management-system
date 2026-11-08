@@ -53,7 +53,7 @@ class LicenseDocumentControllerTest {
 
         mvc.perform(get("/licenses/my-license").session(TestSessions.customer(1L)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Thay giấy phép lái xe")))
+                .andExpect(content().string(containsString("Cập nhật giấy phép lái xe")))
                 .andExpect(content().string(containsString("Đã tải lên")))
                 .andExpect(content().string(not(containsString("Pending"))));
     }

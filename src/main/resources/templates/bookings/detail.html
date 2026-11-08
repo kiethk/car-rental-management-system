@@ -141,7 +141,7 @@
                             </div>
                             <div class="timeline-content">
                                 <div class="timeline-step-title">Thời gian nhận xe</div>
-                                <div class="timeline-step-desc">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</div>
+                                <div class="timeline-step-desc" th:text="${booking.stationAddress != null ? booking.stationAddress : 'Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM'}">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</div>
                             </div>
                         </div>
 
@@ -171,7 +171,7 @@
                         <div style="flex: 1; min-width: 250px;">
                             <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px;">Trạm nhận xe</div>
                             <div style="font-size: 14px; font-weight: 600; color: #0f172a;" th:text="${booking.stationAddress}">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</div>
-                            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Mở cửa hàng ngày: <span th:text="${openingHours != null ? openingHours.label : '06:00 - 22:00'}">06:00 - 22:00</span></div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Mở cửa hàng ngày: <span th:text="${openingHours != null ? openingHours.label : '24/24'}">24/24</span></div>
                         </div>
                         <div style="flex: 1; min-width: 250px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px;">
                             <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px;">Nhân viên phụ trách giao nhận xe</div>
@@ -193,11 +193,11 @@
                         <strong th:text="${#temporals.format(returnReceipt.returnedAt, 'HH:mm dd/MM/yyyy')}">18:30 24/10/2026</strong>
                     </div>
                     <div class="cost-row">
-                        <span>Số km · nhiên liệu</span>
-                        <strong th:text="${returnReceipt.odometer + ' km · ' + returnReceipt.fuelPercent + '%'}">12,500 km · 80%</strong>
+                        <span>Số km khi trả xe</span>
+                        <strong th:text="${returnReceipt.odometer + ' km'}">12,500 km</strong>
                     </div>
                     <div class="cost-row">
-                        <span>Tổng tiền thuê</span>
+                        <span>Tiền thuê (đã thanh toán đủ khi nhận xe)</span>
                         <span><span th:text="${#numbers.formatDecimal(returnReceipt.rentalTotal, 0, 'COMMA', 0, 'POINT')}">1,500,000</span> đ</span>
                     </div>
                     <div class="cost-row" th:each="line : ${returnReceipt.lines}">
@@ -209,10 +209,6 @@
                             <span th:text="${#numbers.formatDecimal(line.amount, 0, 'COMMA', 0, 'POINT')}">300,000</span> đ
                         </span>
                     </div>
-                    <div class="cost-row">
-                        <span>Tiền cọc đã trả</span>
-                        <span>-<span th:text="${#numbers.formatDecimal(returnReceipt.depositAmount, 0, 'COMMA', 0, 'POINT')}">750,000</span> đ</span>
-                    </div>
                     <div class="cost-total-row">
                         <span class="cost-total-label" th:text="${returnReceipt.settled ? 'Đã thanh toán khi quyết toán' : 'Cần thanh toán tại trạm'}">Đã thanh toán khi quyết toán</span>
                         <span class="cost-total-val" th:if="${!returnReceipt.nothingToPay}">
@@ -223,15 +219,29 @@
                     <p class="issue-section-hint" th:if="${returnReceipt.settled and returnReceipt.paymentMethod != null}"
                        th:text="${returnReceipt.paymentMethodLabel + ' · ' + #temporals.format(returnReceipt.paidAt, 'HH:mm dd/MM/yyyy')}">Tiền mặt · 18:40 24/10/2026</p>
                     <p class="issue-section-hint" th:unless="${returnReceipt.settled}">
-                        Nhân viên sẽ quyết toán tại trạm. Các khoản ghi "Đã thanh toán trước" sẽ không bị tính lại.
+                        Nhân viên sẽ quyết toán tại trạm. Sau khi quyết toán, đơn được đóng và không phát sinh thêm phí.
                     </p>
                 </div>
 
-                <!-- Fees of issues found after the booking was settled: the customer pays them here -->
+                <!-- Traffic fines (phạt nguội) the police sent about this rental: a notice only, nothing to pay here -->
+                <div class="surface-card" th:if="${trafficFines != null and !trafficFines.isEmpty()}">
+                    <h2 class="card-title">Thông báo vi phạm giao thông</h2>
+                    <p class="issue-section-hint">
+                        Công an sẽ sớm liên hệ trực tiếp với bạn để giải quyết. DriveNow không thu khoản tiền nào liên quan.
+                    </p>
+                    <div class="cost-row" th:each="fine : ${trafficFines}">
+                        <span>
+                            <span th:text="${#temporals.format(fine.violationAt, 'HH:mm dd/MM/yyyy')}">14:30 24/10/2026</span>
+                            <em style="color: #64748b; font-size: 12px;" th:text="' · Biển số ' + ${fine.plate}"> · Biển số 51A-123.45</em>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Open Issue fees while the rental is still open: the customer may pay them online before settlement -->
                 <div class="surface-card" th:if="${payableIssues != null and !payableIssues.isEmpty()}">
                     <h2 class="card-title">Phí sự cố chưa thanh toán</h2>
                     <p class="issue-section-hint">
-                        Bạn có thể thanh toán một lần cho tất cả qua VNPay. Khoản nào chưa thanh toán sẽ được thu cùng lúc quyết toán khi trả xe.
+                        Bạn có thể thanh toán một lần cho tất cả qua VNPay. Khoản nào chưa thanh toán sẽ được thu khi quyết toán lúc trả xe.
                     </p>
                     <div class="cost-row" th:each="issue : ${payableIssues}">
                         <span th:text="${issue.subject}">Vượt đèn đỏ</span>
@@ -303,7 +313,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div style="font-weight: 600; color: #0f172a;" th:text="${p.paymentType == 'REFUND' ? 'Hoàn tiền cọc' : (p.paymentType == 'DEPOSIT' ? 'Đặt cọc' : p.paymentType)}">
+                                        <div style="font-weight: 600; color: #0f172a;" th:text="${p.paymentType == 'REFUND' ? 'Hoàn tiền cọc' : (p.paymentType == 'DEPOSIT' ? 'Đặt cọc' : (p.paymentType == 'RENTAL_BALANCE' ? 'Tiền thuê còn lại' : (p.paymentType == 'FINAL' ? 'Quyết toán phí' : (p.paymentType == 'ISSUE_COMPENSATION' ? 'Phí sự cố' : p.paymentType))))}">
                                             Đặt cọc
                                         </div>
                                         <div style="font-size: 11px; color: #94a3b8; margin-top: 1px;">

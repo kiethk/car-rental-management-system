@@ -205,7 +205,7 @@ public class AdminBookingController {
         if (employeeId == null) return "redirect:/login";
 
         if (result.hasErrors()) {
-            ra.addFlashAttribute("error", "Check-in failed: " + result.getAllErrors().get(0).getDefaultMessage());
+            ra.addFlashAttribute("error", "Bàn giao xe thất bại: " + result.getAllErrors().get(0).getDefaultMessage());
             return "redirect:/admin/bookings/" + bookingId;
         }
 
@@ -213,7 +213,7 @@ public class AdminBookingController {
             handoverService.checkIn(bookingId, employeeId, form);
             ra.addFlashAttribute("success", "Đã bàn giao xe. Chuyến thuê bắt đầu.");
         } catch (Exception e) {
-            ra.addFlashAttribute("error", "Check-in failed: " + e.getMessage());
+            ra.addFlashAttribute("error", "Bàn giao xe thất bại: " + e.getMessage());
         }
         return "redirect:/admin/bookings/" + bookingId;
     }
@@ -226,7 +226,7 @@ public class AdminBookingController {
         if (employeeId == null) return "redirect:/login";
 
         if (result.hasErrors()) {
-            ra.addFlashAttribute("error", "Check-out failed: " + result.getAllErrors().get(0).getDefaultMessage());
+            ra.addFlashAttribute("error", "Ghi nhận trả xe thất bại: " + result.getAllErrors().get(0).getDefaultMessage());
             return "redirect:/admin/bookings/" + bookingId;
         }
 
@@ -234,7 +234,7 @@ public class AdminBookingController {
             handoverService.checkOut(bookingId, employeeId, form);
             ra.addFlashAttribute("success", "Đã ghi nhận trả xe. Hãy quyết toán để đóng đơn thuê.");
         } catch (Exception e) {
-            ra.addFlashAttribute("error", "Check-out failed: " + e.getMessage());
+            ra.addFlashAttribute("error", "Ghi nhận trả xe thất bại: " + e.getMessage());
         }
         return "redirect:/admin/bookings/" + bookingId;
     }

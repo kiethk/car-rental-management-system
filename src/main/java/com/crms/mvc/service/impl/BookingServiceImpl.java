@@ -32,9 +32,9 @@ import java.util.Set;
 public class BookingServiceImpl implements BookingService {
     public static final int BUFFER_BETWEEN_RENTALS_HOURS = 1;
 
-    @org.springframework.beans.factory.annotation.Value("${crms.opening-hours.open:6}")
+    @org.springframework.beans.factory.annotation.Value("${crms.opening-hours.open:0}")
     private int openingHour = com.crms.mvc.config.OpeningHours.DEFAULT.open();
-    @org.springframework.beans.factory.annotation.Value("${crms.opening-hours.close:22}")
+    @org.springframework.beans.factory.annotation.Value("${crms.opening-hours.close:23}")
     private int closingHour = com.crms.mvc.config.OpeningHours.DEFAULT.close();
     @org.springframework.beans.factory.annotation.Value("${crms.station.address:Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM}")
     private String stationAddress = "Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM";
@@ -122,6 +122,13 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy khách hàng: " + customerId));
 
         validateRentalSchedule(dto.getStartTime(), dto.getEndTime());
+
+        // A customer who gave a car back but has not settled it yet must settle before renting again.
+        List<Booking> unsettled = bookingRepository.findReturnedUnsettledOfCustomer(customerId);
+        if (!unsettled.isEmpty()) {
+            throw new IllegalStateException("Bạn còn đơn #" + unsettled.get(0).getId()
+                    + " đã trả xe nhưng chưa quyết toán. Hãy quyết toán đơn này trước khi đặt đơn mới.");
+        }
 
         ZoneOffset defaultOffset = ZoneOffset.ofHours(7); // UTC+7 for Vietnam
         OffsetDateTime start = dto.getStartTime().atOffset(defaultOffset);
@@ -503,6 +510,7 @@ public class BookingServiceImpl implements BookingService {
         d.setSlotId(b.getSlot().getId());
         d.setPickupTime(DateTimeUtils.toVietnamTime(b.getPickupTime()));
         d.setScheduledEndTime(DateTimeUtils.toVietnamTime(b.getScheduledEndTime()));
+        d.setActualPickupTime(DateTimeUtils.toVietnamTime(b.getActualPickupTime()));
         d.setActualReturnTime(DateTimeUtils.toVietnamTime(b.getActualReturnTime()));
 
         d.setPricePerHour(b.getPricePerHour());
@@ -622,7 +630,8 @@ public class BookingServiceImpl implements BookingService {
 
         java.time.ZoneOffset vietnam = java.time.ZoneOffset.ofHours(7);
         java.time.LocalDate startDay = startTime.withOffsetSameInstant(vietnam).toLocalDate();
-        java.time.LocalDate endDay = endTime.withOffsetSameInstant(vietnam).toLocalDate();
+        // The last moment the car is driven is just before the end: a rental ending at 00:00 ends on the day before.
+        java.time.LocalDate endDay = endTime.minusNanos(1).withOffsetSameInstant(vietnam).toLocalDate();
         java.util.Map<Long, List<java.time.LocalDate>> inspectionDays = new java.util.HashMap<>();
         for (com.crms.mvc.entity.VehicleInspection inspection : vehicleRepository.findScheduledInspectionsByVehicleTypeId(vehicleTypeId)) {
             inspectionDays.computeIfAbsent(inspection.getVehicle().getId(), id -> new ArrayList<>())
@@ -653,14 +662,30 @@ public class BookingServiceImpl implements BookingService {
                 .map(b -> new OffsetDateTime[]{b.getPickupTime(), heldUntil(b, now)})
                 .toList();
 
+        // Days the customer cannot book for inspection reasons are marked too, so a free-looking hour is really bookable.
+        List<LocalDate> inspectionDays = vehicleRepository.findScheduledInspectionsByVehicleId(vehicleId).stream()
+                .map(i -> i.getScheduledAt().withOffsetSameInstant(ZoneOffset.ofHours(7)).toLocalDate())
+                .toList();
+
         List<VehicleScheduleDTO.Day> scheduleDays = new ArrayList<>();
         for (int day = 0; day < days; day++) {
+            LocalDate date = fromDate.plusDays(day);
+            com.crms.mvc.service.InspectionRules.DayBlock block = com.crms.mvc.service.InspectionRules.blockOn(
+                    vehicle.getRegistrationExpiry(), inspectionDays, date);
             List<VehicleScheduleDTO.HourState> hours = new ArrayList<>(24);
             for (int hour = 0; hour < 24; hour++) {
                 OffsetDateTime hourStart = from.plusDays(day).plusHours(hour);
-                hours.add(hourState(hourStart, hourStart.plusHours(1), held, now));
+                VehicleScheduleDTO.HourState state = hourState(hourStart, hourStart.plusHours(1), held, now);
+                if (state == VehicleScheduleDTO.HourState.FREE) {
+                    state = switch (block) {
+                        case INSPECTION_DAY -> VehicleScheduleDTO.HourState.INSPECTION;
+                        case EXPIRED -> VehicleScheduleDTO.HourState.EXPIRED;
+                        case NONE -> state;
+                    };
+                }
+                hours.add(state);
             }
-            scheduleDays.add(new VehicleScheduleDTO.Day(fromDate.plusDays(day), hours));
+            scheduleDays.add(new VehicleScheduleDTO.Day(date, hours));
         }
 
         VehicleScheduleDTO schedule = new VehicleScheduleDTO();
@@ -686,6 +711,10 @@ public class BookingServiceImpl implements BookingService {
         }
         if (held.stream().anyMatch(h -> overlaps(start, end, h[0], h[1]))) {
             return VehicleScheduleDTO.HourState.BOOKED;
+        }
+        // The hour we are in has already begun, and a rental starts on a whole hour: the next hour is the earliest.
+        if (start.isBefore(now)) {
+            return VehicleScheduleDTO.HourState.PAST;
         }
         boolean inBuffer = held.stream().anyMatch(h ->
                 overlaps(start, end, h[0].minusHours(BUFFER_BETWEEN_RENTALS_HOURS), h[0])

@@ -45,7 +45,7 @@ class AdminContractTemplateControllerTest {
                 .andExpect(content().string(containsString("50%")))
                 .andExpect(content().string(containsString("200% đơn giá")))
                 .andExpect(content().string(not(containsString("E+"))))
-                .andExpect(content().string(containsString("Tạo bản nháp từ bản đang hiệu lực")));
+                .andExpect(content().string(containsString("Cập nhật điều khoản")));
     }
 
     @Test

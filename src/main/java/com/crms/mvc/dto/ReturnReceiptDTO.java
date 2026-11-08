@@ -8,7 +8,6 @@ import java.util.List;
 public class ReturnReceiptDTO {
     private OffsetDateTime returnedAt;
     private Integer odometer;
-    private Integer fuelPercent;
     private BigDecimal rentalTotal = BigDecimal.ZERO;
     private BigDecimal depositAmount = BigDecimal.ZERO;
     private List<ReturnReceiptLineDTO> lines = new ArrayList<>();
@@ -36,8 +35,6 @@ public class ReturnReceiptDTO {
     public Integer getOdometer() { return odometer; }
     public void setOdometer(Integer odometer) { this.odometer = odometer; }
 
-    public Integer getFuelPercent() { return fuelPercent; }
-    public void setFuelPercent(Integer fuelPercent) { this.fuelPercent = fuelPercent; }
 
 
     public BigDecimal getRentalTotal() { return rentalTotal; }

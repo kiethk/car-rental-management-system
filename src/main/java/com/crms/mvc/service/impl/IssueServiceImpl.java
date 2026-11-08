@@ -107,7 +107,7 @@ public class IssueServiceImpl implements IssueService {
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy đơn thuê: " + form.getBookingId()));
         if (!isRentalStarted(booking) || booking.getVehicle() == null) {
             throw new IllegalStateException(
-                    "Chỉ có thể ghi nhận sự cố cho đơn thuê khách đã nhận xe (đang hoạt động hoặc đã trả)");
+                    "Chỉ ghi nhận được sự cố cho đơn đang thuê, trước khi quyết toán. Đơn đã quyết toán là đã đóng.");
         }
         BigDecimal fee = requireFeePositive(form.getFeeAmount());
         Employee reporter = employeeRepository.findById(actor.employeeId())
@@ -150,20 +150,6 @@ public class IssueServiceImpl implements IssueService {
                 issue.getSubject(),
                 DateTimeUtils.toVietnamTime(issue.getOccurredAt()),
                 findFee(issue.getId()).map(BookingFee::getAmount).orElse(null)));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Booking findBookingForViolation(String plate, LocalDateTime occurredAt) {
-        OffsetDateTime at = occurredAt.atZone(DateTimeUtils.VIETNAM_ZONE).toOffsetDateTime();
-        LicensePlate onTheCar = licensePlateRepository.findByPlateIgnoreCase(plate == null ? "" : plate.trim())
-                .filter(p -> !p.getValidFrom().isAfter(at) && (p.getValidTo() == null || p.getValidTo().isAfter(at)))
-                .orElseThrow(() -> new NoSuchElementException("Không có xe nào mang biển số này tại thời điểm vi phạm"));
-
-        return bookingRepository.findRentalsCovering(onTheCar.getVehicle().getId(), at).stream()
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException(
-                        "Không có đơn thuê nào của xe này tại thời điểm vi phạm"));
     }
 
     @Override
@@ -441,8 +427,7 @@ public class IssueServiceImpl implements IssueService {
     }
 
     private boolean isRentalStarted(Booking booking) {
-        return Booking.STATUS_ACTIVE.equalsIgnoreCase(booking.getStatus())
-                || Booking.STATUS_COMPLETED.equalsIgnoreCase(booking.getStatus());
+        return Booking.STATUS_ACTIVE.equalsIgnoreCase(booking.getStatus());
     }
 
     private void applyDetails(Issue issue, IssueFormDTO form) {

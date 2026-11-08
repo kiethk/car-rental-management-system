@@ -1,14 +1,17 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.entity.VehicleType;
 import com.crms.mvc.service.PromotionService;
 import com.crms.mvc.service.ReviewService;
 import com.crms.mvc.service.VehicleTypeService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -21,8 +24,9 @@ public class HomeController {
     private final PromotionService promotionService;
     private final ReviewService reviewService;
 
-    public HomeController(VehicleTypeService vehicleTypeService, PromotionService promotionService,
-                          ReviewService reviewService) {
+    public HomeController(VehicleTypeService vehicleTypeService,
+                          PromotionService promotionService,
+                          @Autowired(required = false) ReviewService reviewService) {
         this.vehicleTypeService = vehicleTypeService;
         this.promotionService = promotionService;
         this.reviewService = reviewService;
@@ -32,8 +36,14 @@ public class HomeController {
     public String home(Model model) {
         model.addAttribute("today", LocalDate.now().toString());
         model.addAttribute("tomorrow", LocalDate.now().plusDays(1).toString());
-        model.addAttribute("featuredVehicles", vehicleTypeService.findAll());
-        model.addAttribute("ratings", reviewService.ratingsByVehicleType());
+
+        // The home page shows the first 6 models and a "view all" button with the total.
+        List<VehicleType> allVehicles = vehicleTypeService.findAll();
+        model.addAttribute("featuredVehicles", allVehicles.stream().limit(6).toList());
+        model.addAttribute("totalVehicleCount", allVehicles.size());
+        // Star ratings come from the reviews in the database, one query for all models.
+        model.addAttribute("ratings", reviewService != null ? reviewService.ratingsByVehicleType() : Map.of());
+
         var promotions = promotionService.findActiveWithImages();
         model.addAttribute("promotions", promotions);
         model.addAttribute("hasPromotionImages", !promotions.isEmpty());

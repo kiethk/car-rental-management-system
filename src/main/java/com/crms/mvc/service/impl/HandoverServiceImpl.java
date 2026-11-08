@@ -5,7 +5,6 @@ import com.crms.mvc.dto.CheckOutDTO;
 import com.crms.mvc.dto.HandoverRecordDTO;
 import com.crms.mvc.dto.HandoverSummaryDTO;
 import com.crms.mvc.dto.SettlementDTO;
-import com.crms.mvc.dto.ReturnChargeDTO;
 import com.crms.mvc.dto.ReturnReceiptDTO;
 import com.crms.mvc.dto.ReturnReceiptLineDTO;
 import com.crms.mvc.entity.Booking;
@@ -48,11 +47,6 @@ import java.util.Set;
 @Transactional
 public class HandoverServiceImpl implements HandoverService {
     private static final String FEE_LATE = "LATE_FEE";
-    /** Return charge types and their Vietnamese labels. Damage is never a Return charge: it must be recorded as an Issue. */
-    private static final Map<String, String> RETURN_CHARGE_LABELS = Map.of(
-            "CLEANING_FEE", "Phí vệ sinh xe",
-            "TOLL_FEE", "Phí cầu đường",
-            "OTHER_FEE", "Phí khác");
     private static final Set<String> PAYMENT_METHODS = Set.of("CASH", "BANK_TRANSFER");
 
     private final BookingRepository bookingRepository;
@@ -109,11 +103,31 @@ public class HandoverServiceImpl implements HandoverService {
         }
         requireOdometer(vehicle, form.getOdometer());
 
+        // One person drives one car at a time: the earlier rental must be settled before this one is handed over.
+        List<Booking> stillOpen = bookingRepository.findOpenRentalsOfCustomerExcept(
+                booking.getCustomer().getId(), bookingId);
+        if (!stillOpen.isEmpty()) {
+            throw new IllegalStateException("Khách còn đơn #" + stillOpen.get(0).getId()
+                    + " chưa quyết toán. Chỉ bàn giao xe này sau khi khách quyết toán đơn đó.");
+        }
+        // The rest of the rent is paid here, so the car is only handed over once it is collected.
+        BigDecimal rentalBalance = booking.getTotalPrice().subtract(booking.getDepositAmount());
+        if (rentalBalance.signum() > 0
+                && (form.getPaymentMethod() == null || !PAYMENT_METHODS.contains(form.getPaymentMethod()))) {
+            throw new IllegalArgumentException("Vui lòng chọn tiền mặt hoặc chuyển khoản cho phần tiền thuê còn lại");
+        }
+        if (rentalBalance.signum() > 0 && !form.isPaymentReceived()) {
+            throw new IllegalArgumentException("Vui lòng xác nhận đã nhận đủ tiền thuê còn lại");
+        }
+
         Handover record = newHandover(booking, actor, HandoverType.CHECK_IN,
                 form.getOdometer(), form.getFuelPercent(), form.getNotes());
         record.setLicenseImageUrl(fileUploadService.saveHandoverImage(form.getLicenseImage()));
         record.setIdCardImageUrl(fileUploadService.saveHandoverImage(form.getIdCardImage()));
         handoverRepository.save(record);
+        if (rentalBalance.signum() > 0) {
+            paymentService.recordRentalBalancePayment(bookingId, rentalBalance, form.getPaymentMethod());
+        }
 
         vehicle.setOdometer(form.getOdometer());
         vehicle.setStatus("rented");
@@ -140,26 +154,19 @@ public class HandoverServiceImpl implements HandoverService {
             throw new IllegalStateException("Đơn thuê chưa được gán xe");
         }
         requireOdometer(vehicle, form.getOdometer());
-        List<ReturnChargeDTO> returnCharges = filledReturnCharges(form);
 
         OffsetDateTime returnedAt = OffsetDateTime.now();
         booking.setActualReturnTime(returnedAt);
 
         handoverRepository.save(newHandover(booking, actor, HandoverType.CHECK_OUT,
-                form.getOdometer(), form.getFuelPercent(), null));
+                form.getOdometer(), null, null));
 
-        // Late fee and Return charges belong to the booking, not to any Issue.
+        // The late fee belongs to the booking, not to any Issue. Damage, cleaning and the like are recorded as Issues.
         BigDecimal multiplier = contractService.getTermsOfBooking(bookingId).getLateFeeMultiplier();
         BigDecimal lateFee = pricingService.calculateLateFee(
                 booking.getScheduledEndTime(), returnedAt, booking.getPricePerHour(), multiplier);
         if (lateFee != null && lateFee.signum() > 0) {
             bookingFeeService.recordFee(bookingId, FEE_LATE, lateFee, "Phí trả xe trễ", null);
-        }
-        for (ReturnChargeDTO charge : returnCharges) {
-            String description = hasText(charge.getDescription())
-                    ? charge.getDescription().trim()
-                    : RETURN_CHARGE_LABELS.get(charge.getFeeType());
-            bookingFeeService.recordFee(bookingId, charge.getFeeType(), charge.getAmount(), description, null);
         }
 
         vehicle.setOdometer(form.getOdometer());
@@ -184,15 +191,11 @@ public class HandoverServiceImpl implements HandoverService {
                     + "Vui lòng đợi khách thanh toán xong hoặc phiên hết hạn rồi quyết toán lại.");
         }
 
-        // The deposit is a share (at most 100%) of the rent, so it never covers fees and nothing is ever refunded
-        // here: the customer pays the rest of the rent plus every unpaid fee. Zero only when the deposit was the
-        // full rent and there are no fees.
+        // The rent was paid in full by handover, so settlement only collects the fees still unpaid (late fee,
+        // return charges, open Issues) and nothing is ever refunded here. Settlement closes the booking for good:
+        // every Issue must be recorded before it.
         List<BookingFee> unpaid = bookingFeeService.getUnpaidFees(bookingId);
-        BigDecimal finalAmount = finalAmount(booking, unpaid);
-        if (finalAmount.signum() < 0) {
-            throw new IllegalStateException("Tiền cọc lớn hơn tổng tiền thuê và các khoản phí. "
-                    + "Hãy kiểm tra lại số tiền của đơn trước khi quyết toán.");
-        }
+        BigDecimal finalAmount = sum(unpaid);
         if (finalAmount.signum() > 0) {
             if (form.getPaymentMethod() == null || !PAYMENT_METHODS.contains(form.getPaymentMethod())) {
                 throw new IllegalArgumentException("Vui lòng chọn tiền mặt hoặc chuyển khoản");
@@ -248,11 +251,9 @@ public class HandoverServiceImpl implements HandoverService {
 
         List<BookingFee> unpaid = bookingFeeService.getUnpaidFees(bookingId);
         summary.setRecords(records);
-        summary.setRentalTotal(booking.getTotalPrice());
         summary.setFeesTotal(sum(unpaid));
         summary.setPrepaidTotal(bookingFeeService.calculatePrepaidIssueFees(bookingId));
-        summary.setDepositAmount(booking.getDepositAmount());
-        summary.setFinalAmount(finalAmount(booking, unpaid));
+        summary.setFinalAmount(sum(unpaid));
         summary.setVehicleDamageReported(issueRepository.existsByBookingIdAndIssueTypeInAndStatusNot(
                 bookingId, List.of(IssueType.COLLISION, IssueType.DAMAGE), IssueStatus.CANCELLED));
         return summary;
@@ -273,7 +274,6 @@ public class HandoverServiceImpl implements HandoverService {
                 ? booking.getActualReturnTime() : record.getRecordedAt();
         receipt.setReturnedAt(DateTimeUtils.toVietnamTime(returnedAt));
         receipt.setOdometer(record.getOdometer());
-        receipt.setFuelPercent(record.getFuelPercent());
         receipt.setRentalTotal(booking.getTotalPrice());
         receipt.setDepositAmount(booking.getDepositAmount());
         for (BookingFee fee : bookingFeeService.getFeesByBooking(bookingId)) {
@@ -293,7 +293,7 @@ public class HandoverServiceImpl implements HandoverService {
                 receipt.setPaidAt(DateTimeUtils.toVietnamTime(p.getPaidAt()));
             });
         } else {
-            receipt.setAmountDue(finalAmount(booking, bookingFeeService.getUnpaidFees(bookingId)).max(BigDecimal.ZERO));
+            receipt.setAmountDue(sum(bookingFeeService.getUnpaidFees(bookingId)));
         }
         return receipt;
     }
@@ -327,29 +327,6 @@ public class HandoverServiceImpl implements HandoverService {
             throw new IllegalArgumentException("Số km không được nhỏ hơn số km hiện tại của xe là "
                     + vehicle.getOdometer() + " km");
         }
-    }
-
-    private List<ReturnChargeDTO> filledReturnCharges(CheckOutDTO form) {
-        List<ReturnChargeDTO> filled = new ArrayList<>();
-        for (ReturnChargeDTO charge : form.getReturnCharges()) {
-            if (charge == null || charge.getAmount() == null || charge.getAmount().signum() == 0) {
-                continue;
-            }
-            if (charge.getAmount().signum() < 0) {
-                throw new IllegalArgumentException("Phí trả xe không được âm");
-            }
-            if (charge.getFeeType() == null || !RETURN_CHARGE_LABELS.containsKey(charge.getFeeType())) {
-                throw new IllegalArgumentException("Loại phí trả xe không hợp lệ");
-            }
-            filled.add(charge);
-        }
-        return filled;
-    }
-
-    private BigDecimal finalAmount(Booking booking, List<BookingFee> unpaid) {
-        return booking.getTotalPrice()
-                .add(sum(unpaid))
-                .subtract(booking.getDepositAmount());
     }
 
     private boolean isPaidEarlier(BookingFee fee) {

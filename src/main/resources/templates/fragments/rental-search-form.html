@@ -8,7 +8,7 @@
                 th:action="@{/search}"
                 th:id="${formId != null ? formId : 'rental-schedule-form'}"
                 class="card-shadcn overflow-visible"
-                th:attr="data-server-error=${scheduleError},data-open-hour=${openingHours != null ? openingHours.open : 6},data-close-hour=${openingHours != null ? openingHours.close : 22}"
+                th:attr="data-server-error=${scheduleError},data-open-hour=${openingHours != null ? openingHours.open : 0},data-close-hour=${openingHours != null ? openingHours.close : 23}"
             >
                 <!-- Preserved filters on search page -->
                 <input
@@ -46,7 +46,7 @@
                 />
 
                 <!-- Card Header -->
-                <div class="px-6 py-4 border-border/80">
+                <div class="px-6 py-4 border-border">
                     <h2 class="text-base font-bold text-slate-900 tracking-tight" th:text="${title}">
                         Lựa chọn lịch trình thuê xe
                     </h2>
@@ -56,12 +56,11 @@
                 <div class="p-6">
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- 1. Pickup Card (shadcn clean card) -->
-                        <div class="rounded-xl border border-border/80 bg-surface/50 p-4 space-y-3.5">
+                        <div class="rounded-xl border border-border bg-surface/50 p-4 space-y-3.5">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">
                                     Lịch trình nhận xe
                                 </span>
-                                <span class="text-[11px] font-medium text-muted-foreground">Sớm nhất: 06:00</span>
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -70,7 +69,7 @@
                                     <button
                                         type="button"
                                         id="pickup-date-trigger"
-                                        class="w-full h-10 px-3 py-2 bg-white border border-border/90 rounded-lg text-sm text-left flex items-center justify-between shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-colors cursor-pointer"
+                                        class="w-full h-10 px-3 py-2 bg-white border border-border rounded-lg text-sm text-left flex items-center justify-between shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-colors cursor-pointer"
                                     >
                                         <div class="flex items-center gap-2 truncate">
                                             <svg
@@ -203,7 +202,7 @@
                                     <button
                                         type="button"
                                         id="pickup-hour-trigger"
-                                        class="w-full h-10 px-3 py-2 bg-white border border-border/90 rounded-lg text-sm text-left flex items-center justify-between shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-colors cursor-pointer"
+                                        class="w-full h-10 px-3 py-2 bg-white border border-border rounded-lg text-sm text-left flex items-center justify-between shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-colors cursor-pointer"
                                     >
                                         <div class="flex items-center gap-2 truncate">
                                             <svg
@@ -243,12 +242,11 @@
                         </div>
 
                         <!-- 2. Return Card (shadcn clean card) -->
-                        <div class="rounded-xl border border-border/80 bg-surface/50 p-4 space-y-3.5">
+                        <div class="rounded-xl border border-border bg-surface/50 p-4 space-y-3.5">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">
                                     Lịch trình trả xe
                                 </span>
-                                <span class="text-[11px] font-medium text-muted-foreground">Muộn nhất: 22:00</span>
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -257,7 +255,7 @@
                                     <button
                                         type="button"
                                         id="return-date-trigger"
-                                        class="w-full h-10 px-3 py-2 bg-white border border-border/90 rounded-lg text-sm text-left flex items-center justify-between shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-colors cursor-pointer"
+                                        class="w-full h-10 px-3 py-2 bg-white border border-border rounded-lg text-sm text-left flex items-center justify-between shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-colors cursor-pointer"
                                     >
                                         <div class="flex items-center gap-2 truncate">
                                             <svg
@@ -390,7 +388,7 @@
                                     <button
                                         type="button"
                                         id="return-hour-trigger"
-                                        class="w-full h-10 px-3 py-2 bg-white border border-border/90 rounded-lg text-sm text-left flex items-center justify-between shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-colors cursor-pointer"
+                                        class="w-full h-10 px-3 py-2 bg-white border border-border rounded-lg text-sm text-left flex items-center justify-between shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-colors cursor-pointer"
                                     >
                                         <div class="flex items-center gap-2 truncate">
                                             <svg
@@ -441,7 +439,7 @@
                 ></div>
 
                 <!-- Card Footer: Live Summary & Action -->
-                <div class="px-6 py-4 border-border/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="px-6 py-4 border-border flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div class="flex items-center gap-3 text-xs text-muted-foreground w-full sm:w-auto">
                         <div
                             class="w-9 h-9 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center flex-shrink-0 border border-slate-200"
@@ -540,8 +538,8 @@
 
                         // Depot opening hours from crms.opening-hours.* (pickup and return both inside, whole hours).
                         const hoursHost = document.querySelector("[data-open-hour]");
-                        const OPEN_HOUR = parseInt((hoursHost && hoursHost.getAttribute("data-open-hour")) || "6", 10);
-                        const CLOSE_HOUR = parseInt((hoursHost && hoursHost.getAttribute("data-close-hour")) || "22", 10);
+                        const OPEN_HOUR = parseInt((hoursHost && hoursHost.getAttribute("data-open-hour")) || "0", 10);
+                        const CLOSE_HOUR = parseInt((hoursHost && hoursHost.getAttribute("data-close-hour")) || "23", 10);
                         const hoursList = [];
                         for (let h = OPEN_HOUR; h <= CLOSE_HOUR; h++) hoursList.push(String(h).padStart(2, "0") + ":00");
 

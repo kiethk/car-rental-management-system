@@ -23,6 +23,17 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             + "ORDER BY b.pickupTime DESC")
     List<Booking> findRentalsCovering(@Param("vehicleId") Long vehicleId, @Param("at") OffsetDateTime at);
 
+    /** Rentals of this customer that are still open: picked up and not settled yet (returned or not). */
+    @Query("SELECT b FROM Booking b WHERE b.customer.id = :customerId AND b.id <> :exceptBookingId AND b.status = 'active' "
+            + "ORDER BY b.pickupTime")
+    List<Booking> findOpenRentalsOfCustomerExcept(@Param("customerId") Long customerId, @Param("exceptBookingId") Long exceptBookingId);
+
+    /** Rentals the customer already gave back but has not settled: the fees owed are still to be collected. */
+    @Query("SELECT b FROM Booking b WHERE b.customer.id = :customerId AND b.status = 'active' "
+            + "AND EXISTS (SELECT h.id FROM Handover h WHERE h.booking = b AND h.type = com.crms.mvc.entity.HandoverType.CHECK_OUT) "
+            + "ORDER BY b.pickupTime")
+    List<Booking> findReturnedUnsettledOfCustomer(@Param("customerId") Long customerId);
+
     @EntityGraph(attributePaths = {"slot.vehicleType", "vehicle.currentPlates", "customer", "promotion", "vehicle.vehicleType", "employee"})
     Optional<Booking> findById(Long id);
 

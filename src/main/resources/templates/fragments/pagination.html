@@ -9,8 +9,7 @@
 <div th:fragment="pager(nav)" th:if="${nav.totalElements > 0}"
      class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mt-3" style="gap: 8px;">
     <span class="small text-muted">
-        Hiển thị <strong class="text-navy" th:text="${nav.firstItem}">1</strong>–<strong class="text-navy" th:text="${nav.lastItem}">10</strong>
-        trên <strong class="text-navy" th:text="${nav.totalElements}">80</strong>
+        Hiển thị <strong class="text-navy" th:text="${nav.firstItem}">1</strong>–<strong class="text-navy" th:text="${nav.lastItem}">10</strong> trong số <strong class="text-navy" th:text="${nav.totalElements}">80</strong>
     </span>
 
     <nav th:unless="${nav.singlePage}" aria-label="Phân trang">

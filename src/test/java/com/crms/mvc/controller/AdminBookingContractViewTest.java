@@ -112,7 +112,7 @@ class AdminBookingContractViewTest {
     }
 
     @Test
-    void theCheckOutFormHasNoHandTypedFineAndExplainsHowIssuesAreSettled() throws Exception {
+    void theCheckOutFormHasNoHandTypedFineAndShowsTheConditionAtHandover() throws Exception {
         BookingDetailDTO booking = confirmedBooking();
         booking.setStatus("active");
         booking.setVehicleId(9L);
@@ -122,7 +122,7 @@ class AdminBookingContractViewTest {
         mvc.perform(get("/admin/bookings/42").session(staffSession()))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("additionalFine"))))
-                .andExpect(content().string(containsString("Phí của các sự cố khách chưa thanh toán")));
+                .andExpect(content().string(containsString("Tình trạng lúc bàn giao")));
     }
 
     @Test

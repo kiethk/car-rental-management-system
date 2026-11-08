@@ -3,7 +3,7 @@
     <body>
         <!--
     Admin Clean Light Flush Collapsible Sidebar Fragment
-    Pass active param: 'dashboard', 'bookings', 'contracts', 'vehicles', 'inspections', 'license-plates', 'licenses', 'profile', 'accounts', 'promotions', 'issues'
+    Pass active param: 'dashboard', 'bookings', 'contracts', 'vehicles', 'inspections', 'license-plates', 'licenses', 'profile', 'accounts', 'promotions', 'issues', 'traffic-fines'
 -->
         <nav th:fragment="sidebar(active)" class="admin-sidebar-nav" aria-label="Menu quản trị hệ thống">
             <!-- Top Bar: Title & Toggle Button -->
@@ -147,7 +147,7 @@
                 <a
                     th:href="@{/admin/inspections}"
                     th:class="'admin-sidebar-link ' + (${active == 'inspections'} ? 'active' : '')"
-                    title="Kiểm định & Bảo dưỡng"
+                    title="Đăng kiểm & Bảo dưỡng"
                 >
                     <svg
                         class="admin-nav-icon"
@@ -162,7 +162,7 @@
                             d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
                         ></path>
                     </svg>
-                    <span class="admin-nav-label">Kiểm định & Bảo dưỡng</span>
+                    <span class="admin-nav-label">Đăng kiểm & Bảo dưỡng</span>
                 </a>
             </div>
 
@@ -188,6 +188,16 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                     </svg>
                     <span class="admin-nav-label">Sự cố & Bồi thường</span>
+                </a>
+                <a
+                    th:href="@{/admin/traffic-fines}"
+                    th:class="'admin-sidebar-link ' + (${active == 'traffic-fines'} ? 'active' : '')"
+                    title="Phạt nguội"
+                >
+                    <svg class="admin-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h3l2-3h8l2 3h3v12H3V7zm9 9a3.5 3.5 0 100-7 3.5 3.5 0 000 7z"></path>
+                    </svg>
+                    <span class="admin-nav-label">Phạt nguội</span>
                 </a>
             </div>
             <!-- PHÂN TÁCH & TIỆN ÍCH -->

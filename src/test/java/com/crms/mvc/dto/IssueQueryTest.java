@@ -35,12 +35,12 @@ class IssueQueryTest {
         IssueQueryDTO query = new IssueQueryDTO();
 
         query.setStatus(" Resolved ");
-        query.setType("traffic_fine");
+        query.setType("damage");
 
         assertEquals("resolved", query.getStatus());
         assertEquals(IssueStatus.RESOLVED, query.getIssueStatus());
-        assertEquals("TRAFFIC_FINE", query.getType());
-        assertEquals(IssueType.TRAFFIC_FINE, query.getIssueType());
+        assertEquals("DAMAGE", query.getType());
+        assertEquals(IssueType.DAMAGE, query.getIssueType());
     }
 
     @Test

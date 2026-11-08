@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Lịch sử biển số — DriveNow Admin</title>
+    <title>Lịch sử biển số — Quản trị DriveNow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -76,7 +76,7 @@
                         <h2 class="h6 font-weight-bold text-navy text-uppercase mb-3" style="letter-spacing: 0.05em;">Gắn biển số mới cho xe này</h2>
                         <form th:action="@{/admin/license-plates/vehicle/{id}/change(id=${vehicle.id})}" th:object="${plateForm}" method="post">
                             <div class="form-group mb-3">
-                                <label class="font-weight-bold small text-navy mb-1" for="plate">Biển số mới <span class="text-danger">*</span></label>
+                                <label class="font-weight-bold small text-navy mb-1" for="plate">Biển số xe mới <span class="text-danger">*</span></label>
                                 <input type="text" id="plate" th:field="*{plate}" class="form-control rounded-lg font-weight-bold text-uppercase"
                                        placeholder="e.g. 51K-987.65" required>
                                 <small class="text-danger" th:if="${#fields.hasErrors('plate')}" th:errors="*{plate}"></small>

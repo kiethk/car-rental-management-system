@@ -24,7 +24,11 @@
         .sch-booked { background: #1e293b; }
         .sch-buffer { background: repeating-linear-gradient(135deg, #fed7aa 0 4px, #fdba74 4px 8px); }
         .sch-past { background: repeating-linear-gradient(135deg, #f1f5f9 0 4px, #e2e8f0 4px 8px); }
+        .sch-inspection { background: repeating-linear-gradient(135deg, #bfdbfe 0 4px, #93c5fd 4px 8px); }
+        .sch-expired { background: repeating-linear-gradient(135deg, #fecaca 0 4px, #fca5a5 4px 8px); }
         .sch-selected { background: #f97316 !important; box-shadow: inset 0 0 0 2px #c2410c; }
+        /* The same buffer hour, drawn before and after the window being chosen. */
+        .sch-buffer-preview { background: repeating-linear-gradient(135deg, #fed7aa 0 4px, #fdba74 4px 8px) !important; }
 
         .sch-toolbar { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
         .sch-week-btn { width: 2.25rem; height: 2.25rem; border-radius: 50%; border: 1px solid #e2e8f0; background: #fff; color: #0f172a;
@@ -81,7 +85,9 @@
             <div class="d-flex flex-wrap gap-2">
                 <span class="sch-chip"><i class="sch-swatch sch-free"></i>Trống</span>
                 <span class="sch-chip"><i class="sch-swatch sch-booked"></i>Đã có người thuê</span>
-                <span class="sch-chip"><i class="sch-swatch sch-buffer"></i>Chuẩn bị xe (1 giờ)</span>
+                <span class="sch-chip"><i class="sch-swatch sch-buffer"></i>Giờ đệm chuẩn bị xe (1 giờ)</span>
+                <span class="sch-chip"><i class="sch-swatch sch-inspection"></i>Xe đi đăng kiểm</span>
+                <span class="sch-chip"><i class="sch-swatch sch-expired"></i>Quá hạn đăng kiểm</span>
                 <span class="sch-chip"><i class="sch-swatch sch-past"></i>Đã qua</span>
                 <span class="sch-chip"><i class="sch-swatch sch-selected"></i>Bạn đang chọn</span>
             </div>
@@ -101,12 +107,13 @@
 
         <div class="sch-scroll">
             <table class="sch-grid" id="sch-grid"
-                   th:attr="data-open-hour=${openingHours != null ? openingHours.open : 6},data-close-hour=${openingHours != null ? openingHours.close : 22}">
+                   th:with="restricted=${openingHours != null and !openingHours.allDay}"
+                   th:attr="data-open-hour=${openingHours != null ? openingHours.open : 0},data-close-hour=${openingHours != null ? openingHours.close : 23}">
                 <thead>
                 <tr>
                     <th class="sch-day"></th>
                     <th th:each="h : ${#numbers.sequence(0, 23)}"
-                        th:classappend="${h < (openingHours != null ? openingHours.open : 6) or h >= (openingHours != null ? openingHours.close : 22)} ? 'sch-closed-label'"
+                        th:classappend="${restricted and (h < openingHours.open or h >= openingHours.close)} ? 'sch-closed-label'"
                         th:text="${#numbers.formatInteger(h, 2)}">00</th>
                 </tr>
                 </thead>
@@ -119,11 +126,11 @@
                     </th>
                     <td th:each="state, it : ${day.hours()}"
                         class="sch-cell"
-                        th:classappend="'sch-' + ${#strings.toLowerCase(state.name())} + ${state.name() == 'FREE' and (it.index < (openingHours != null ? openingHours.open : 6) or it.index >= (openingHours != null ? openingHours.close : 22)) ? ' sch-closed' : ''}"
+                        th:classappend="'sch-' + ${#strings.toLowerCase(state.name())} + ${state.name() == 'FREE' and restricted and (it.index < openingHours.open or it.index >= openingHours.close) ? ' sch-closed' : ''}"
                         th:attr="data-date=${day.date()},data-hour=${it.index},data-state=${#strings.toLowerCase(state.name())},
                                  title=${dayNames[day.date().dayOfWeek.value - 1] + ' ' + #temporals.format(day.date(), 'dd/MM') + ' · '
                                         + #numbers.formatInteger(it.index, 2) + ':00–' + #numbers.formatInteger(it.index + 1, 2) + ':00 · '
-                                        + (state.name() == 'FREE' ? 'Trống' : (state.name() == 'BOOKED' ? 'Đã có người thuê' : (state.name() == 'BUFFER' ? 'Chuẩn bị xe' : 'Đã qua')))}"></td>
+                                        + (state.name() == 'FREE' ? 'Trống' : (state.name() == 'BOOKED' ? 'Đã có người thuê' : (state.name() == 'BUFFER' ? 'Giờ đệm chuẩn bị xe' : (state.name() == 'INSPECTION' ? 'Xe đi đăng kiểm trong ngày này' : (state.name() == 'EXPIRED' ? 'Quá hạn đăng kiểm, chưa có lịch đăng kiểm' : 'Đã qua')))))}"></td>
                 </tr>
                 </tbody>
             </table>
@@ -173,8 +180,14 @@
     (() => {
         // Depot opening hours from crms.opening-hours.*: pickup and return both happen inside them.
         const hoursHost = document.getElementById('sch-grid');
-        const OPEN = parseInt(hoursHost.dataset.openHour || '6', 10), CLOSE = parseInt(hoursHost.dataset.closeHour || '22', 10);
+        const OPEN = parseInt(hoursHost.dataset.openHour || '0', 10), CLOSE = parseInt(hoursHost.dataset.closeHour || '23', 10);
         const pad2 = (n) => String(n).padStart(2, '0');
+        const ALL_DAY = OPEN <= 0 && CLOSE >= 23;
+        const addDay = (dateStr) => {
+            const d = new Date(dateStr + 'T00:00:00');
+            d.setDate(d.getDate() + 1);
+            return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+        };
         const weeks = Array.from(document.querySelectorAll('.sch-week'));
         const weekCount = weeks.reduce((max, w) => Math.max(max, Number(w.dataset.week) + 1), 0);
         const prev = document.getElementById('sch-prev');
@@ -215,10 +228,17 @@
         [startDate, endDate].forEach((input) => { input.min = firstDate; input.max = lastDate; });
 
         const toKey = (date, hour) => date + 'T' + pad(hour) + ':00';
+        const cellByKey = new Map(cells.map((c) => [toKey(c.dataset.date, Number(c.dataset.hour)), c]));
+        // 'YYYY-MM-DDTHH:00' moved by whole hours (local time, so no zone shifts)
+        const shiftKey = (key, hours) => {
+            const d = new Date(key + ':00');
+            d.setHours(d.getHours() + hours);
+            return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':00';
+        };
 
         // Paint the chosen window and say what is wrong with it, if anything.
         const refresh = () => {
-            cells.forEach((c) => c.classList.remove('sch-selected'));
+            cells.forEach((c) => c.classList.remove('sch-selected', 'sch-buffer-preview'));
             message.textContent = '';
             summary.textContent = '';
             if (!startDate.value || !endDate.value) return;
@@ -228,18 +248,47 @@
                 message.textContent = 'Giờ trả xe phải sau giờ nhận xe.';
                 return;
             }
-            let blocked = false;
+            const blockedStates = new Set();
             cells.forEach((c) => {
                 const key = toKey(c.dataset.date, Number(c.dataset.hour));
                 if (key >= start && key < end) {
                     c.classList.add('sch-selected');
-                    if (c.dataset.state !== 'free') blocked = true;
+                    if (c.dataset.state !== 'free') blockedStates.add(c.dataset.state);
                 }
+            });
+            // One buffer hour on each side. Before the pickup it may include the present moment; after the return it
+            // must not touch another rental. Either must not run into a rental that is already booked.
+            [shiftKey(start, -1), end].forEach((key) => {
+                const cell = cellByKey.get(key);
+                if (!cell) return;
+                cell.classList.add('sch-buffer-preview');
+                if (cell.dataset.state === 'booked') blockedStates.add('buffer');
             });
             const hours = Math.round((new Date(end) - new Date(start)) / 3600000);
             summary.textContent = startDate.value.split('-').reverse().join('/') + ' ' + pad(startHour.value) + ':00 → '
                 + endDate.value.split('-').reverse().join('/') + ' ' + pad(endHour.value) + ':00 (' + hours + ' giờ)';
-            if (blocked) message.textContent = 'Khung giờ này trùng giờ xe đã có người thuê hoặc thời gian chuẩn bị xe. Hãy chọn khung khác.';
+            if (blockedStates.has('past')) {
+                message.textContent = 'Giờ nhận xe phải từ giờ kế tiếp trở đi.';
+            } else if (blockedStates.has('buffer') && blockedStates.size === 1) {
+                message.textContent = 'Cần chừa 1 giờ chuẩn bị xe trước và sau khung giờ thuê, chưa chạm vào đơn khác.';
+            } else if (blockedStates.has('expired')) {
+                message.textContent = 'Xe quá hạn đăng kiểm và chưa có lịch đăng kiểm trước ngày này. Hãy chọn ngày khác.';
+            } else if (blockedStates.has('inspection')) {
+                message.textContent = 'Xe đi đăng kiểm trong ngày này. Hãy chọn ngày khác.';
+            } else if (blockedStates.size) {
+                message.textContent = 'Khung giờ này trùng giờ xe đã có người thuê hoặc thời gian chuẩn bị xe. Hãy chọn khung khác.';
+            }
+        };
+
+        // The end is the hour after the last chosen cell; for the day's last hour that is 00:00 of the next day.
+        const setEnd = (dateStr, endAt) => {
+            if (ALL_DAY && endAt === 24) {
+                endDate.value = addDay(dateStr);
+                endHour.value = 0;
+            } else {
+                endDate.value = dateStr;
+                endHour.value = endAt;
+            }
         };
 
         // First click picks the pickup hour, second click the last hour of the rental.
@@ -248,14 +297,13 @@
             if (c.dataset.state !== 'free') return;
             const hour = Number(c.dataset.hour);
             if (picking === 'start') {
-                if (hour < OPEN || hour > CLOSE - 1) {
+                if (!ALL_DAY && (hour < OPEN || hour > CLOSE - 1)) {
                     message.textContent = 'Chỉ nhận xe từ ' + pad2(OPEN) + ':00 đến ' + pad2(CLOSE - 1) + ':00 để còn ít nhất 1 giờ thuê trước giờ đóng cửa.';
                     return;
                 }
                 startDate.value = c.dataset.date;
                 startHour.value = hour;
-                endDate.value = c.dataset.date;
-                endHour.value = hour + 1;
+                setEnd(c.dataset.date, hour + 1);
                 picking = 'end';
             } else {
                 const endAt = hour + 1;
@@ -265,12 +313,11 @@
                     c.click();
                     return;
                 }
-                if (endAt < OPEN || endAt > CLOSE) {
+                if (!ALL_DAY && (endAt < OPEN || endAt > CLOSE)) {
                     message.textContent = 'Chỉ trả xe từ ' + pad2(OPEN) + ':00 đến ' + pad2(CLOSE) + ':00.';
                     return;
                 }
-                endDate.value = c.dataset.date;
-                endHour.value = endAt;
+                setEnd(c.dataset.date, endAt);
                 picking = 'start';
             }
             refresh();

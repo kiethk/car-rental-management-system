@@ -6,7 +6,6 @@ package com.crms.mvc.entity;
 public enum IssueType {
     COLLISION("Va chạm"),
     DAMAGE("Hư hỏng"),
-    TRAFFIC_FINE("Phạt nguội"),
     OTHER("Khác");
 
     private final String label;

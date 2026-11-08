@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="'Chi tiết sự cố #' + ${issue.id} + ' — DriveNow Admin'">Chi tiết sự cố — DriveNow Admin</title>
+    <title th:text="'Chi tiết sự cố #' + ${issue.id} + ' — Quản trị DriveNow'">Chi tiết sự cố — Quản trị DriveNow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -113,7 +113,7 @@
                                  th:text="${#numbers.formatDecimal(issue.feeAmount, 0, 'POINT', 0, 'COMMA')} + ' đ'">200.000 đ</div>
                             <div class="small mt-2">
                                 <span th:if="${issue.status.name() == 'RESOLVED' or issue.feePaid}" class="text-success font-weight-bold">✓ Đã hoàn tất thanh toán</span>
-                                <span th:if="${issue.status.name() == 'OPEN' and !issue.feePaid}" class="text-warning font-weight-bold">Chờ khách thanh toán (hoặc thu cùng quyết toán khi trả xe)</span>
+                                <span th:if="${issue.status.name() == 'OPEN' and !issue.feePaid}" class="text-warning font-weight-bold">Chờ khách thanh toán (hoặc thu khi quyết toán lúc trả xe)</span>
                                 <span th:if="${issue.status.name() == 'CANCELLED'}" class="text-muted">Đã hủy bỏ</span>
                             </div>
                         </div>

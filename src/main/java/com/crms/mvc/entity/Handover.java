@@ -30,7 +30,8 @@ public class Handover {
     @Column(name = "odometer", nullable = false)
     private Integer odometer;
 
-    @Column(name = "fuel_percent", nullable = false)
+    /** Recorded when the car is given out (CHECK_IN); null on the return record. */
+    @Column(name = "fuel_percent")
     private Integer fuelPercent;
 
     @Column(name = "notes", length = 1000)

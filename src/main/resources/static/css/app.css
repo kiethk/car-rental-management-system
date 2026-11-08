@@ -58,6 +58,9 @@ footer {
 .border-slate-300 { border-color: #cbd5e1 !important; }
 .border-slate-400 { border-color: #94a3b8 !important; }
 .border-slate-900 { border-color: #0f172a !important; }
+.border-border,
+.border-border\/80,
+.border-border\/90 { border-color: #e2e8f0 !important; }
 
 /* Strict SVG sizing guards to avoid oversized SVG icons */
 svg.w-3, .w-3 { width: 12px !important; height: 12px !important; min-width: 12px; }

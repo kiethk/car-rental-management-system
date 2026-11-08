@@ -23,6 +23,12 @@ public class CheckInDTO {
     @AssertTrue(message = "Vui lòng xác nhận đã kiểm tra bản gốc GPLX và CCCD")
     private boolean documentsVerified;
 
+    /** CASH or BANK_TRANSFER: how the rest of the rent was paid at the counter. Not needed when nothing is left to pay. */
+    private String paymentMethod;
+
+    /** Staff confirm they received the rest of the rent. Required only when something is left to pay. */
+    private boolean paymentReceived;
+
     private MultipartFile licenseImage;
     private MultipartFile idCardImage;
 
@@ -37,6 +43,12 @@ public class CheckInDTO {
 
     public boolean isDocumentsVerified() { return documentsVerified; }
     public void setDocumentsVerified(boolean documentsVerified) { this.documentsVerified = documentsVerified; }
+
+    public boolean isPaymentReceived() { return paymentReceived; }
+    public void setPaymentReceived(boolean paymentReceived) { this.paymentReceived = paymentReceived; }
+
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
 
     public MultipartFile getLicenseImage() { return licenseImage; }
     public void setLicenseImage(MultipartFile licenseImage) { this.licenseImage = licenseImage; }

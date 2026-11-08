@@ -10,8 +10,8 @@ public class OpeningHoursAdvice {
 
     private final OpeningHours openingHours;
 
-    public OpeningHoursAdvice(@Value("${crms.opening-hours.open:6}") int open,
-                              @Value("${crms.opening-hours.close:22}") int close) {
+    public OpeningHoursAdvice(@Value("${crms.opening-hours.open:0}") int open,
+                              @Value("${crms.opening-hours.close:23}") int close) {
         this.openingHours = new OpeningHours(open, close);
     }
 

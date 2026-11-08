@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ghi kết quả đăng kiểm — DriveNow Admin</title>
+    <title>Ghi kết quả đăng kiểm — Quản trị DriveNow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -36,7 +36,7 @@
                         <h1 class="h4 font-weight-bold text-navy mb-1" th:text="'Ghi kết quả — Đăng kiểm #' + ${inspection.id}">
                             Ghi kết quả đăng kiểm
                         </h1>
-                        <p class="text-muted small mb-0">Ghi nhận kết quả chính thức sau khi xe hoàn tất đăng kiểm tại trạm.</p>
+                        <p class="text-muted small mb-0">Ghi nhận kết quả đăng kiểm chính thức sau khi xe hoàn tất kiểm tra tại trạm.</p>
                     </div>
                     <a th:href="@{/admin/inspections}" class="btn btn-outline-secondary btn-sm rounded-lg">
                         Quay lại danh sách đăng kiểm
@@ -73,7 +73,7 @@
                                 <div class="custom-control custom-radio custom-control-inline">
                                     <input type="radio" id="statusPassed" name="status" value="passed" class="custom-control-input" checked onchange="togglePassedFields(true)">
                                     <label class="custom-control-label font-weight-bold text-success" for="statusPassed">
-                                        ĐẠT — Đã được cấp tem kiểm định mới
+                                        ĐẠT — Đã được cấp tem đăng kiểm mới
                                     </label>
                                 </div>
                                 <div class="custom-control custom-radio custom-control-inline">

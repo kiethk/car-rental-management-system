@@ -86,26 +86,80 @@
                 <!-- Registration Alerts -->
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm rounded-xl p-4 bg-white h-100">
+                        <style>
+                            .reg-alert { border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; margin-bottom: 12px; }
+                            .reg-alert summary { display: flex; align-items: center; gap: 14px; padding: 12px 16px; cursor: pointer; list-style: none; }
+                            .reg-alert summary::-webkit-details-marker { display: none; }
+                            .reg-alert-count { font-size: 1.6rem; font-weight: 700; line-height: 1; min-width: 28px; }
+                            .reg-alert-warning .reg-alert-count { color: #f59e0b; }
+                            .reg-alert-danger .reg-alert-count { color: #dc2626; }
+                            .reg-alert-text { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+                            .reg-alert-label { font-weight: 600; color: #0f172a; font-size: 0.9rem; }
+                            .reg-alert-hint { color: #64748b; font-size: 0.8rem; }
+                            .reg-alert-chevron { color: #94a3b8; transition: transform 0.15s ease; flex-shrink: 0; }
+                            .reg-alert[open] .reg-alert-chevron { transform: rotate(180deg); }
+                            .reg-alert-list { list-style: none; margin: 0; padding: 0 16px 8px; max-height: 280px; overflow-y: auto; }
+                            .reg-alert-list li { padding: 8px 0; border-top: 1px solid #e2e8f0; }
+                            .reg-alert-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+                            .reg-alert-row strong { font-size: 0.875rem; color: #0f172a; }
+                            .reg-alert-days { font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
+                            .reg-alert-warning .reg-alert-days { color: #d97706; }
+                            .reg-alert-danger .reg-alert-days { color: #dc2626; }
+                            .reg-alert-meta { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+                            .reg-alert-meta a { color: #ea580c; font-weight: 600; white-space: nowrap; text-decoration: none; }
+                            .reg-alert-meta a:hover { text-decoration: underline; }
+                            .reg-alert-empty { padding: 0 16px 12px; font-size: 0.8rem; color: #94a3b8; }
+                        </style>
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h2 class="h6 font-weight-bold text-navy mb-0">Cảnh báo đăng kiểm</h2>
                             <a th:href="@{/admin/vehicles}" class="small text-amber font-weight-semibold">Xem danh sách xe →</a>
                         </div>
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <div class="p-3 rounded-lg border bg-light">
-                                    <span class="small text-muted d-block">Sắp hết hạn trong 30 ngày</span>
-                                    <span class="h4 font-weight-bold text-warning mb-0" th:text="${expiringSoonCount}">1</span>
-                                    <span class="small text-muted d-block mt-1">Cần sớm lên lịch đăng kiểm</span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="p-3 rounded-lg border bg-light">
-                                    <span class="small text-muted d-block">Đã hết hạn đăng kiểm</span>
-                                    <span class="h4 font-weight-bold text-danger mb-0" th:text="${expiredCount}">1</span>
-                                    <span class="small text-muted d-block mt-1">Cần ngừng khai thác xe ngay</span>
-                                </div>
-                            </div>
-                        </div>
+                        <details class="reg-alert reg-alert-danger">
+                            <summary>
+                                <span class="reg-alert-count" th:text="${expiredCount}">1</span>
+                                <span class="reg-alert-text">
+                                    <span class="reg-alert-label">Đã hết hạn đăng kiểm</span>
+                                    <span class="reg-alert-hint">Cần ngừng khai thác xe ngay</span>
+                                </span>
+                                <svg class="reg-alert-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                            </summary>
+                            <ul class="reg-alert-list">
+                                <li th:each="v : ${expiredList}">
+                                    <div class="reg-alert-row">
+                                        <strong th:text="${v.vehicleName}">Toyota Vios</strong>
+                                        <span class="reg-alert-days" th:text="${'quá hạn ' + (-v.daysRemaining) + ' ngày'}">còn 12 ngày</span>
+                                    </div>
+                                    <div class="reg-alert-row reg-alert-meta">
+                                        <span><span class="font-mono" th:text="${v.plate != null ? v.plate : 'Chưa có biển'}">51A-123.45</span> · hạn <span th:text="${#temporals.format(v.registrationExpiry, 'dd/MM/yyyy')}">10/11/2026</span></span>
+                                        <a th:href="@{/admin/inspections/new(vehicleId=${v.vehicleId})}">Lên lịch đăng kiểm</a>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div class="reg-alert-empty" th:if="${expiredCount == 0}">Không có xe nào.</div>
+                        </details>
+                        <details class="reg-alert reg-alert-warning">
+                            <summary>
+                                <span class="reg-alert-count" th:text="${expiringSoonCount}">1</span>
+                                <span class="reg-alert-text">
+                                    <span class="reg-alert-label">Sắp hết hạn trong 30 ngày</span>
+                                    <span class="reg-alert-hint">Cần sớm lên lịch đăng kiểm</span>
+                                </span>
+                                <svg class="reg-alert-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                            </summary>
+                            <ul class="reg-alert-list">
+                                <li th:each="v : ${expiringSoonList}">
+                                    <div class="reg-alert-row">
+                                        <strong th:text="${v.vehicleName}">Toyota Vios</strong>
+                                        <span class="reg-alert-days" th:text="${v.daysRemaining == 0 ? 'hết hạn hôm nay' : 'còn ' + v.daysRemaining + ' ngày'}">còn 12 ngày</span>
+                                    </div>
+                                    <div class="reg-alert-row reg-alert-meta">
+                                        <span><span class="font-mono" th:text="${v.plate != null ? v.plate : 'Chưa có biển'}">51A-123.45</span> · hạn <span th:text="${#temporals.format(v.registrationExpiry, 'dd/MM/yyyy')}">10/11/2026</span></span>
+                                        <a th:href="@{/admin/inspections/new(vehicleId=${v.vehicleId})}">Lên lịch đăng kiểm</a>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div class="reg-alert-empty" th:if="${expiringSoonCount == 0}">Không có xe nào.</div>
+                        </details>
                     </div>
                 </div>
 
@@ -123,7 +177,7 @@
                             </a>
                             <a th:href="@{/admin/vehicle-types}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center px-0 py-2.5">
                                 <div>
-                                    <span class="font-weight-semibold text-navy d-block">Dòng xe & thông số</span>
+                                    <span class="font-weight-semibold text-navy d-block">Danh mục dòng xe & Thông số</span>
                                     <span class="small text-muted">Quản lý danh mục xe, giá thuê theo giờ và hình ảnh</span>
                                 </div>
                                 <span class="text-muted">→</span>
@@ -151,7 +205,7 @@
                         <thead class="bg-light small text-muted text-uppercase">
                         <tr>
                             <th>ID</th>
-                            <th>Xe</th>
+                            <th>Dòng xe</th>
                             <th>Biển số</th>
                             <th>Ngày hẹn</th>
                             <th>Trạng thái</th>

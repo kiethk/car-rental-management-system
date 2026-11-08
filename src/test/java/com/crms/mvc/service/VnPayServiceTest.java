@@ -164,7 +164,7 @@ public class VnPayServiceTest {
 
     @Test
     public void testIssuePaymentChargesExactlyTheOutstandingFeesAndTakesThem() {
-        Booking booking = completedBookingOf(5L);
+        Booking booking = openRentalOf(5L);
         BookingFee first = fee("ISSUE_COMPENSATION", "200000");
         BookingFee second = fee("ISSUE_COMPENSATION", "500000");
         Mockito.when(bookingFeeService.getSettleableIssueFees(42L)).thenReturn(List.of(first, second));
@@ -191,7 +191,7 @@ public class VnPayServiceTest {
 
     @Test
     public void testIssuePaymentIsOnlyForTheBookingsOwner() {
-        completedBookingOf(5L);
+        openRentalOf(5L);
 
         assertThrows(java.util.NoSuchElementException.class, () -> paymentService.createIssuePaymentUrl(42L, 6L, "127.0.0.1"));
         assertThrows(java.util.NoSuchElementException.class, () -> paymentService.createIssuePaymentUrl(42L, null, "127.0.0.1"));
@@ -200,12 +200,13 @@ public class VnPayServiceTest {
     }
 
     @Test
-    public void testIssuePaymentNeedsASettledBookingAndSomethingOwed() {
-        Booking booking = completedBookingOf(5L);
+    public void testIssuePaymentNeedsAnOpenRentalAndSomethingOwed() {
+        Booking booking = openRentalOf(5L);
         Mockito.when(bookingFeeService.getSettleableIssueFees(42L)).thenReturn(List.of());
         assertThrows(IllegalStateException.class, () -> paymentService.createIssuePaymentUrl(42L, 5L, "127.0.0.1"));
 
-        booking.setStatus("active");
+        // a settled booking is closed: its Issue fees were collected by the settlement
+        booking.setStatus("completed");
         assertThrows(IllegalStateException.class, () -> paymentService.createIssuePaymentUrl(42L, 5L, "127.0.0.1"));
 
         Mockito.verify(paymentRepository, Mockito.never()).save(Mockito.any());
@@ -213,7 +214,7 @@ public class VnPayServiceTest {
 
     @Test
     public void testAnAbandonedPendingIssuePaymentIsCancelledBeforeANewOneStarts() {
-        completedBookingOf(5L);
+        openRentalOf(5L);
         Payment stale = new Payment();
         stale.setId(70L);
         stale.setPaymentType(Payment.TYPE_ISSUE_COMPENSATION);
@@ -263,7 +264,7 @@ public class VnPayServiceTest {
 
     @Test
     public void testAnIssuePaymentMarkedFailedCanBeRecoveredIfFeesStillOwed() {
-        Booking booking = completedBookingOf(5L);
+        Booking booking = openRentalOf(5L);
         Payment payment = pendingIssuePayment(77L, "700000");
         payment.setBooking(booking);
         payment.setStatus("failed");
@@ -299,13 +300,13 @@ public class VnPayServiceTest {
         Mockito.verify(bookingFeeService, Mockito.never()).detachPayment(Mockito.any());
     }
 
-    private Booking completedBookingOf(Long customerId) {
+    private Booking openRentalOf(Long customerId) {
         com.crms.mvc.entity.Customer customer = new com.crms.mvc.entity.Customer();
         customer.setId(customerId);
         Booking booking = new Booking();
         booking.setId(42L);
         booking.setCustomer(customer);
-        booking.setStatus("completed");
+        booking.setStatus("active");
         Mockito.when(bookingRepository.findById(42L)).thenReturn(Optional.of(booking));
         return booking;
     }

@@ -7,8 +7,12 @@ Hệ thống cho thuê xe tự lái: khách đặt đơn thuê theo loại xe, n
 ### Quyết toán & phí
 
 **Quyết toán (Settlement)**:
-Lần chốt tiền khi khách trả xe: khách trả phần tiền thuê còn lại (tiền thuê trừ Tiền cọc đã đặt) cộng phí trễ, Phí trả xe và các Phí sự cố chưa thanh toán. Phí không bao giờ được trừ vào cọc, và Quyết toán không bao giờ hoàn tiền. Sự cố khách đã thanh toán trước đó không bị thu lại.
+Lần chốt tiền cuối khi khách trả xe: khách chỉ trả các khoản phí chưa thanh toán (phí trễ, Phí sự cố). Tiền thuê đã được thu đủ từ lúc Bàn giao. Phí không bao giờ được trừ vào cọc, và Quyết toán không bao giờ hoàn tiền. Sự cố khách đã thanh toán trước đó không bị thu lại. Quyết toán xong là đóng đơn: không ghi nhận thêm Sự cố và không thu thêm khoản nào.
 _Avoid_: Thanh toán cuối, checkout payment
+
+**Tiền thuê còn lại (Rental balance)**:
+Phần tiền thuê trừ Tiền cọc, nhân viên thu bằng tiền mặt hoặc chuyển khoản ngay lúc Bàn giao. Chưa thu thì chưa giao xe. Cọc đã đủ 100% thì không thu gì.
+_Avoid_: Thanh toán 50% còn lại khi trả xe
 
 **Phí sự cố (Issue compensation)**:
 Khoản tiền khách phải trả gắn với một Sự cố — bắt buộc phải có mức phí cụ thể (> 0) khi lập Sự cố; mỗi Sự cố có duy nhất một khoản phí.
@@ -18,10 +22,6 @@ _Avoid_: Tiền phạt (chung chung), fine amount, phụ phí, additional fine
 Phần tiền thuê khách trả trước khi đặt xe, theo tỷ lệ trong điều khoản hợp đồng (hiện là 50%). Chỉ là trả trước tiền thuê, không phải khoản bảo đảm để trừ phí. Chỉ được hoàn khi khách huỷ trước hạn huỷ miễn phí, trong Thời gian huỷ sau cọc, hoặc khi bên cho thuê không còn xe cùng loại để giao.
 _Avoid_: Tiền thế chân, tiền bảo đảm
 
-**Phí trả xe (Return charge)**:
-Khoản phí nhân viên ghi nhận lúc nhận lại xe — vệ sinh, phí cầu đường, khác — không có biên bản, không gửi thông báo riêng, cộng thẳng vào Quyết toán. Hư hỏng không phải Phí trả xe mà phải lập Sự cố. Không thu tiền bù nhiên liệu: mức nhiên liệu chỉ được ghi trong Bàn giao.
-_Avoid_: Phụ phí, surcharge
-
 **Ân hạn trả xe (Late return grace)**:
 Khách trả xe trễ dưới 1 giờ so với giờ trả dự kiến thì không bị tính phí trễ. Phí trễ chỉ tính theo số giờ trễ tròn: trễ 1 giờ 59 phút tính 1 giờ, trễ 2 giờ tính 2 giờ.
 _Avoid_: Làm tròn lên, phạt theo phút
@@ -30,10 +30,6 @@ _Avoid_: Làm tròn lên, phạt theo phút
 Khoảng thời gian ngắn ngay sau khi khách thanh toán cọc (theo điều khoản hợp đồng, hiện là 1 giờ) mà khách huỷ đơn vẫn được hoàn 100% Tiền cọc, kể cả khi đơn đã nằm trong khoảng không được hoàn. Chỉ áp dụng khi chưa tới giờ nhận xe.
 _Avoid_: Ân hạn huỷ, thời gian suy nghĩ
 
-**Phí phát sinh sau quyết toán**:
-Phí sự cố (như phạt nguội) được phát hiện và lập biên bản sau khi đơn thuê đã hoàn tất trả xe, khách nhận email và thanh toán trực tuyến riêng.
-_Avoid_: Nợ, công nợ, phí bổ sung
-
 **Phiên thanh toán sự cố (Issue payment session)**:
 Lượt thanh toán trực tuyến của khách cho một hoặc nhiều Phí sự cố, có hiệu lực trong 15 phút.
 _Avoid_: Đơn hàng mới, checkout lần hai
@@ -41,7 +37,7 @@ _Avoid_: Đơn hàng mới, checkout lần hai
 ### Sự cố
 
 **Sự cố (Issue)**:
-Một biến cố trong thời gian thuê mà khách phải chịu trách nhiệm bồi thường — va chạm, hư hỏng, phạt nguội; luôn gắn với một đơn thuê và luôn kèm theo mức phí cụ thể khi được ghi nhận.
+Một biến cố trong thời gian thuê mà khách phải chịu trách nhiệm bồi thường — va chạm, hư hỏng; luôn gắn với một đơn thuê đang thuê và luôn kèm theo mức phí cụ thể khi được ghi nhận. Phải ghi nhận đủ trước khi Quyết toán; đơn đã quyết toán thì không ghi thêm.
 _Avoid_: Incident, biên bản, ticket
 
 **Chốt (Resolve)**:
@@ -49,8 +45,12 @@ Trạng thái hoàn tất nghĩa vụ tài chính của Sự cố — đạt đ�
 _Avoid_: Đóng, giải quyết xong (khi chưa trả tiền)
 
 **Phạt nguội (Traffic fine)**:
-Biên bản phạt vi phạm giao thông do cơ quan chức năng gửi về chủ xe sau khi vi phạm, xác định theo biển số và thời điểm vi phạm.
-_Avoid_: Vi phạm giao thông (khi phạt tại chỗ — khách tự nộp, không phải Sự cố)
+Biên bản phạt vi phạm giao thông do công an gửi về chủ xe sau khi vi phạm, xác định theo biển số và thời điểm vi phạm. Không phải Sự cố: hệ thống không nhập số tiền và không thu tiền, vì công an xử lý trực tiếp với khách. Nhân viên tra đơn thuê theo biển số và thời điểm, tải ảnh biên bản của công an, lập Bản ghi phạt nguội; có thể làm bất cứ lúc nào, kể cả sau Quyết toán.
+_Avoid_: Vi phạm giao thông (khi phạt tại chỗ — khách tự nộp)
+
+**Bản ghi phạt nguội (Traffic fine notice)**:
+Bản ghi trong tab Phạt nguội cho biết khách đã vi phạm trong đơn thuê nào: biển số, thời điểm vi phạm, ảnh biên bản, kèm giờ bàn giao, giờ trả xe và hợp đồng của đơn. Tạo ra thì khách nhận email thông báo và thấy trên đơn của mình; ghi nhầm thì nhân viên hoặc admin xóa, khách nhận email báo đã gỡ. Không sửa được.
+_Avoid_: Phí phạt nguội, nợ phạt nguội
 
 **Người lập biên bản (Reporter)**:
 Nhân viên ghi nhận Sự cố vào hệ thống; không đổi về sau.
@@ -72,6 +72,10 @@ _Avoid_: Hư nặng, hỏng hẳn
 
 ### Lịch trình & Bàn giao xe
 
+**Giờ hoạt động của kho**:
+Kho nhận và trả xe 24/24: giờ nhận và giờ trả có thể là bất kỳ giờ chẵn nào trong ngày. Thuê qua đêm tính tiền theo giờ thuê thực tế như mọi đơn khác. Cấu hình `crms.opening-hours.*` vẫn cho phép thu hẹp lại nếu cần.
+_Avoid_: Giờ mở cửa 6–22
+
 **Thời gian chuẩn bị xe (Turnaround time)**:
 Khoảng cách tối thiểu 1 giờ giữa giờ kết thúc của lượt thuê trước và giờ bắt đầu của lượt thuê sau trên cùng một xe, dành cho kho nhận lại và chuẩn bị xe. Việc chuẩn bị xe diễn ra ngoài hệ thống. Xe không được giao sớm hơn giờ hẹn.
 _Avoid_: Đệm, buffer, giờ nghỉ, khoảng trống, downtime, nhận xe sớm
@@ -85,11 +89,11 @@ Mã giảm 10% tiền thuê, dùng 1 lần trong 90 ngày, tặng riêng cho kh�
 _Avoid_: Hoàn tiền thêm, bồi thường bằng tiền
 
 **Bàn giao (Handover)**:
-Biên bản ghi nhận lúc giao xe cho khách (nhận xe) hoặc nhận lại xe từ khách (trả xe): số km, mức nhiên liệu, ảnh giấy tờ, ghi chú. Không phải Sự cố và không mang phí.
+Biên bản ghi nhận lúc giao xe cho khách (nhận xe) hoặc nhận lại xe từ khách (trả xe): số km, ảnh giấy tờ, ghi chú; mức nhiên liệu chỉ ghi lúc giao xe. Không phải Sự cố và không mang phí. Lúc nhận xe, nhân viên thu Tiền thuê còn lại; khách còn đơn trước chưa quyết toán thì chưa được bàn giao. Lúc trả xe, màn hình hiện tình trạng đã ghi lúc nhận xe để nhân viên đối chiếu và chỉ lập Sự cố cho hư hỏng mới.
 _Avoid_: Sự cố bàn giao, issue check-in
 
 **Khách không đến nhận xe (No-show)**:
-Đơn đã đặt cọc mà khách không nhận xe trong Thời gian chờ nhận xe. Đơn tự động bị huỷ, Tiền cọc không được hoàn, và xe được trả về lịch trống.
+Đơn đã đặt cọc mà khách không nhận xe trong Thời gian chờ nhận xe. Đơn tự động bị huỷ, Tiền cọc không được hoàn, và xe được trả về lịch trống. Khách còn đơn trước chưa quyết toán lúc tới giờ nhận cũng không được bàn giao trong thời gian chờ đó; hết thời gian chờ mà vẫn chưa quyết toán thì đơn sau bị huỷ và mất cọc như trường hợp này. Khách đã trả xe mà chưa quyết toán cũng không đặt thêm đơn mới được.
 _Avoid_: Bỏ đơn, huỷ trễ
 
 **Thời gian chờ nhận xe (Pickup wait)**:

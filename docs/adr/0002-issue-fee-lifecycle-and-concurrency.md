@@ -1,5 +1,7 @@
 # Vòng đời phí sự cố tự động: thông báo tức thì, thanh toán linh hoạt và đồng bộ quyết toán
 
+> Sửa 2026-11-08 (ADR 0005): quyết toán nay chỉ thu phí và đóng đơn, nên Sự cố chỉ lập khi đơn đang thuê (kể cả đã ghi nhận trả xe, chưa quyết toán); không còn lập hoặc thanh toán Sự cố sau quyết toán.
+
 Thay vì quy trình chốt thủ công (`resolve`) rồi mới thông báo đòi nợ sau quyết toán, chúng tôi thống nhất chuyển sang mô hình tự động hóa toàn diện vòng đời Sự cố và Phí sự cố:
 
 1. **Thông báo tức thì khi tạo sự cố**: Một Sự cố chỉ được ghi nhận khi đã có đầy đủ thông tin và xác định được mức phí cụ thể (> 0). Ngay khi lập sự cố (dù xe đang trong chuyến đi hay đã trả xe xong), hệ thống tự động gửi email thông báo kèm link thanh toán trực tuyến ngay lập tức cho khách hàng.

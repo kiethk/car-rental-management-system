@@ -88,6 +88,24 @@ class InspectionRulesTest {
     }
 
     @Test
+    void aRentalEndingAtMidnightDoesNotDriveOnTheDayThatStartsThen() {
+        BookingRepository bookings = mock(BookingRepository.class);
+        VehicleRepository vehicles = mock(VehicleRepository.class);
+        BookingServiceImpl service = new BookingServiceImpl(bookings, null, null, null, vehicles, null, null,
+                null, null, null, null, null, null);
+        LocalDate today = LocalDate.now();
+        // registration valid through day 3; the rental ends at 00:00 on day 4, so it is driven only on days 1-3
+        Vehicle car = car(1L, today.plusDays(3));
+        when(vehicles.findByVehicleTypeIdWithDetails(5L)).thenReturn(List.of(car));
+
+        OffsetDateTime start = today.plusDays(1).atTime(12, 0).atOffset(ZoneOffset.ofHours(7));
+        OffsetDateTime endsAtMidnight = today.plusDays(4).atStartOfDay().atOffset(ZoneOffset.ofHours(7));
+
+        assertThat(service.findAvailableVehiclesInTimeRange(5L, start, endsAtMidnight)).extracting(Vehicle::getId).containsExactly(1L);
+        assertThat(service.findAvailableVehiclesInTimeRange(5L, start, endsAtMidnight.plusHours(1))).isEmpty();
+    }
+
+    @Test
     void schedulingAnInspectionOnADayTheCarIsBookedIsRefused() {
         VehicleInspectionRepository inspections = mock(VehicleInspectionRepository.class);
         VehicleRepository vehicles = mock(VehicleRepository.class);

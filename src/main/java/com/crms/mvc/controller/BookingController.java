@@ -46,6 +46,7 @@ import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.dto.ReviewDTO;
 import com.crms.mvc.dto.ReviewFormDTO;
 import com.crms.mvc.service.ReviewService;
+import com.crms.mvc.service.TrafficFineService;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
@@ -59,6 +60,7 @@ public class BookingController {
     private final IssueService issueService;
     private final HandoverService handoverService;
     private final ReviewService reviewService;
+    private final TrafficFineService trafficFineService;
 
     public BookingController(
             BookingService bookingService,
@@ -69,7 +71,8 @@ public class BookingController {
             PricingService pricingService,
             IssueService issueService,
             HandoverService handoverService,
-            ReviewService reviewService) {
+            ReviewService reviewService,
+            TrafficFineService trafficFineService) {
         this.bookingService = bookingService;
         this.paymentService = paymentService;
         this.vehicleTypeService = vehicleTypeService;
@@ -79,6 +82,7 @@ public class BookingController {
         this.issueService = issueService;
         this.handoverService = handoverService;
         this.reviewService = reviewService;
+        this.trafficFineService = trafficFineService;
     }
 
     // STEP 1 & 2: Choose rental schedule & filter available vehicle types
@@ -260,7 +264,7 @@ public class BookingController {
 
         VehicleType vt = vehicleTypeService.findById(vehicleTypeId).orElse(null);
         if (vt == null) {
-            ra.addFlashAttribute("error", "Không tìm thấy mẫu xe.");
+            ra.addFlashAttribute("error", "Không tìm thấy dòng xe.");
             return "redirect:/search";
         }
 
@@ -478,9 +482,9 @@ public class BookingController {
 
             List<IssueDTO> issues = issueService.findByBookingForCustomer(bookingId, customerId);
             model.addAttribute("issues", issues);
+            model.addAttribute("trafficFines", trafficFineService.findByBookingForCustomer(bookingId, customerId));
 
-            boolean canPay = Booking.STATUS_ACTIVE.equalsIgnoreCase(detail.getStatus())
-                    || Booking.STATUS_COMPLETED.equalsIgnoreCase(detail.getStatus());
+            boolean canPay = Booking.STATUS_ACTIVE.equalsIgnoreCase(detail.getStatus());
             List<IssueDTO> payableIssues = issues.stream()
                     .filter(i -> canPay && i.getStatus() == IssueStatus.OPEN && !i.isFeePaid()
                             && i.getFeeAmount() != null && i.getFeeAmount().compareTo(BigDecimal.ZERO) > 0)

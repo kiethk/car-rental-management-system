@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="'Điều khoản thuê xe v' + ${template.versionNo} + ' — DriveNow Admin'">Điều khoản thuê xe — DriveNow Admin</title>
+    <title th:text="'Điều khoản thuê xe v' + ${template.versionNo} + ' — Quản trị DriveNow'">Điều khoản hợp đồng — Quản trị DriveNow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -30,7 +30,7 @@
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mt-2 mb-4">
                 <div>
                     <h1 class="h3 font-weight-bold text-navy mb-1">
-                        <span th:text="'Điều khoản thuê xe v' + ${template.versionNo}">Điều khoản thuê xe v1</span>
+                        <span th:text="'Điều khoản hợp đồng v' + ${template.versionNo}">Điều khoản hợp đồng v1</span>
                         <span th:if="${template.status.name() == 'ACTIVE'}" class="badge badge-success align-middle">Đang hiệu lực</span>
                         <span th:if="${template.status.name() == 'DRAFT'}" class="badge badge-warning align-middle">Bản nháp</span>
                         <span th:if="${template.status.name() == 'ARCHIVED'}" class="badge badge-secondary align-middle">Đã lưu trữ</span>
@@ -64,70 +64,97 @@
                     <div class="card border-0 shadow-sm rounded-xl bg-white p-4">
                         <form th:action="@{/admin/contract-templates/{id}(id=${template.id})}" th:object="${templateForm}" method="post">
                             <div class="form-group">
-                                <label class="small font-weight-bold text-navy" for="title">Tiêu đề</label>
+                                <label class="font-weight-bold text-navy mb-1" style="font-size: 14px;" for="title">Tiêu đề hợp đồng</label>
                                 <input id="title" type="text" th:field="*{title}" class="form-control" th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'">
                                 <div class="invalid-feedback" th:errors="*{title}"></div>
                             </div>
 
-                            <div class="form-row">
-                                <div class="form-group col-md-4">
-                                    <label class="small font-weight-bold text-navy" for="depositPercent">Đặt cọc (%)</label>
-                                    <input id="depositPercent" type="number" step="0.01" min="1" max="100" th:field="*{depositPercent}"
-                                           class="form-control" th:classappend="${#fields.hasErrors('depositPercent')} ? 'is-invalid'">
-                                    <div class="invalid-feedback" th:errors="*{depositPercent}"></div>
-                                </div>
-                                <div class="form-group col-md-4">
-                                    <label class="small font-weight-bold text-navy" for="lateFeePercent">Phí trả trễ (% đơn giá theo giờ)</label>
-                                    <input id="lateFeePercent" type="number" step="1" min="100" max="999" th:field="*{lateFeePercent}"
-                                           class="form-control" th:classappend="${#fields.hasErrors('lateFeePercent')} ? 'is-invalid'">
-                                    <div class="invalid-feedback" th:errors="*{lateFeePercent}"></div>
-                                </div>
-                                <div class="form-group col-md-4">
-                                    <label class="small font-weight-bold text-navy" for="freeCancellationHours">Hủy miễn phí trước giờ nhận (giờ)</label>
-                                    <input id="freeCancellationHours" type="number" step="1" min="0" max="720" th:field="*{freeCancellationHours}"
-                                           class="form-control" th:classappend="${#fields.hasErrors('freeCancellationHours')} ? 'is-invalid'">
-                                    <div class="invalid-feedback" th:errors="*{freeCancellationHours}"></div>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group col-md-3">
-                                    <label class="small font-weight-bold text-navy" for="freeCancelAfterDepositHours">Hủy miễn phí sau khi đặt cọc (giờ)</label>
-                                    <input id="freeCancelAfterDepositHours" type="number" step="1" min="0" max="24" th:field="*{freeCancelAfterDepositHours}"
-                                           class="form-control" th:classappend="${#fields.hasErrors('freeCancelAfterDepositHours')} ? 'is-invalid'">
-                                    <div class="invalid-feedback" th:errors="*{freeCancelAfterDepositHours}"></div>
-                                </div>
-                                <div class="form-group col-md-3">
-                                    <label class="small font-weight-bold text-navy" for="pickupWaitHours">Thời gian chờ nhận xe (giờ)</label>
-                                    <input id="pickupWaitHours" type="number" step="1" min="1" max="24" th:field="*{pickupWaitHours}"
-                                           class="form-control" th:classappend="${#fields.hasErrors('pickupWaitHours')} ? 'is-invalid'">
-                                    <div class="invalid-feedback" th:errors="*{pickupWaitHours}"></div>
-                                </div>
-                                <div class="form-group col-md-3">
-                                    <label class="small font-weight-bold text-navy" for="compensationVoucherPercent">Voucher đền bù (%)</label>
-                                    <input id="compensationVoucherPercent" type="number" step="1" min="0" max="100" th:field="*{compensationVoucherPercent}"
-                                           class="form-control" th:classappend="${#fields.hasErrors('compensationVoucherPercent')} ? 'is-invalid'">
-                                    <div class="invalid-feedback" th:errors="*{compensationVoucherPercent}"></div>
-                                </div>
-                                <div class="form-group col-md-3">
-                                    <label class="small font-weight-bold text-navy" for="compensationVoucherDays">Voucher có hiệu lực (ngày)</label>
-                                    <input id="compensationVoucherDays" type="number" step="1" min="1" max="365" th:field="*{compensationVoucherDays}"
-                                           class="form-control" th:classappend="${#fields.hasErrors('compensationVoucherDays')} ? 'is-invalid'">
-                                    <div class="invalid-feedback" th:errors="*{compensationVoucherDays}"></div>
-                                </div>
+                            <h3 class="h6 font-weight-bold text-navy mb-3">Thông số</h3>
+                            <div class="row">
+                                    <div class="col-sm-6 mb-3">
+                                        <label class="font-weight-bold text-navy mb-1" style="font-size: 14px;" for="depositPercent">Đặt cọc</label>
+                                        <div class="input-group">
+                                            <input id="depositPercent" type="number" step="0.01" min="1" max="100" th:field="*{depositPercent}"
+                                                   class="form-control" th:classappend="${#fields.hasErrors('depositPercent')} ? 'is-invalid'">
+                                            <div class="input-group-append"><span class="input-group-text">%</span></div>
+                                        </div>
+                                        <small class="form-text text-muted">Phần tiền thuê khách trả khi đặt xe.</small>
+                                        <div class="text-danger small" th:errors="*{depositPercent}"></div>
+                                    </div>
+                                    <div class="col-sm-6 mb-3">
+                                        <label class="font-weight-bold text-navy mb-1" style="font-size: 14px;" for="lateFeePercent">Phí trả trễ</label>
+                                        <div class="input-group">
+                                            <input id="lateFeePercent" type="number" step="1" min="100" max="999" th:field="*{lateFeePercent}"
+                                                   class="form-control" th:classappend="${#fields.hasErrors('lateFeePercent')} ? 'is-invalid'">
+                                            <div class="input-group-append"><span class="input-group-text">%</span></div>
+                                        </div>
+                                        <small class="form-text text-muted">Mỗi giờ trễ tính theo % đơn giá giờ.</small>
+                                        <div class="text-danger small" th:errors="*{lateFeePercent}"></div>
+                                    </div>
+                                    <div class="col-sm-6 mb-3">
+                                        <label class="font-weight-bold text-navy mb-1" style="font-size: 14px;" for="freeCancellationHours">Hủy miễn phí trước giờ nhận</label>
+                                        <div class="input-group">
+                                            <input id="freeCancellationHours" type="number" step="1" min="0" max="720" th:field="*{freeCancellationHours}"
+                                                   class="form-control" th:classappend="${#fields.hasErrors('freeCancellationHours')} ? 'is-invalid'">
+                                            <div class="input-group-append"><span class="input-group-text">giờ</span></div>
+                                        </div>
+                                        <small class="form-text text-muted">Hủy trước mốc này được hoàn 100% cọc.</small>
+                                        <div class="text-danger small" th:errors="*{freeCancellationHours}"></div>
+                                    </div>
+                                    <div class="col-sm-6 mb-3">
+                                        <label class="font-weight-bold text-navy mb-1" style="font-size: 14px;" for="freeCancelAfterDepositHours">Hủy miễn phí sau khi đặt cọc</label>
+                                        <div class="input-group">
+                                            <input id="freeCancelAfterDepositHours" type="number" step="1" min="0" max="24" th:field="*{freeCancelAfterDepositHours}"
+                                                   class="form-control" th:classappend="${#fields.hasErrors('freeCancelAfterDepositHours')} ? 'is-invalid'">
+                                            <div class="input-group-append"><span class="input-group-text">giờ</span></div>
+                                        </div>
+                                        <small class="form-text text-muted">Hủy trong khoảng này vẫn hoàn 100% cọc.</small>
+                                        <div class="text-danger small" th:errors="*{freeCancelAfterDepositHours}"></div>
+                                    </div>
+                                    <div class="col-sm-6 mb-3">
+                                        <label class="font-weight-bold text-navy mb-1" style="font-size: 14px;" for="pickupWaitHours">Thời gian chờ nhận xe</label>
+                                        <div class="input-group">
+                                            <input id="pickupWaitHours" type="number" step="1" min="1" max="24" th:field="*{pickupWaitHours}"
+                                                   class="form-control" th:classappend="${#fields.hasErrors('pickupWaitHours')} ? 'is-invalid'">
+                                            <div class="input-group-append"><span class="input-group-text">giờ</span></div>
+                                        </div>
+                                        <small class="form-text text-muted">Quá mốc này đơn tự hủy và mất cọc.</small>
+                                        <div class="text-danger small" th:errors="*{pickupWaitHours}"></div>
+                                    </div>
+                                    <div class="col-sm-6 mb-3">
+                                        <label class="font-weight-bold text-navy mb-1" style="font-size: 14px;" for="compensationVoucherPercent">Voucher đền bù</label>
+                                        <div class="input-group">
+                                            <input id="compensationVoucherPercent" type="number" step="1" min="0" max="100" th:field="*{compensationVoucherPercent}"
+                                                   class="form-control" th:classappend="${#fields.hasErrors('compensationVoucherPercent')} ? 'is-invalid'">
+                                            <div class="input-group-append"><span class="input-group-text">%</span></div>
+                                        </div>
+                                        <small class="form-text text-muted">Giảm giá lần thuê sau khi bên cho thuê hết xe.</small>
+                                        <div class="text-danger small" th:errors="*{compensationVoucherPercent}"></div>
+                                    </div>
+                                    <div class="col-sm-6 mb-3">
+                                        <label class="font-weight-bold text-navy mb-1" style="font-size: 14px;" for="compensationVoucherDays">Hạn dùng voucher</label>
+                                        <div class="input-group">
+                                            <input id="compensationVoucherDays" type="number" step="1" min="1" max="365" th:field="*{compensationVoucherDays}"
+                                                   class="form-control" th:classappend="${#fields.hasErrors('compensationVoucherDays')} ? 'is-invalid'">
+                                            <div class="input-group-append"><span class="input-group-text">ngày</span></div>
+                                        </div>
+                                        <small class="form-text text-muted">Số ngày voucher còn hiệu lực.</small>
+                                        <div class="text-danger small" th:errors="*{compensationVoucherDays}"></div>
+                                    </div>
                             </div>
 
+                            <h3 class="h6 font-weight-bold text-navy mt-2 mb-3">Nội dung điều khoản</h3>
                             <div class="form-group">
-                                <label class="small font-weight-bold text-navy" for="termsContent">Quyền và nghĩa vụ</label>
+                                <label class="font-weight-bold text-navy mb-1" style="font-size: 14px;" for="termsContent">Quyền và nghĩa vụ hai bên</label>
                                 <textarea id="termsContent" rows="16" th:field="*{termsContent}" class="form-control small"
                                           th:classappend="${#fields.hasErrors('termsContent')} ? 'is-invalid'"></textarea>
                                 <div class="invalid-feedback" th:errors="*{termsContent}"></div>
                                 <small class="form-text text-muted">
-                                    Chỉ viết phần nội dung. Không gõ số tiền cọc, phí trễ hay thời hạn hủy ở đây:
-                                    các số này được in từ các ô phía trên để nội dung và mức phí luôn khớp nhau.
+                                    Chỉ viết nội dung. Các con số lấy từ phần Thông số ở trên nên không gõ lại ở đây.
                                 </small>
                             </div>
 
-                            <button type="submit" class="btn btn-navy btn-sm font-weight-bold">Lưu bản nháp</button>
+                            <button type="submit" class="btn btn-navy font-weight-bold px-4">Lưu bản nháp</button>
                         </form>
                     </div>
                 </div>
@@ -135,7 +162,7 @@
                 <!-- Preview: exactly what customers see at checkout and in the PDF -->
                 <div th:class="${canEdit} ? 'col-lg-6 mb-4' : 'col-lg-9 mb-4'">
                     <div class="card border-0 shadow-sm rounded-xl bg-white p-4">
-                        <div class="small font-weight-bold text-muted text-uppercase mb-3">Customer preview (saved version)</div>
+                        <div class="small font-weight-bold text-muted text-uppercase mb-3">Xem trước phía khách hàng (Bản đã lưu)</div>
                         <h2 class="h6 font-weight-bold text-navy" th:text="${template.title}">Hợp đồng thuê xe ô tô tự lái</h2>
                         <div th:replace="~{fragments/contract-terms :: terms(${template})}"></div>
                     </div>

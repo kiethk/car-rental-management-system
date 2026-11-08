@@ -93,8 +93,12 @@ class PickupTimeAndBufferTest {
         vehicle.setStatus("available");
         vehicle.setOdometer(5000);
 
+        com.crms.mvc.entity.Customer customer = new com.crms.mvc.entity.Customer();
+        customer.setId(5L);
+
         booking = new Booking();
         booking.setId(10L);
+        booking.setCustomer(customer);
         booking.setVehicle(vehicle);
         booking.setEmployee(employee);
         booking.setStatus("confirmed");
@@ -115,6 +119,8 @@ class PickupTimeAndBufferTest {
         form.setOdometer(5010);
         form.setFuelPercent(100);
         form.setNotes("Sẵn sàng giao xe");
+        form.setPaymentMethod("CASH");
+        form.setPaymentReceived(true);
         form.setLicenseImage(new MockMultipartFile("license", "lic.jpg", "image/jpeg", new byte[]{1, 2, 3}));
         form.setIdCardImage(new MockMultipartFile("idCard", "id.jpg", "image/jpeg", new byte[]{1, 2, 3}));
         return form;
@@ -190,7 +196,7 @@ class PickupTimeAndBufferTest {
         List<BookingFee> unpaid = List.of(damageFee);
         when(bookingFeeService.getUnpaidFees(10L)).thenReturn(unpaid);
         Payment finalPayment = new Payment();
-        when(paymentService.recordFinalPayment(10L, new BigDecimal("900000"), "CASH")).thenReturn(finalPayment);
+        when(paymentService.recordFinalPayment(10L, new BigDecimal("200000"), "CASH")).thenReturn(finalPayment);
 
         SettlementDTO form = new SettlementDTO();
         form.setPaymentMethod("CASH");

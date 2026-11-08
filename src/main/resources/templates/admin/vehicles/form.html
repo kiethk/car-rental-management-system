@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${vehicleForm.id != null ? 'Sửa xe #' + vehicleForm.id : 'Thêm xe mới'} + ' — DriveNow Admin'">Quản lý xe</title>
+    <title th:text="${vehicleForm.id != null ? 'Sửa xe #' + vehicleForm.id : 'Thêm xe mới'} + ' — Quản trị DriveNow'">Quản lý xe</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -37,7 +37,7 @@
                             th:text="${vehicleForm.id != null ? 'Sửa xe #' + vehicleForm.id : 'Thêm xe mới'}">
                             Thêm xe mới
                         </h1>
-                        <p class="text-muted small mb-0">Configure physical car specifications. A car keeps every plate it has had; the plate on the car now is the one without an end date.</p>
+                        <p class="text-muted small mb-0">Cấu hình thông số xe thực tế. Một xe lưu lại toàn bộ biển số từng gắn; biển số hiện tại là biển số không có ngày kết thúc.</p>
                     </div>
                     <a th:href="@{/admin/vehicles}" class="btn btn-outline-secondary btn-sm rounded-lg">
                         Quay lại danh sách xe
@@ -95,7 +95,7 @@
                             <select th:field="*{status}" class="form-control rounded-lg" required>
                                 <option value="available">Sẵn sàng cho thuê</option>
                                 <option value="maintenance">Đang bảo dưỡng / đăng kiểm</option>
-                                <option th:if="${vehicleForm.status == 'rented'}" value="rented" disabled>Rented (Managed by booking lifecycle)</option>
+                                <option th:if="${vehicleForm.status == 'rented'}" value="rented" disabled>Đang cho thuê (Quản lý theo vòng đời đơn đặt)</option>
                                 <option th:if="${vehicleForm.id != null and (vehicleForm.status == 'retired' or (session.account != null and session.account.admin))}"
                                         value="retired">Ngừng khai thác (vĩnh viễn, không thể hoàn tác)</option>
                             </select>
@@ -119,7 +119,7 @@
                             <div class="col-md-4 form-group mb-3">
                                 <label class="font-weight-bold small text-navy mb-1">Biển số <span class="text-danger">*</span></label>
                                 <input type="text" id="plateInput" th:field="*{plate}" class="form-control rounded-lg font-weight-bold text-uppercase"
-                                       placeholder="e.g. 51K-987.65" required th:readonly="${vehicleForm.id != null}">
+                                       placeholder="VD: 51K-987.65" required th:readonly="${vehicleForm.id != null}">
                                 <small th:if="${vehicleForm.id != null}" class="text-muted" style="font-size: 11px;">Muốn gắn biển số khác cho xe này, hãy dùng "Đổi biển số / lịch sử" để biển số cũ vẫn được lưu lại.</small>
                                 <small class="text-danger" th:if="${#fields.hasErrors('plate')}" th:errors="*{plate}"></small>
                             </div>
@@ -135,7 +135,7 @@
                             <div class="col-md-4 form-group mb-3">
                                 <label class="font-weight-bold small text-navy mb-1">Hạn đăng kiểm</label>
                                 <input type="date" id="expiryInput" th:field="*{registrationExpiry}" class="form-control rounded-lg">
-                                <small class="text-muted" style="font-size: 11px;">Inspection sticker of the car; it does not change when the plate changes</small>
+                                <small class="text-muted" style="font-size: 11px;">Tem đăng kiểm của xe; tem này không thay đổi khi đổi biển số</small>
                             </div>
                         </div>
                     </div>

@@ -32,6 +32,8 @@ public class FileUploadServiceImpl implements FileUploadService {
     // Incident photos are evidence about customers: private, served only by controllers that check access.
     private static final Path ISSUE_EVIDENCE_DIRECTORY =
             Path.of("uploads", "issues").toAbsolutePath().normalize();
+    private static final Path TRAFFIC_FINE_DIRECTORY =
+            Path.of("uploads", "traffic-fines").toAbsolutePath().normalize();
 
     @Override
     public String saveLicenseImage(MultipartFile image) {
@@ -164,6 +166,33 @@ public class FileUploadServiceImpl implements FileUploadService {
             return fileName;
         } catch (IOException exception) {
             throw new IllegalStateException("Không thể lưu ảnh bằng chứng sự cố", exception);
+        }
+    }
+
+    @Override
+    public String saveTrafficFineImage(MultipartFile image) {
+        String extension = validatedImageExtension(image, "Ảnh biên bản phạt nguội");
+        String fileName = "fine-" + UUID.randomUUID() + extension;
+        try {
+            Files.createDirectories(TRAFFIC_FINE_DIRECTORY);
+            Files.copy(image.getInputStream(), TRAFFIC_FINE_DIRECTORY.resolve(fileName));
+            return fileName;
+        } catch (IOException exception) {
+            throw new IllegalStateException("Không thể lưu ảnh biên bản phạt nguội", exception);
+        }
+    }
+
+    @Override
+    public Resource loadTrafficFineImage(String fileName) {
+        return loadFrom(TRAFFIC_FINE_DIRECTORY, fileName);
+    }
+
+    @Override
+    public void deleteTrafficFineImage(String fileName) {
+        try {
+            Files.deleteIfExists(TRAFFIC_FINE_DIRECTORY.resolve(fileName).normalize());
+        } catch (IOException exception) {
+            // The record is already gone; a leftover private file is harmless.
         }
     }
 

@@ -4,10 +4,10 @@ import com.crms.mvc.dto.CheckInDTO;
 import com.crms.mvc.dto.CheckOutDTO;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.dto.HandoverSummaryDTO;
-import com.crms.mvc.dto.ReturnChargeDTO;
 import com.crms.mvc.dto.ReturnReceiptDTO;
 import com.crms.mvc.dto.SettlementDTO;
 import com.crms.mvc.entity.Booking;
+import com.crms.mvc.entity.Customer;
 import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Employee;
 import com.crms.mvc.entity.Handover;
@@ -81,8 +81,12 @@ class HandoverServiceTest {
         vehicle.setOdometer(1000);
         vehicle.setStatus("available");
 
+        Customer customer = new Customer();
+        customer.setId(5L);
+
         booking = new Booking();
         booking.setId(10L);
+        booking.setCustomer(customer);
         booking.setEmployee(assigned);
         booking.setVehicle(vehicle);
         booking.setStatus("confirmed");
@@ -121,6 +125,73 @@ class HandoverServiceTest {
         assertEquals("rented", vehicle.getStatus());
         assertEquals(1200, vehicle.getOdometer());
         verify(issueRepository, never()).save(any());
+    }
+
+    @Test
+    void handoverCollectsTheRestOfTheRentAndRecordsTheMethod() {
+        handoverService.checkIn(10L, 2L, checkInForm(1200));
+
+        // total 1,000,000 minus deposit 300,000
+        verify(paymentService).recordRentalBalancePayment(10L, new BigDecimal("700000"), "CASH");
+    }
+
+    @Test
+    void theCarIsNotHandedOverUntilHowTheRestOfTheRentWasPaidIsChosen() {
+        CheckInDTO form = checkInForm(1200);
+        form.setPaymentMethod(null);
+
+        assertThrows(IllegalArgumentException.class, () -> handoverService.checkIn(10L, 2L, form));
+
+        verify(handoverRepository, never()).save(any());
+        verify(paymentService, never()).recordRentalBalancePayment(any(), any(), any());
+        assertEquals("confirmed", booking.getStatus());
+    }
+
+    @Test
+    void theCarIsNotHandedOverUntilStaffConfirmTheyReceivedTheMoney() {
+        CheckInDTO form = checkInForm(1200);
+        form.setPaymentReceived(false);
+
+        assertThrows(IllegalArgumentException.class, () -> handoverService.checkIn(10L, 2L, form));
+
+        verify(handoverRepository, never()).save(any());
+        verify(paymentService, never()).recordRentalBalancePayment(any(), any(), any());
+        assertEquals("confirmed", booking.getStatus());
+    }
+
+    @Test
+    void anUnknownPaymentMethodIsRefused() {
+        CheckInDTO form = checkInForm(1200);
+        form.setPaymentMethod("VNPAY");
+
+        assertThrows(IllegalArgumentException.class, () -> handoverService.checkIn(10L, 2L, form));
+    }
+
+    @Test
+    void whenTheDepositAlreadyCoversTheRentNothingIsCollectedAtHandover() {
+        booking.setDepositAmount(new BigDecimal("1000000"));
+        CheckInDTO form = checkInForm(1200);
+        form.setPaymentMethod(null);
+
+        handoverService.checkIn(10L, 2L, form);
+
+        verify(paymentService, never()).recordRentalBalancePayment(any(), any(), any());
+        assertEquals("active", booking.getStatus());
+    }
+
+    @Test
+    void theCarIsNotHandedOverWhileTheCustomerHasAnEarlierRentalUnsettled() {
+        Booking earlier = new Booking();
+        earlier.setId(9L);
+        when(bookingRepository.findOpenRentalsOfCustomerExcept(5L, 10L)).thenReturn(List.of(earlier));
+
+        IllegalStateException error = assertThrows(IllegalStateException.class,
+                () -> handoverService.checkIn(10L, 2L, checkInForm(1200)));
+
+        assertTrue(error.getMessage().contains("#9"));
+        verify(handoverRepository, never()).save(any());
+        verify(paymentService, never()).recordRentalBalancePayment(any(), any(), any());
+        assertEquals("confirmed", booking.getStatus());
     }
 
     @Test
@@ -163,37 +234,25 @@ class HandoverServiceTest {
     }
 
     @Test
-    void checkOutRecordsLateFeeAndReturnChargesAgainstTheBookingOnly() {
+    void checkOutRecordsTheLateFeeAgainstTheBookingOnly() {
         booking.setStatus("active");
         when(pricingService.calculateLateFee(any(), any(), any(), any())).thenReturn(new BigDecimal("150000"));
         CheckOutDTO form = checkOutForm(1300);
-        form.setReturnCharges(List.of(
-                returnCharge("CLEANING_FEE", "50000", "Interior cleaning"),
-                returnCharge("TOLL_FEE", null, null)));
 
         handoverService.checkOut(10L, 2L, form);
 
         verify(bookingFeeService).recordFee(10L, "LATE_FEE", new BigDecimal("150000"), "Phí trả xe trễ", null);
-        verify(bookingFeeService).recordFee(10L, "CLEANING_FEE", new BigDecimal("50000"), "Interior cleaning", null);
-        verify(bookingFeeService, never()).recordFee(eq(10L), eq("TOLL_FEE"), any(), any(), any());
+        // only the late fee: damage, cleaning and the like are recorded as Issues, never at the return form
+        verify(bookingFeeService, org.mockito.Mockito.times(1)).recordFee(any(), any(), any(), any(), any());
         ArgumentCaptor<Handover> saved = ArgumentCaptor.forClass(Handover.class);
         verify(handoverRepository).save(saved.capture());
         assertEquals(HandoverType.CHECK_OUT, saved.getValue().getType());
+        assertNull(saved.getValue().getFuelPercent());
         assertEquals("active", booking.getStatus());
         assertEquals("available", vehicle.getStatus());
         assertEquals(1300, vehicle.getOdometer());
         assertNotNull(booking.getActualReturnTime());
         verify(issueRepository, never()).save(any());
-    }
-
-    @Test
-    void damageIsNotAReturnCharge() {
-        booking.setStatus("active");
-        CheckOutDTO form = checkOutForm(1300);
-        form.setReturnCharges(List.of(returnCharge("DAMAGE_COMPENSATION", "200000", "Scratched bumper")));
-
-        assertThrows(IllegalArgumentException.class, () -> handoverService.checkOut(10L, 2L, form));
-        verify(handoverRepository, never()).save(any());
     }
 
     @Test
@@ -205,27 +264,6 @@ class HandoverServiceTest {
         handoverService.checkOut(10L, 2L, form);
 
         assertEquals("maintenance", vehicle.getStatus());
-    }
-
-    @Test
-    void unknownOrForgedReturnChargeTypeIsRejected() {
-        booking.setStatus("active");
-        CheckOutDTO form = checkOutForm(1300);
-        form.setReturnCharges(List.of(returnCharge("LATE_FEE", "1000", "forged")));
-
-        assertThrows(IllegalArgumentException.class, () -> handoverService.checkOut(10L, 2L, form));
-        verify(handoverRepository, never()).save(any());
-    }
-
-    @Test
-    void fuelIsNeverCharged() {
-        booking.setStatus("active");
-        CheckOutDTO form = checkOutForm(1300);
-        form.setReturnCharges(List.of(returnCharge("FUEL_FEE", "100000", "Refuel")));
-
-        assertThrows(IllegalArgumentException.class, () -> handoverService.checkOut(10L, 2L, form));
-        verify(handoverRepository, never()).save(any());
-        verify(bookingFeeService, never()).recordFee(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -250,7 +288,7 @@ class HandoverServiceTest {
         List<BookingFee> unpaid = List.of(fee("100000"));
         when(bookingFeeService.getUnpaidFees(10L)).thenReturn(unpaid);
         Payment finalPayment = new Payment();
-        when(paymentService.recordFinalPayment(10L, new BigDecimal("800000"), "CASH")).thenReturn(finalPayment);
+        when(paymentService.recordFinalPayment(10L, new BigDecimal("100000"), "CASH")).thenReturn(finalPayment);
         SettlementDTO form = new SettlementDTO();
         form.setPaymentMethod("CASH");
 
@@ -277,15 +315,15 @@ class HandoverServiceTest {
     @Test
     void settlementRequiresPaymentMethodWhenCustomerOwes() {
         returnedBooking();
+        when(bookingFeeService.getUnpaidFees(10L)).thenReturn(List.of(fee("100000")));
 
         assertThrows(IllegalArgumentException.class, () -> handoverService.settle(10L, 2L, new SettlementDTO()));
         assertEquals("active", booking.getStatus());
     }
 
     @Test
-    void fullDepositAndNoFeesClosesTheBookingWithoutAnyPayment() {
+    void noFeesClosesTheBookingWithoutAnyPayment() {
         returnedBooking();
-        booking.setDepositAmount(new BigDecimal("1000000"));
 
         handoverService.settle(10L, 2L, new SettlementDTO());
 
@@ -293,17 +331,6 @@ class HandoverServiceTest {
         verify(paymentService, never()).createPendingRefund(any(), any(), any(), any(), any());
         verify(bookingFeeService, never()).attachPayment(anyList(), any());
         assertEquals("completed", booking.getStatus());
-    }
-
-    @Test
-    void feesAreNeverTakenOutOfTheDeposit() {
-        returnedBooking();
-        booking.setDepositAmount(new BigDecimal("1000000"));
-        when(bookingFeeService.getUnpaidFees(10L)).thenReturn(List.of(fee("100000")));
-
-        // Deposit already equals the rent, yet the fee is still owed at the counter.
-        assertThrows(IllegalArgumentException.class, () -> handoverService.settle(10L, 2L, new SettlementDTO()));
-        assertEquals("active", booking.getStatus());
     }
 
     @Test
@@ -326,24 +353,10 @@ class HandoverServiceTest {
 
         assertEquals(new BigDecimal("100000"), summary.getFeesTotal());
         assertEquals(new BigDecimal("500000"), summary.getPrepaidTotal());
-        assertEquals(new BigDecimal("800000"), summary.getFinalAmount());
+        assertEquals(new BigDecimal("100000"), summary.getFinalAmount());
         assertTrue(summary.isReturned());
         assertFalse(summary.isSettled());
         assertTrue(summary.isVehicleDamageReported());
-    }
-
-    @Test
-    void negativeFinalAmountBlocksSettlement() {
-        Handover record = returnedBooking();
-        booking.setDepositAmount(new BigDecimal("1200000"));
-        SettlementDTO form = new SettlementDTO();
-        form.setPaymentMethod("CASH");
-
-        assertThrows(IllegalStateException.class, () -> handoverService.settle(10L, 2L, form));
-        verify(paymentService, never()).recordFinalPayment(any(), any(), any());
-        verify(paymentService, never()).createPendingRefund(any(), any(), any(), any(), any());
-        assertEquals("active", booking.getStatus());
-        assertFalse(record.isSettled());
     }
 
     @Test
@@ -369,11 +382,10 @@ class HandoverServiceTest {
 
         assertFalse(receipt.isSettled());
         assertEquals(1300, receipt.getOdometer());
-        assertEquals(60, receipt.getFuelPercent());
         assertEquals(2, receipt.getLines().size());
         assertFalse(receipt.getLines().get(0).isPaidEarlier());
         assertTrue(receipt.getLines().get(1).isPaidEarlier());
-        assertEquals(new BigDecimal("850000"), receipt.getAmountDue());
+        assertEquals(new BigDecimal("150000"), receipt.getAmountDue());
     }
 
     @Test
@@ -466,6 +478,8 @@ class HandoverServiceTest {
         form.setOdometer(odometer);
         form.setFuelPercent(80);
         form.setNotes("clean");
+        form.setPaymentMethod("CASH");
+        form.setPaymentReceived(true);
         form.setDocumentsVerified(true);
         form.setLicenseImage(new MockMultipartFile("licenseImage", "l.jpg", "image/jpeg", new byte[]{1}));
         form.setIdCardImage(new MockMultipartFile("idCardImage", "i.jpg", "image/jpeg", new byte[]{1}));
@@ -475,15 +489,7 @@ class HandoverServiceTest {
     private CheckOutDTO checkOutForm(int odometer) {
         CheckOutDTO form = new CheckOutDTO();
         form.setOdometer(odometer);
-        form.setFuelPercent(60);
         return form;
     }
 
-    private ReturnChargeDTO returnCharge(String type, String amount, String description) {
-        ReturnChargeDTO charge = new ReturnChargeDTO();
-        charge.setFeeType(type);
-        charge.setAmount(amount != null ? new BigDecimal(amount) : null);
-        charge.setDescription(description);
-        return charge;
-    }
 }
