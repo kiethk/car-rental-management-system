@@ -1,57 +1,29 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <body>
-<footer th:fragment="footer" class="bg-white border-t border-border mt-auto pt-10 pb-8">
-    <style>
-        .crms-footer-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
-            padding-bottom: 2rem;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        @media (min-width: 900px) {
-            .crms-footer-grid {
-                grid-template-columns: 1.25fr 0.85fr 1.3fr;
-                gap: 2.5rem;
-                align-items: start;
-            }
-        }
-        .footer-link-item {
-            display: block;
-            color: #64748b;
-            text-decoration: none;
-            transition: color 0.15s ease;
-            font-size: 0.8125rem;
-            margin-bottom: 0.5rem;
-        }
-        .footer-link-item:hover {
-            color: #0f172a;
-            text-decoration: underline;
-        }
-    </style>
+<footer th:fragment="footer" class="crms-footer">
     <div class="max-w-7xl mx-auto px-5 sm:px-8">
         <div class="crms-footer-grid">
             <!-- Cột 1: Thông tin trạm xe -->
             <div>
-                <div class="flex items-center gap-2 mb-3">
+                <div class="crms-footer-brand">
                     <img th:src="@{/images/car-rental-logo.svg}" alt="Logo" class="h-6 w-auto"
                          onerror="this.onerror=null; this.style.display='none';">
-                    <span class="font-bold text-navy text-base" th:text="${stationName != null ? stationName : 'Kho xe DriveNow - ĐH FPT TP.HCM'}">Kho xe DriveNow - ĐH FPT TP.HCM</span>
+                    <span class="crms-footer-brand-title" th:text="${stationName != null ? stationName : 'Kho xe DriveNow - ĐH FPT TP.HCM'}">Kho xe DriveNow - ĐH FPT TP.HCM</span>
                 </div>
-                <p class="text-xs text-muted-foreground leading-relaxed mb-4">
+                <p class="crms-footer-desc">
                     Dịch vụ cho thuê xe ô tô tự lái chuẩn công nghệ tại TP. Hồ Chí Minh. Xe được khử khuẩn, kiểm định an toàn và giao nhận đúng hẹn.
                 </p>
-                <div class="space-y-2.5 text-xs text-slate-700">
-                    <div class="flex items-start gap-2">
+                <div class="crms-footer-info-list">
+                    <div class="crms-footer-info-item">
                         <span class="text-amber">📍</span>
                         <span class="font-medium" th:text="${stationAddress != null ? stationAddress : 'Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM'}">Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM</span>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="crms-footer-info-item">
                         <span class="text-amber">⏰</span>
                         <span>Giờ hoạt động: <strong class="text-navy" th:text="${openingHours != null ? (openingHours.open + ':00 - ' + openingHours.close + ':00') : '06:00 - 22:00'}">06:00 - 22:00</strong> (Tất cả các ngày)</span>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="crms-footer-info-item">
                         <span class="text-amber">📞</span>
                         <span>Hotline: <strong class="text-navy" th:text="${stationPhone != null ? stationPhone : '1900 6868'}">1900 6868</strong></span>
                     </div>
@@ -59,29 +31,27 @@
             </div>
 
             <!-- Cột 2: Liên kết nhanh -->
-            <div class="md:pl-4">
-                <h4 class="font-bold text-navy text-sm mb-3">Liên kết nhanh</h4>
-                <div>
-                    <a th:href="@{/}" class="footer-link-item">Trang chủ DriveNow</a>
-                    <a th:href="@{/vehicles}" class="footer-link-item">Danh sách 20 dòng xe cho thuê</a>
-                    <a th:href="@{/search}" class="footer-link-item">Tìm kiếm & Lọc lịch trình</a>
-                    <a th:href="@{/my-bookings}" class="footer-link-item">Quản lý đơn thuê của tôi</a>
-                    <a th:href="@{/licenses/upload}" class="footer-link-item">Cập nhật Giấy phép lái xe</a>
+            <div class="md:pl-6">
+                <h4 class="crms-footer-heading">Liên kết nhanh</h4>
+                <div class="crms-footer-links">
+                    <a th:href="@{/}" class="crms-footer-link">Trang chủ DriveNow</a>
+                    <a th:href="@{/vehicles}" class="crms-footer-link">Danh sách 20 dòng xe cho thuê</a>
+                    <a th:href="@{/search}" class="crms-footer-link">Tìm kiếm & Lọc lịch trình</a>
+                    <a th:href="@{/my-bookings}" class="crms-footer-link">Quản lý đơn thuê của tôi</a>
+                    <a th:href="@{/licenses/upload}" class="crms-footer-link">Cập nhật Giấy phép lái xe</a>
                 </div>
             </div>
 
             <!-- Cột 3: Google Maps trực tiếp vị trí trường FPT -->
             <div>
-                <div class="flex items-center justify-between mb-2">
-                    <h4 class="font-bold text-navy text-sm">Vị trí trạm xe</h4>
+                <div class="crms-footer-map-header">
+                    <h4 class="crms-footer-heading mb-0">Vị trí trạm xe</h4>
                     <span class="text-[11px] text-muted-foreground">ĐH FPT Campus TP.HCM</span>
                 </div>
-                <div class="rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100" style="height: 190px;">
+                <div class="crms-footer-map-container">
                     <iframe
+                        class="crms-footer-map-iframe"
                         th:src="${stationMapEmbedUrl != null ? stationMapEmbedUrl : 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.7204527239955!2d106.80730807480559!3d10.841127589311382!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752731176b07b1%3A0xb752b24b379bae5e!2sFPT%20University%20HCMC!5e1!3m2!1sen!2s!4v1794108631900!5m2!1sen!2s'}"
-                        width="100%"
-                        height="190"
-                        style="border:0;"
                         allowfullscreen=""
                         loading="lazy"
                         referrerpolicy="strict-origin-when-cross-origin">
@@ -91,7 +61,7 @@
         </div>
 
         <!-- Dòng bản quyền chân trang -->
-        <div class="pt-6 flex flex-col sm:flex-row justify-between items-center text-xs text-muted-foreground gap-3">
+        <div class="crms-footer-bottom">
             <div class="flex items-center gap-2">
                 <span class="font-bold text-navy">DriveNow CRMS</span>
                 <span>·</span>
