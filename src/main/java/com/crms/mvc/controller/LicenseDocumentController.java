@@ -55,6 +55,10 @@ public class LicenseDocumentController {
             return "redirect:/login";
         }
 
+        if (form.getLicenseImage() == null || form.getLicenseImage().isEmpty()) {
+            result.rejectValue("licenseImage", "required", "Vui lòng chọn ảnh mặt trước bằng lái xe (License photo is required)");
+        }
+
         if (result.hasErrors()) {
             addCurrentLicense(customerId, model);
             return "licenses/upload";

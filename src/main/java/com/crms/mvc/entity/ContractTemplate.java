@@ -30,6 +30,18 @@ public class ContractTemplate {
     @Column(name = "free_cancellation_hours", nullable = false)
     private Integer freeCancellationHours;
 
+    @Column(name = "free_cancel_after_deposit_hours", nullable = false)
+    private Integer freeCancelAfterDepositHours;
+
+    @Column(name = "pickup_wait_hours", nullable = false)
+    private Integer pickupWaitHours;
+
+    @Column(name = "compensation_voucher_percent", nullable = false)
+    private Integer compensationVoucherPercent;
+
+    @Column(name = "compensation_voucher_days", nullable = false)
+    private Integer compensationVoucherDays;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private ContractTemplateStatus status;
@@ -68,6 +80,18 @@ public class ContractTemplate {
 
     public Integer getFreeCancellationHours() { return freeCancellationHours; }
     public void setFreeCancellationHours(Integer freeCancellationHours) { this.freeCancellationHours = freeCancellationHours; }
+
+    public Integer getFreeCancelAfterDepositHours() { return freeCancelAfterDepositHours; }
+    public void setFreeCancelAfterDepositHours(Integer hours) { this.freeCancelAfterDepositHours = hours; }
+
+    public Integer getPickupWaitHours() { return pickupWaitHours; }
+    public void setPickupWaitHours(Integer hours) { this.pickupWaitHours = hours; }
+
+    public Integer getCompensationVoucherPercent() { return compensationVoucherPercent; }
+    public void setCompensationVoucherPercent(Integer percent) { this.compensationVoucherPercent = percent; }
+
+    public Integer getCompensationVoucherDays() { return compensationVoucherDays; }
+    public void setCompensationVoucherDays(Integer days) { this.compensationVoucherDays = days; }
 
     public ContractTemplateStatus getStatus() { return status; }
     public void setStatus(ContractTemplateStatus status) { this.status = status; }

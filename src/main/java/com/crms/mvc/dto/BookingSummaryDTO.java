@@ -18,6 +18,24 @@ public class BookingSummaryDTO implements Serializable {
     private String vehicleCategory;
     private boolean hasPendingRefund;
     private BigDecimal refundAmount;
+    /** Minutes past the return time of an active rental whose car is not back; null otherwise. */
+    private Long overdueMinutes;
+
+    /** Set while a paid booking waits for its customer after the pickup time: when it will be cancelled. */
+    private OffsetDateTime pickupDeadline;
+
+    public OffsetDateTime getPickupDeadline() { return pickupDeadline; }
+    public void setPickupDeadline(OffsetDateTime pickupDeadline) { this.pickupDeadline = pickupDeadline; }
+
+    public Long getOverdueMinutes() { return overdueMinutes; }
+    public void setOverdueMinutes(Long overdueMinutes) { this.overdueMinutes = overdueMinutes; }
+
+    /** "2 giờ 15 phút" for the list badge. */
+    public String getOverdueText() {
+        if (overdueMinutes == null) return null;
+        long h = overdueMinutes / 60, m = overdueMinutes % 60;
+        return h == 0 ? m + " phút" : (m == 0 ? h + " giờ" : h + " giờ " + m + " phút");
+    }
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }

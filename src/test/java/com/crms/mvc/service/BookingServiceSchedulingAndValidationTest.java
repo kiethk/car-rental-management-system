@@ -232,6 +232,47 @@ class BookingServiceSchedulingAndValidationTest {
     }
 
     @Test
+    @DisplayName("G7: 0 free-cancellation hours refunds right up to pickup instead of falling back to 72h")
+    void testZeroFreeCancellationHoursRefundsUntilPickup() {
+        Customer customer = new Customer();
+        customer.setId(1L);
+        Booking booking = new Booking();
+        booking.setId(103L);
+        booking.setCustomer(customer);
+        booking.setStatus("confirmed");
+        booking.setDepositAmount(new BigDecimal("500000"));
+        booking.setPickupTime(OffsetDateTime.now().plusHours(2));
+        when(bookingRepository.findById(103L)).thenReturn(Optional.of(booking));
+
+        ContractTemplateDTO terms = new ContractTemplateDTO();
+        terms.setFreeCancellationHours(0);
+        when(contractService.getTermsOfBooking(103L)).thenReturn(terms);
+
+        assertThat(bookingService.cancelBooking(103L, 1L, null)).isTrue();
+        verify(paymentService).createPendingRefund(eq(103L), eq(new BigDecimal("500000")), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("G7: missing accepted terms fails the cancellation instead of guessing 72h")
+    void testMissingAcceptedTermsFailsLoudly() {
+        Customer customer = new Customer();
+        customer.setId(1L);
+        Booking booking = new Booking();
+        booking.setId(104L);
+        booking.setCustomer(customer);
+        booking.setStatus("confirmed");
+        booking.setPickupTime(OffsetDateTime.now().plusDays(5));
+        when(bookingRepository.findById(104L)).thenReturn(Optional.of(booking));
+        when(contractService.getTermsOfBooking(104L))
+                .thenThrow(new java.util.NoSuchElementException("Contract not found for booking: 104"));
+
+        assertThatThrownBy(() -> bookingService.cancelBooking(104L, 1L, null))
+                .isInstanceOf(java.util.NoSuchElementException.class);
+        assertThat(booking.getStatus()).isEqualTo("confirmed");
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
     @DisplayName("Cancel pending_payment booking cancels without refund")
     void testCancelPendingPaymentBooking() {
         Long bookingId = 102L;
@@ -267,6 +308,7 @@ class BookingServiceSchedulingAndValidationTest {
         Booking booking = new Booking();
         booking.setId(200L);
         booking.setSlot(slot);
+        booking.setStatus("confirmed");
         Vehicle retired = new Vehicle();
         retired.setId(9L);
         retired.setVehicleType(type);
@@ -277,6 +319,22 @@ class BookingServiceSchedulingAndValidationTest {
         assertThatThrownBy(() -> bookingService.assignVehicle(200L, 9L))
                 .isInstanceOf(IllegalStateException.class);
 
+        verify(bookingRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("A car cannot be swapped once it has been handed over")
+    void testSwapAfterHandoverIsRejected() {
+        Booking booking = new Booking();
+        booking.setId(201L);
+        booking.setStatus("active");
+        when(bookingRepository.findById(201L)).thenReturn(Optional.of(booking));
+
+        assertThatThrownBy(() -> bookingService.assignVehicle(201L, 9L))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("trước khi bàn giao");
+
+        verify(vehicleRepository, never()).findByIdForUpdate(any());
         verify(bookingRepository, never()).save(any());
     }
 
@@ -298,5 +356,62 @@ class BookingServiceSchedulingAndValidationTest {
         vehicle.setId(id);
         vehicle.setStatus(status);
         return vehicle;
+    }
+
+    private static java.time.LocalDateTime wholeHourTomorrow(int hour) {
+        return java.time.LocalDateTime.now().plusDays(1).withHour(hour).withMinute(0).withSecond(0).withNano(0);
+    }
+
+    @Test
+    @DisplayName("Rental schedule: whole-hour pickup and return in the future is accepted")
+    void testRentalScheduleAcceptsWholeHours() {
+        java.time.LocalDateTime start = wholeHourTomorrow(9);
+        org.junit.jupiter.api.Assertions.assertDoesNotThrow(
+                () -> bookingService.validateRentalSchedule(start, start.plusHours(9)));
+    }
+
+    @Test
+    @DisplayName("Rental schedule: pickup that is not on the hour is rejected")
+    void testRentalScheduleRejectsPickupNotOnTheHour() {
+        java.time.LocalDateTime start = wholeHourTomorrow(9).withMinute(30);
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> bookingService.validateRentalSchedule(start, wholeHourTomorrow(18)));
+    }
+
+    @Test
+    @DisplayName("Rental schedule: return that is not on the hour is rejected")
+    void testRentalScheduleRejectsReturnNotOnTheHour() {
+        java.time.LocalDateTime end = wholeHourTomorrow(18).withMinute(15);
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> bookingService.validateRentalSchedule(wholeHourTomorrow(9), end));
+    }
+
+    @Test
+    @DisplayName("Rental schedule: seconds or nanoseconds past the hour are rejected")
+    void testRentalScheduleRejectsSecondsPastTheHour() {
+        java.time.LocalDateTime withSeconds = wholeHourTomorrow(9).withSecond(30);
+        java.time.LocalDateTime withNanos = wholeHourTomorrow(9).withNano(1);
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> bookingService.validateRentalSchedule(withSeconds, wholeHourTomorrow(18)));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> bookingService.validateRentalSchedule(withNanos, wholeHourTomorrow(18)));
+    }
+
+    @Test
+    @DisplayName("Rental schedule: pickup in the past is rejected")
+    void testRentalScheduleRejectsPickupInThePast() {
+        java.time.LocalDateTime start = wholeHourTomorrow(9).minusDays(2);
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> bookingService.validateRentalSchedule(start, start.plusHours(9)));
+    }
+
+    @Test
+    @DisplayName("Rental schedule: return at or before pickup is rejected")
+    void testRentalScheduleRejectsReturnNotAfterPickup() {
+        java.time.LocalDateTime start = wholeHourTomorrow(12);
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> bookingService.validateRentalSchedule(start, start));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> bookingService.validateRentalSchedule(start, start.minusHours(3)));
     }
 }

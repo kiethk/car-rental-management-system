@@ -89,6 +89,32 @@
                                     <div class="invalid-feedback" th:errors="*{freeCancellationHours}"></div>
                                 </div>
                             </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-3">
+                                    <label class="small font-weight-bold text-navy" for="freeCancelAfterDepositHours">Free cancel after deposit (hours)</label>
+                                    <input id="freeCancelAfterDepositHours" type="number" step="1" min="0" max="24" th:field="*{freeCancelAfterDepositHours}"
+                                           class="form-control" th:classappend="${#fields.hasErrors('freeCancelAfterDepositHours')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:errors="*{freeCancelAfterDepositHours}"></div>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label class="small font-weight-bold text-navy" for="pickupWaitHours">Pickup wait (hours)</label>
+                                    <input id="pickupWaitHours" type="number" step="1" min="1" max="24" th:field="*{pickupWaitHours}"
+                                           class="form-control" th:classappend="${#fields.hasErrors('pickupWaitHours')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:errors="*{pickupWaitHours}"></div>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label class="small font-weight-bold text-navy" for="compensationVoucherPercent">Compensation voucher (%)</label>
+                                    <input id="compensationVoucherPercent" type="number" step="1" min="0" max="100" th:field="*{compensationVoucherPercent}"
+                                           class="form-control" th:classappend="${#fields.hasErrors('compensationVoucherPercent')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:errors="*{compensationVoucherPercent}"></div>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label class="small font-weight-bold text-navy" for="compensationVoucherDays">Voucher valid (days)</label>
+                                    <input id="compensationVoucherDays" type="number" step="1" min="1" max="365" th:field="*{compensationVoucherDays}"
+                                           class="form-control" th:classappend="${#fields.hasErrors('compensationVoucherDays')} ? 'is-invalid'">
+                                    <div class="invalid-feedback" th:errors="*{compensationVoucherDays}"></div>
+                                </div>
+                            </div>
 
                             <div class="form-group">
                                 <label class="small font-weight-bold text-navy" for="termsContent">Rights and obligations</label>

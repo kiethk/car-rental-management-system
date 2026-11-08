@@ -17,6 +17,13 @@ public class ContractTemplateDTO implements Serializable {
     private BigDecimal depositRate;
     private BigDecimal lateFeeMultiplier;
     private Integer freeCancellationHours;
+    /** Thời gian huỷ sau cọc: hours after paying the deposit during which cancelling refunds it in full. */
+    private Integer freeCancelAfterDepositHours;
+    /** Thời gian chờ nhận xe: hours after the pickup time before an unclaimed booking is cancelled. */
+    private Integer pickupWaitHours;
+    /** Voucher bù given when no car of the booked type can be handed over. */
+    private Integer compensationVoucherPercent;
+    private Integer compensationVoucherDays;
     private ContractTemplateStatus status;
     private String createdByName;
     private OffsetDateTime createdAt;
@@ -31,6 +38,10 @@ public class ContractTemplateDTO implements Serializable {
         dto.setDepositRate(template.getDepositRate());
         dto.setLateFeeMultiplier(template.getLateFeeMultiplier());
         dto.setFreeCancellationHours(template.getFreeCancellationHours());
+        dto.setFreeCancelAfterDepositHours(template.getFreeCancelAfterDepositHours());
+        dto.setPickupWaitHours(template.getPickupWaitHours());
+        dto.setCompensationVoucherPercent(template.getCompensationVoucherPercent());
+        dto.setCompensationVoucherDays(template.getCompensationVoucherDays());
         dto.setStatus(template.getStatus());
         dto.setCreatedByName(template.getCreatedBy() != null ? template.getCreatedBy().getName() : null);
         dto.setCreatedAt(template.getCreatedAt());
@@ -46,6 +57,39 @@ public class ContractTemplateDTO implements Serializable {
     /** Late fee per hour as a percentage of the hourly rate, e.g. 2.00 -> 200. */
     public BigDecimal getLateFeePercent() {
         return toPercent(lateFeeMultiplier);
+    }
+
+    /**
+     * Last moment a booking under these terms can be cancelled with a full deposit refund.
+     * 0 hours means the customer may cancel for free right up to pickup.
+     */
+    public OffsetDateTime freeCancellationDeadline(OffsetDateTime pickupTime) {
+        return pickupTime.minusHours(freeCancellationHours);
+    }
+
+    /**
+     * The last moment a booking under these terms can be cancelled with a full deposit refund: the later of the
+     * free-cancellation deadline before pickup and the Thời gian huỷ sau cọc after the deposit was paid, the latter
+     * never past the pickup time. depositPaidAt may be null while the deposit is unpaid.
+     */
+    public OffsetDateTime freeCancellationUntil(OffsetDateTime pickupTime, OffsetDateTime depositPaidAt) {
+        OffsetDateTime until = freeCancellationDeadline(pickupTime);
+        if (depositPaidAt != null && freeCancelAfterDepositHours != null && freeCancelAfterDepositHours > 0) {
+            OffsetDateTime afterDeposit = depositPaidAt.plusHours(freeCancelAfterDepositHours);
+            if (afterDeposit.isAfter(pickupTime)) afterDeposit = pickupTime;
+            if (afterDeposit.isAfter(until)) until = afterDeposit;
+        }
+        return until;
+    }
+
+    /**
+     * Until when a paid booking waits for its customer (Thời gian chờ nhận xe): the pickup wait after the pickup time,
+     * but never past the scheduled return. After it the booking is a no-show.
+     */
+    public OffsetDateTime pickupDeadline(OffsetDateTime pickupTime, OffsetDateTime scheduledEndTime) {
+        int wait = pickupWaitHours != null ? pickupWaitHours : 2;
+        OffsetDateTime deadline = pickupTime.plusHours(wait);
+        return scheduledEndTime != null && scheduledEndTime.isBefore(deadline) ? scheduledEndTime : deadline;
     }
 
     public boolean isEditable() {
@@ -78,6 +122,18 @@ public class ContractTemplateDTO implements Serializable {
 
     public Integer getFreeCancellationHours() { return freeCancellationHours; }
     public void setFreeCancellationHours(Integer freeCancellationHours) { this.freeCancellationHours = freeCancellationHours; }
+
+    public Integer getFreeCancelAfterDepositHours() { return freeCancelAfterDepositHours; }
+    public void setFreeCancelAfterDepositHours(Integer hours) { this.freeCancelAfterDepositHours = hours; }
+
+    public Integer getPickupWaitHours() { return pickupWaitHours; }
+    public void setPickupWaitHours(Integer hours) { this.pickupWaitHours = hours; }
+
+    public Integer getCompensationVoucherPercent() { return compensationVoucherPercent; }
+    public void setCompensationVoucherPercent(Integer percent) { this.compensationVoucherPercent = percent; }
+
+    public Integer getCompensationVoucherDays() { return compensationVoucherDays; }
+    public void setCompensationVoucherDays(Integer days) { this.compensationVoucherDays = days; }
 
     public ContractTemplateStatus getStatus() { return status; }
     public void setStatus(ContractTemplateStatus status) { this.status = status; }

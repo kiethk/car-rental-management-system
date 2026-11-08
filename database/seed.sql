@@ -130,6 +130,7 @@ VALUES
 ON CONFLICT (slot_id) DO NOTHING;
 
 -- 9. BOOKINGS
+-- pickup_time and scheduled_end_time are whole hours (minute :00), the same rule the booking form enforces.
 -- status: 'pending_payment' | 'confirmed' | 'active' | 'completed' | 'cancelled'
 INSERT INTO bookings (
     booking_id, customer_id, slot_id, vehicle_id, employee_id, promotion_id,
@@ -142,7 +143,7 @@ VALUES
     -- Booking 1: Completed
     (
         1, 1, 1, 1, 2, 1,
-        CURRENT_TIMESTAMP - INTERVAL '3 days', CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days',
+        date_trunc('hour', CURRENT_TIMESTAMP) - INTERVAL '3 days', date_trunc('hour', CURRENT_TIMESTAMP) - INTERVAL '2 days', date_trunc('hour', CURRENT_TIMESTAMP) - INTERVAL '2 days',
         1350000.00,
         'completed', CURRENT_TIMESTAMP - INTERVAL '5 days',
         150000.00, 675000.00, 150000.00
@@ -150,7 +151,7 @@ VALUES
     -- Booking 2: Active rental
     (
         2, 2, 1, 2, 2, NULL,
-        CURRENT_TIMESTAMP - INTERVAL '4 hours', CURRENT_TIMESTAMP + INTERVAL '6 hours', NULL,
+        date_trunc('hour', CURRENT_TIMESTAMP) - INTERVAL '4 hours', date_trunc('hour', CURRENT_TIMESTAMP) + INTERVAL '6 hours', NULL,
         1500000.00,
         'active', CURRENT_TIMESTAMP - INTERVAL '1 day',
         150000.00, 750000.00, 0.00
@@ -158,7 +159,7 @@ VALUES
     -- Booking 3: Confirmed
     (
         3, 1, 3, 3, 2, 2,
-        CURRENT_TIMESTAMP + INTERVAL '1 day', CURRENT_TIMESTAMP + INTERVAL '1 day 10 hours', NULL,
+        date_trunc('hour', CURRENT_TIMESTAMP) + INTERVAL '1 day', date_trunc('hour', CURRENT_TIMESTAMP) + INTERVAL '1 day 10 hours', NULL,
         2900000.00,
         'confirmed', CURRENT_TIMESTAMP - INTERVAL '2 hours',
         300000.00, 1450000.00, 100000.00
@@ -167,9 +168,11 @@ ON CONFLICT (booking_id) DO NOTHING;
 
 -- 10. CONTRACT_TEMPLATES
 -- status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED'. Numbers live in typed columns; terms_content holds wording only.
--- Version 1 is archived: contracts 1 and 2 were signed on it. Version 2 adds the post-settlement fee and total-loss clauses.
+-- Version 1 is archived: contracts 1 and 2 were signed on it. Version 2 adds the post-settlement fee, total-loss and car-swap clauses.
 INSERT INTO contract_templates (contract_template_id, version_no, title, terms_content,
                                 deposit_rate, late_fee_multiplier, free_cancellation_hours,
+                                free_cancel_after_deposit_hours, pickup_wait_hours,
+                                compensation_voucher_percent, compensation_voucher_days,
                                 status, created_by, created_at, activated_at)
 VALUES
     (1, 1, 'Hợp đồng thuê xe ô tô tự lái',
@@ -182,8 +185,8 @@ VALUES
      || E'5. Sử dụng xe đúng mục đích, tuân thủ pháp luật về giao thông đường bộ và chịu trách nhiệm về mọi vi phạm giao thông, kể cả phạt nguội, phát sinh trong thời gian thuê.\n'
      || E'6. Không giao xe cho người khác điều khiển khi chưa được Bên A đồng ý; không cầm cố, thế chấp, cho thuê lại xe; không dùng xe để chở hàng cấm hoặc đua xe.\n'
      || E'7. Bồi thường thiệt hại khi xe bị hư hỏng hoặc mất mát do lỗi của Bên B, căn cứ biên bản bàn giao và chi phí sửa chữa thực tế.\n'
-     || E'8. Trả xe đúng thời hạn, đúng địa điểm, với mức nhiên liệu như khi nhận; tự chi trả phí cầu đường, bến bãi phát sinh.',
-     0.5000, 2.00, 72,
+     || E'8. Trả xe đúng thời hạn, đúng địa điểm; tự chi trả phí cầu đường, bến bãi phát sinh.',
+     0.5000, 2.00, 72, 1, 2, 10, 90,
      'ARCHIVED', 1, CURRENT_TIMESTAMP - INTERVAL '30 days', CURRENT_TIMESTAMP - INTERVAL '30 days'),
     (2, 2, 'Hợp đồng thuê xe ô tô tự lái',
      E'Quyền và nghĩa vụ của Bên A\n'
@@ -195,16 +198,20 @@ VALUES
      || E'5. Sử dụng xe đúng mục đích, tuân thủ pháp luật về giao thông đường bộ và chịu trách nhiệm về mọi vi phạm giao thông, kể cả phạt nguội, phát sinh trong thời gian thuê.\n'
      || E'6. Không giao xe cho người khác điều khiển khi chưa được Bên A đồng ý; không cầm cố, thế chấp, cho thuê lại xe; không dùng xe để chở hàng cấm hoặc đua xe.\n'
      || E'7. Bồi thường thiệt hại khi xe bị hư hỏng hoặc mất mát do lỗi của Bên B, căn cứ biên bản bàn giao và chi phí sửa chữa thực tế.\n'
-     || E'8. Trả xe đúng thời hạn, đúng địa điểm, với mức nhiên liệu như khi nhận; tự chi trả phí cầu đường, bến bãi phát sinh.\n'
+     || E'8. Trả xe đúng thời hạn, đúng địa điểm; tự chi trả phí cầu đường, bến bãi phát sinh.\n'
      || E'\nPhí phát sinh sau quyết toán\n'
-     || E'9. Các khoản phạt vi phạm giao thông (kể cả phạt nguội) hoặc thiệt hại phát sinh trong thời gian thuê nhưng được ghi nhận sau khi đã quyết toán vẫn thuộc trách nhiệm của Bên B. Bên A thông báo qua email kèm chứng từ, và Bên B thanh toán trong vòng 7 ngày kể từ ngày nhận thông báo.\n'
+     || E'9. Các khoản phạt vi phạm giao thông (kể cả phạt nguội) hoặc thiệt hại phát sinh trong thời gian thuê nhưng được ghi nhận sau khi đã quyết toán vẫn thuộc trách nhiệm của Bên B. Bên A thông báo qua email kèm chứng từ.\n'
      || E'\nXe hư hỏng không thể sửa chữa hoặc không thể thu hồi\n'
      || E'10. Áp dụng khi xe bị tổn thất toàn bộ (đơn vị giám định hoặc gara chính hãng kết luận không thể sửa chữa, hoặc chi phí sửa chữa vượt 70% giá trị xe), hoặc khi xe không thể thu hồi (mất cắp, bị chiếm giữ, Bên B không hoàn trả) do lỗi của Bên B. Khi đó Bên B bồi thường:\n'
      || E'a) Giá trị thị trường của xe tại thời điểm xảy ra sự việc, theo định giá của đơn vị thẩm định độc lập, trừ đi số tiền bảo hiểm Bên A thực nhận (nếu có);\n'
      || E'b) Chi phí cứu hộ, cẩu kéo, lưu bãi và giám định thực tế phát sinh;\n'
      || E'c) Thiệt hại do xe ngừng khai thác: đơn giá thuê theo ngày nhân với số ngày từ khi xảy ra sự việc đến khi hoàn tất bồi thường, tối đa 30 ngày.\n'
-     || E'Khoản bồi thường được thanh toán riêng, ngoài tiền thuê; Bên B thanh toán trong vòng 7 ngày kể từ ngày nhận thông báo.',
-     0.5000, 2.00, 72,
+     || E'Khoản bồi thường được thanh toán riêng, ngoài tiền thuê.\n'
+     || E'\nĐổi xe khi bàn giao\n'
+     || E'11. Biển số ghi trong hợp đồng là xe dự kiến. Nếu đến giờ nhận xe mà xe dự kiến chưa sẵn sàng, Bên A giao cho Bên B xe khác cùng loại xe đã đặt, giá thuê giữ nguyên; việc đổi xe này không làm thay đổi hợp đồng. Bên B muốn hủy thì áp dụng điều khoản hủy đặt xe như thông thường.\n'
+     || E'12. Nếu không còn xe cùng loại để giao, việc đặt xe được hủy và Bên A hoàn lại cho Bên B 100% tiền cọc ngay tại điểm giao xe, kể cả khi đã quá thời hạn hủy miễn phí, và tặng Bên B một voucher bù cho lần thuê sau theo mức ghi tại mục chính sách đặt cọc và hủy đặt xe (không quy đổi thành tiền mặt).\n'
+     || E'13. Xe thực tế giao cho Bên B là xe ghi trong biên bản bàn giao; mọi quyền và nghĩa vụ theo hợp đồng này áp dụng cho xe đó.',
+     0.5000, 2.00, 72, 1, 2, 10, 90,
      'ACTIVE', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (contract_template_id) DO NOTHING;
 

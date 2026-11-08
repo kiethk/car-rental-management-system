@@ -33,7 +33,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class EarlyPickupAndBufferTest {
+class PickupTimeAndBufferTest {
 
     @Mock
     private BookingRepository bookingRepository;
@@ -121,76 +121,20 @@ class EarlyPickupAndBufferTest {
     }
 
     @Test
-    @DisplayName("Check-in rejected when customer arrives more than 30 minutes before scheduled pickup")
-    void testCheckInRejectedWhenArrivingTooEarly() {
-        // Scheduled in 2 hours (> 30 mins)
-        booking.setPickupTime(OffsetDateTime.now().plusHours(2));
+    @DisplayName("Check-in rejected before the scheduled pickup time: there is no early pickup")
+    void testCheckInRejectedBeforeScheduledPickup() {
+        booking.setPickupTime(OffsetDateTime.now().plusMinutes(10));
 
         assertThatThrownBy(() -> handoverService.checkIn(10L, 1L, createCheckInForm()))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Chỉ được phép nhận xe trước giờ hẹn tối đa 30 phút");
+                .hasMessageContaining("Chưa đến giờ nhận xe");
+        assertEquals("confirmed", booking.getStatus());
     }
 
     @Test
-    @DisplayName("Check-in rejected when arriving early (<30m) but vehicle is not available (still being cleaned)")
-    void testCheckInRejectedWhenEarlyAndVehicleNotAvailable() {
-        // Scheduled in 20 minutes (within 30 mins)
-        booking.setPickupTime(OffsetDateTime.now().plusMinutes(20));
-        // Vehicle is still in maintenance or rented by prior slot
-        vehicle.setStatus("maintenance");
-
-        assertThatThrownBy(() -> handoverService.checkIn(10L, 1L, createCheckInForm()))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Phương tiện hiện đang trong quy trình kiểm tra và vệ sinh sau ca thuê trước")
-                .hasMessageContaining("đổi sang phương tiện cùng loại khác biển số");
-    }
-
-    @Test
-    @DisplayName("Check-in succeeds when arriving early (<30m) and vehicle is available")
-    void testCheckInSucceedsWhenEarlyAndVehicleAvailable() {
-        // Scheduled in 15 minutes, car is clean & available
-        booking.setPickupTime(OffsetDateTime.now().plusMinutes(15));
-        vehicle.setStatus("available");
-
-        handoverService.checkIn(10L, 1L, createCheckInForm());
-
-        assertEquals("active", booking.getStatus());
-        assertEquals("rented", vehicle.getStatus());
-        assertNotNull(booking.getActualPickupTime());
-        assertThat(booking.getActualPickupTime()).isBefore(booking.getPickupTime());
-    }
-
-    @Test
-    @DisplayName("Computed State: Check-in rejected when vehicle returned only 10 minutes ago even if status is available")
-    void testCheckInRejectedWhenVehicleReturnedLessThan30MinutesAgo() {
-        // Scheduled in 20 minutes (within 30 mins)
-        booking.setPickupTime(OffsetDateTime.now().plusMinutes(20));
-        vehicle.setStatus("available"); // DB status is available
-
-        // Previous rental returned 10 minutes ago
-        Booking priorBooking = new Booking();
-        priorBooking.setId(9L);
-        priorBooking.setActualReturnTime(OffsetDateTime.now().minusMinutes(10));
-        when(bookingRepository.findRecentReturnsByVehicle(100L, 10L)).thenReturn(List.of(priorBooking));
-
-        assertThatThrownBy(() -> handoverService.checkIn(10L, 1L, createCheckInForm()))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Phương tiện hiện đang trong quy trình kiểm tra và vệ sinh sau ca thuê trước")
-                .hasMessageContaining("dự kiến hoàn tất lúc");
-    }
-
-    @Test
-    @DisplayName("Computed State: Check-in allowed when vehicle returned 35 minutes ago (> 30 mins)")
-    void testCheckInAllowedWhenVehicleReturnedMoreThan30MinutesAgo() {
-        // Scheduled in 20 minutes (within 30 mins)
-        booking.setPickupTime(OffsetDateTime.now().plusMinutes(20));
-        vehicle.setStatus("available");
-
-        // Previous rental returned 35 minutes ago
-        Booking priorBooking = new Booking();
-        priorBooking.setId(9L);
-        priorBooking.setActualReturnTime(OffsetDateTime.now().minusMinutes(35));
-        when(bookingRepository.findRecentReturnsByVehicle(100L, 10L)).thenReturn(List.of(priorBooking));
+    @DisplayName("Check-in succeeds from the scheduled pickup time when the car is available")
+    void testCheckInSucceedsFromScheduledPickup() {
+        booking.setPickupTime(OffsetDateTime.now().minusMinutes(1));
 
         handoverService.checkIn(10L, 1L, createCheckInForm());
 
@@ -200,29 +144,36 @@ class EarlyPickupAndBufferTest {
     }
 
     @Test
-    @DisplayName("Issue can be created for actual early pickup time even if before scheduled pickup time")
-    void testIssueCreationAllowedAfterActualPickupTime() {
-        // Scheduled at 11:00, but picked up at 10:35
-        OffsetDateTime scheduled = OffsetDateTime.now().plusMinutes(25);
-        OffsetDateTime actualPickup = OffsetDateTime.now().minusMinutes(10);
+    @DisplayName("Check-in rejected when the assigned car is still out: staff must reassign another car")
+    void testCheckInRejectedWhenAssignedCarNotAvailable() {
+        booking.setPickupTime(OffsetDateTime.now().minusMinutes(1));
+        vehicle.setStatus("rented");
+
+        assertThatThrownBy(() -> handoverService.checkIn(10L, 1L, createCheckInForm()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("chưa sẵn sàng bàn giao")
+                .hasMessageContaining("đổi sang xe khác cùng loại");
+    }
+
+    @Test
+    @DisplayName("Customer liability starts at the actual pickup, not the scheduled one: a car handed over late")
+    void testIssueBeforeActualPickupIsRejected() {
+        // Scheduled 60 minutes ago, but the car was only handed over 10 minutes ago
         booking.setStatus("active");
-        booking.setPickupTime(scheduled);
-        booking.setActualPickupTime(actualPickup);
+        booking.setPickupTime(OffsetDateTime.now().minusMinutes(60));
+        booking.setActualPickupTime(OffsetDateTime.now().minusMinutes(10));
 
         IssueFormDTO form = new IssueFormDTO();
         form.setBookingId(10L);
         form.setIssueType(IssueType.COLLISION);
         form.setSubject("Va quẹt nhẹ gương chiếu hậu");
         form.setFeeAmount(new BigDecimal("500000"));
-        // Incident occurred 5 minutes ago (between actualPickup and scheduled pickup)
-        form.setOccurredAt(LocalDateTime.now(DateTimeUtils.VIETNAM_ZONE).minusMinutes(5));
+        // 30 minutes ago: after the scheduled pickup, but the customer did not have the car yet
+        form.setOccurredAt(LocalDateTime.now(DateTimeUtils.VIETNAM_ZONE).minusMinutes(30));
 
-        when(issueRepository.save(any(Issue.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        Issue created = issueService.create(form, new IssueActor(1L, "staff"));
-        assertNotNull(created);
-        assertEquals(IssueStatus.OPEN, created.getStatus());
-        assertEquals("COLLISION", created.getIssueType().name());
+        assertThatThrownBy(() -> issueService.create(form, new IssueActor(1L, "staff")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("không được trước thời gian nhận xe");
     }
 
     @Test
@@ -258,7 +209,7 @@ class EarlyPickupAndBufferTest {
                 bookingRepository, mock(CustomerRepository.class), mock(SlotRepository.class),
                 mock(VehicleTypeRepository.class), vehicleRepository, employeeRepository,
                 mock(PromotionRepository.class), paymentService, contractService,
-                mock(ContractTemplateService.class), bookingFeeService, pricingService);
+                mock(ContractTemplateService.class), bookingFeeService, pricingService, mock(CompensationVoucherService.class));
 
         Vehicle car = new Vehicle();
         car.setId(100L);

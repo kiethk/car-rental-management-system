@@ -22,6 +22,8 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -33,6 +35,7 @@ class VehicleControllerTest {
     @MockitoBean private VehicleService vehicleService;
     @MockitoBean private VehicleTypeService vehicleTypeService;
     @MockitoBean private ContractTemplateService contractTemplateService;
+    @MockitoBean private com.crms.mvc.service.BookingService bookingService;
     @MockitoBean private ReviewService reviewService;
 
     private final VehicleDTO vehicle = new VehicleDTO(1L, "51A-123.45", "Toyota", "Vios", 2025, new BigDecimal("180000"), "available");
@@ -60,7 +63,7 @@ class VehicleControllerTest {
     @Test void emptySearchRendersEmptyState() throws Exception {
         when(vehicleService.searchWithFilter(any())).thenReturn(List.of());
         mvc.perform(get("/vehicles").param("keyword", "missing"))
-                .andExpect(status().isOk()).andExpect(content().string(containsString("No cars match your criteria")));
+                .andExpect(status().isOk()).andExpect(content().string(containsString("Không tìm thấy xe nào phù hợp")));
     }
     @Test void searchInputIsEscaped() throws Exception {
         String input = "<script>alert(1)</script>";
@@ -74,10 +77,38 @@ class VehicleControllerTest {
                 .thenReturn(new VehicleReviewSummaryDTO(BigDecimal.ZERO, List.of()));
         mvc.perform(get("/vehicles/1")).andExpect(status().isOk())
                 .andExpect(content().string(containsString("Toyota Vios")))
-                .andExpect(content().string(containsString("40% Deposit")))
-                .andExpect(content().string(containsString("Customer Reviews")))
-                .andExpect(content().string(containsString("No reviews yet")))
-                .andExpect(content().string(containsString("at least 48 hours")));
+                .andExpect(content().string(containsString("Đánh giá từ khách hàng")))
+                .andExpect(content().string(containsString("Chưa có đánh giá nào")))
+                .andExpect(content().string(containsString("ít nhất 48 giờ")));
+    }
+    @Test void scheduleShowsBookedAndBufferHoursAndBooksThatCar() throws Exception {
+        java.util.List<com.crms.mvc.dto.VehicleScheduleDTO.HourState> hours =
+                new java.util.ArrayList<>(java.util.Collections.nCopies(24, com.crms.mvc.dto.VehicleScheduleDTO.HourState.FREE));
+        hours.set(9, com.crms.mvc.dto.VehicleScheduleDTO.HourState.BUFFER);
+        hours.set(10, com.crms.mvc.dto.VehicleScheduleDTO.HourState.BOOKED);
+        com.crms.mvc.dto.VehicleScheduleDTO schedule = new com.crms.mvc.dto.VehicleScheduleDTO();
+        schedule.setVehicleId(5L);
+        schedule.setLicensePlate("51A-123.45");
+        schedule.setVehicleTypeId(1L);
+        schedule.setVehicleTypeName("Toyota Vios");
+        schedule.setVehicleStatus("available");
+        schedule.setDays(List.of(new com.crms.mvc.dto.VehicleScheduleDTO.Day(java.time.LocalDate.of(2026, 11, 10), hours)));
+        when(bookingService.getVehicleSchedule(eq(5L), any(), anyInt())).thenReturn(schedule);
+
+        mvc.perform(get("/vehicles/cars/5/schedule")).andExpect(status().isOk())
+                .andExpect(view().name("vehicles/schedule"))
+                .andExpect(content().string(containsString("51A-123.45")))
+                .andExpect(content().string(containsString("sch-cell sch-booked")))
+                .andExpect(content().string(containsString("sch-cell sch-buffer")))
+                .andExpect(content().string(containsString("name=\"vehicleId\" value=\"5\"")))
+                .andExpect(content().string(containsString("Đặt xe này")));
+    }
+    @Test void retiredCarHasNoSchedule() throws Exception {
+        com.crms.mvc.dto.VehicleScheduleDTO schedule = new com.crms.mvc.dto.VehicleScheduleDTO();
+        schedule.setVehicleStatus("retired");
+        schedule.setDays(List.of());
+        when(bookingService.getVehicleSchedule(eq(6L), any(), anyInt())).thenReturn(schedule);
+        mvc.perform(get("/vehicles/cars/6/schedule")).andExpect(status().isNotFound());
     }
 
     @Test void vehicleDetailShowsReviewsForItsVehicleType() throws Exception {

@@ -44,14 +44,14 @@ class PricingServiceTest {
     }
 
     @Test
-    void testLateFeeGracePeriod() {
+    void testLateFeeChargesOnlyFullLateHours() {
         OffsetDateTime scheduled = OffsetDateTime.of(2026, 10, 25, 18, 0, 0, 0, ZoneOffset.ofHours(7));
-        OffsetDateTime returnedWithinGrace = scheduled.plusMinutes(14);
-        BigDecimal lateFee = pricingService.calculateLateFee(scheduled, returnedWithinGrace, new BigDecimal("100000"), new BigDecimal("2.00"));
-        assertEquals(BigDecimal.ZERO, lateFee);
+        BigDecimal hourly = new BigDecimal("100000");
+        BigDecimal multiplier = new BigDecimal("2.00");
 
-        OffsetDateTime returnedAfterGrace = scheduled.plusMinutes(25); // 25 mins late -> 1 hour charged
-        BigDecimal fee = pricingService.calculateLateFee(scheduled, returnedAfterGrace, new BigDecimal("100000"), new BigDecimal("2.00"));
-        assertEquals(new BigDecimal("200000"), fee);
+        assertEquals(BigDecimal.ZERO, pricingService.calculateLateFee(scheduled, scheduled.plusMinutes(59), hourly, multiplier));
+        assertEquals(new BigDecimal("200000"), pricingService.calculateLateFee(scheduled, scheduled.plusMinutes(60), hourly, multiplier));
+        assertEquals(new BigDecimal("200000"), pricingService.calculateLateFee(scheduled, scheduled.plusMinutes(119), hourly, multiplier));
+        assertEquals(new BigDecimal("400000"), pricingService.calculateLateFee(scheduled, scheduled.plusMinutes(120), hourly, multiplier));
     }
 }

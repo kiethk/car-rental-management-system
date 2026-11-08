@@ -43,11 +43,32 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT DISTINCT b FROM Booking b, Payment p WHERE p.booking = b AND p.paymentType = 'REFUND' AND p.status = 'pending' ORDER BY b.createdAt DESC")
     List<Booking> findBookingsWithPendingRefund();
 
+    /** Bookings that hold one car during [from, to): the same rule as findBookedVehicleIdsInTimeRange. */
     @Query("SELECT b FROM Booking b WHERE b.vehicle.id = :vehicleId " +
-           "AND b.id != COALESCE(:excludeBookingId, -1L) " +
-           "AND b.actualReturnTime IS NOT NULL ORDER BY b.actualReturnTime DESC")
-    List<Booking> findRecentReturnsByVehicle(@Param("vehicleId") Long vehicleId,
-                                            @Param("excludeBookingId") Long excludeBookingId);
+           "AND (b.status IN ('confirmed', 'active') OR (b.status = 'pending_payment' AND b.createdAt > :cutoffTime)) " +
+           "AND b.pickupTime < :to " +
+           "AND (b.scheduledEndTime > :from OR (b.status = 'active' AND b.actualReturnTime IS NULL))")
+    List<Booking> findBookingsHoldingVehicle(@Param("vehicleId") Long vehicleId,
+                                             @Param("from") OffsetDateTime from,
+                                             @Param("to") OffsetDateTime to,
+                                             @Param("cutoffTime") OffsetDateTime cutoffTime);
+
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.status = 'active' AND b.actualReturnTime IS NULL AND b.scheduledEndTime < :now")
+    long countOverdueRentals(@Param("now") OffsetDateTime now);
+
+    /** Active rentals still out whose first late hour started to be charged during (from, to]. */
+    @Query("SELECT b FROM Booking b JOIN FETCH b.customer WHERE b.status = 'active' AND b.actualReturnTime IS NULL " +
+           "AND b.scheduledEndTime > :from AND b.scheduledEndTime <= :to")
+    List<Booking> findRentalsDueBetween(@Param("from") OffsetDateTime from, @Param("to") OffsetDateTime to);
+
+    /** Paid bookings never handed over although their pickup time has passed: candidates for a no-show. */
+    @Query("SELECT b FROM Booking b JOIN FETCH b.customer WHERE b.status = 'confirmed' AND b.pickupTime <= :now")
+    List<Booking> findConfirmedWithPickupBefore(@Param("now") OffsetDateTime now);
+
+    /** Paid, not yet handed-over bookings whose pickup time came during (from, to]. */
+    @Query("SELECT b FROM Booking b JOIN FETCH b.customer WHERE b.status = 'confirmed' " +
+           "AND b.pickupTime > :from AND b.pickupTime <= :to")
+    List<Booking> findConfirmedPickupsBetween(@Param("from") OffsetDateTime from, @Param("to") OffsetDateTime to);
 
     long countByVehicleId(Long vehicleId);
 
@@ -73,6 +94,14 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findPendingBookingsByCustomerAndTimeRange(@Param("customerId") Long customerId,
                                                            @Param("startTime") OffsetDateTime startTime,
                                                            @Param("endTime") OffsetDateTime endTime);
+
+    /** The customer's paid or ongoing rentals that overlap [startTime, endTime): one person drives one car at a time. */
+    @Query("SELECT b FROM Booking b WHERE b.customer.id = :customerId " +
+           "AND b.status IN ('confirmed', 'active') " +
+           "AND b.pickupTime < :endTime AND b.scheduledEndTime > :startTime")
+    List<Booking> findPaidBookingsByCustomerAndTimeRange(@Param("customerId") Long customerId,
+                                                         @Param("startTime") OffsetDateTime startTime,
+                                                         @Param("endTime") OffsetDateTime endTime);
 
     @Modifying
     @Query("UPDATE Booking b SET b.status = 'cancelled', b.cancelledAt = CURRENT_TIMESTAMP " +
