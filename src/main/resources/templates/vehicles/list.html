@@ -30,7 +30,7 @@
         .car-img-wrapper {
             position: relative;
             width: 100%;
-            height: 200px;
+            height: 220px;
             aspect-ratio: 16 / 10;
             background-color: #f1f5f9;
             overflow: hidden;
@@ -39,7 +39,7 @@
         }
         .car-img-wrapper img {
             width: 100%;
-            height: 200px;
+            height: 220px;
             object-fit: cover;
             object-position: center;
             border-top-left-radius: 1rem;
@@ -169,7 +169,7 @@
 
             <!-- Vehicle Cards Grid (Synchronized Card Component) -->
             <div th:unless="${#lists.isEmpty(vehicles)}" class="row g-4">
-                <div class="col-12 col-md-6 col-xl-4 mb-4" th:each="v : ${vehicles}">
+                <div class="col-12 col-md-6 mb-4" th:each="v : ${vehicles}">
                     <div class="car-card shadow-sm">
                         <!-- Car Image (No corner badge per requirement) -->
                         <div class="car-img-wrapper">
