@@ -63,8 +63,8 @@
                                 <td class="text-center" th:text="${t.freeCancellationHours} + ' h before pickup'">72 h before pickup</td>
                                 <td>
                                     <span th:if="${t.status.name() == 'ACTIVE'}" class="badge badge-success px-2 py-1">Đang áp dụng</span>
-                                    <span th:if="${t.status.name() == 'DRAFT'}" class="badge badge-warning px-2 py-1">Draft</span>
-                                    <span th:if="${t.status.name() == 'ARCHIVED'}" class="badge badge-secondary px-2 py-1">Archived</span>
+                                    <span th:if="${t.status.name() == 'DRAFT'}" class="badge badge-warning px-2 py-1">Bản nháp</span>
+                                    <span th:if="${t.status.name() == 'ARCHIVED'}" class="badge badge-secondary px-2 py-1">Lưu trữ</span>
                                 </td>
                                 <td class="small text-muted" th:text="${t.activatedAt != null} ? ${#temporals.format(t.activatedAt, 'dd/MM/yyyy HH:mm')} : '—'">—</td>
                                 <td class="text-center">

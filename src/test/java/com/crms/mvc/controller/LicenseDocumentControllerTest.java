@@ -53,8 +53,8 @@ class LicenseDocumentControllerTest {
 
         mvc.perform(get("/licenses/my-license").session(TestSessions.customer(1L)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Replace Driving License")))
-                .andExpect(content().string(containsString("Uploaded")))
+                .andExpect(content().string(containsString("Cập nhật Giấy phép lái xe")))
+                .andExpect(content().string(containsString("Đã tải lên")))
                 .andExpect(content().string(not(containsString("Pending"))));
     }
 
@@ -64,7 +64,7 @@ class LicenseDocumentControllerTest {
 
         mvc.perform(get("/licenses/my-license").session(TestSessions.customer(1L)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Expired")));
+                .andExpect(content().string(containsString("Đã hết hạn")));
     }
 
     @Test

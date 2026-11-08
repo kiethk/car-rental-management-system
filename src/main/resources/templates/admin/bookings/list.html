@@ -154,7 +154,7 @@
                                         <th>Khách hàng</th>
                                         <th>Dòng xe</th>
                                         <th>Biển số bàn giao</th>
-                                        <th>Pickup Schedule</th>
+                                        <th>Lịch nhận xe</th>
                                         <th class="text-center">Trạng thái</th>
                                         <th class="text-center">Thao tác</th>
                                     </tr>
@@ -242,8 +242,7 @@
                                                 th:href="@{/admin/bookings/{id}(id=${b.id})}"
                                                 class="admin-btn btn-soft-primary"
                                             >
-                                                Manage
-                                            </a>
+                                                Vận hành</a>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -260,7 +259,7 @@
                                 >
                             </div>
                             <div th:unless="${currentStatus == 'refund'}">
-                                No bookings found matching current filter.
+                                Không tìm thấy đơn thuê nào phù hợp với bộ lọc.
                             </div>
                         </div>
                     </div>
