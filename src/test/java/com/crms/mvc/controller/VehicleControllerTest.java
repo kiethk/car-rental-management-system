@@ -120,7 +120,7 @@ class VehicleControllerTest {
 
         mvc.perform(get("/vehicles/1"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("4.5 / 5 · 2 reviews")))
+                .andExpect(content().string(containsString("4.5 / 5 · 2 đánh giá")))
                 .andExpect(content().string(containsString("Excellent service")))
                 .andExpect(content().string(containsString("Clean car")));
     }

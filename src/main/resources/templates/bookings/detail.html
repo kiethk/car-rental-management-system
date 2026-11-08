@@ -141,7 +141,7 @@
                             </div>
                             <div class="timeline-content">
                                 <div class="timeline-step-title">Thời gian nhận xe</div>
-                                <div class="timeline-step-desc">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</div>
+                                <div class="timeline-step-desc" th:text="${booking.stationAddress != null ? booking.stationAddress : 'Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM'}">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</div>
                             </div>
                         </div>
 
@@ -481,7 +481,7 @@
                     <div class="agreement-meta-row">
                         <span class="agreement-meta-label">Phí quá hạn trả xe</span>
                         <span data-policy="lateReturn" class="agreement-meta-val"
-                              th:text="${booking.contract.terms.lateFeePercent} + '% of hourly rate'">200% of hourly rate</span>
+                              th:text="${booking.contract.terms.lateFeePercent} + '% giá thuê theo giờ'">200% giá thuê theo giờ</span>
                     </div>
 
                     <div class="agreement-terms-box contract-terms-text" th:text="${booking.contract.terms.termsContent}">

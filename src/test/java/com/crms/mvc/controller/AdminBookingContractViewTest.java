@@ -255,6 +255,6 @@ class AdminBookingContractViewTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/bookings/list"))
                 .andExpect(content().string(containsString("Honda City")))
-                .andExpect(content().string(containsString("Confirmed")));
+                .andExpect(content().string(containsString("Đã xác nhận")));
     }
 }

@@ -110,7 +110,7 @@
                                         </div>
                                         <div class="timeline-content">
                                             <div class="timeline-title">Nhận xe tại trạm bãi</div>
-                                            <div class="timeline-desc">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</div>
+                                            <div class="timeline-desc" th:text="${booking.stationAddress != null ? booking.stationAddress : 'Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM'}">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</div>
                                             <div
                                                 class="duration-tag"
                                                 th:with="diffHours=${T(java.time.Duration).between(booking.pickupTime, booking.scheduledEndTime).toHours()}"
