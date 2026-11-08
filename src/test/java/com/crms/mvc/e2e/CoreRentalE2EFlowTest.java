@@ -141,6 +141,11 @@ class CoreRentalE2EFlowTest {
         booking.setEmployee(staff);
         booking.setVehicle(vehicle);
         booking.setStatus("confirmed");
+        Customer payer = new Customer();
+        payer.setId(7L);
+        booking.setCustomer(payer);
+        booking.setTotalPrice(new BigDecimal("1000000"));
+        booking.setDepositAmount(new BigDecimal("500000"));
 
         when(employeeRepository.findById(2L)).thenReturn(Optional.of(staff));
         when(bookingRepository.findById(502L)).thenReturn(Optional.of(booking));
@@ -152,6 +157,8 @@ class CoreRentalE2EFlowTest {
         checkInForm.setOdometer(5005);
         checkInForm.setFuelPercent(100);
         checkInForm.setNotes("Xe sạch đẹp, đầy bình xăng, đã đối chiếu GPLX gốc");
+        checkInForm.setPaymentMethod("CASH");
+        checkInForm.setPaymentReceived(true);
         checkInForm.setLicenseImage(new MockMultipartFile("licenseImage", "gplx.jpg", "image/jpeg", new byte[]{1, 2, 3}));
         checkInForm.setIdCardImage(new MockMultipartFile("idCardImage", "cccd.jpg", "image/jpeg", new byte[]{4, 5, 6}));
 
@@ -198,7 +205,6 @@ class CoreRentalE2EFlowTest {
         checkOutRecord.setBooking(booking);
         checkOutRecord.setType(HandoverType.CHECK_OUT);
         checkOutRecord.setOdometer(5200);
-        checkOutRecord.setFuelPercent(90);
 
         when(handoverRepository.findByBookingIdAndType(503L, HandoverType.CHECK_OUT)).thenReturn(Optional.of(checkOutRecord));
         when(handoverRepository.save(any(Handover.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -214,8 +220,6 @@ class CoreRentalE2EFlowTest {
         // 1. Thực hiện Check-Out nhận trả xe
         CheckOutDTO checkOutForm = new CheckOutDTO();
         checkOutForm.setOdometer(5200);
-        checkOutForm.setFuelPercent(90);
-        checkOutForm.setNotes("Xe trả đúng hiện trạng");
 
         handoverService.checkOut(503L, 2L, checkOutForm);
 
@@ -283,7 +287,7 @@ class CoreRentalE2EFlowTest {
     }
 
     @Test
-    @DisplayName("Luồng 5: Quản trị Đội xe, Biển số & Lịch Kiểm định -> Thêm xe, đổi biển, lên lịch bảo dưỡng và tái kích hoạt xe")
+    @DisplayName("Luồng 5: Quản trị Đội xe, Biển số & Lịch Đăng kiểm -> Thêm xe, đổi biển, lên lịch bảo dưỡng và tái kích hoạt xe")
     void testFlow5_FleetAndInspectionFlow() {
         // 1. Khởi tạo xe và biển số
         VehicleType type = new VehicleType();
@@ -312,12 +316,12 @@ class CoreRentalE2EFlowTest {
 
         when(inspectionRepository.save(any(VehicleInspection.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        // Khi bắt đầu kiểm định -> Xe chuyển sang bảo trì (maintenance)
+        // Khi bắt đầu đăng kiểm -> Xe chuyển sang bảo trì (maintenance)
         vehicle.setStatus("maintenance");
         inspection.setStatus("IN_PROGRESS");
-        assertEquals("maintenance", vehicle.getStatus(), "Xe phải chuyển sang maintenance khi bắt đầu kiểm định");
+        assertEquals("maintenance", vehicle.getStatus(), "Xe phải chuyển sang maintenance khi bắt đầu đăng kiểm");
 
-        // 3. Hoàn tất kiểm định -> Xe quay lại trạng thái sẵn sàng đón khách
+        // 3. Hoàn tất đăng kiểm -> Xe quay lại trạng thái sẵn sàng đón khách
         inspection.setStatus("PASSED");
         vehicle.setStatus("available");
         assertEquals("available", vehicle.getStatus(), "Xe hoàn tất bảo dưỡng quay về AVAILABLE");

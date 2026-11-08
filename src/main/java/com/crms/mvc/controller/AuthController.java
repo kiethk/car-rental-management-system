@@ -49,7 +49,7 @@ public class AuthController {
 
         LoginIdentityDTO account = authService.login(form.getEmail(), form.getPassword());
         if (account == null) {
-            model.addAttribute("error", "Invalid email or password");
+            model.addAttribute("error", "Email hoặc mật khẩu không đúng");
             return "auth/login";
         }
 
@@ -79,7 +79,7 @@ public class AuthController {
         }
 
         if (!customerService.register(form)) {
-            model.addAttribute("error", "Email is already in use");
+            model.addAttribute("error", "Email này đã được sử dụng");
             return "auth/register";
         }
 

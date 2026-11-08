@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -48,6 +48,33 @@
         .car-card:hover .car-img-wrapper img {
             transform: scale(1.05);
         }
+
+        /* Hero carousel styles live in <head> so slides are positioned before first paint
+           (otherwise every slide image flashes stacked vertically on reload). */
+        /* Soft frame: a faint 1px ring and a diffuse shadow instead of a hard border; isolation keeps the
+           rounded corners clipping cleanly while slides move. */
+        .promotion-carousel { position: relative; min-height: 240px; aspect-ratio: 11 / 7;
+            border-radius: 1.75rem; isolation: isolate;
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, .05), 0 18px 40px -18px rgba(15, 23, 42, .35); }
+        /* Slides sit side by side off-screen; the script slides the next one in and the current one out. */
+        .promotion-slide { position: absolute; inset: 0; transform: translateX(100%); visibility: hidden;
+            transition: transform .6s cubic-bezier(.4, 0, .2, 1); }
+        .promotion-slide.active { transform: translateX(0); visibility: visible; }
+        .promotion-slide img { width: 100%; height: 100%; object-fit: cover; }
+        .promotion-controls { position: absolute; inset: 50% .75rem auto; display: flex; justify-content: space-between;
+            transform: translateY(-50%); pointer-events: none; z-index: 2; }
+        .promotion-controls button { pointer-events: auto; width: 2.5rem; height: 2.5rem; border: 0; border-radius: 50%;
+            color: #0a192f; background: rgba(255, 255, 255, .45); font-size: 1.5rem; line-height: 1; opacity: .55;
+            backdrop-filter: blur(4px); cursor: pointer;
+            transition: opacity .25s ease, background-color .25s ease, transform .25s ease, box-shadow .25s ease; }
+        .promotion-carousel:hover .promotion-controls button { opacity: .8; }
+        .promotion-controls button:hover,
+        .promotion-controls button:focus-visible { opacity: 1; background: #fff; transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(10, 25, 47, .25); outline: none; }
+        .promotion-controls button:active { transform: scale(.95); }
+        @media (prefers-reduced-motion: reduce) {
+            .promotion-slide, .promotion-controls button { transition: none; }
+        }
     </style>
 </head>
 <body class="bg-surface text-navy min-h-screen flex flex-col">
@@ -62,32 +89,32 @@
             <div class="grid items-center gap-8 lg:grid-cols-2 lg:gap-16">
                 <div>
                     <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-amber">
-                        DỊCH VỤ THUÊ XE / TP. HỒ CHÍ MINH
+                        Thuê xe tự lái / TP. Hồ Chí Minh
                     </p>
                     <h1 class="font-heading text-4xl leading-[1.12] text-navy sm:text-5xl lg:text-[54px]">
-                        Hành trình của bạn.
+                        Hành trình tiếp theo.
                         <br />
                         <span class="text-muted-foreground">Theo cách của bạn.</span>
                     </h1>
                     <p class="mt-5 max-w-md text-base leading-7 text-muted-foreground">
-                        Đa dạng các dòng xe hiện đại cho mọi nhu cầu. Linh hoạt chọn giờ thuê, nhận xe nhanh tại bãi trung tâm và khởi hành ngay.
+                        Xe đời mới cho mọi kế hoạch, thuê bao lâu tùy bạn. Chọn giờ thuê, nhận xe tại trạm trung tâm và lên đường.
                     </p>
                     <div class="mt-6 flex flex-wrap gap-x-6 gap-y-3 text-sm text-navy">
                         <span class="inline-flex items-center gap-2">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>
-                            Thuê xe theo giờ
+                            Thuê theo giờ
                         </span>
                         <span class="inline-flex items-center gap-2">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>
-                            Giá cả minh bạch
+                            Giá minh bạch
                         </span>
                         <span class="inline-flex items-center gap-2">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>
-                            Nhận xe nhanh chóng
+                            Nhận xe ngay
                         </span>
                     </div>
 
-                    <!-- Dual CTAs: Choose a car to rent & Explore our cars -->
+                    <!-- Dual CTAs: rent a car & browse cars -->
                     <div class="mt-8 flex flex-wrap items-center gap-4">
                         <a th:href="@{/search}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-navy px-6 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-navy-light transition-all text-decoration-none">
                             <span>Thuê xe ngay</span>
@@ -101,11 +128,11 @@
 
                 <div id="hero-carousel"
                      class="promotion-carousel overflow-hidden bg-surface"
-                     th:attr="aria-label=${hasPromotionImages ? 'Current promotions' : 'Featured rental cars'}">
+                     th:attr="aria-label=${hasPromotionImages ? 'Khuyến mãi hiện có' : 'Xe cho thuê nổi bật'}">
                     <article th:if="${hasPromotionImages}" th:each="promotion, iter : ${promotions}"
                              class="promotion-slide" th:classappend="${iter.index == 0 ? ' active' : ''}"
                              th:attr="aria-hidden=${iter.index != 0}">
-                        <img th:src="${promotion.urlImagePromotion}" th:alt="${'Promotion ' + promotion.code}">
+                        <img th:src="${promotion.urlImagePromotion}" th:alt="${'Khuyến mãi ' + promotion.code}">
                     </article>
                     <article th:unless="${hasPromotionImages}" th:each="car, iter : ${fallbackVehicleImages}"
                              class="promotion-slide" th:classappend="${iter.index == 0 ? ' active' : ''}"
@@ -115,9 +142,9 @@
                     <div class="promotion-controls"
                          th:if="${hasPromotionImages ? #lists.size(promotions) > 1 : fallbackVehicleImages.size() > 1}">
                         <button type="button" data-promotion-direction="-1"
-                                th:attr="aria-label=${hasPromotionImages ? 'Previous promotion' : 'Previous car'}">‹</button>
+                                th:attr="aria-label=${hasPromotionImages ? 'Khuyến mãi trước' : 'Xe trước'}">‹</button>
                         <button type="button" data-promotion-direction="1"
-                                th:attr="aria-label=${hasPromotionImages ? 'Next promotion' : 'Next car'}">›</button>
+                                th:attr="aria-label=${hasPromotionImages ? 'Khuyến mãi tiếp theo' : 'Xe tiếp theo'}">›</button>
                     </div>
                 </div>
             </div>
@@ -159,7 +186,7 @@
             <div class="flex justify-between items-end mb-8">
                 <div>
                     <h2 class="font-heading text-2xl text-navy sm:text-3xl">Dòng xe nổi bật</h2>
-                    <p class="text-sm text-muted-foreground mt-1">Các mẫu xe được ưa chuộng và sẵn sàng phục vụ tại TP. Hồ Chí Minh</p>
+                    <p class="text-sm text-muted-foreground mt-1">Các dòng xe được ưa chuộng và sẵn sàng phục vụ tại TP. Hồ Chí Minh</p>
                 </div>
                 <a th:href="@{/vehicles}" class="text-sm font-semibold text-amber hover:underline text-decoration-none">Xem tất cả dòng xe →</a>
             </div>
@@ -179,35 +206,29 @@
                         <!-- Title & Rating -->
                         <div class="mb-2">
                             <h3 class="text-lg font-bold text-navy mb-1" th:text="${vt.displayName}">Toyota Vios 2023</h3>
-                            <div class="flex items-center gap-1.5 text-xs text-amber font-semibold"
-                                 th:with="revSummary=${reviewSummaries != null ? reviewSummaries.get(vt.id) : null}">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                <span th:if="${revSummary != null and revSummary.reviewCount > 0}" th:text="${#numbers.formatDecimal(revSummary.averageRating, 1, 1)}">5.0</span>
-                                <span th:if="${revSummary != null and revSummary.reviewCount > 0}" class="text-muted-foreground font-normal" th:text="'(' + ${revSummary.reviewCount} + ' đánh giá)'">(1 đánh giá)</span>
-                                <span th:if="${revSummary == null or revSummary.reviewCount == 0}" class="text-muted-foreground font-normal">5.0 (Mới)</span>
-                            </div>
+                            <div class="text-xs text-muted-foreground"><span th:replace="~{fragments/labels :: rating(${ratings[vt.id]})}">★ 4.8 (12 đánh giá)</span></div>
                         </div>
 
                         <!-- Specs in Description: Category, Seats, Transmission, Fuel Type -->
                         <div class="text-xs text-muted-foreground font-medium mb-2">
                             <span class="text-navy font-semibold uppercase" th:text="${vt.category}">Sedan</span>
                             <span class="mx-1">·</span>
-                            <span th:text="${vt.seats + ' chỗ'}">5 seats</span>
+                            <span th:text="${vt.seats + ' chỗ'}">5 chỗ</span>
                             <span class="mx-1">·</span>
-                            <span th:text="${vt.transmission == 'automatic' ? 'Số tự động' : (vt.transmission == 'manual' ? 'Số sàn' : vt.transmission)}">Số tự động</span>
+                            <span th:replace="~{fragments/labels :: transmission(${vt.transmission})}">Số tự động</span>
                             <span class="mx-1">·</span>
-                            <span th:text="${vt.fuelType == 'gasoline' ? 'Xăng' : (vt.fuelType == 'diesel' ? 'Dầu' : (vt.fuelType == 'electric' ? 'Điện' : vt.fuelType))}">Xăng</span>
+                            <span th:replace="~{fragments/labels :: fuel(${vt.fuelType})}">Xăng</span>
                         </div>
 
                         <p class="text-xs text-muted-foreground line-clamp-2 mb-4 leading-relaxed flex-grow"
-                           th:text="${vt.description != null ? vt.description : 'Xe sạch sẽ, vận hành êm ái, tiết kiệm nhiên liệu cho chuyến đi nội thành hoặc dã ngoại cuối tuần.'}">
+                           th:text="${vt.description != null ? vt.description : 'Xe sạch sẽ, bền bỉ và tiết kiệm, phù hợp cho di chuyển trong phố lẫn những chuyến đi cuối tuần.'}">
                             Car description...
                         </p>
 
                         <!-- Footer: Hourly Rate + Action Buttons -->
                         <div class="pt-3 border-t border-border flex justify-between items-center mt-auto">
                             <div>
-                                <span class="text-[11px] text-muted-foreground block">Đơn giá thuê</span>
+                                <span class="text-[11px] text-muted-foreground block">Giá theo giờ</span>
                                 <div class="font-bold text-navy text-base">
                                     <span th:text="${#numbers.formatDecimal(vt.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span>
                                     <span class="text-xs font-normal text-muted-foreground">đ/h</span>
@@ -234,32 +255,6 @@
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
-<style>
-    /* Soft frame: a faint 1px ring and a diffuse shadow instead of a hard border; isolation keeps the
-       rounded corners clipping cleanly while slides move. */
-    .promotion-carousel { position: relative; min-height: 240px; aspect-ratio: 11 / 7;
-        border-radius: 1.75rem; isolation: isolate;
-        box-shadow: 0 0 0 1px rgba(15, 23, 42, .05), 0 18px 40px -18px rgba(15, 23, 42, .35); }
-    /* Slides sit side by side off-screen; the script slides the next one in and the current one out. */
-    .promotion-slide { position: absolute; inset: 0; transform: translateX(100%); visibility: hidden;
-        transition: transform .6s cubic-bezier(.4, 0, .2, 1); }
-    .promotion-slide.active { transform: translateX(0); visibility: visible; }
-    .promotion-slide img { width: 100%; height: 100%; object-fit: cover; }
-    .promotion-controls { position: absolute; inset: 50% .75rem auto; display: flex; justify-content: space-between;
-        transform: translateY(-50%); pointer-events: none; z-index: 2; }
-    .promotion-controls button { pointer-events: auto; width: 2.5rem; height: 2.5rem; border: 0; border-radius: 50%;
-        color: #0a192f; background: rgba(255, 255, 255, .45); font-size: 1.5rem; line-height: 1; opacity: .55;
-        backdrop-filter: blur(4px); cursor: pointer;
-        transition: opacity .25s ease, background-color .25s ease, transform .25s ease, box-shadow .25s ease; }
-    .promotion-carousel:hover .promotion-controls button { opacity: .8; }
-    .promotion-controls button:hover,
-    .promotion-controls button:focus-visible { opacity: 1; background: #fff; transform: scale(1.1);
-        box-shadow: 0 6px 16px rgba(10, 25, 47, .25); outline: none; }
-    .promotion-controls button:active { transform: scale(.95); }
-    @media (prefers-reduced-motion: reduce) {
-        .promotion-slide, .promotion-controls button { transition: none; }
-    }
-</style>
 <script>
     (() => {
         const carousel = document.getElementById('hero-carousel');

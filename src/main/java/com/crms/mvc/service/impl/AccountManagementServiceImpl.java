@@ -48,22 +48,22 @@ public class AccountManagementServiceImpl implements AccountManagementService {
     public void setActive(String accountType, Long accountId, boolean active, SessionAccount actor) {
         if (SessionAccount.EMPLOYEE.equals(accountType)) {
             if (!active && actor.isEmployee() && accountId.equals(actor.getId())) {
-                throw new IllegalArgumentException("You cannot lock your own account");
+                throw new IllegalArgumentException("Bạn không thể tự khóa tài khoản của mình");
             }
             Employee employee = employeeRepository.findById(accountId)
-                    .orElseThrow(() -> new NoSuchElementException("Employee not found: " + accountId));
+                    .orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân viên: " + accountId));
             employee.setActive(active);
             employeeRepository.save(employee);
             return;
         }
         if (SessionAccount.CUSTOMER.equals(accountType)) {
             Customer customer = customerRepository.findById(accountId)
-                    .orElseThrow(() -> new NoSuchElementException("Customer not found: " + accountId));
+                    .orElseThrow(() -> new NoSuchElementException("Không tìm thấy khách hàng: " + accountId));
             customer.setActive(active);
             customerRepository.save(customer);
             return;
         }
-        throw new IllegalArgumentException("Unknown account type");
+        throw new IllegalArgumentException("Loại tài khoản không hợp lệ");
     }
 
     @Override
@@ -71,7 +71,7 @@ public class AccountManagementServiceImpl implements AccountManagementService {
         String email = form.getEmail().trim();
         if (customerRepository.findByEmailIgnoreCase(email) != null
                 || employeeRepository.findByEmailIgnoreCase(email) != null) {
-            throw new IllegalArgumentException("Email is already in use");
+            throw new IllegalArgumentException("Email này đã được sử dụng");
         }
 
         Employee employee = new Employee();

@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${issueId != null ? 'Sửa sự cố #' + issueId : 'Ghi nhận sự cố'} + ' — DriveNow Admin'">Ghi nhận sự cố — DriveNow Admin</title>
+    <title th:text="${issueId != null ? 'Sửa sự cố #' + issueId : 'Ghi nhận sự cố'} + ' — Quản trị DriveNow'">Ghi nhận sự cố — Quản trị DriveNow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -74,7 +74,7 @@
                                 <div class="admin-form-group">
                                     <label class="admin-form-label" for="occurredAt">Xảy ra lúc (*)</label>
                                     <input id="occurredAt" type="datetime-local" th:field="*{occurredAt}" class="admin-form-input" required>
-                                    <div class="admin-form-hint">Giờ Việt Nam. Với phạt nguội, nhập thời điểm vi phạm ghi trên biên bản.</div>
+                                    <div class="admin-form-hint">Giờ Việt Nam.</div>
                                     <div class="text-danger small" th:if="${#fields.hasErrors('occurredAt')}" th:errors="*{occurredAt}"></div>
                                 </div>
                             </div>

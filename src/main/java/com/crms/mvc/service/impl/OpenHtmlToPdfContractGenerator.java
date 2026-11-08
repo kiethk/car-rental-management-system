@@ -54,7 +54,7 @@ public class OpenHtmlToPdfContractGenerator implements ContractDocumentGenerator
             builder.run();
             return output.toByteArray();
         } catch (IOException exception) {
-            throw new IllegalStateException("Could not render contract PDF " + document.getContractNumber(), exception);
+            throw new IllegalStateException("Không thể tạo PDF hợp đồng " + document.getContractNumber(), exception);
         }
     }
 
@@ -62,7 +62,7 @@ public class OpenHtmlToPdfContractGenerator implements ContractDocumentGenerator
         try {
             return font.getInputStream();
         } catch (IOException exception) {
-            throw new UncheckedIOException("Contract font not found: " + font.getDescription(), exception);
+            throw new UncheckedIOException("Không tìm thấy phông chữ hợp đồng: " + font.getDescription(), exception);
         }
     }
 }

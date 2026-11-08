@@ -30,12 +30,12 @@
                 <div>
                     <h1 class="h3 font-weight-bold text-navy mb-1">Các phiên bản điều khoản hợp đồng</h1>
                     <p class="text-muted small mb-0">
-                        New bookings accept the <strong>active</strong> version. Bookings keep the version they accepted,
-                        so a version can never be edited once it is active. To change the terms, create a draft and activate it.
+                        Đơn thuê mới áp dụng phiên bản <strong>đang hiệu lực</strong>; đơn đã đặt giữ phiên bản khách đã đồng ý.
+                        Bấm "Cập nhật điều khoản" để sửa các thông số và nội dung, kích hoạt xong sẽ thành một phiên bản mới.
                     </p>
                 </div>
                 <form th:if="${isAdmin}" th:action="@{/admin/contract-templates/draft}" method="post" class="mt-3 mt-md-0">
-                    <button type="submit" class="btn btn-navy font-weight-bold btn-sm px-3 py-2 rounded-lg shadow-sm">+ Tạo bản nháp mới <span class="d-none">New draft from active</span></button>
+                    <button type="submit" class="btn btn-navy font-weight-bold btn-sm px-3 py-2 rounded-lg shadow-sm">+ Cập nhật điều khoản</button>
                 </form>
             </div>
 
@@ -44,13 +44,13 @@
                     <table class="table table-hover mb-0 align-middle admin-table">
                         <thead class="bg-surface-2 text-navy small font-weight-bold">
                             <tr>
-                                <th class="border-top-0 py-3">Version</th>
-                                <th class="border-top-0 py-3">Title</th>
+                                <th class="border-top-0 py-3">Phiên bản</th>
+                                <th class="border-top-0 py-3">Tiêu đề</th>
                                 <th class="border-top-0 py-3 text-center">Đặt cọc</th>
-                                <th class="border-top-0 py-3 text-center">Late fee / hour</th>
-                                <th class="border-top-0 py-3 text-center">Free cancellation</th>
+                                <th class="border-top-0 py-3 text-center">Phí trễ / giờ</th>
+                                <th class="border-top-0 py-3 text-center">Hủy miễn phí</th>
                                 <th class="border-top-0 py-3">Trạng thái</th>
-                                <th class="border-top-0 py-3">Activated</th>
+                                <th class="border-top-0 py-3">Kích hoạt lúc</th>
                                 <th class="border-top-0 py-3 text-center">Thao tác</th>
                             </tr>
                         </thead>
@@ -59,17 +59,17 @@
                                 <td class="font-weight-bold text-navy" th:text="'v' + ${t.versionNo}">v1</td>
                                 <td th:text="${t.title}">Hợp đồng thuê xe ô tô tự lái</td>
                                 <td class="text-center" th:text="${t.depositPercent} + '%'">50%</td>
-                                <td class="text-center" th:text="${t.lateFeePercent} + '% of rate'">200% of rate</td>
-                                <td class="text-center" th:text="${t.freeCancellationHours} + ' h before pickup'">72 h before pickup</td>
+                                <td class="text-center" th:text="${t.lateFeePercent} + '% đơn giá'">200% đơn giá</td>
+                                <td class="text-center" th:text="${t.freeCancellationHours} + ' giờ trước giờ nhận'">72 giờ trước giờ nhận</td>
                                 <td>
-                                    <span th:if="${t.status.name() == 'ACTIVE'}" class="badge badge-success px-2 py-1">Đang áp dụng</span>
+                                    <span th:if="${t.status.name() == 'ACTIVE'}" class="badge badge-success px-2 py-1">Đang hiệu lực</span>
                                     <span th:if="${t.status.name() == 'DRAFT'}" class="badge badge-warning px-2 py-1">Bản nháp</span>
-                                    <span th:if="${t.status.name() == 'ARCHIVED'}" class="badge badge-secondary px-2 py-1">Lưu trữ</span>
+                                    <span th:if="${t.status.name() == 'ARCHIVED'}" class="badge badge-secondary px-2 py-1">Đã lưu trữ</span>
                                 </td>
                                 <td class="small text-muted" th:text="${t.activatedAt != null} ? ${#temporals.format(t.activatedAt, 'dd/MM/yyyy HH:mm')} : '—'">—</td>
                                 <td class="text-center">
                                     <a th:href="@{/admin/contract-templates/{id}(id=${t.id})}" class="btn btn-outline-secondary btn-sm"
-                                       th:text="${t.editable and isAdmin} ? 'Edit' : 'View'">Xem</a>
+                                       th:text="${t.editable and isAdmin} ? 'Sửa' : 'Xem'">Xem</a>
                                 </td>
                             </tr>
                             <tr th:if="${#lists.isEmpty(templates)}">

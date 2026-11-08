@@ -47,7 +47,7 @@
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
                 <div>
                     <h1 class="h3 font-weight-bold text-navy mb-1">Danh mục dòng xe</h1>
-                    <p class="text-muted small mb-0">Cấu hình thông số kỹ thuật, giá thuê theo giờ và ảnh đại diện cho các dòng xe.</p>
+                    <p class="text-muted small mb-0">Cấu hình thông số kỹ thuật, giá thuê theo giờ và hình ảnh cho từng dòng xe.</p>
                 </div>
                 <div class="mt-3 mt-md-0">
                     <a th:href="@{/admin/vehicle-types/new}" class="btn btn-navy font-weight-bold btn-sm px-3 py-2 rounded-lg shadow-sm">
@@ -59,17 +59,17 @@
             <!-- Search + sort + page size -->
             <form method="get" th:action="@{/admin/vehicle-types}" class="d-flex flex-wrap align-items-center mb-3" style="gap: 8px;">
                 <input type="search" name="keyword" th:value="${query.keyword}" class="form-control form-control-sm rounded-lg"
-                       style="max-width: 340px;" placeholder="Tìm theo mẫu xe, hãng hoặc phân khúc..." aria-label="Search vehicle models">
-                <button type="submit" class="btn btn-navy btn-sm font-weight-bold rounded-lg px-3">Tìm kiếm</button>
-                <a th:if="${query.keyword != null}" th:href="@{/admin/vehicle-types}" class="small text-muted">Clear</a>
+                       style="max-width: 340px;" placeholder="Tìm dòng xe, hãng hoặc loại xe..." aria-label="Tìm dòng xe">
+                <button type="submit" class="btn btn-navy btn-sm font-weight-bold rounded-lg px-3">Tìm</button>
+                <a th:if="${query.keyword != null}" th:href="@{/admin/vehicle-types}" class="small text-muted">Xóa</a>
 
-                <span class="ml-md-auto small font-weight-bold text-muted">Sort</span>
-                <select name="sort" class="form-control form-control-sm rounded-lg" style="width: auto;" onchange="this.form.submit()" aria-label="Sort vehicle models">
-                    <option value="name_asc" th:selected="${query.sort == 'name_asc'}">Name A → Z</option>
-                    <option value="name_desc" th:selected="${query.sort == 'name_desc'}">Name Z → A</option>
+                <span class="ml-md-auto small font-weight-bold text-muted">Sắp xếp</span>
+                <select name="sort" class="form-control form-control-sm rounded-lg" style="width: auto;" onchange="this.form.submit()" aria-label="Sắp xếp dòng xe">
+                    <option value="name_asc" th:selected="${query.sort == 'name_asc'}">Tên A → Z</option>
+                    <option value="name_desc" th:selected="${query.sort == 'name_desc'}">Tên Z → A</option>
                 </select>
-                <select name="size" class="form-control form-control-sm rounded-lg" style="width: auto;" onchange="this.form.submit()" aria-label="Models per page">
-                    <option th:each="n : ${query.pageSizes}" th:value="${n}" th:text="${n} + ' / page'" th:selected="${query.size == n}">10 / page</option>
+                <select name="size" class="form-control form-control-sm rounded-lg" style="width: auto;" onchange="this.form.submit()" aria-label="Số dòng xe mỗi trang">
+                    <option th:each="n : ${query.pageSizes}" th:value="${n}" th:text="${n} + ' / trang'" th:selected="${query.size == n}">10 / trang</option>
                 </select>
             </form>
 
@@ -79,13 +79,13 @@
                     <table class="table table-hover mb-0 align-middle admin-table">
                         <thead class="bg-surface-2 text-navy small font-weight-bold">
                             <tr>
-                                <th class="border-top-0 py-3">Photo</th>
-                                <th class="border-top-0 py-3">Model Name</th>
-                                <th class="border-top-0 py-3">Brand</th>
-                                <th class="border-top-0 py-3">Category</th>
-                                <th class="border-top-0 py-3 text-center">Seats / Trans / Fuel</th>
-                                <th class="border-top-0 py-3 text-right">Rate / Hour</th>
-                                <th class="border-top-0 py-3 text-center">Vehicles</th>
+                                <th class="border-top-0 py-3">Ảnh</th>
+                                <th class="border-top-0 py-3">Tên dòng xe</th>
+                                <th class="border-top-0 py-3">Hãng</th>
+                                <th class="border-top-0 py-3">Loại xe</th>
+                                <th class="border-top-0 py-3 text-center">Số chỗ / Hộp số / Nhiên liệu</th>
+                                <th class="border-top-0 py-3 text-right">Giá / giờ</th>
+                                <th class="border-top-0 py-3 text-center">Số xe</th>
                                 <th class="border-top-0 py-3 text-center">Thao tác</th>
                             </tr>
                         </thead>
@@ -100,7 +100,7 @@
                                 </td>
                                 <td>
                                     <div class="font-weight-bold text-navy" th:text="${vt.displayName}">Toyota Vios 2023</div>
-                                    <small class="text-muted text-truncate d-inline-block" style="max-width: 200px;" th:text="${vt.description}">Description</small>
+                                    <small class="text-muted text-truncate d-inline-block" style="max-width: 200px;" th:text="${vt.description}">Mô tả</small>
                                 </td>
                                 <td th:text="${vt.brand}">Toyota</td>
                                 <td>
@@ -108,8 +108,8 @@
                                 </td>
                                 <td class="text-center small">
                                     <span th:text="${vt.seats + ' chỗ'}">5 chỗ</span> ·
-                                    <span class="text-capitalize" th:text="${vt.transmission == 'automatic' ? 'Số tự động' : (vt.transmission == 'manual' ? 'Số sàn' : vt.transmission)}">Số tự động</span> ·
-                                    <span class="text-capitalize" th:text="${vt.fuelType == 'gasoline' ? 'Xăng' : (vt.fuelType == 'diesel' ? 'Dầu' : (vt.fuelType == 'electric' ? 'Điện' : (vt.fuelType == 'hybrid' ? 'Hybrid' : vt.fuelType)))}">Xăng</span>
+                                    <span th:replace="~{fragments/labels :: transmission(${vt.transmission})}">Số tự động</span> ·
+                                    <span th:replace="~{fragments/labels :: fuel(${vt.fuelType})}">Xăng</span>
                                 </td>
                                 <td class="text-right font-weight-bold text-navy">
                                     <span th:text="${#numbers.formatDecimal(vt.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span> VND
@@ -121,9 +121,9 @@
                                 <td class="text-center">
                                     <div class="d-inline-flex align-items-center justify-content-center" style="gap: 6px;">
                                         <a th:href="@{/admin/vehicle-types/{id}/edit(id=${vt.id})}"
-                                           class="admin-btn btn-soft-primary">Chỉnh sửa</a>
+                                           class="admin-btn btn-soft-primary">Sửa</a>
                                         <form method="post" th:action="@{/admin/vehicle-types/{id}/delete(id=${vt.id})}" class="m-0"
-                                              onsubmit="return confirm('Bạn có chắc chắn muốn xóa dòng xe này? Không thể xóa nếu đã có xe thực tế liên kết.');">
+                                              data-confirm="Xóa dòng xe này?" data-confirm-detail="Không xóa được nếu còn xe thuộc dòng xe này." data-confirm-ok="Xóa" data-confirm-tone="danger">
                                             <input type="hidden" name="returnTo" th:value="${listUrl}" />
                                             <button type="submit" class="admin-btn btn-soft-danger">Xóa</button>
                                         </form>
@@ -132,7 +132,7 @@
                             </tr>
                             <tr th:if="${#lists.isEmpty(vehicleTypes)}">
                                 <td colspan="8" class="text-center py-4 text-muted">
-                                    <span th:text="${query.keyword != null} ? 'Không tìm thấy dòng xe nào phù hợp.' : 'Chưa có dòng xe nào.'">Chưa có dòng xe nào.</span>
+                                    <span th:text="${query.keyword != null} ? 'Không có dòng xe nào khớp với tìm kiếm.' : 'Chưa có dòng xe nào.'">Chưa có dòng xe nào.</span>
                                     <a th:if="${query.keyword != null}" th:href="@{/admin/vehicle-types}" class="ml-1">Xem tất cả dòng xe</a>
                                 </td>
                             </tr>

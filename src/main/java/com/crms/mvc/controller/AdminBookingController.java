@@ -59,7 +59,7 @@ public class AdminBookingController {
                                HttpSession session, Model model, RedirectAttributes ra) {
         Long employeeId = CurrentAccount.employeeId(session).orElse(null);
         if (employeeId == null) {
-            ra.addFlashAttribute("error", "Admin / Staff authentication required.");
+            ra.addFlashAttribute("error", "Cần đăng nhập bằng tài khoản quản trị viên hoặc nhân viên.");
             return "redirect:/login";
         }
 
@@ -184,7 +184,7 @@ public class AdminBookingController {
     public String assignStaff(@PathVariable("id") Long bookingId, @RequestParam("staffId") Long staffId,
                               HttpSession session, RedirectAttributes ra) {
         if (!CurrentAccount.isAdmin(session)) {
-            ra.addFlashAttribute("error", "Only an admin can change the assigned staff.");
+            ra.addFlashAttribute("error", "Chỉ quản trị viên mới được đổi nhân viên phụ trách.");
             return "redirect:/admin/bookings/" + bookingId;
         }
 
@@ -192,7 +192,7 @@ public class AdminBookingController {
             handoverService.reassignStaff(bookingId, staffId);
             ra.addFlashAttribute("success", "Đã cập nhật nhân viên phụ trách.");
         } catch (Exception e) {
-            ra.addFlashAttribute("error", "Could not change assigned staff: " + e.getMessage());
+            ra.addFlashAttribute("error", "Không thể đổi nhân viên phụ trách: " + e.getMessage());
         }
         return "redirect:/admin/bookings/" + bookingId;
     }
@@ -205,7 +205,7 @@ public class AdminBookingController {
         if (employeeId == null) return "redirect:/login";
 
         if (result.hasErrors()) {
-            ra.addFlashAttribute("error", "Check-in failed: " + result.getAllErrors().get(0).getDefaultMessage());
+            ra.addFlashAttribute("error", "Bàn giao xe thất bại: " + result.getAllErrors().get(0).getDefaultMessage());
             return "redirect:/admin/bookings/" + bookingId;
         }
 
@@ -213,7 +213,7 @@ public class AdminBookingController {
             handoverService.checkIn(bookingId, employeeId, form);
             ra.addFlashAttribute("success", "Đã bàn giao xe. Chuyến thuê bắt đầu.");
         } catch (Exception e) {
-            ra.addFlashAttribute("error", "Check-in failed: " + e.getMessage());
+            ra.addFlashAttribute("error", "Bàn giao xe thất bại: " + e.getMessage());
         }
         return "redirect:/admin/bookings/" + bookingId;
     }
@@ -226,7 +226,7 @@ public class AdminBookingController {
         if (employeeId == null) return "redirect:/login";
 
         if (result.hasErrors()) {
-            ra.addFlashAttribute("error", "Check-out failed: " + result.getAllErrors().get(0).getDefaultMessage());
+            ra.addFlashAttribute("error", "Ghi nhận trả xe thất bại: " + result.getAllErrors().get(0).getDefaultMessage());
             return "redirect:/admin/bookings/" + bookingId;
         }
 
@@ -234,7 +234,7 @@ public class AdminBookingController {
             handoverService.checkOut(bookingId, employeeId, form);
             ra.addFlashAttribute("success", "Đã ghi nhận trả xe. Hãy quyết toán để đóng đơn thuê.");
         } catch (Exception e) {
-            ra.addFlashAttribute("error", "Check-out failed: " + e.getMessage());
+            ra.addFlashAttribute("error", "Ghi nhận trả xe thất bại: " + e.getMessage());
         }
         return "redirect:/admin/bookings/" + bookingId;
     }
@@ -247,7 +247,7 @@ public class AdminBookingController {
         if (employeeId == null) return "redirect:/login";
 
         if (result.hasErrors()) {
-            ra.addFlashAttribute("error", "Settlement failed: " + result.getAllErrors().get(0).getDefaultMessage());
+            ra.addFlashAttribute("error", "Quyết toán thất bại: " + result.getAllErrors().get(0).getDefaultMessage());
             return "redirect:/admin/bookings/" + bookingId;
         }
 
@@ -255,7 +255,7 @@ public class AdminBookingController {
             handoverService.settle(bookingId, employeeId, form);
             ra.addFlashAttribute("success", "Đã quyết toán xong. Đơn thuê đã đóng.");
         } catch (Exception e) {
-            ra.addFlashAttribute("error", "Settlement failed: " + e.getMessage());
+            ra.addFlashAttribute("error", "Quyết toán thất bại: " + e.getMessage());
         }
         return "redirect:/admin/bookings/" + bookingId;
     }

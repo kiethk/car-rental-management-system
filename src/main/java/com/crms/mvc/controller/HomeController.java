@@ -1,6 +1,5 @@
 package com.crms.mvc.controller;
 
-import com.crms.mvc.dto.VehicleReviewSummaryDTO;
 import com.crms.mvc.entity.VehicleType;
 import com.crms.mvc.service.PromotionService;
 import com.crms.mvc.service.ReviewService;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDate;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -39,20 +37,11 @@ public class HomeController {
         model.addAttribute("today", LocalDate.now().toString());
         model.addAttribute("tomorrow", LocalDate.now().plusDays(1).toString());
 
+        // The home page shows the first 6 models; the heading link leads to the full list.
         List<VehicleType> allVehicles = vehicleTypeService.findAll();
-        List<VehicleType> featuredVehicles = allVehicles.stream().limit(6).toList();
-        model.addAttribute("featuredVehicles", featuredVehicles);
-        model.addAttribute("totalVehicleCount", allVehicles.size());
-
-        Map<Long, VehicleReviewSummaryDTO> reviewSummaries = new HashMap<>();
-        if (reviewService != null) {
-            for (VehicleType vt : featuredVehicles) {
-                if (vt.getId() != null) {
-                    reviewSummaries.put(vt.getId(), reviewService.findPublicReviewsForVehicleType(vt.getId()));
-                }
-            }
-        }
-        model.addAttribute("reviewSummaries", reviewSummaries);
+        model.addAttribute("featuredVehicles", allVehicles.stream().limit(6).toList());
+        // Star ratings come from the reviews in the database, one query for all models.
+        model.addAttribute("ratings", reviewService != null ? reviewService.ratingsByVehicleType() : Map.of());
 
         var promotions = promotionService.findActiveWithImages();
         model.addAttribute("promotions", promotions);

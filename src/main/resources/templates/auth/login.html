@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
@@ -36,7 +36,7 @@
 
                     <form method="post" th:action="@{/login}" th:object="${loginForm}" novalidate class="mt-3">
                         <div class="form-group mb-3">
-                            <label for="email" class="small font-weight-bold text-navy mb-1">Địa chỉ Email</label>
+                            <label for="email" class="small font-weight-bold text-navy mb-1">Email</label>
                             <input id="email" type="email" th:field="*{email}" class="form-control py-2.5 rounded-lg"
                                    th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'" maxlength="150" autofocus placeholder="name@example.com">
                             <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
@@ -59,7 +59,7 @@
             </div>
 
             <div class="text-center mt-4">
-                <a th:href="@{/}" class="text-muted small text-decoration-none hover:text-navy">← Quay về trang chủ</a>
+                <a th:href="@{/}" class="text-muted small text-decoration-none hover:text-navy">← Về trang chủ</a>
             </div>
 
         </div>

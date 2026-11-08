@@ -178,7 +178,7 @@ class AdminHandoverViewTest {
 
         mvc.perform(get("/admin/bookings/42").session(TestSessions.admin(1L)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Support Staff (staff)")))
+                .andExpect(content().string(containsString("Support Staff (Nhân viên)")))
                 .andExpect(content().string(containsString("name=\"licenseImage\"")));
     }
 
@@ -201,7 +201,9 @@ class AdminHandoverViewTest {
         mvc.perform(get("/admin/bookings/42").session(TestSessions.staff(2L)))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Ghi nhận trả xe")))
-                .andExpect(content().string(containsString("returnCharges[0].amount")))
+                // the return form asks for the odometer only: no fuel level and no hand-typed return charges
+                .andExpect(content().string(not(containsString("returnCharges"))))
+                .andExpect(content().string(not(containsString("checkOutFuel"))))
                 .andExpect(content().string(not(containsString("DAMAGE_COMPENSATION"))))
                 .andExpect(content().string(containsString("ODO 1200 km · nhiên liệu 80%")))
                 .andExpect(content().string(containsString("/admin/bookings/42/records/7/evidence?secondary=true")));
@@ -285,8 +287,6 @@ class AdminHandoverViewTest {
     private HandoverSummaryDTO settlementSummary(String finalAmount) {
         HandoverSummaryDTO summary = new HandoverSummaryDTO();
         summary.setReturned(true);
-        summary.setRentalTotal(new BigDecimal("1000000"));
-        summary.setDepositAmount(new BigDecimal("300000"));
         summary.setFinalAmount(new BigDecimal(finalAmount));
         return summary;
     }

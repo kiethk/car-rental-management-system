@@ -48,8 +48,9 @@ public class AdminDashboardController {
         long totalBookings = bookingService.countTotalBookings();
 
         List<LicensePlateOverviewDTO> plates = licensePlateService.findAllOverviews();
-        long expiringSoonCount = plates.stream().filter(p -> "EXPIRING_SOON".equals(p.getExpiryStatus())).count();
-        long expiredCount = plates.stream().filter(p -> "EXPIRED".equals(p.getExpiryStatus())).count();
+        // Retired cars are out of service for good, so their registration no longer matters. Soonest expiry first.
+        List<LicensePlateOverviewDTO> expiringSoon = registrationAlerts(plates, "EXPIRING_SOON");
+        List<LicensePlateOverviewDTO> expired = registrationAlerts(plates, "EXPIRED");
 
         model.addAttribute("totalVehicles", totalVehicles);
         model.addAttribute("retiredVehicles", retiredVehicles);
@@ -62,8 +63,10 @@ public class AdminDashboardController {
         model.addAttribute("failedInspections", failedInspections);
 
         model.addAttribute("totalBookings", totalBookings);
-        model.addAttribute("expiringSoonCount", expiringSoonCount);
-        model.addAttribute("expiredCount", expiredCount);
+        model.addAttribute("expiringSoonCount", expiringSoon.size());
+        model.addAttribute("expiredCount", expired.size());
+        model.addAttribute("expiringSoonList", expiringSoon);
+        model.addAttribute("expiredList", expired);
         model.addAttribute("recentInspections", inspections.stream().limit(6).toList());
         model.addAttribute("activeNav", "dashboard");
 
@@ -73,5 +76,13 @@ public class AdminDashboardController {
     @GetMapping("/admin/ui-kit")
     public String uiKit() {
         return "admin/starter-kit";
+    }
+
+    private static List<LicensePlateOverviewDTO> registrationAlerts(List<LicensePlateOverviewDTO> plates, String status) {
+        return plates.stream()
+                .filter(p -> status.equals(p.getExpiryStatus()))
+                .filter(p -> !"retired".equalsIgnoreCase(p.getVehicleStatus()))
+                .sorted(java.util.Comparator.comparing(LicensePlateOverviewDTO::getRegistrationExpiry))
+                .toList();
     }
 }

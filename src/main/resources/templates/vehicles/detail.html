@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -21,7 +21,7 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb bg-transparent p-0 mb-0">
-            <li class="breadcrumb-item"><a th:href="@{/}" class="text-muted text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/}" class="text-muted text-decoration-none">Trang chủ</a></li>
             <li class="breadcrumb-item"><a th:href="@{/vehicles}" class="text-muted text-decoration-none">Danh sách xe</a></li>
             <li class="breadcrumb-item active text-navy font-weight-bold" th:text="${vehicle.displayName}">Toyota Vios</li>
         </ol>
@@ -129,7 +129,7 @@
                         <span class="badge badge-success-light text-success p-1 rounded">✓</span> Nhận & trả xe trực tiếp tại kho bãi trung tâm
                     </div>
                     <div class="col-sm-6 d-flex align-items-center gap-2 text-muted small">
-                        <span class="badge badge-success-light text-success p-1 rounded">✓</span> Đạt chứng nhận kiểm định an toàn kỹ thuật
+                        <span class="badge badge-success-light text-success p-1 rounded">✓</span> Đạt chứng nhận đăng kiểm an toàn kỹ thuật
                     </div>
 <div class="col-sm-6 d-flex align-items-center gap-2 text-muted small">
                         <span class="badge badge-success-light text-success p-1 rounded">✓</span> Điều hòa tự động & Kết nối Bluetooth thông minh
@@ -158,7 +158,7 @@
                 <div class="bg-surface rounded-xl p-3 mb-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="small text-muted d-block">Đơn giá thuê theo giờ</span>
+                            <span class="small text-muted d-block">Giá thuê theo giờ</span>
                             <div class="h3 font-weight-bold text-navy mb-0">
                                 <span th:text="${#numbers.formatDecimal(vehicle.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span>
                                 <span class="small text-muted font-weight-normal">đ / giờ</span>
@@ -174,7 +174,7 @@
                     <table class="table table-sm table-borderless mb-0">
                         <tbody>
                             <tr class="border-bottom">
-                                <td class="text-muted py-2">Phân khúc</td>
+                                <td class="text-muted py-2">Loại xe</td>
                                 <td class="font-weight-bold text-navy text-right py-2 text-capitalize" th:text="${vehicle.category}">Sedan</td>
                             </tr>
                             <tr class="border-bottom">
@@ -183,11 +183,11 @@
                             </tr>
                             <tr class="border-bottom">
                                 <td class="text-muted py-2">Hộp số</td>
-                                <td class="font-weight-bold text-navy text-right py-2 text-capitalize" th:text="${vehicle.transmission == 'automatic' ? 'Số tự động' : (vehicle.transmission == 'manual' ? 'Số sàn' : vehicle.transmission)}">Số tự động</td>
+                                <td class="font-weight-bold text-navy text-right py-2"><span th:replace="~{fragments/labels :: transmission(${vehicle.transmission})}">Số tự động</span></td>
                             </tr>
                             <tr class="border-bottom">
                                 <td class="text-muted py-2">Nhiên liệu</td>
-                                <td class="font-weight-bold text-navy text-right py-2 text-capitalize" th:text="${vehicle.fuelType == 'gasoline' ? 'Xăng' : (vehicle.fuelType == 'diesel' ? 'Dầu' : (vehicle.fuelType == 'electric' ? 'Điện' : vehicle.fuelType))}">Xăng</td>
+                                <td class="font-weight-bold text-navy text-right py-2"><span th:replace="~{fragments/labels :: fuel(${vehicle.fuelType})}">Xăng</span></td>
                             </tr>
                         </tbody>
                     </table>
@@ -198,7 +198,7 @@
 <div class="font-weight-bold text-navy mb-1">Chính sách đặt cọc và hủy đặt xe:</div>
                     <ul class="mb-0 pl-3 text-muted">
                         <!-- Values come from the active rental terms version (Admin > Rental Terms); wording matches fragments/contract-terms -->
-                        <li data-policy="deposit" th:text="'Đặt cọc ' + ${contractTerms.depositPercent} + '% tổng giá trị đơn thuê khi đặt xe; phần còn lại thanh toán khi trả xe.'">Đặt cọc 50% tổng giá trị đơn thuê khi đặt xe; phần còn lại thanh toán khi trả xe.</li>
+                        <li data-policy="deposit" th:text="'Đặt cọc ' + ${contractTerms.depositPercent} + '% tổng giá trị đơn thuê khi đặt xe; phần còn lại thanh toán khi nhận xe.'">Đặt cọc 50% tổng giá trị đơn thuê khi đặt xe; phần còn lại thanh toán khi nhận xe.</li>
                         <li data-policy="cancellation" th:text="'Hủy trước giờ nhận xe ít nhất ' + ${contractTerms.freeCancellationHours} + ' giờ: hoàn 100% tiền cọc.'">Hủy trước giờ nhận xe ít nhất 72 giờ: hoàn 100% tiền cọc.</li>
                         <li data-policy="lateReturn" th:text="'Trả xe trễ: mỗi giờ trễ tính ' + ${contractTerms.lateFeePercent} + '% đơn giá thuê theo giờ.'">Trả xe trễ: mỗi giờ trễ tính 200% đơn giá thuê theo giờ.</li>
                     </ul>

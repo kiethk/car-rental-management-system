@@ -136,7 +136,7 @@ class IssueSearchTest {
         issue.setBooking(booking);
         issue.setVehicle(vehicle);
         issue.setEmployee(reporter);
-        issue.setIssueType(IssueType.TRAFFIC_FINE);
+        issue.setIssueType(IssueType.DAMAGE);
         issue.setSubject("Fine " + id);
         issue.setStatus(IssueStatus.RESOLVED);
         issue.setOccurredAt(OffsetDateTime.parse(occurredAt));

@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sự cố — DriveNow Admin</title>
+    <title>Sự cố — Quản trị DriveNow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -29,7 +29,7 @@
 
             <div th:replace="~{fragments/admin-components :: pageHeader(
                 title='Quản lý sự cố',
-                subtitle='Va chạm, hư hỏng và phạt nguội phát sinh trong thời gian thuê. Ghi nhận sự cố từ trang chi tiết đơn thuê.',
+                subtitle='Va chạm, hư hỏng phát sinh trong thời gian thuê. Ghi nhận từ trang chi tiết đơn thuê, đủ trước khi quyết toán.',
                 backUrl=null,
                 backText=null)}"></div>
 
@@ -37,31 +37,6 @@
                 <div class="col-lg-3 issue-open-stat">
                     <div th:replace="~{fragments/admin-components :: statCard(
                         label='Đang mở', value=${openCount}, subtext='Sự cố khách chưa thanh toán', iconType='clock', variant='warning')}"></div>
-                </div>
-                <div class="col-lg-9">
-                    <div class="admin-card h-100">
-                    <div class="admin-card-header">
-                        <div class="admin-card-title-group">
-                            <h2 class="admin-card-title">Ghi nhận phạt nguội</h2>
-                            <p class="admin-card-subtitle">Nhập biển số và thời điểm vi phạm trên biên bản. Hệ thống tìm đơn thuê của xe tại thời điểm đó.</p>
-                        </div>
-                    </div>
-                    <div class="admin-card-body">
-                        <form th:action="@{/admin/issues/traffic-fine}" method="get" class="row align-items-end">
-                            <div class="col-md-4 admin-form-group">
-                                <label class="admin-form-label" for="plate">Biển số (*)</label>
-                                <input id="plate" type="text" name="plate" class="admin-form-input font-mono" placeholder="51A-123.45" required>
-                            </div>
-                            <div class="col-md-4 admin-form-group">
-                                <label class="admin-form-label" for="violationTime">Thời điểm vi phạm (*)</label>
-                                <input id="violationTime" type="datetime-local" name="occurredAt" class="admin-form-input" required>
-                            </div>
-                            <div class="col-md-4 admin-form-group">
-                                <button type="submit" class="admin-btn admin-btn-primary">Tra đơn thuê</button>
-                            </div>
-                        </form>
-                    </div>
-                    </div>
                 </div>
             </div>
 

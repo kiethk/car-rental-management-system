@@ -8,7 +8,7 @@
                 th:action="@{/search}"
                 th:id="${formId != null ? formId : 'rental-schedule-form'}"
                 class="card-shadcn overflow-visible"
-                th:attr="data-server-error=${scheduleError},data-open-hour=${openingHours != null ? openingHours.open : 6},data-close-hour=${openingHours != null ? openingHours.close : 22}"
+                th:attr="data-server-error=${scheduleError},data-open-hour=${openingHours != null ? openingHours.open : 0},data-close-hour=${openingHours != null ? openingHours.close : 23}"
             >
                 <!-- Preserved filters on search page -->
                 <input
@@ -61,7 +61,6 @@
                                 <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">
                                     Lịch trình nhận xe
                                 </span>
-                                <span class="text-[11px] font-medium text-muted-foreground">Sớm nhất: 06:00</span>
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -248,7 +247,6 @@
                                 <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">
                                     Lịch trình trả xe
                                 </span>
-                                <span class="text-[11px] font-medium text-muted-foreground">Muộn nhất: 22:00</span>
                             </div>
 
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -540,8 +538,8 @@
 
                         // Depot opening hours from crms.opening-hours.* (pickup and return both inside, whole hours).
                         const hoursHost = document.querySelector("[data-open-hour]");
-                        const OPEN_HOUR = parseInt((hoursHost && hoursHost.getAttribute("data-open-hour")) || "6", 10);
-                        const CLOSE_HOUR = parseInt((hoursHost && hoursHost.getAttribute("data-close-hour")) || "22", 10);
+                        const OPEN_HOUR = parseInt((hoursHost && hoursHost.getAttribute("data-open-hour")) || "0", 10);
+                        const CLOSE_HOUR = parseInt((hoursHost && hoursHost.getAttribute("data-close-hour")) || "23", 10);
                         const hoursList = [];
                         for (let h = OPEN_HOUR; h <= CLOSE_HOUR; h++) hoursList.push(String(h).padStart(2, "0") + ":00");
 

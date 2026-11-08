@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Quản lý khuyến mãi — DriveNow Admin</title>
+    <title>Quản lý khuyến mãi — Quản trị DriveNow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -75,7 +75,7 @@
                                 <div class="d-inline-flex align-items-center justify-content-center" style="gap: 6px;">
                                     <a th:href="@{/admin/promotions/{id}/edit(id=${promotion.id})}" class="admin-btn btn-soft-primary">Chỉnh sửa</a>
                                     <form method="post" th:action="@{/admin/promotions/{id}/delete(id=${promotion.id})}" class="m-0"
-                                          onsubmit="return confirm('Bạn có chắc muốn xóa khuyến mãi này? Các khuyến mãi đã liên kết với đơn đặt xe sẽ không thể xóa.');">
+                                          data-confirm="Xóa khuyến mãi này?" data-confirm-detail="Không xóa được nếu đã dùng trong đơn đặt xe." data-confirm-ok="Xóa" data-confirm-tone="danger">
                                         <button type="submit" class="admin-btn btn-soft-danger">Xóa</button>
                                     </form>
                                 </div>

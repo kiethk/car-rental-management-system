@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Record Inspection Result — DriveNow Admin</title>
+    <title>Ghi kết quả đăng kiểm — Quản trị DriveNow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -33,13 +33,13 @@
             <div class="card border-0 shadow-sm rounded-xl p-4 p-md-5 bg-white max-w-4xl">
                 <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
                     <div>
-                        <h1 class="h4 font-weight-bold text-navy mb-1" th:text="'Record Result — Inspection #' + ${inspection.id}">
-                            Record Inspection Result
+                        <h1 class="h4 font-weight-bold text-navy mb-1" th:text="'Ghi kết quả — Đăng kiểm #' + ${inspection.id}">
+                            Ghi kết quả đăng kiểm
                         </h1>
                         <p class="text-muted small mb-0">Ghi nhận kết quả đăng kiểm chính thức sau khi xe hoàn tất kiểm tra tại trạm.</p>
                     </div>
                     <a th:href="@{/admin/inspections}" class="btn btn-outline-secondary btn-sm rounded-lg">
-                        Quay lại danh sách kiểm định
+                        Quay lại danh sách đăng kiểm
                     </a>
                 </div>
 
@@ -47,19 +47,19 @@
                 <div class="p-3 bg-surface rounded-xl border mb-4">
                     <div class="row">
                         <div class="col-md-4">
-                            <span class="small text-muted d-block">Vehicle:</span>
+                            <span class="small text-muted d-block">Xe:</span>
                             <span class="font-weight-bold text-navy"
                                   th:text="${inspection.vehicle.vehicleType.displayName}">Toyota Vios</span>
                         </div>
                         <div class="col-md-4">
-                            <span class="small text-muted d-block">License Plate:</span>
+                            <span class="small text-muted d-block">Biển số:</span>
                             <span class="badge badge-light border font-weight-bold text-navy"
-                                  th:text="${inspection.vehicle.licensePlate != null ? inspection.vehicle.licensePlate.plate : 'Unassigned'}">51A-123.45</span>
+                                  th:text="${inspection.vehicle.licensePlate != null ? inspection.vehicle.licensePlate.plate : 'Chưa có biển'}">51A-123.45</span>
                         </div>
                         <div class="col-md-4">
-                            <span class="small text-muted d-block">Scheduled At:</span>
+                            <span class="small text-muted d-block">Hẹn lúc:</span>
                             <span class="font-weight-bold text-navy"
-                                  th:text="${#temporals.format(inspection.scheduledAt, 'yyyy-MM-dd HH:mm')}">2026-10-25 09:00</span>
+                                  th:text="${#temporals.format(inspection.scheduledAt, 'dd/MM/yyyy HH:mm')}">2026-10-25 09:00</span>
                         </div>
                     </div>
                 </div>
@@ -68,18 +68,18 @@
                     <div class="row g-3">
                         <!-- Select Result -->
                         <div class="col-12 form-group mb-4">
-                            <label class="font-weight-bold small text-navy mb-2 d-block">Official Inspection Result <span class="text-danger">*</span></label>
+                            <label class="font-weight-bold small text-navy mb-2 d-block">Kết quả đăng kiểm chính thức <span class="text-danger">*</span></label>
                             <div class="d-flex gap-4">
                                 <div class="custom-control custom-radio custom-control-inline">
                                     <input type="radio" id="statusPassed" name="status" value="passed" class="custom-control-input" checked onchange="togglePassedFields(true)">
                                     <label class="custom-control-label font-weight-bold text-success" for="statusPassed">
-                                        PASSED — New registration sticker issued
+                                        ĐẠT — Đã được cấp tem đăng kiểm mới
                                     </label>
                                 </div>
                                 <div class="custom-control custom-radio custom-control-inline">
                                     <input type="radio" id="statusFailed" name="status" value="failed" class="custom-control-input" onchange="togglePassedFields(false)">
                                     <label class="custom-control-label font-weight-bold text-danger" for="statusFailed">
-                                        FAILED — Failed inspection, repair required
+                                        KHÔNG ĐẠT — Cần sửa chữa
                                     </label>
                                 </div>
                             </div>
@@ -94,27 +94,27 @@
                                    th:value="${resultForm.newRegistrationExpiry}"
                                    class="form-control rounded-lg col-md-6">
                             <small class="form-text text-muted mt-2">
-                                <strong>Automation:</strong> Saving will update the vehicle's registration expiry date (`vehicles.registration_expiry`) and return the vehicle status to <strong>Available</strong>.
+                                <strong>Tự động:</strong> Khi lưu, hệ thống cập nhật hạn đăng kiểm của xe và chuyển trạng thái xe về <strong>Sẵn sàng</strong>.
                             </small>
                         </div>
 
                         <!-- Failed Notice -->
                         <div id="failedNotice" class="col-12 alert alert-warning rounded-xl border-0 mb-3" style="display: none;">
-                            <strong>Notice:</strong> The vehicle will remain in <strong>Maintenance</strong> status until mechanical defects are rectified.
+                            <strong>Lưu ý:</strong> Xe sẽ ở trạng thái <strong>Bảo dưỡng</strong> cho đến khi các lỗi kỹ thuật được khắc phục.
                         </div>
 
                         <!-- Inspection Notes -->
                         <div class="col-12 form-group mb-4">
-                            <label class="font-weight-bold small text-navy mb-1">Ghi chú kiểm định & Chi tiết giấy chứng nhận</label>
+                            <label class="font-weight-bold small text-navy mb-1">Ghi chú đăng kiểm & thông tin giấy chứng nhận</label>
                             <textarea name="notes" rows="3" class="form-control rounded-lg"
-                                      placeholder="e.g. Passed all safety and emissions checks. Or if failed: Rear brake pads worn out, headlamp alignment required..."></textarea>
+                                      placeholder="VD: Đạt các hạng mục an toàn và khí thải. Nếu không đạt: má phanh sau mòn, cần chỉnh đèn pha..."></textarea>
                         </div>
                     </div>
 
                     <div class="d-flex justify-content-end gap-2 pt-3 border-top">
-                        <a th:href="@{/admin/inspections}" class="btn btn-light px-4 rounded-lg">Hủy bỏ</a>
+                        <a th:href="@{/admin/inspections}" class="btn btn-light px-4 rounded-lg">Hủy</a>
                         <button type="submit" class="btn btn-navy font-weight-bold px-4 rounded-lg shadow-sm">
-                            Lưu kết quả kiểm định
+                            Lưu kết quả đăng kiểm
                         </button>
                     </div>
                 </form>

@@ -3,6 +3,8 @@
 <body>
 
 <header th:fragment="header" th:with="account=${session.account}" class="bg-white text-navy sticky top-0 z-50 border-b border-border shadow-xs">
+    <link rel="stylesheet" th:href="@{/css/confirm-modal.css}">
+    <script th:src="@{/js/confirm-modal.js}" defer></script>
     <div class="crms-container">
         <div class="flex items-center justify-between h-16">
             
@@ -22,7 +24,7 @@
             <nav th:if="${isAdminPage == null or !isAdminPage}" class="header-customer-only hidden lg:flex items-center gap-1">
                 <a th:href="@{/}" class="crms-nav-link header-nav-link" data-nav="home">Trang chủ</a>
                 <a th:href="@{/vehicles}" class="crms-nav-link header-nav-link" data-nav="vehicles">Danh sách xe</a>
-                <a th:href="@{/search}" class="crms-nav-link header-nav-link" data-nav="search">Thuê xe ngay</a>
+                <a th:href="@{/search}" class="crms-nav-link header-nav-link" data-nav="search">Thuê xe</a>
                 <a th:if="${account != null and account.customer}" th:href="@{/bookings/my-bookings}" class="crms-nav-link header-nav-link" data-nav="bookings">Chuyến đi của tôi</a>
             </nav>
 
@@ -48,7 +50,7 @@
                             <div class="w-7 h-7 rounded-full bg-navy text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
                                 <span th:text="${#strings.substring(account.name != null ? account.name : 'U', 0, 1)}">U</span>
                             </div>
-                            <span class="text-xs font-semibold text-navy max-w-[120px] truncate hidden sm:inline" th:text="${account.name != null ? account.name : 'Customer'}">User</span>
+                            <span class="text-xs font-semibold text-navy max-w-[120px] truncate hidden sm:inline" th:text="${account.name != null ? account.name : 'Khách hàng'}">Khách hàng</span>
                             <svg class="w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 dropdown-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
                         
@@ -126,21 +128,21 @@
                             <div class="w-7 h-7 rounded-full bg-slate-800 text-amber font-bold text-xs flex items-center justify-center flex-shrink-0">
                                 <span>A</span>
                             </div>
-                            <span class="text-xs font-semibold text-navy max-w-[120px] truncate hidden sm:inline" th:text="${account.name != null ? account.name : 'Operations'}">Staff</span>
-                            <span class="badge badge-warning text-dark text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase" th:text="${account.role}">Staff</span>
+                            <span class="text-xs font-semibold text-navy max-w-[120px] truncate hidden sm:inline" th:text="${account.name != null ? account.name : 'Nhân viên'}">Nhân viên</span>
+                            <span class="badge badge-warning text-dark text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase" th:text="${#strings.toLowerCase(account.role) == 'admin' ? 'Quản trị viên' : 'Nhân viên'}">Nhân viên</span>
                             <svg class="w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 dropdown-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
                         
                         <div class="crms-dropdown-menu header-dropdown-menu">
                             <div class="px-4 py-2.5 border-b border-border bg-surface/50">
                                 <div class="text-xs font-bold text-navy" th:text="${account.name}">Staff Name</div>
-                                <div class="text-[11px] text-muted-foreground uppercase font-semibold mt-0.5" style="letter-spacing: 0.05em;" th:text="${account.role != null ? account.role : 'Staff Operations'}">Staff Operations</div>
+                                <div class="text-[11px] text-muted-foreground uppercase font-semibold mt-0.5" style="letter-spacing: 0.05em;" th:text="${account.role != null ? (#strings.toLowerCase(account.role) == 'admin' ? 'Quản trị viên' : 'Nhân viên') : 'Nhân viên vận hành'}">Nhân viên vận hành</div>
                             </div>
                             
                             <div class="py-1">
                                 <a th:href="@{/admin/dashboard}" class="crms-dropdown-item header-dropdown-item">
                                     <svg class="w-4 h-4 text-muted-foreground flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                                    <span>Dashboard</span>
+                                    <span>Bảng điều khiển</span>
                                 </a>
                                 <a th:href="@{/admin/profile}" class="crms-dropdown-item header-dropdown-item">
                                     <svg class="w-4 h-4 text-muted-foreground flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
@@ -151,7 +153,7 @@
                             <div class="border-t border-border py-1">
                                 <a th:href="@{/logout}" class="crms-dropdown-item header-dropdown-item text-red-600 hover:bg-red-50 hover:text-red-700" style="color: #dc2626 !important;">
                                     <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                                    <span style="font-weight: 600;">Sign Out</span>
+                                    <span style="font-weight: 600;">Đăng xuất</span>
                                 </a>
                             </div>
                         </div>

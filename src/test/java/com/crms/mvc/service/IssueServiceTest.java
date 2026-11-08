@@ -109,15 +109,14 @@ class IssueServiceTest {
     }
 
     @Test
-    void issuesCanBeRecordedOnlyOnceTheCustomerHasPickedUpTheCar() {
-        for (String status : List.of("pending_payment", "confirmed", "cancelled")) {
+    void issuesCanBeRecordedOnlyWhileTheRentalIsOpen() {
+        for (String status : List.of("pending_payment", "confirmed", "cancelled", "completed")) {
             Booking booking = bookingWithStatus(status);
             assertThrows(IllegalStateException.class, () -> service.create(form(booking, "200000"), staff), status);
         }
         verify(issueRepository, never()).save(any());
 
         assertNotNull(service.create(form(bookingWithStatus(Booking.STATUS_ACTIVE), "200000"), staff));
-        assertNotNull(service.create(form(bookingWithStatus(Booking.STATUS_COMPLETED), "200000"), staff));
     }
 
     @Test

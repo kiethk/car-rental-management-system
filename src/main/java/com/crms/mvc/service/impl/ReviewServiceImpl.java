@@ -1,5 +1,6 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.dto.RatingSummaryDTO;
 import com.crms.mvc.dto.ReviewDTO;
 import com.crms.mvc.dto.ReviewFormDTO;
 import com.crms.mvc.dto.VehicleReviewSummaryDTO;
@@ -15,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.OffsetDateTime;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -62,6 +65,18 @@ public class ReviewServiceImpl implements ReviewService {
                         .orElse(0))
                 .setScale(1, RoundingMode.HALF_UP);
         return new VehicleReviewSummaryDTO(averageRating, reviews);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, RatingSummaryDTO> ratingsByVehicleType() {
+        Map<Long, RatingSummaryDTO> ratings = new HashMap<>();
+        for (Object[] row : reviewRepository.summarizeRatingsByVehicleType()) {
+            double average = BigDecimal.valueOf(((Number) row[1]).doubleValue())
+                    .setScale(1, RoundingMode.HALF_UP).doubleValue();
+            ratings.put(((Number) row[0]).longValue(), new RatingSummaryDTO(average, ((Number) row[2]).longValue()));
+        }
+        return ratings;
     }
 
     @Override

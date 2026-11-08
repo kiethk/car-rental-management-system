@@ -32,6 +32,8 @@ public class FileUploadServiceImpl implements FileUploadService {
     // Incident photos are evidence about customers: private, served only by controllers that check access.
     private static final Path ISSUE_EVIDENCE_DIRECTORY =
             Path.of("uploads", "issues").toAbsolutePath().normalize();
+    private static final Path TRAFFIC_FINE_DIRECTORY =
+            Path.of("uploads", "traffic-fines").toAbsolutePath().normalize();
 
     @Override
     public String saveLicenseImage(MultipartFile image) {
@@ -76,18 +78,18 @@ public class FileUploadServiceImpl implements FileUploadService {
     @Override
     public String savePromotionImage(MultipartFile image) {
         if (image == null || image.isEmpty()) {
-            throw new IllegalArgumentException("Promotion image is required");
+            throw new IllegalArgumentException("Vui lòng chọn ảnh khuyến mãi");
         }
 
         if (image.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("Image must be 5 MB or smaller");
+            throw new IllegalArgumentException("Ảnh tối đa 5 MB");
         }
 
         String extension = switch (image.getContentType() == null ? "" : image.getContentType()) {
             case "image/jpeg" -> ".jpg";
             case "image/png" -> ".png";
             case "image/webp" -> ".webp";
-            default -> throw new IllegalArgumentException("Only JPEG, PNG, and WebP images are allowed");
+            default -> throw new IllegalArgumentException("Chỉ chấp nhận ảnh JPEG, PNG và WebP");
         };
 
         String fileName = "promotion-" + UUID.randomUUID() + extension;
@@ -96,25 +98,25 @@ public class FileUploadServiceImpl implements FileUploadService {
             Files.copy(image.getInputStream(), PROMOTION_UPLOAD_DIRECTORY.resolve(fileName));
             return "/uploads/promotions/" + fileName;
         } catch (IOException exception) {
-            throw new IllegalStateException("Could not save promotion image", exception);
+            throw new IllegalStateException("Không thể lưu ảnh khuyến mãi", exception);
         }
     }
 
     @Override
     public String saveHandoverImage(MultipartFile image) {
         if (image == null || image.isEmpty()) {
-            throw new IllegalArgumentException("Handover image is required");
+            throw new IllegalArgumentException("Vui lòng chọn ảnh bàn giao");
         }
 
         if (image.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("Image must be 5 MB or smaller");
+            throw new IllegalArgumentException("Ảnh tối đa 5 MB");
         }
 
         String extension = switch (image.getContentType() == null ? "" : image.getContentType()) {
             case "image/jpeg" -> ".jpg";
             case "image/png" -> ".png";
             case "image/webp" -> ".webp";
-            default -> throw new IllegalArgumentException("Only JPEG, PNG, and WebP images are allowed");
+            default -> throw new IllegalArgumentException("Chỉ chấp nhận ảnh JPEG, PNG và WebP");
         };
 
         String fileName = UUID.randomUUID() + extension;
@@ -123,7 +125,7 @@ public class FileUploadServiceImpl implements FileUploadService {
             Files.copy(image.getInputStream(), HANDOVER_UPLOAD_DIRECTORY.resolve(fileName));
             return fileName;
         } catch (IOException exception) {
-            throw new IllegalStateException("Could not save handover image", exception);
+            throw new IllegalStateException("Không thể lưu ảnh bàn giao", exception);
         }
     }
 
@@ -164,6 +166,33 @@ public class FileUploadServiceImpl implements FileUploadService {
             return fileName;
         } catch (IOException exception) {
             throw new IllegalStateException("Không thể lưu ảnh bằng chứng sự cố", exception);
+        }
+    }
+
+    @Override
+    public String saveTrafficFineImage(MultipartFile image) {
+        String extension = validatedImageExtension(image, "Ảnh biên bản phạt nguội");
+        String fileName = "fine-" + UUID.randomUUID() + extension;
+        try {
+            Files.createDirectories(TRAFFIC_FINE_DIRECTORY);
+            Files.copy(image.getInputStream(), TRAFFIC_FINE_DIRECTORY.resolve(fileName));
+            return fileName;
+        } catch (IOException exception) {
+            throw new IllegalStateException("Không thể lưu ảnh biên bản phạt nguội", exception);
+        }
+    }
+
+    @Override
+    public Resource loadTrafficFineImage(String fileName) {
+        return loadFrom(TRAFFIC_FINE_DIRECTORY, fileName);
+    }
+
+    @Override
+    public void deleteTrafficFineImage(String fileName) {
+        try {
+            Files.deleteIfExists(TRAFFIC_FINE_DIRECTORY.resolve(fileName).normalize());
+        } catch (IOException exception) {
+            // The record is already gone; a leftover private file is harmless.
         }
     }
 

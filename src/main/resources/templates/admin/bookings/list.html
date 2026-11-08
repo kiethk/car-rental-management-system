@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Admin Bookings — DriveNow</title>
+        <title>Quản lý đơn thuê — DriveNow</title>
         <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -147,7 +147,7 @@
                                         <th>#ID</th>
                                         <th>Khách hàng</th>
                                         <th>Dòng xe</th>
-                                        <th>Biển số bàn giao</th>
+                                        <th>Biển số được gán</th>
                                         <th>Lịch nhận xe</th>
                                         <th class="text-center">Trạng thái</th>
                                         <th class="text-center">Thao tác</th>
@@ -157,7 +157,7 @@
                                     <tr th:each="b : ${bookings}">
                                         <td class="font-weight-bold text-navy">#<span th:text="${b.id}">1</span></td>
                                         <td>
-                                            <strong class="d-block" th:text="${b.customerName}">Customer Name</strong>
+                                            <strong class="d-block" th:text="${b.customerName}">Tên khách hàng</strong>
                                         </td>
                                         <td th:text="${b.vehicleTypeName}">Toyota Vios</td>
                                         <td>
@@ -169,7 +169,7 @@
                                             class="small"
                                             th:text="${#temporals.format(b.pickupTime, 'dd/MM/yyyy HH:mm')}"
                                         >
-                                            Date
+                                            Ngày giờ
                                         </td>
                                         <td class="text-center">
                                             <span
@@ -231,7 +231,8 @@
                                                 th:href="@{/admin/bookings/{id}(id=${b.id})}"
                                                 class="admin-btn btn-soft-primary"
                                             >
-                                                Vận hành</a>
+                                                Xử lý
+                                            </a>
                                         </td>
                                     </tr>
                                 </tbody>

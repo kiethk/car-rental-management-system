@@ -3,6 +3,7 @@ package com.crms.mvc.event;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
@@ -52,6 +53,12 @@ public class CustomerMailer {
     }
 
     public void send(String to, String subject, String template, Map<String, Object> variables) throws Exception {
+        send(to, subject, template, variables, Map.of());
+    }
+
+    /** Same, with files attached: the map is attachment name (with extension) to its content. */
+    public void send(String to, String subject, String template, Map<String, Object> variables,
+                     Map<String, Resource> attachments) throws Exception {
         JavaMailSender sender = mailSender.getObject();
         Context context = new Context(VIETNAMESE);
         variables.forEach(context::setVariable);
@@ -63,6 +70,9 @@ public class CustomerMailer {
         helper.setTo(to);
         helper.setSubject(subject);
         helper.setText(body, true);
+        for (Map.Entry<String, Resource> attachment : attachments.entrySet()) {
+            helper.addAttachment(attachment.getKey(), attachment.getValue());
+        }
         sender.send(message);
     }
 }

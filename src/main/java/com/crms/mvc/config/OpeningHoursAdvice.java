@@ -14,8 +14,8 @@ public class OpeningHoursAdvice {
     private final String stationPhone;
     private final String stationMapEmbedUrl;
 
-    public OpeningHoursAdvice(@Value("${crms.opening-hours.open:6}") int open,
-                              @Value("${crms.opening-hours.close:22}") int close,
+    public OpeningHoursAdvice(@Value("${crms.opening-hours.open:0}") int open,
+                              @Value("${crms.opening-hours.close:23}") int close,
                               @Value("${crms.station.name:Kho xe DriveNow - ĐH FPT TP.HCM}") String stationName,
                               @Value("${crms.station.address:Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM}") String stationAddress,
                               @Value("${crms.station.phone:1900 6868}") String stationPhone,

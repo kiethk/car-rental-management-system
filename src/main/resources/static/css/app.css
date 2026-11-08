@@ -102,7 +102,8 @@ svg.w-6, .w-6 { width: 24px !important; height: 24px !important; min-width: 24px
   min-width: 0 !important;
   display: flex !important;
   flex-direction: column !important;
-  justify-content: space-between !important;
+  /* Specs line sits right under the name/rating instead of being pushed to the card bottom. */
+  justify-content: flex-start !important;
 }
 
 .car-card-pricing-col {
@@ -111,7 +112,7 @@ svg.w-6, .w-6 { width: 24px !important; height: 24px !important; min-width: 24px
   max-width: 250px !important;
   flex-shrink: 0 !important;
   border-left: 1px solid #e2e8f0 !important;
-  padding-left: 2rem !important; /* Dá»i Ä‘Æ°á»ng dá»c sang trÃ¡i rá»™ng 32px, chá»¯ vÃ  nÃºt khÃ´ng bá»‹ dÃ­nh */
+  padding-left: 2rem !important; 
   display: flex !important;
   flex-direction: column !important;
   justify-content: space-between !important;

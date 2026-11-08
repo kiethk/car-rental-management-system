@@ -58,21 +58,22 @@ VALUES
     (4, 3, 'Xanh dương', 2023, 18000, CURRENT_DATE - INTERVAL '5 days', 'maintenance'), -- Expired registration
     (5, 4, 'Đỏ', 2023, 21000, CURRENT_DATE + INTERVAL '15 days', 'available'), -- Expiring soon in <= 30 days
     (6, 5, 'Trắng ngọc trai', 2024, 6200, CURRENT_DATE + INTERVAL '6 months', 'available'),
-    (7, 6, 'Xám xi măng', 2023, 14500, CURRENT_DATE + INTERVAL '1 year', 'available'),
+    (7, 6, 'Xám xi măng', 2023, 14500, CURRENT_DATE + INTERVAL '3 days', 'available'), -- Expiring soon
     (8, 7, 'Cam Wildtrak', 2023, 28000, CURRENT_DATE + INTERVAL '1 year', 'available'),
-    (9, 8, 'Trắng', 2024, 9800, CURRENT_DATE + INTERVAL '8 months', 'available'),
+    (9, 8, 'Trắng', 2024, 9800, CURRENT_DATE + INTERVAL '25 days', 'available'), -- Expiring soon
     (10, 9, 'Đen bóng đêm', 2023, 31000, CURRENT_DATE + INTERVAL '10 months', 'available'),
     (11, 10, 'Nâu ánh kim', 2023, 19200, CURRENT_DATE + INTERVAL '2 years', 'available'),
-    (12, 11, 'Trắng tuyết', 2024, 4300, CURRENT_DATE + INTERVAL '18 months', 'available'),
+    (12, 11, 'Trắng tuyết', 2024, 4300, CURRENT_DATE + INTERVAL '9 days', 'available'), -- Expiring soon
     (13, 12, 'Xanh rêu', 2024, 5100, CURRENT_DATE + INTERVAL '1 year', 'available'),
-    (14, 13, 'Đen', 2023, 17800, CURRENT_DATE + INTERVAL '1 year', 'available'),
+    (14, 13, 'Đen', 2023, 17800, CURRENT_DATE - INTERVAL '12 days', 'maintenance'), -- Expired registration
     (15, 14, 'Đỏ Sonic', 2023, 13200, CURRENT_DATE + INTERVAL '1 year', 'available'),
     (16, 15, 'Xanh Portimao', 2023, 11500, CURRENT_DATE + INTERVAL '1 year', 'available'),
-    (17, 16, 'Bạc Iridium', 2023, 9000, CURRENT_DATE + INTERVAL '2 years', 'available'),
+    (17, 16, 'Bạc Iridium', 2023, 9000, CURRENT_DATE - INTERVAL '2 days', 'maintenance'), -- Expired registration
     (18, 17, 'Đen nhám Volcano', 2023, 8200, CURRENT_DATE + INTERVAL '1 year', 'available'),
     (19, 18, 'Trắng băng', 2023, 14000, CURRENT_DATE + INTERVAL '1 year', 'available'),
     (20, 19, 'Xanh đại dương', 2023, 16500, CURRENT_DATE + INTERVAL '1 year', 'available')
-ON CONFLICT (vehicle_id) DO UPDATE SET color = EXCLUDED.color, year = EXCLUDED.year, odometer = EXCLUDED.odometer, status = EXCLUDED.status;
+ON CONFLICT (vehicle_id) DO UPDATE SET color = EXCLUDED.color, year = EXCLUDED.year, odometer = EXCLUDED.odometer,
+    registration_expiry = EXCLUDED.registration_expiry, status = EXCLUDED.status;
 
 -- 5. LICENSE_PLATES
 -- valid_to IS NULL = plate currently on the car. Vehicle 1 shows a car with several plate generations.
@@ -131,6 +132,8 @@ ON CONFLICT (slot_id) DO NOTHING;
 
 -- 9. BOOKINGS
 -- pickup_time and scheduled_end_time are whole hours (minute :00), the same rule the booking form enforces.
+-- Past and future bookings sit at fixed daytime hours (CURRENT_DATE + N hours) so they stay inside opening hours
+-- whatever time the seed runs; only the active rental is relative to now, because it must cover the current hour.
 -- status: 'pending_payment' | 'confirmed' | 'active' | 'completed' | 'cancelled'
 INSERT INTO bookings (
     booking_id, customer_id, slot_id, vehicle_id, employee_id, promotion_id,
@@ -143,7 +146,7 @@ VALUES
     -- Booking 1: Completed
     (
         1, 1, 1, 1, 2, 1,
-        date_trunc('hour', CURRENT_TIMESTAMP) - INTERVAL '3 days', date_trunc('hour', CURRENT_TIMESTAMP) - INTERVAL '2 days', date_trunc('hour', CURRENT_TIMESTAMP) - INTERVAL '2 days',
+        CURRENT_DATE - INTERVAL '3 days' + INTERVAL '9 hours', CURRENT_DATE - INTERVAL '2 days' + INTERVAL '9 hours', CURRENT_DATE - INTERVAL '2 days' + INTERVAL '9 hours',
         1350000.00,
         'completed', CURRENT_TIMESTAMP - INTERVAL '5 days',
         150000.00, 675000.00, 150000.00
@@ -159,7 +162,7 @@ VALUES
     -- Booking 3: Confirmed
     (
         3, 1, 3, 3, 2, 2,
-        date_trunc('hour', CURRENT_TIMESTAMP) + INTERVAL '1 day', date_trunc('hour', CURRENT_TIMESTAMP) + INTERVAL '1 day 10 hours', NULL,
+        CURRENT_DATE + INTERVAL '1 day' + INTERVAL '8 hours', CURRENT_DATE + INTERVAL '1 day' + INTERVAL '18 hours', NULL,
         2900000.00,
         'confirmed', CURRENT_TIMESTAMP - INTERVAL '2 hours',
         300000.00, 1450000.00, 100000.00
@@ -168,7 +171,7 @@ ON CONFLICT (booking_id) DO NOTHING;
 
 -- 10. CONTRACT_TEMPLATES
 -- status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED'. Numbers live in typed columns; terms_content holds wording only.
--- Version 1 is archived: contracts 1 and 2 were signed on it. Version 2 adds the post-settlement fee, total-loss and car-swap clauses.
+-- Version 1 is archived: contracts 1 and 2 were signed on it. Version 2 adds the fees and traffic fine, total-loss and car-swap clauses.
 INSERT INTO contract_templates (contract_template_id, version_no, title, terms_content,
                                 deposit_rate, late_fee_multiplier, free_cancellation_hours,
                                 free_cancel_after_deposit_hours, pickup_wait_hours,
@@ -177,7 +180,7 @@ INSERT INTO contract_templates (contract_template_id, version_no, title, terms_c
 VALUES
     (1, 1, 'Hợp đồng thuê xe ô tô tự lái',
      E'Quyền và nghĩa vụ của Bên A\n'
-     || E'1. Bàn giao xe đúng thời gian và địa điểm đã thỏa thuận; xe ở tình trạng kỹ thuật tốt, có đủ giấy đăng ký, giấy chứng nhận kiểm định và bảo hiểm trách nhiệm dân sự bắt buộc còn hiệu lực.\n'
+     || E'1. Bàn giao xe đúng thời gian và địa điểm đã thỏa thuận; xe ở tình trạng kỹ thuật tốt, có đủ giấy đăng ký, giấy chứng nhận đăng kiểm và bảo hiểm trách nhiệm dân sự bắt buộc còn hiệu lực.\n'
      || E'2. Cùng Bên B lập biên bản bàn giao, ghi nhận số km, mức nhiên liệu và tình trạng ngoại thất, nội thất khi giao và khi nhận lại xe.\n'
      || E'3. Chịu chi phí bảo dưỡng định kỳ và các hư hỏng do hao mòn tự nhiên của xe.\n'
      || E'\nQuyền và nghĩa vụ của Bên B\n'
@@ -190,7 +193,7 @@ VALUES
      'ARCHIVED', 1, CURRENT_TIMESTAMP - INTERVAL '30 days', CURRENT_TIMESTAMP - INTERVAL '30 days'),
     (2, 2, 'Hợp đồng thuê xe ô tô tự lái',
      E'Quyền và nghĩa vụ của Bên A\n'
-     || E'1. Bàn giao xe đúng thời gian và địa điểm đã thỏa thuận; xe ở tình trạng kỹ thuật tốt, có đủ giấy đăng ký, giấy chứng nhận kiểm định và bảo hiểm trách nhiệm dân sự bắt buộc còn hiệu lực.\n'
+     || E'1. Bàn giao xe đúng thời gian và địa điểm đã thỏa thuận; xe ở tình trạng kỹ thuật tốt, có đủ giấy đăng ký, giấy chứng nhận đăng kiểm và bảo hiểm trách nhiệm dân sự bắt buộc còn hiệu lực.\n'
      || E'2. Cùng Bên B lập biên bản bàn giao, ghi nhận số km, mức nhiên liệu và tình trạng ngoại thất, nội thất khi giao và khi nhận lại xe.\n'
      || E'3. Chịu chi phí bảo dưỡng định kỳ và các hư hỏng do hao mòn tự nhiên của xe.\n'
      || E'\nQuyền và nghĩa vụ của Bên B\n'
@@ -199,8 +202,8 @@ VALUES
      || E'6. Không giao xe cho người khác điều khiển khi chưa được Bên A đồng ý; không cầm cố, thế chấp, cho thuê lại xe; không dùng xe để chở hàng cấm hoặc đua xe.\n'
      || E'7. Bồi thường thiệt hại khi xe bị hư hỏng hoặc mất mát do lỗi của Bên B, căn cứ biên bản bàn giao và chi phí sửa chữa thực tế.\n'
      || E'8. Trả xe đúng thời hạn, đúng địa điểm; tự chi trả phí cầu đường, bến bãi phát sinh.\n'
-     || E'\nPhí phát sinh sau quyết toán\n'
-     || E'9. Các khoản phạt vi phạm giao thông (kể cả phạt nguội) hoặc thiệt hại phát sinh trong thời gian thuê nhưng được ghi nhận sau khi đã quyết toán vẫn thuộc trách nhiệm của Bên B. Bên A thông báo qua email kèm chứng từ.\n'
+     || E'\nPhí phát sinh và phạt nguội\n'
+     || E'9. Phí trả xe trễ và các khoản bồi thường (hư hỏng, vệ sinh, phát sinh khác) được lập biên bản và thanh toán khi quyết toán lúc trả xe; quyết toán xong thì hợp đồng được đóng. Phạt nguội do cơ quan công an giải quyết trực tiếp với Bên B; Bên A chỉ thông báo qua email đơn thuê liên quan và không thu khoản tiền này.\n'
      || E'\nXe hư hỏng không thể sửa chữa hoặc không thể thu hồi\n'
      || E'10. Áp dụng khi xe bị tổn thất toàn bộ (đơn vị giám định hoặc gara chính hãng kết luận không thể sửa chữa, hoặc chi phí sửa chữa vượt 70% giá trị xe), hoặc khi xe không thể thu hồi (mất cắp, bị chiếm giữ, Bên B không hoàn trả) do lỗi của Bên B. Khi đó Bên B bồi thường:\n'
      || E'a) Giá trị thị trường của xe tại thời điểm xảy ra sự việc, theo định giá của đơn vị thẩm định độc lập, trừ đi số tiền bảo hiểm Bên A thực nhận (nếu có);\n'
@@ -249,12 +252,12 @@ ON CONFLICT (review_id) DO UPDATE SET comment = EXCLUDED.comment;
 -- status: 'scheduled' | 'passed' | 'failed'
 INSERT INTO vehicle_inspections (vehicle_inspection_id, vehicle_id, scheduled_at, completed_at, status, notes)
 VALUES 
-    (1, 1, CURRENT_TIMESTAMP - INTERVAL '10 days', CURRENT_TIMESTAMP - INTERVAL '10 days', 'passed', 'Kiểm định định kỳ 10.000km, xe vận hành hoàn hảo.'),
+    (1, 1, CURRENT_TIMESTAMP - INTERVAL '10 days', CURRENT_TIMESTAMP - INTERVAL '10 days', 'passed', 'Bảo dưỡng định kỳ 10.000km, xe vận hành hoàn hảo.'),
     (2, 4, CURRENT_TIMESTAMP - INTERVAL '1 day', NULL, 'scheduled', 'Lịch chẩn đoán pin xe điện và hệ thống cảm biến ADAS.')
 ON CONFLICT (vehicle_inspection_id) DO UPDATE SET notes = EXCLUDED.notes;
 
 -- 15. ISSUES
--- issue_type: 'COLLISION' | 'DAMAGE' | 'TRAFFIC_FINE' | 'OTHER'; status: 'open' | 'resolved' | 'cancelled'
+-- issue_type: 'COLLISION' | 'DAMAGE' | 'OTHER'; status: 'open' | 'resolved' | 'cancelled'
 -- The amount owed is a booking_fees row (fee_type 'ISSUE_COMPENSATION'), not a column here.
 INSERT INTO issues (issue_id, booking_id, vehicle_id, employee_id, issue_type, subject, description, status,
                     occurred_at, reported_at, resolved_at, resolution_note, notified_at)
@@ -271,7 +274,7 @@ VALUES
 ON CONFLICT (issue_evidence_id) DO NOTHING;
 
 -- 16. BOOKING_FEES
--- fee_type: 'RENTAL' | 'LATE_FEE' | 'ISSUE_COMPENSATION' | 'CLEANING_FEE' | 'TOLL_FEE'
+-- fee_type: 'RENTAL' | 'LATE_FEE' | 'ISSUE_COMPENSATION'
 -- payment_id: the payment that settled the fee (booking 1's settlement is payment 2); NULL means still owed.
 INSERT INTO booking_fees (booking_fee_id, booking_id, fee_type, amount, description, issue_id, payment_id, created_at)
 VALUES

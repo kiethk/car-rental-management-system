@@ -109,7 +109,7 @@ public class VnPayServiceImpl implements PaymentService {
             return paymentUrl;
         } catch (Exception e) {
             log.error("Failed to generate VNPay payment URL for reference: {}", txnRef, e);
-            throw new RuntimeException("Could not initiate VNPay payment: " + e.getMessage(), e);
+            throw new RuntimeException("Không thể khởi tạo thanh toán VNPay: " + e.getMessage(), e);
         }
     }
 
@@ -214,9 +214,8 @@ public class VnPayServiceImpl implements PaymentService {
         if (customerId == null || !customerId.equals(booking.getCustomer().getId())) {
             throw new NoSuchElementException("Không tìm thấy đơn thuê: " + bookingId);
         }
-        if (!Booking.STATUS_ACTIVE.equalsIgnoreCase(booking.getStatus())
-                && !Booking.STATUS_COMPLETED.equalsIgnoreCase(booking.getStatus())) {
-            throw new IllegalStateException("Chỉ có thể thanh toán phí phát sinh cho chuyến thuê đang hoạt động hoặc đã kết thúc");
+        if (!Booking.STATUS_ACTIVE.equalsIgnoreCase(booking.getStatus())) {
+            throw new IllegalStateException("Chỉ thanh toán được phí sự cố khi đơn đang thuê");
         }
 
         // Kiểm tra lượt thanh toán pending trước đó
@@ -272,7 +271,7 @@ public class VnPayServiceImpl implements PaymentService {
             }
         }
         if (payment.getAmount().multiply(new BigDecimal(100)).longValue() != amountInCents) {
-            throw new IllegalArgumentException("Payment amount mismatch");
+            throw new IllegalArgumentException("Số tiền thanh toán không khớp");
         }
 
         payment.setStatus(Payment.STATUS_PAID);
@@ -329,17 +328,26 @@ public class VnPayServiceImpl implements PaymentService {
 
     @Override
     public Payment recordFinalPayment(Long bookingId, BigDecimal amount, String paymentMethod) {
+        return recordCounterPayment(bookingId, amount, paymentMethod, Payment.TYPE_FINAL);
+    }
+
+    @Override
+    public Payment recordRentalBalancePayment(Long bookingId, BigDecimal amount, String paymentMethod) {
+        return recordCounterPayment(bookingId, amount, paymentMethod, Payment.TYPE_RENTAL_BALANCE);
+    }
+
+    private Payment recordCounterPayment(Long bookingId, BigDecimal amount, String paymentMethod, String type) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy đơn thuê: " + bookingId));
-        Payment finalPayment = new Payment();
-        finalPayment.setBooking(booking);
-        finalPayment.setPaymentType("FINAL");
-        finalPayment.setAmount(amount);
-        finalPayment.setStatus("paid");
-        finalPayment.setPaymentMethod(paymentMethod);
-        finalPayment.setTransactionCode("FINAL-" + bookingId + "-" + System.currentTimeMillis());
-        finalPayment.setPaidAt(OffsetDateTime.now());
-        return paymentRepository.save(finalPayment);
+        Payment payment = new Payment();
+        payment.setBooking(booking);
+        payment.setPaymentType(type);
+        payment.setAmount(amount);
+        payment.setStatus(Payment.STATUS_PAID);
+        payment.setPaymentMethod(paymentMethod);
+        payment.setTransactionCode(type + "-" + bookingId + "-" + System.currentTimeMillis());
+        payment.setPaidAt(OffsetDateTime.now());
+        return paymentRepository.save(payment);
     }
 
     @Override

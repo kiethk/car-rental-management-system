@@ -67,21 +67,6 @@ public class AdminIssueController {
         return "admin/issues/list";
     }
 
-    /** Turns the plate and moment printed on a traffic fine into the rental that must answer for it. */
-    @GetMapping("/traffic-fine")
-    public String trafficFine(@RequestParam("plate") String plate,
-                              @RequestParam("occurredAt") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime occurredAt,
-                              RedirectAttributes ra) {
-        try {
-            Booking rental = issueService.findBookingForViolation(plate, occurredAt);
-            return "redirect:" + LIST_PATH + "/new?bookingId=" + rental.getId()
-                    + "&issueType=" + IssueType.TRAFFIC_FINE + "&occurredAt=" + occurredAt.truncatedTo(ChronoUnit.MINUTES);
-        } catch (NoSuchElementException ex) {
-            ra.addFlashAttribute("error", ex.getMessage());
-            return "redirect:" + LIST_PATH;
-        }
-    }
-
     @GetMapping("/new")
     public String newForm(@RequestParam("bookingId") Long bookingId,
                           @RequestParam(value = "issueType", required = false) IssueType issueType,
@@ -231,7 +216,7 @@ public class AdminIssueController {
         return CurrentAccount.of(session)
                 .filter(SessionAccount::isEmployee)
                 .map(IssueActor::of)
-                .orElseThrow(() -> new IllegalStateException("Employee session required"));
+                .orElseThrow(() -> new IllegalStateException("Cần đăng nhập bằng tài khoản nhân viên"));
     }
 
     private IssueFormDTO toForm(IssueDTO issue) {

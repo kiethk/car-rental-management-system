@@ -31,5 +31,12 @@ public interface FileUploadService {
 
     void deleteIssueEvidence(String fileName);
 
+    /** Photo of a police traffic fine notice: private, served only behind the staff login. */
+    String saveTrafficFineImage(MultipartFile image);
+
+    Resource loadTrafficFineImage(String fileName);
+
+    void deleteTrafficFineImage(String fileName);
+
     MediaType resolveMediaType(String fileName);
 }

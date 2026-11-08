@@ -58,14 +58,14 @@
                         <label for="role" class="small font-weight-bold text-navy mb-1">Vai trò</label>
                         <select id="role" th:field="*{role}" class="form-control rounded-lg"
                                 th:classappend="${#fields.hasErrors('role')} ? 'is-invalid'">
-                            <option value="staff">Nhân viên (Staff)</option>
-                            <option value="admin">Quản trị viên (Admin)</option>
+                            <option value="staff">Nhân viên</option>
+                            <option value="admin">Quản trị viên</option>
                         </select>
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('role')}" th:errors="*{role}"></div>
                     </div>
                     <div class="d-flex" style="gap: 8px;">
                         <button type="submit" class="btn btn-navy font-weight-bold rounded-lg">Tạo nhân viên</button>
-                        <a th:href="@{/admin/accounts(type='employee')}" class="btn btn-outline-secondary font-weight-bold rounded-lg">Hủy bỏ</a>
+                        <a th:href="@{/admin/accounts(type='employee')}" class="btn btn-outline-secondary font-weight-bold rounded-lg">Hủy</a>
                     </div>
                 </form>
             </div>

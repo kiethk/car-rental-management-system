@@ -46,6 +46,7 @@ import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.dto.ReviewDTO;
 import com.crms.mvc.dto.ReviewFormDTO;
 import com.crms.mvc.service.ReviewService;
+import com.crms.mvc.service.TrafficFineService;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
@@ -59,6 +60,7 @@ public class BookingController {
     private final IssueService issueService;
     private final HandoverService handoverService;
     private final ReviewService reviewService;
+    private final TrafficFineService trafficFineService;
 
     public BookingController(
             BookingService bookingService,
@@ -69,7 +71,8 @@ public class BookingController {
             PricingService pricingService,
             IssueService issueService,
             HandoverService handoverService,
-            ReviewService reviewService) {
+            ReviewService reviewService,
+            TrafficFineService trafficFineService) {
         this.bookingService = bookingService;
         this.paymentService = paymentService;
         this.vehicleTypeService = vehicleTypeService;
@@ -79,6 +82,7 @@ public class BookingController {
         this.issueService = issueService;
         this.handoverService = handoverService;
         this.reviewService = reviewService;
+        this.trafficFineService = trafficFineService;
     }
 
     // STEP 1 & 2: Choose rental schedule & filter available vehicle types
@@ -233,6 +237,7 @@ public class BookingController {
         model.addAttribute("remainingHours", remainingHours);
         model.addAttribute("durationDisplay", durationDisplay);
         model.addAttribute("results", results);
+        model.addAttribute("ratings", reviewService.ratingsByVehicleType());
         model.addAttribute("allCount", results.size());
         model.addAttribute("brands", vehicleTypeService.getDistinctBrands());
         model.addAttribute("categories", vehicleTypeService.getDistinctCategories());
@@ -253,13 +258,13 @@ public class BookingController {
 
         Long customerId = CurrentAccount.customerId(session).orElse(null);
         if (customerId == null) {
-            ra.addFlashAttribute("error", "Please sign in to proceed with your booking.");
+            ra.addFlashAttribute("error", "Vui lòng đăng nhập để tiếp tục đặt xe.");
             return "redirect:/login";
         }
 
         VehicleType vt = vehicleTypeService.findById(vehicleTypeId).orElse(null);
         if (vt == null) {
-            ra.addFlashAttribute("error", "Vehicle type not found.");
+            ra.addFlashAttribute("error", "Không tìm thấy dòng xe.");
             return "redirect:/search";
         }
 
@@ -368,14 +373,6 @@ public class BookingController {
         Long customerId = CurrentAccount.customerId(session).orElse(null);
         if (customerId == null) return "redirect:/login";
 
-        LocalDate rentalEndDate = form.getEndTime() != null ? form.getEndTime().toLocalDate() : LocalDate.now();
-        if (!licenseDocumentService.hasValidLicense(customerId, rentalEndDate)) {
-            ra.addFlashAttribute("error", licenseDocumentService.getCustomerLicense(customerId) == null
-                    ? "Please upload your driving license before booking."
-                    : "Your driving license expires before the rental ends.");
-            return "redirect:/licenses/my-license";
-        }
-
         if (result.hasErrors()) {
             ra.addFlashAttribute("error", result.getAllErrors().get(0).getDefaultMessage());
             boolean canReturnToCheckout = form.getVehicleTypeId() != null
@@ -445,7 +442,7 @@ public class BookingController {
                              HttpSession session, Model model, RedirectAttributes ra) {
         Long customerId = CurrentAccount.customerId(session).orElse(null);
         if (customerId == null) {
-            ra.addFlashAttribute("error", "Please sign in to view your bookings.");
+            ra.addFlashAttribute("error", "Vui lòng đăng nhập để xem chuyến đi của bạn.");
             return "redirect:/login";
         }
 
@@ -485,9 +482,9 @@ public class BookingController {
 
             List<IssueDTO> issues = issueService.findByBookingForCustomer(bookingId, customerId);
             model.addAttribute("issues", issues);
+            model.addAttribute("trafficFines", trafficFineService.findByBookingForCustomer(bookingId, customerId));
 
-            boolean canPay = Booking.STATUS_ACTIVE.equalsIgnoreCase(detail.getStatus())
-                    || Booking.STATUS_COMPLETED.equalsIgnoreCase(detail.getStatus());
+            boolean canPay = Booking.STATUS_ACTIVE.equalsIgnoreCase(detail.getStatus());
             List<IssueDTO> payableIssues = issues.stream()
                     .filter(i -> canPay && i.getStatus() == IssueStatus.OPEN && !i.isFeePaid()
                             && i.getFeeAmount() != null && i.getFeeAmount().compareTo(BigDecimal.ZERO) > 0)

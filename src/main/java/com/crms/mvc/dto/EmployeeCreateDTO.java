@@ -6,25 +6,25 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class EmployeeCreateDTO {
-    @NotBlank(message = "Name is required")
-    @Size(max = 100, message = "Name must be at most 100 characters")
+    @NotBlank(message = "Vui lòng nhập họ tên")
+    @Size(max = 100, message = "Họ tên tối đa 100 ký tự")
     private String name;
 
-    @NotBlank(message = "Phone is required")
-    @Pattern(regexp = "^(0\\d{9}|\\+84\\d{9})$", message = "Phone number is invalid")
+    @NotBlank(message = "Vui lòng nhập số điện thoại")
+    @Pattern(regexp = "^(0\\d{9}|\\+84\\d{9})$", message = "Số điện thoại không hợp lệ")
     private String phone;
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email is invalid")
-    @Size(max = 150, message = "Email must be at most 150 characters")
+    @NotBlank(message = "Vui lòng nhập email")
+    @Email(message = "Email không hợp lệ")
+    @Size(max = 150, message = "Email tối đa 150 ký tự")
     private String email;
 
-    @NotBlank(message = "Temporary password is required")
-    @Size(min = 8, max = 255, message = "Password must be at least 8 characters")
+    @NotBlank(message = "Vui lòng nhập mật khẩu tạm thời")
+    @Size(min = 8, max = 255, message = "Mật khẩu phải có ít nhất 8 ký tự")
     private String password;
 
-    @NotBlank(message = "Role is required")
-    @Pattern(regexp = "staff|admin", message = "Role must be staff or admin")
+    @NotBlank(message = "Vui lòng chọn vai trò")
+    @Pattern(regexp = "staff|admin", message = "Vai trò phải là nhân viên hoặc quản trị viên")
     private String role = "staff";
 
     public String getName() { return name; }

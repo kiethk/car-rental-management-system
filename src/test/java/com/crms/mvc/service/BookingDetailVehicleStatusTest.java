@@ -3,6 +3,7 @@ package com.crms.mvc.service;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Customer;
+import com.crms.mvc.entity.Promotion;
 import com.crms.mvc.entity.Slot;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleType;
@@ -21,6 +22,7 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -30,14 +32,16 @@ import static org.mockito.Mockito.when;
 class BookingDetailVehicleStatusTest {
     private BookingRepository bookingRepository;
     private BookingService service;
+    private CompensationVoucherService vouchers;
 
     @BeforeEach
     void setUp() {
         bookingRepository = mock(BookingRepository.class);
+        vouchers = mock(CompensationVoucherService.class);
         service = new BookingServiceImpl(bookingRepository, mock(CustomerRepository.class), mock(SlotRepository.class),
                 mock(VehicleTypeRepository.class), mock(VehicleRepository.class), mock(EmployeeRepository.class),
                 mock(PromotionRepository.class), mock(PaymentService.class), mock(ContractService.class),
-                mock(ContractTemplateService.class), mock(BookingFeeService.class), mock(PricingService.class), mock(CompensationVoucherService.class));
+                mock(ContractTemplateService.class), mock(BookingFeeService.class), mock(PricingService.class), vouchers);
     }
 
     @Test
@@ -56,6 +60,22 @@ class BookingDetailVehicleStatusTest {
         BookingDetailDTO detail = service.getBookingDetailForAdmin(42L);
 
         assertFalse(detail.isVehicleRetired());
+    }
+
+    @Test
+    void voucherPercentIsNeverShownInScientificNotation() {
+        givenConfirmedBookingWithVehicleStatus("available");
+        bookingRepository.findById(42L).get().setStatus("cancelled");
+        Promotion voucher = new Promotion();
+        voucher.setCode("BU5-TEST");
+        voucher.setDiscountValue(new BigDecimal("10.00"));
+        when(vouchers.findForBooking(42L)).thenReturn(Optional.of(voucher));
+
+        BookingDetailDTO detail = service.getBookingDetailForAdmin(42L);
+
+        // stripTrailingZeros alone gives 1E+1, which the page printed as "1E+1%"
+        assertEquals("10", detail.getCompensationVoucherPercent().toPlainString());
+        assertEquals("10", detail.getCompensationVoucherPercent() + "");
     }
 
     private void givenConfirmedBookingWithVehicleStatus(String vehicleStatus) {

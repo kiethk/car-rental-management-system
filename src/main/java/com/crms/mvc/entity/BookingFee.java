@@ -7,7 +7,7 @@ import java.time.OffsetDateTime;
 @Entity
 @Table(name = "booking_fees")
 public class BookingFee {
-    /** What a customer owes for an Issue (damage, collision, traffic fine); replaces the old DAMAGE_COMPENSATION. */
+    /** What a customer owes for an Issue (damage, collision, other); replaces the old DAMAGE_COMPENSATION. */
     public static final String FEE_TYPE_ISSUE_COMPENSATION = "ISSUE_COMPENSATION";
 
     @Id

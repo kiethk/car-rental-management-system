@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
@@ -29,7 +29,7 @@
                 <div class="card-body p-0">
                     <div class="text-center mb-4">
                         <h1 class="h3 font-weight-bold text-navy mb-1">Đăng ký tài khoản</h1>
-                        <p class="text-muted small mb-0">Tham gia DriveNow để thuê xe tự lái dễ dàng và tiện lợi</p>
+                        <p class="text-muted small mb-0">Tham gia DriveNow để thuê xe tự lái dễ dàng</p>
                     </div>
 
                     <div class="alert alert-danger py-2.5 small rounded-lg" th:if="${error}" th:text="${error}"></div>
@@ -39,7 +39,7 @@
                             <label for="name" class="small font-weight-bold text-navy mb-1">Họ và tên</label>
                             <input id="name" type="text" th:field="*{name}" class="form-control py-2.5 rounded-lg"
                                    th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
-                                   maxlength="100" placeholder="Ví dụ: Nguyễn Văn A" required>
+                                   maxlength="100" placeholder="VD: Nguyễn Văn A" required>
                             <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
                         </div>
 
@@ -52,7 +52,7 @@
                         </div>
 
                         <div class="form-group mb-3">
-                            <label for="email" class="small font-weight-bold text-navy mb-1">Địa chỉ Email</label>
+                            <label for="email" class="small font-weight-bold text-navy mb-1">Email</label>
                             <input id="email" type="email" th:field="*{email}" class="form-control py-2.5 rounded-lg"
                                    th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
                                    maxlength="150" placeholder="name@example.com" required>
@@ -71,13 +71,13 @@
                     </form>
 
                     <div class="text-center mt-4 pt-3 border-top small text-muted">
-                        Đã có tài khoản? <a th:href="@{/login}" class="font-weight-bold text-navy text-decoration-none">Đăng nhập tại đây</a>
+                        Đã có tài khoản? <a th:href="@{/login}" class="font-weight-bold text-navy text-decoration-none">Đăng nhập</a>
                     </div>
                 </div>
             </div>
 
             <div class="text-center mt-4">
-                <a th:href="@{/}" class="text-muted small text-decoration-none hover:text-navy">← Quay về trang chủ</a>
+                <a th:href="@{/}" class="text-muted small text-decoration-none hover:text-navy">← Về trang chủ</a>
             </div>
 
         </div>

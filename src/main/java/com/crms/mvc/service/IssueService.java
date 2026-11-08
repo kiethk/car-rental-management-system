@@ -22,16 +22,8 @@ import java.util.Optional;
  * the only writer of that fee.
  */
 public interface IssueService {
-    /** Records an Issue for a booking the customer has picked up (active or completed). */
+    /** Records an Issue for a rental in progress (picked up, not settled yet). */
     Issue create(IssueFormDTO form, IssueActor actor);
-
-    /**
-     * Finds who had the car when a traffic fine was issued: the vehicle that carried the plate at that moment
-     * (plates have a history), then the rental covering it. Times are Vietnam time.
-     *
-     * @throws java.util.NoSuchElementException when the plate was on no car then, or the car was not rented
-     */
-    Booking findBookingForViolation(String plate, LocalDateTime occurredAt);
 
     /** Edits an open Issue, including its fee. */
     Issue update(Long issueId, IssueFormDTO form);

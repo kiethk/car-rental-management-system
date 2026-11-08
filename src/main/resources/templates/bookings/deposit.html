@@ -187,9 +187,9 @@
                                 <div style="flex: 1; min-width: 0">
                                     <div
                                         class="sidebar-car-meta"
-                                        th:text="${booking.vehicleCategory + ' · ' + booking.seats + ' seats'}"
+                                        th:text="${booking.vehicleCategory + ' · ' + booking.seats + ' chỗ'}"
                                     >
-                                        Sedan · 5 seats
+                                        Sedan · 5 chỗ
                                     </div>
                                     <div class="sidebar-car-name" th:text="${booking.vehicleTypeName}">Accent 2024</div>
                                     <div
@@ -289,7 +289,7 @@
                                     </div>
                                 </div>
                                 <div class="dh-sub-row">
-                                    <span>Tiền thuê còn lại (thanh toán khi trả xe)</span>
+                                    <span>Tiền thuê còn lại (thanh toán khi nhận xe)</span>
                                     <span
                                         style="font-family: &quot;JetBrains Mono&quot;, monospace; font-weight: 700"
                                         th:text="${#numbers.formatDecimal(booking.totalPrice - booking.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"

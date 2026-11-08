@@ -24,7 +24,7 @@ class ContractMailServiceTest {
         IllegalStateException error = assertThrows(IllegalStateException.class,
                 () -> service.sendContract(new ContractDocumentDTO(), new byte[]{1}));
 
-        assertTrue(error.getMessage().startsWith("Email is not configured"));
+        assertTrue(error.getMessage().startsWith("Chưa cấu hình email"));
         verify(sender, never()).send(any(jakarta.mail.internet.MimeMessage.class));
     }
 }

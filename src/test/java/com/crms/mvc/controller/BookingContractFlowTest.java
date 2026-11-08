@@ -60,6 +60,7 @@ class BookingContractFlowTest {
     @MockitoBean private com.crms.mvc.service.IssueService issueService;
     @MockitoBean private com.crms.mvc.service.HandoverService handoverService;
     @MockitoBean private ReviewService reviewService;
+    @MockitoBean private com.crms.mvc.service.TrafficFineService trafficFineService;
 
     private MockHttpSession customerSession;
     private ContractTemplateDTO terms;
@@ -78,7 +79,6 @@ class BookingContractFlowTest {
         terms.setFreeCancellationHours(48);
         terms.setStatus(ContractTemplateStatus.ACTIVE);
         when(contractTemplateService.getActiveTemplate()).thenReturn(terms);
-        when(licenseDocumentService.hasValidLicense(eq(1L), any())).thenReturn(true);
         when(pricingService.calculatePrice(any(), any(), any(), any(), any())).thenAnswer(inv -> new PricingServiceImpl().calculatePrice(inv.getArgument(0), inv.getArgument(1), inv.getArgument(2), inv.getArgument(3), inv.getArgument(4)));
     }
 
@@ -151,6 +151,22 @@ class BookingContractFlowTest {
                         .param("contractTemplateId", "3")
                         .param("acceptedTerms", "true"))
                 .andExpect(redirectedUrl("/bookings/42/pay-deposit"));
+    }
+
+    @Test
+    void bookingDoesNotRequireADrivingLicense() throws Exception {
+        // The customer has no license on file (mock default): the booking must still go through.
+        com.crms.mvc.entity.Booking booking = new com.crms.mvc.entity.Booking();
+        booking.setId(43L);
+        when(bookingService.createBooking(eq(1L), any(), any())).thenReturn(booking);
+
+        mvc.perform(post("/bookings").session(customerSession)
+                        .param("vehicleTypeId", "1")
+                        .param("startTime", "2026-10-24T09:00")
+                        .param("endTime", "2026-10-24T19:00")
+                        .param("contractTemplateId", "3")
+                        .param("acceptedTerms", "true"))
+                .andExpect(redirectedUrl("/bookings/43/pay-deposit"));
     }
 
     @Test
@@ -282,7 +298,6 @@ class BookingContractFlowTest {
         com.crms.mvc.dto.ReturnReceiptDTO receipt = new com.crms.mvc.dto.ReturnReceiptDTO();
         receipt.setReturnedAt(OffsetDateTime.now());
         receipt.setOdometer(12500);
-        receipt.setFuelPercent(70);
         receipt.setRentalTotal(new BigDecimal("1500000"));
         receipt.setDepositAmount(new BigDecimal("750000"));
         receipt.setLines(List.of(
@@ -296,12 +311,12 @@ class BookingContractFlowTest {
 
         mvc.perform(get("/bookings/42").session(customerSession))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Return &amp; settlement")))
-                .andExpect(content().string(containsString("12500 km · 70%")))
+                .andExpect(content().string(containsString("Trả xe &amp; quyết toán")))
+                .andExpect(content().string(containsString("12500 km")))
                 .andExpect(content().string(containsString("Late return fee")))
-                .andExpect(content().string(containsString("Paid earlier")))
+                .andExpect(content().string(containsString("Đã thanh toán trước")))
                 .andExpect(content().string(containsString("1,050,000")))
-                .andExpect(content().string(containsString("Bank transfer")));
+                .andExpect(content().string(containsString("Chuyển khoản")));
     }
 
     @Test
@@ -311,7 +326,7 @@ class BookingContractFlowTest {
 
         mvc.perform(get("/bookings/42").session(customerSession))
                 .andExpect(status().isOk())
-                .andExpect(content().string(not(containsString("Return &amp; settlement"))));
+                .andExpect(content().string(not(containsString("Trả xe &amp; quyết toán"))));
     }
 
     @Test
@@ -407,7 +422,7 @@ class BookingContractFlowTest {
 
     @Test
     void aBookingOffersToPayOpenUnpaidIssueFees() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
         when(issueService.findByBookingForCustomer(42L, 1L)).thenReturn(List.of(
                 issueWith(7L, com.crms.mvc.entity.IssueStatus.OPEN, "200000", false),
                 issueWith(8L, com.crms.mvc.entity.IssueStatus.OPEN, "500000", false),
@@ -447,7 +462,7 @@ class BookingContractFlowTest {
 
     @Test
     void aPaymentLeftPendingCanBeRetried() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
         com.crms.mvc.dto.IssueDTO pending = issueWith(7L, com.crms.mvc.entity.IssueStatus.OPEN, "200000", false);
         pending.setFeeLocked(true); // a payment has taken it but has not been paid yet
         when(issueService.findByBookingForCustomer(42L, 1L)).thenReturn(List.of(pending));
@@ -460,7 +475,7 @@ class BookingContractFlowTest {
         com.crms.mvc.dto.IssueDTO issue = new com.crms.mvc.dto.IssueDTO();
         issue.setId(id);
         issue.setBookingId(42L);
-        issue.setIssueType(com.crms.mvc.entity.IssueType.TRAFFIC_FINE);
+        issue.setIssueType(com.crms.mvc.entity.IssueType.DAMAGE);
         issue.setStatus(status);
         issue.setSubject("Fine " + id);
         issue.setFeeAmount(new BigDecimal(fee));

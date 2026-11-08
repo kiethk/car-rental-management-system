@@ -55,6 +55,7 @@ public class VehicleController {
         model.addAttribute("brands", vehicleTypeService.getDistinctBrands());
         model.addAttribute("categories", vehicleTypeService.getDistinctCategories());
         model.addAttribute("totalCount", vehicles.size());
+        model.addAttribute("ratings", reviewService.ratingsByVehicleType());
         return "vehicles/list";
     }
 
@@ -62,7 +63,7 @@ public class VehicleController {
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public String detail(@PathVariable Long id, Model model) {
         VehicleDTO vehicle = vehicleService.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found!"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy xe!"));
         model.addAttribute("vehicle", vehicle);
         model.addAttribute("contractTerms", contractTemplateService.getActiveTemplate());
 
@@ -91,10 +92,10 @@ public class VehicleController {
         try {
             schedule = bookingService.getVehicleSchedule(vehicleId, LocalDate.now(ZoneOffset.ofHours(7)), SCHEDULE_DAYS);
         } catch (NoSuchElementException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found!");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy xe!");
         }
         if (Vehicle.STATUS_RETIRED.equalsIgnoreCase(schedule.getVehicleStatus())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle is retired");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Xe đã ngừng hoạt động");
         }
         model.addAttribute("schedule", schedule);
         return "vehicles/schedule";

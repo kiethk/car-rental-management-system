@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Dashboard — DriveNow</title>
+    <title>Bảng điều khiển quản trị — DriveNow</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -29,7 +29,7 @@
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
                 <div>
                     <h1 class="h3 font-weight-bold text-navy mb-1">Bảng điều khiển vận hành</h1>
-                    <p class="text-muted small mb-0">Tổng quan đội xe, chuyến đi đang chạy và lịch bảo dưỡng kiểm định.</p>
+                    <p class="text-muted small mb-0">Tổng quan đội xe, các đơn đang thuê và lịch bảo dưỡng.</p>
                 </div>
             </div>
 
@@ -42,7 +42,7 @@
                             <span class="h2 font-weight-bold text-navy mb-0" th:text="${totalVehicles}">20</span>
                             <span class="badge badge-light border text-muted">Xe</span>
                         </div>
-                        <div class="small text-muted mt-2">Số lượng xe thực tế tại bãi</div>
+                        <div class="small text-muted mt-2">Số xe thực tế trong đội xe</div>
                         <div class="small text-muted" th:if="${retiredVehicles > 0}" th:text="${retiredVehicles} + ' xe ngừng khai thác (không tính)'">1 xe ngừng khai thác (không tính)</div>
                     </div>
                 </div>
@@ -54,7 +54,7 @@
                             <span class="h2 font-weight-bold text-success mb-0" th:text="${availableVehicles}">15</span>
                             <span class="badge badge-success px-2 py-1">Sẵn sàng</span>
                         </div>
-                        <div class="small text-muted mt-2">Sẵn sàng phục vụ khách đặt</div>
+                        <div class="small text-muted mt-2">Sẵn sàng nhận đơn của khách</div>
                     </div>
                 </div>
 
@@ -63,20 +63,20 @@
                         <span class="text-muted small text-uppercase font-weight-bold" style="letter-spacing: 0.05em;">Đang cho thuê</span>
                         <div class="d-flex align-items-baseline justify-content-between mt-2">
                             <span class="h2 font-weight-bold text-warning mb-0" th:text="${rentedVehicles}">3</span>
-                            <span class="badge badge-warning text-dark px-2 py-1">Đang chạy</span>
+                            <span class="badge badge-warning text-dark px-2 py-1">Đang thuê</span>
                         </div>
-                        <div class="small text-muted mt-2">Xe đang trong chuyến đi của khách</div>
+                        <div class="small text-muted mt-2">Xe đang được khách sử dụng</div>
                     </div>
                 </div>
 
                 <div class="col-sm-6 col-xl-3">
                     <div class="card border-0 shadow-sm rounded-xl p-3 bg-white h-100">
-                        <span class="text-muted small text-uppercase font-weight-bold" style="letter-spacing: 0.05em;">Bảo dưỡng & Kiểm định</span>
+                        <span class="text-muted small text-uppercase font-weight-bold" style="letter-spacing: 0.05em;">Bảo dưỡng</span>
                         <div class="d-flex align-items-baseline justify-content-between mt-2">
                             <span class="h2 font-weight-bold text-danger mb-0" th:text="${maintenanceVehicles}">2</span>
-                            <span class="badge badge-danger px-2 py-1">Xưởng / Trạm</span>
+                            <span class="badge badge-danger px-2 py-1">Tại xưởng</span>
                         </div>
-                        <div class="small text-muted mt-2">Đang kiểm tra kỹ thuật hoặc sửa chữa</div>
+                        <div class="small text-muted mt-2">Xe đang đăng kiểm hoặc sửa chữa</div>
                     </div>
                 </div>
             </div>
@@ -86,26 +86,80 @@
                 <!-- Registration Alerts -->
                 <div class="col-lg-6">
                     <div class="card border-0 shadow-sm rounded-xl p-4 bg-white h-100">
+                        <style>
+                            .reg-alert { border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; margin-bottom: 12px; }
+                            .reg-alert summary { display: flex; align-items: center; gap: 14px; padding: 12px 16px; cursor: pointer; list-style: none; }
+                            .reg-alert summary::-webkit-details-marker { display: none; }
+                            .reg-alert-count { font-size: 1.6rem; font-weight: 700; line-height: 1; min-width: 28px; }
+                            .reg-alert-warning .reg-alert-count { color: #f59e0b; }
+                            .reg-alert-danger .reg-alert-count { color: #dc2626; }
+                            .reg-alert-text { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+                            .reg-alert-label { font-weight: 600; color: #0f172a; font-size: 0.9rem; }
+                            .reg-alert-hint { color: #64748b; font-size: 0.8rem; }
+                            .reg-alert-chevron { color: #94a3b8; transition: transform 0.15s ease; flex-shrink: 0; }
+                            .reg-alert[open] .reg-alert-chevron { transform: rotate(180deg); }
+                            .reg-alert-list { list-style: none; margin: 0; padding: 0 16px 8px; max-height: 280px; overflow-y: auto; }
+                            .reg-alert-list li { padding: 8px 0; border-top: 1px solid #e2e8f0; }
+                            .reg-alert-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+                            .reg-alert-row strong { font-size: 0.875rem; color: #0f172a; }
+                            .reg-alert-days { font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
+                            .reg-alert-warning .reg-alert-days { color: #d97706; }
+                            .reg-alert-danger .reg-alert-days { color: #dc2626; }
+                            .reg-alert-meta { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+                            .reg-alert-meta a { color: #ea580c; font-weight: 600; white-space: nowrap; text-decoration: none; }
+                            .reg-alert-meta a:hover { text-decoration: underline; }
+                            .reg-alert-empty { padding: 0 16px 12px; font-size: 0.8rem; color: #94a3b8; }
+                        </style>
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h2 class="h6 font-weight-bold text-navy mb-0">Cảnh báo đăng kiểm & Kiểm định</h2>
+                            <h2 class="h6 font-weight-bold text-navy mb-0">Cảnh báo đăng kiểm</h2>
                             <a th:href="@{/admin/vehicles}" class="small text-amber font-weight-semibold">Xem danh sách xe →</a>
                         </div>
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <div class="p-3 rounded-lg border bg-light">
-                                    <span class="small text-muted d-block">Hết hạn trong 30 ngày</span>
-                                    <span class="h4 font-weight-bold text-warning mb-0" th:text="${expiringSoonCount}">1</span>
-                                    <span class="small text-muted d-block mt-1">Cần đặt lịch kiểm định sớm</span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="p-3 rounded-lg border bg-light">
-                                    <span class="small text-muted d-block">Đã hết hạn đăng kiểm</span>
-                                    <span class="h4 font-weight-bold text-danger mb-0" th:text="${expiredCount}">1</span>
-                                    <span class="small text-muted d-block mt-1">Thu hồi xe khẩn cấp</span>
-                                </div>
-                            </div>
-                        </div>
+                        <details class="reg-alert reg-alert-danger">
+                            <summary>
+                                <span class="reg-alert-count" th:text="${expiredCount}">1</span>
+                                <span class="reg-alert-text">
+                                    <span class="reg-alert-label">Đã hết hạn đăng kiểm</span>
+                                    <span class="reg-alert-hint">Cần ngừng khai thác xe ngay</span>
+                                </span>
+                                <svg class="reg-alert-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                            </summary>
+                            <ul class="reg-alert-list">
+                                <li th:each="v : ${expiredList}">
+                                    <div class="reg-alert-row">
+                                        <strong th:text="${v.vehicleName}">Toyota Vios</strong>
+                                        <span class="reg-alert-days" th:text="${'quá hạn ' + (-v.daysRemaining) + ' ngày'}">còn 12 ngày</span>
+                                    </div>
+                                    <div class="reg-alert-row reg-alert-meta">
+                                        <span><span class="font-mono" th:text="${v.plate != null ? v.plate : 'Chưa có biển'}">51A-123.45</span> · hạn <span th:text="${#temporals.format(v.registrationExpiry, 'dd/MM/yyyy')}">10/11/2026</span></span>
+                                        <a th:href="@{/admin/inspections/new(vehicleId=${v.vehicleId})}">Lên lịch đăng kiểm</a>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div class="reg-alert-empty" th:if="${expiredCount == 0}">Không có xe nào.</div>
+                        </details>
+                        <details class="reg-alert reg-alert-warning">
+                            <summary>
+                                <span class="reg-alert-count" th:text="${expiringSoonCount}">1</span>
+                                <span class="reg-alert-text">
+                                    <span class="reg-alert-label">Sắp hết hạn trong 30 ngày</span>
+                                    <span class="reg-alert-hint">Cần sớm lên lịch đăng kiểm</span>
+                                </span>
+                                <svg class="reg-alert-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                            </summary>
+                            <ul class="reg-alert-list">
+                                <li th:each="v : ${expiringSoonList}">
+                                    <div class="reg-alert-row">
+                                        <strong th:text="${v.vehicleName}">Toyota Vios</strong>
+                                        <span class="reg-alert-days" th:text="${v.daysRemaining == 0 ? 'hết hạn hôm nay' : 'còn ' + v.daysRemaining + ' ngày'}">còn 12 ngày</span>
+                                    </div>
+                                    <div class="reg-alert-row reg-alert-meta">
+                                        <span><span class="font-mono" th:text="${v.plate != null ? v.plate : 'Chưa có biển'}">51A-123.45</span> · hạn <span th:text="${#temporals.format(v.registrationExpiry, 'dd/MM/yyyy')}">10/11/2026</span></span>
+                                        <a th:href="@{/admin/inspections/new(vehicleId=${v.vehicleId})}">Lên lịch đăng kiểm</a>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div class="reg-alert-empty" th:if="${expiringSoonCount == 0}">Không có xe nào.</div>
+                        </details>
                     </div>
                 </div>
 
@@ -117,21 +171,21 @@
                             <a th:href="@{/admin/vehicles}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center px-0 py-2.5">
                                 <div>
                                     <span class="font-weight-semibold text-navy d-block">Quản lý xe</span>
-                                    <span class="small text-muted">Xem danh sách xe, số km đồng hồ và chuyển đổi trạng thái</span>
+                                    <span class="small text-muted">Xem toàn bộ xe, số km và đổi trạng thái xe</span>
                                 </div>
                                 <span class="text-muted">→</span>
                             </a>
                             <a th:href="@{/admin/vehicle-types}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center px-0 py-2.5">
                                 <div>
                                     <span class="font-weight-semibold text-navy d-block">Danh mục dòng xe & Thông số</span>
-                                    <span class="small text-muted">Quản lý danh mục dòng xe, đơn giá thuê theo giờ và hình ảnh</span>
+                                    <span class="small text-muted">Quản lý danh mục xe, giá thuê theo giờ và hình ảnh</span>
                                 </div>
                                 <span class="text-muted">→</span>
                             </a>
                             <a th:href="@{/admin/inspections}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center px-0 py-2.5 border-bottom-0">
                                 <div>
-                                    <span class="font-weight-semibold text-navy d-block">Lịch kiểm định</span>
-                                    <span class="small text-muted">Theo dõi lịch kiểm định xe, nhật ký đạt hoặc không đạt</span>
+                                    <span class="font-weight-semibold text-navy d-block">Lịch đăng kiểm</span>
+                                    <span class="small text-muted">Theo dõi các lượt đưa xe đi đăng kiểm, kết quả đạt/không đạt</span>
                                 </div>
                                 <span class="text-muted">→</span>
                             </a>
@@ -143,8 +197,8 @@
             <!-- Recent Inspections Table -->
             <div class="card border-0 shadow-sm rounded-xl overflow-hidden bg-white">
                 <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
-                    <h2 class="h6 font-weight-bold text-navy mb-0">Hoạt động kiểm định gần đây</h2>
-                    <a th:href="@{/admin/inspections}" class="small text-amber font-weight-semibold">Xem tất cả kiểm định →</a>
+                    <h2 class="h6 font-weight-bold text-navy mb-0">Hoạt động đăng kiểm gần đây</h2>
+                    <a th:href="@{/admin/inspections}" class="small text-amber font-weight-semibold">Tất cả lịch đăng kiểm →</a>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
@@ -160,7 +214,7 @@
                         </thead>
                         <tbody class="small text-navy">
                         <tr th:if="${#lists.isEmpty(recentInspections)}">
-                            <td colspan="6" class="text-center py-4 text-muted">Không có dữ liệu kiểm định nào.</td>
+                            <td colspan="6" class="text-center py-4 text-muted">Chưa có lịch đăng kiểm nào.</td>
                         </tr>
                         <tr th:each="ins : ${recentInspections}">
                             <td class="font-weight-bold" th:text="'#' + ${ins.id}">#1</td>
@@ -175,7 +229,7 @@
                                 <span th:if="${ins.status == 'passed'}" class="badge badge-success px-2 py-1">Đạt</span>
                                 <span th:if="${ins.status == 'failed'}" class="badge badge-danger px-2 py-1">Không đạt</span>
                             </td>
-                            <td class="text-muted" th:text="${ins.notes != null ? ins.notes : '—'}">Regular safety check</td>
+                            <td class="text-muted" th:text="${ins.notes != null ? ins.notes : '—'}">Kiểm tra an toàn định kỳ</td>
                         </tr>
                         </tbody>
                     </table>

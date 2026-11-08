@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
@@ -21,12 +21,12 @@
         <div class="col-lg-8">
             <div class="mb-4">
                 <h1 class="h3 font-weight-bold text-navy mb-1">Giấy phép lái xe của bạn</h1>
-                <p class="text-muted small mb-0">Tải lên ảnh GPLX hợp lệ để mở khóa tính năng đặt thuê xe tự lái</p>
+                <p class="text-muted small mb-0">Bạn có thể tải lên giấy phép lái xe để nhân viên xác minh nhanh hơn khi nhận xe (không bắt buộc để đặt xe)</p>
             </div>
 
             <div th:if="${error}" class="alert alert-danger py-2" th:text="${error}"></div>
             <div th:if="${param.submitted}" class="alert alert-success py-2">
-                Giấy phép lái xe đã được tải lên thành công.
+                Đã tải lên giấy phép lái xe thành công.
             </div>
 
             <section th:if="${currentLicense != null}" class="card card-drivenow border shadow-sm p-4 bg-white rounded-xl mb-4">
@@ -51,16 +51,16 @@
                     </div>
                     <div class="col-md-6 text-center">
                         <img th:src="@{/licenses/{id}/image(id=${currentLicense.id})}"
-                             alt="Uploaded driving license" class="img-fluid border rounded-lg shadow-sm" style="max-height: 200px; object-fit: contain;">
+                             alt="Ảnh giấy phép lái xe đã tải lên" class="img-fluid border rounded-lg shadow-sm" style="max-height: 200px; object-fit: contain;">
                     </div>
                 </div>
             </section>
 
             <section class="card card-drivenow border shadow-sm p-4 bg-white rounded-xl">
-                <h2 class="h5 font-weight-bold text-navy mb-3" th:text="${currentLicense == null ? 'Tải lên Giấy phép lái xe' : 'Cập nhật Giấy phép lái xe'}"></h2>
+                <h2 class="h5 font-weight-bold text-navy mb-3" th:text="${currentLicense == null ? 'Tải lên giấy phép lái xe' : 'Cập nhật giấy phép lái xe'}"></h2>
                 <form th:action="@{/licenses}" th:object="${licenseForm}" method="post" enctype="multipart/form-data">
                     <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger py-2 mb-3">
-                        Vui lòng kiểm tra lại các trường thông tin có lỗi bên dưới (Vui lòng kiểm tra lại).
+                        Vui lòng kiểm tra lại các trường thông tin có lỗi bên dưới.
                     </div>
                     <div class="row g-3">
                         <div class="col-md-6 form-group mb-3">
@@ -68,7 +68,7 @@
                             <input id="licenseNumber" type="text" th:field="*{licenseNumber}"
                                    class="form-control rounded-lg font-mono"
                                    th:classappend="${#fields.hasErrors('licenseNumber')} ? 'is-invalid'"
-                                   maxlength="50" placeholder="e.g. B2-12345678">
+                                   maxlength="50" placeholder="VD: 790123456789">
                             <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('licenseNumber')}" th:errors="*{licenseNumber}"></div>
                         </div>
                         <div class="col-md-6 form-group mb-3">
@@ -76,7 +76,7 @@
                             <input id="licenseClass" type="text" th:field="*{licenseClass}"
                                    class="form-control rounded-lg"
                                    th:classappend="${#fields.hasErrors('licenseClass')} ? 'is-invalid'"
-                                   maxlength="20" placeholder="e.g. B1, B2, C...">
+                                   maxlength="20" placeholder="VD: B1, B2, C...">
                             <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('licenseClass')}" th:errors="*{licenseClass}"></div>
                         </div>
                         <div class="col-md-6 form-group mb-3">
@@ -92,7 +92,7 @@
                                    class="form-control rounded-lg"
                                    th:classappend="${#fields.hasErrors('licenseImage')} ? 'is-invalid'"
                                    accept="image/jpeg,image/png,image/webp">
-                            <small class="text-muted d-block" style="font-size: 11px;">Định dạng hỗ trợ: JPG, PNG, WebP (Tối đa 5MB)</small>
+                            <small class="text-muted d-block" style="font-size: 11px;">Hỗ trợ: JPG, PNG, WebP (tối đa 5MB)</small>
                             <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('licenseImage')}" th:errors="*{licenseImage}"></div>
                         </div>
                     </div>

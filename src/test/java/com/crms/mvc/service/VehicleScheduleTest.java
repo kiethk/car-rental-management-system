@@ -69,6 +69,74 @@ class VehicleScheduleTest {
     }
 
     @Test
+    void daysAfterTheRegistrationExpiredAreMarkedWhenNoInspectionIsScheduled() {
+        Vehicle car = vehicleRepository.findById(5L).get();
+        car.setRegistrationExpiry(day.plusDays(1));
+
+        VehicleScheduleDTO schedule = service.getVehicleSchedule(5L, day, 4);
+
+        // expiry day is still valid; from the day after it, nothing can be booked
+        assertThat(schedule.getDays().get(0).hours()).containsOnly(HourState.FREE);
+        assertThat(schedule.getDays().get(1).hours()).containsOnly(HourState.FREE);
+        assertThat(schedule.getDays().get(2).hours()).containsOnly(HourState.EXPIRED);
+        assertThat(schedule.getDays().get(3).hours()).containsOnly(HourState.EXPIRED);
+    }
+
+    @Test
+    void aScheduledInspectionClosesItsDayAndOpensTheDaysAfterIt() {
+        Vehicle car = vehicleRepository.findById(5L).get();
+        car.setRegistrationExpiry(day.plusDays(1));
+        com.crms.mvc.entity.VehicleInspection inspection = new com.crms.mvc.entity.VehicleInspection();
+        inspection.setVehicle(car);
+        inspection.setScheduledAt(day.plusDays(1).atTime(9, 0).atOffset(VN));
+        inspection.setStatus("scheduled");
+        when(vehicleRepository.findScheduledInspectionsByVehicleId(5L)).thenReturn(List.of(inspection));
+
+        VehicleScheduleDTO schedule = service.getVehicleSchedule(5L, day, 3);
+
+        assertThat(schedule.getDays().get(0).hours()).containsOnly(HourState.FREE);
+        assertThat(schedule.getDays().get(1).hours()).containsOnly(HourState.INSPECTION);
+        // inspected the day before, so the car is bookable again even though the old expiry has passed
+        assertThat(schedule.getDays().get(2).hours()).containsOnly(HourState.FREE);
+    }
+
+    @Test
+    void aBookedHourStaysBookedEvenOnAnInspectionDay() {
+        Vehicle car = vehicleRepository.findById(5L).get();
+        com.crms.mvc.entity.VehicleInspection inspection = new com.crms.mvc.entity.VehicleInspection();
+        inspection.setVehicle(car);
+        inspection.setScheduledAt(day.atTime(9, 0).atOffset(VN));
+        inspection.setStatus("scheduled");
+        when(vehicleRepository.findScheduledInspectionsByVehicleId(5L)).thenReturn(List.of(inspection));
+        Booking booking = new Booking();
+        booking.setStatus("confirmed");
+        booking.setPickupTime(day.atTime(10, 0).atOffset(VN));
+        booking.setScheduledEndTime(day.atTime(14, 0).atOffset(VN));
+        when(bookingRepository.findBookingsHoldingVehicle(eq(5L), any(), any(), any())).thenReturn(List.of(booking));
+
+        List<HourState> hours = service.getVehicleSchedule(5L, day, 1).getDays().get(0).hours();
+
+        assertThat(hours.subList(10, 14)).containsOnly(HourState.BOOKED);
+        assertThat(hours.get(8)).isEqualTo(HourState.INSPECTION);
+    }
+
+    @Test
+    void theHourWeAreInCannotStartARentalButTheNextOneCan() {
+        OffsetDateTime now = OffsetDateTime.now(VN);
+        int currentHour = now.getHour();
+
+        VehicleScheduleDTO schedule = service.getVehicleSchedule(5L, now.toLocalDate(), 2);
+
+        List<HourState> today = schedule.getDays().get(0).hours();
+        assertThat(today.get(currentHour)).isEqualTo(HourState.PAST);
+        if (currentHour < 23) {
+            assertThat(today.get(currentHour + 1)).isEqualTo(HourState.FREE);
+        } else {
+            assertThat(schedule.getDays().get(1).hours().get(0)).isEqualTo(HourState.FREE);
+        }
+    }
+
+    @Test
     void aCarNotBackFromAnOverdueRentalStaysBookedUntilNow() {
         Booking overdue = new Booking();
         overdue.setStatus("active");

@@ -14,7 +14,7 @@ Biên bản nhận xe (CHECK_IN) và trả xe (CHECK_OUT) từng được lưu n
 ## Quyết định
 
 - Biên bản bàn giao được lưu ở bảng riêng `handovers`. Mỗi đơn có tối đa một biên bản cho mỗi loại, với các cột thật cho số km, % nhiên liệu, ghi chú, ảnh giấy tờ, và `settled_at` cho biên bản trả xe.
-- Phí trễ và Phí trả xe gắn vào đơn thuê (`booking_fees.issue_id = NULL`). Chỉ Phí sự cố mới gắn vào một Sự cố.
+- Phí trễ (và Phí trả xe, nay đã bỏ: ADR 0005) gắn vào đơn thuê (`booking_fees.issue_id = NULL`). Chỉ Phí sự cố mới gắn vào một Sự cố.
 - Bảng `issues` chỉ còn các loại COLLISION, DAMAGE, TRAFFIC_FINE, OTHER.
 
 ## Phương án đã cân nhắc

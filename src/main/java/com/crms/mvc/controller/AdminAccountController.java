@@ -59,7 +59,7 @@ public class AdminAccountController {
         SessionAccount actor = requireAdmin(session);
         try {
             accountManagementService.setActive(type, id, active, actor);
-            ra.addFlashAttribute("success", active ? "Account activated." : "Account locked.");
+            ra.addFlashAttribute("success", active ? "Đã kích hoạt tài khoản." : "Đã khóa tài khoản.");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
@@ -87,10 +87,10 @@ public class AdminAccountController {
         try {
             accountManagementService.createEmployee(form);
         } catch (IllegalArgumentException | DataIntegrityViolationException e) {
-            model.addAttribute("error", "Email is already in use");
+            model.addAttribute("error", "Email này đã được sử dụng");
             return "admin/accounts/form";
         }
-        ra.addFlashAttribute("success", "Employee account created.");
+        ra.addFlashAttribute("success", "Đã tạo tài khoản nhân viên.");
         ra.addAttribute("type", SessionAccount.EMPLOYEE);
         return "redirect:" + LIST_PATH;
     }
@@ -98,6 +98,6 @@ public class AdminAccountController {
     private SessionAccount requireAdmin(HttpSession session) {
         return CurrentAccount.of(session)
                 .filter(SessionAccount::isAdmin)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin access required"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Cần quyền quản trị viên"));
     }
 }

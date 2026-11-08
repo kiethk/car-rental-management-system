@@ -171,7 +171,7 @@
                         <div style="flex: 1; min-width: 250px;">
                             <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px;">Trạm nhận xe</div>
                             <div style="font-size: 14px; font-weight: 600; color: #0f172a;" th:text="${booking.stationAddress}">Kho xe DriveNow - ĐH FPT TP.HCM (Khu Công nghệ cao, TP. Thủ Đức)</div>
-                            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Mở cửa hàng ngày: <span th:text="${openingHours != null ? openingHours.label : '06:00 - 22:00'}">06:00 - 22:00</span></div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Mở cửa hàng ngày: <span th:text="${openingHours != null ? openingHours.label : '24/24'}">24/24</span></div>
                         </div>
                         <div style="flex: 1; min-width: 250px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px;">
                             <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px;">Nhân viên phụ trách giao nhận xe</div>
@@ -187,55 +187,61 @@
                 </div>
 
                 <div class="surface-card" th:if="${returnReceipt != null}" id="returnReceipt">
-                    <h2 class="card-title">Return &amp; settlement</h2>
+                    <h2 class="card-title">Trả xe &amp; quyết toán</h2>
                     <div class="cost-row">
-                        <span>Returned at</span>
+                        <span>Thời gian trả xe</span>
                         <strong th:text="${#temporals.format(returnReceipt.returnedAt, 'HH:mm dd/MM/yyyy')}">18:30 24/10/2026</strong>
                     </div>
                     <div class="cost-row">
-                        <span>Odometer · fuel</span>
-                        <strong th:text="${returnReceipt.odometer + ' km · ' + returnReceipt.fuelPercent + '%'}">12,500 km · 80%</strong>
-                    </div>
-                    <div class="cost-row" th:if="${returnReceipt.notes != null}">
-                        <span>Staff notes</span>
-                        <span th:text="${returnReceipt.notes}">Clean, no new damage</span>
+                        <span>Số km khi trả xe</span>
+                        <strong th:text="${returnReceipt.odometer + ' km'}">12,500 km</strong>
                     </div>
                     <div class="cost-row">
-                        <span>Tổng tiền thuê</span>
+                        <span>Tiền thuê (đã thanh toán đủ khi nhận xe)</span>
                         <span><span th:text="${#numbers.formatDecimal(returnReceipt.rentalTotal, 0, 'COMMA', 0, 'POINT')}">1,500,000</span> đ</span>
                     </div>
                     <div class="cost-row" th:each="line : ${returnReceipt.lines}">
                         <span>
-                            <span th:text="${line.description}">Late return fee</span>
-                            <em th:if="${line.paidEarlier}" style="color: #059669; font-size: 12px;"> · Paid earlier</em>
+                            <span th:text="${line.description}">Phí trả xe trễ</span>
+                            <em th:if="${line.paidEarlier}" style="color: #059669; font-size: 12px;"> · Đã thanh toán trước</em>
                         </span>
                         <span th:style="${line.paidEarlier ? 'text-decoration: line-through; color: #94a3b8;' : ''}">
                             <span th:text="${#numbers.formatDecimal(line.amount, 0, 'COMMA', 0, 'POINT')}">300,000</span> đ
                         </span>
                     </div>
-                    <div class="cost-row">
-                        <span>Tiền cọc đã thanh toán</span>
-                        <span>-<span th:text="${#numbers.formatDecimal(returnReceipt.depositAmount, 0, 'COMMA', 0, 'POINT')}">750,000</span> đ</span>
-                    </div>
                     <div class="cost-total-row">
-                        <span class="cost-total-label" th:text="${returnReceipt.settled ? 'Paid at settlement' : 'To pay at the station'}">Paid at settlement</span>
+                        <span class="cost-total-label" th:text="${returnReceipt.settled ? 'Đã thanh toán khi quyết toán' : 'Cần thanh toán tại trạm'}">Đã thanh toán khi quyết toán</span>
                         <span class="cost-total-val" th:if="${!returnReceipt.nothingToPay}">
                             <span th:text="${#numbers.formatDecimal(returnReceipt.amountDue, 0, 'COMMA', 0, 'POINT')}">1,050,000</span> đ
                         </span>
-                        <span class="cost-total-val" th:if="${returnReceipt.nothingToPay}">Nothing to pay</span>
+                        <span class="cost-total-val" th:if="${returnReceipt.nothingToPay}">Không cần thanh toán thêm</span>
                     </div>
                     <p class="issue-section-hint" th:if="${returnReceipt.settled and returnReceipt.paymentMethod != null}"
-                       th:text="${returnReceipt.paymentMethodLabel + ' · ' + #temporals.format(returnReceipt.paidAt, 'HH:mm dd/MM/yyyy')}">Cash · 18:40 24/10/2026</p>
+                       th:text="${returnReceipt.paymentMethodLabel + ' · ' + #temporals.format(returnReceipt.paidAt, 'HH:mm dd/MM/yyyy')}">Tiền mặt · 18:40 24/10/2026</p>
                     <p class="issue-section-hint" th:unless="${returnReceipt.settled}">
-                        Settlement is completed by staff at the station. Fees marked "Paid earlier" are not charged again.
+                        Nhân viên sẽ quyết toán tại trạm. Sau khi quyết toán, đơn được đóng và không phát sinh thêm phí.
                     </p>
                 </div>
 
-                <!-- Fees of issues found after the booking was settled: the customer pays them here -->
+                <!-- Traffic fines (phạt nguội) the police sent about this rental: a notice only, nothing to pay here -->
+                <div class="surface-card" th:if="${trafficFines != null and !trafficFines.isEmpty()}">
+                    <h2 class="card-title">Thông báo vi phạm giao thông</h2>
+                    <p class="issue-section-hint">
+                        Công an sẽ sớm liên hệ trực tiếp với bạn để giải quyết. DriveNow không thu khoản tiền nào liên quan.
+                    </p>
+                    <div class="cost-row" th:each="fine : ${trafficFines}">
+                        <span>
+                            <span th:text="${#temporals.format(fine.violationAt, 'HH:mm dd/MM/yyyy')}">14:30 24/10/2026</span>
+                            <em style="color: #64748b; font-size: 12px;" th:text="' · Biển số ' + ${fine.plate}"> · Biển số 51A-123.45</em>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Open Issue fees while the rental is still open: the customer may pay them online before settlement -->
                 <div class="surface-card" th:if="${payableIssues != null and !payableIssues.isEmpty()}">
                     <h2 class="card-title">Phí sự cố chưa thanh toán</h2>
                     <p class="issue-section-hint">
-                        Bạn có thể thanh toán một lần cho tất cả qua VNPay. Khoản nào chưa thanh toán sẽ được thu cùng lúc quyết toán khi trả xe.
+                        Bạn có thể thanh toán một lần cho tất cả qua VNPay. Khoản nào chưa thanh toán sẽ được thu khi quyết toán lúc trả xe.
                     </p>
                     <div class="cost-row" th:each="issue : ${payableIssues}">
                         <span th:text="${issue.subject}">Vượt đèn đỏ</span>
@@ -307,8 +313,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div style="font-weight: 600; color: #0f172a;" th:text="${p.paymentType == 'REFUND' ? 'Hoàn tiền cọc' : (p.paymentType == 'DEPOSIT' ? 'Đặt cọc' : p.paymentType)}">
-                                            Deposit
+                                        <div style="font-weight: 600; color: #0f172a;" th:text="${p.paymentType == 'REFUND' ? 'Hoàn tiền cọc' : (p.paymentType == 'DEPOSIT' ? 'Đặt cọc' : (p.paymentType == 'RENTAL_BALANCE' ? 'Tiền thuê còn lại' : (p.paymentType == 'FINAL' ? 'Quyết toán phí' : (p.paymentType == 'ISSUE_COMPENSATION' ? 'Phí sự cố' : p.paymentType))))}">
+                                            Đặt cọc
                                         </div>
                                         <div style="font-size: 11px; color: #94a3b8; margin-top: 1px;">
                                             <span th:text="${p.paymentMethod != null ? p.paymentMethod : 'BANK_TRANSFER'}">VIETQR</span> · 
@@ -339,7 +345,7 @@
                                         <span th:if="${p.status != 'paid' and p.status != 'pending'}"
                                               class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200"
                                               th:text="${p.status}">
-                                            Failed
+                                            Thất bại
                                         </span>
                                     </td>
                                 </tr>
@@ -437,7 +443,7 @@
                     <!-- Cancel Booking Button -->
                     <div th:if="${booking.status == 'pending_payment'}">
                         <form th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post"
-                              onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn đặt xe này?');">
+                              data-confirm="Hủy đơn đặt xe này?" data-confirm-ok="Hủy đơn" data-confirm-cancel="Giữ đơn" data-confirm-tone="danger">
                             <button type="submit" class="btn-cancel">
                                 Hủy đơn đặt xe
                             </button>
@@ -476,16 +482,16 @@
                     <div class="agreement-meta-row">
                         <span class="agreement-meta-label">Cọc / Miễn phí hủy</span>
                         <span data-policy="deposit cancellation" class="agreement-meta-val"
-                              th:text="${booking.contract.terms.depositPercent} + '% / ' + ${booking.contract.terms.freeCancellationHours} + 'h trước giờ nhận'">50% / 72h before pickup</span>
+                              th:text="${booking.contract.terms.depositPercent} + '% / ' + ${booking.contract.terms.freeCancellationHours} + 'h trước giờ nhận'">50% / 72h trước giờ nhận</span>
                     </div>
                     <div class="agreement-meta-row">
                         <span class="agreement-meta-label">Phí quá hạn trả xe</span>
                         <span data-policy="lateReturn" class="agreement-meta-val"
-                              th:text="${booking.contract.terms.lateFeePercent} + '% giá thuê theo giờ'">200% giá thuê theo giờ</span>
+                              th:text="${booking.contract.terms.lateFeePercent} + '% đơn giá theo giờ'">200% đơn giá theo giờ</span>
                     </div>
 
                     <div class="agreement-terms-box contract-terms-text" th:text="${booking.contract.terms.termsContent}">
-                        Rights and obligations of both parties.
+                        Quyền và nghĩa vụ của các bên.
                     </div>
 
                     <a th:if="${booking.contract.issued}" th:href="@{/bookings/{id}/contract(id=${booking.id})}"

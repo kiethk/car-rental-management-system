@@ -55,13 +55,13 @@ public class LicensePlateServiceImpl implements LicensePlateService {
     @Override
     public LicensePlateDTO changePlate(Long vehicleId, LicensePlateChangeDTO form) {
         Vehicle vehicle = vehicleRepository.findByIdWithDetails(vehicleId)
-                .orElseThrow(() -> new NoSuchElementException("Vehicle not found: " + vehicleId));
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy xe: " + vehicleId));
         LicensePlate current = vehicle.getLicensePlate();
         String newPlate = form.getPlate().trim().toUpperCase();
 
         if (current != null) {
             if (Vehicle.STATUS_RENTED.equalsIgnoreCase(vehicle.getStatus())) {
-                throw new IllegalStateException("Cannot change the plate while the vehicle is rented out");
+                throw new IllegalStateException("Không đổi được biển số khi xe đang cho thuê");
             }
             if (current.getPlate().equalsIgnoreCase(newPlate)) {
                 throw new IllegalArgumentException("Plate " + newPlate + " is already on this vehicle");

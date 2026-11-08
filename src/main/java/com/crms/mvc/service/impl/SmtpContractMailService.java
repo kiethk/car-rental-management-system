@@ -24,8 +24,8 @@ import java.util.Locale;
 public class SmtpContractMailService implements ContractMailService {
     private static final String TEMPLATE = "mail/contract-issued";
     private static final Locale VIETNAMESE = Locale.of("vi", "VN");
-    static final String NOT_CONFIGURED_MESSAGE = "Email is not configured: add spring.mail.username and "
-            + "spring.mail.password (Gmail App Password) to application-local.properties to email contracts.";
+    static final String NOT_CONFIGURED_MESSAGE = "Chưa cấu hình email: thêm spring.mail.username và "
+            + "spring.mail.password (mật khẩu ứng dụng Gmail) vào application-local.properties để gửi hợp đồng qua email.";
 
     private final ObjectProvider<JavaMailSender> mailSender;
     private final ITemplateEngine templateEngine;
@@ -66,7 +66,7 @@ public class SmtpContractMailService implements ContractMailService {
             helper.addAttachment(document.getContractNumber() + ".pdf", new ByteArrayResource(pdf), "application/pdf");
             sender.send(message);
         } catch (MessagingException exception) {
-            throw new IllegalStateException("Could not build contract email " + document.getContractNumber(), exception);
+            throw new IllegalStateException("Không thể tạo email hợp đồng " + document.getContractNumber(), exception);
         }
     }
 }

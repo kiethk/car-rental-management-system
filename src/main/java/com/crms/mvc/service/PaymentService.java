@@ -22,12 +22,12 @@ public interface PaymentService {
     boolean hasLiveIssuePaymentSession(Long bookingId);
 
     /**
-     * Starts paying every outstanding issue fee of a completed booking in one VNPay payment; the amount is the sum
+     * Starts paying every outstanding issue fee of a rental in progress in one VNPay payment; the amount is the sum
      * the system computes, never typed by the customer. Returns the VNPay URL to redirect to. A payment left
      * pending by an earlier abandoned attempt is cancelled first, so its fees are not stuck.
      *
      * @throws java.util.NoSuchElementException when the booking is not the customer's
-     * @throws IllegalStateException when the booking is not completed or nothing is owed
+     * @throws IllegalStateException when the rental is not in progress (already settled or not picked up) or nothing is owed
      */
     String createIssuePaymentUrl(Long bookingId, Long customerId, String clientIp);
 
@@ -37,7 +37,11 @@ public interface PaymentService {
     /** The gateway reported failure or cancellation: marks the payment failed and gives its fees back as owed. */
     Payment failIssuePayment(Long paymentId);
 
+    /** Settlement payment: the unpaid fees only. */
     Payment recordFinalPayment(Long bookingId, BigDecimal amount, String paymentMethod);
+
+    /** The rest of the rent (total minus deposit), collected by staff at handover in cash or by bank transfer. */
+    Payment recordRentalBalancePayment(Long bookingId, BigDecimal amount, String paymentMethod);
     List<Payment> getPaymentsByBooking(Long bookingId);
 
     Payment createPendingRefund(Long bookingId, BigDecimal amount, String bankCode, String accountNumber, String accountHolder);

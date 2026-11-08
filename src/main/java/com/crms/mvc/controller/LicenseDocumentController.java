@@ -74,7 +74,7 @@ public class LicenseDocumentController {
             addCurrentLicense(customerId, model);
             return "licenses/upload";
         } catch (IllegalStateException exception) {
-            model.addAttribute("error", "Could not save the license image.");
+            model.addAttribute("error", "Không thể lưu ảnh giấy phép lái xe.");
             addCurrentLicense(customerId, model);
             return "licenses/upload";
         }

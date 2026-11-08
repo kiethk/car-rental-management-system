@@ -4,13 +4,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public class LoginDTO {
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email is invalid")
-    @Size(max = 150, message = "Email must be at most 150 characters")
+    @NotBlank(message = "Vui lòng nhập email")
+    @Email(message = "Email không hợp lệ")
+    @Size(max = 150, message = "Email tối đa 150 ký tự")
     private String email;
 
-    @NotBlank(message = "Password is required")
-    @Size(max = 255, message = "Password is too long")
+    @NotBlank(message = "Vui lòng nhập mật khẩu")
+    @Size(max = 255, message = "Mật khẩu quá dài")
     private String password;
 
     public String getEmail() { return email; }

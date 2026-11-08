@@ -151,8 +151,8 @@
 <div class="keep-together">
 <h2>Điều 3. Giá thuê, đặt cọc và thanh toán</h2>
 <p data-policy="deposit" th:text="'Bên B đặt cọc ' + ${doc.terms.depositPercent}
-            + '% tổng giá trị hợp đồng khi đặt xe; số tiền còn lại được thanh toán khi trả xe.'">
-    Bên B đặt cọc 50% tổng giá trị hợp đồng khi đặt xe; số tiền còn lại được thanh toán khi trả xe.
+            + '% tổng giá trị hợp đồng khi đặt xe; số tiền còn lại được thanh toán khi nhận xe.'">
+    Bên B đặt cọc 50% tổng giá trị hợp đồng khi đặt xe; số tiền còn lại được thanh toán khi nhận xe.
 </p>
 <table>
     <tr>
@@ -176,7 +176,7 @@
         <td class="amount" th:text="${#numbers.formatDecimal(doc.depositAmount, 0, 'POINT', 0, 'COMMA')} + ' đ'">675.000 đ</td>
     </tr>
     <tr>
-        <td class="label">Còn lại thanh toán khi trả xe</td>
+        <td class="label">Còn lại thanh toán khi nhận xe</td>
         <td class="amount" th:text="${#numbers.formatDecimal(doc.remainingAmount, 0, 'POINT', 0, 'COMMA')} + ' đ'">675.000 đ</td>
     </tr>
 </table>
@@ -185,7 +185,7 @@
     <strong th:text="${doc.depositTransactionCode}">TXN-DEP-1</strong>,
     lúc <span th:text="${#temporals.format(doc.depositPaidAt, 'HH:mm, dd/MM/yyyy')}">09:05, 23/10/2026</span>.
 </p>
-<p>Phí trả xe trễ hạn, phí bồi thường hư hỏng và các chi phí phát sinh khác (nếu có) được thanh toán cùng số tiền còn lại khi trả xe.</p>
+<p>Phí trả xe trễ hạn và các khoản bồi thường (hư hỏng, vệ sinh, phát sinh khác) được lập biên bản và thanh toán khi quyết toán lúc trả xe; quyết toán xong thì hợp đồng được đóng.</p>
 </div>
 
 <div class="keep-together">

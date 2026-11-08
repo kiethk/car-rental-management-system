@@ -277,50 +277,13 @@ class AdminIssueControllerTest {
     }
 
     @Test
-    void aTrafficFineLookupOpensTheFormForTheRentalItFound() throws Exception {
-        Booking rental = new Booking();
-        rental.setId(42L);
-        when(issueService.findBookingForViolation("51A-123.45", LocalDateTime.of(2026, 10, 20, 14, 30))).thenReturn(rental);
-
-        mvc.perform(get("/admin/issues/traffic-fine").session(staff)
-                        .param("plate", "51A-123.45").param("occurredAt", "2026-10-20T14:30"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/admin/issues/new?bookingId=42&issueType=TRAFFIC_FINE&occurredAt=2026-10-20T14:30"));
-    }
-
-    @Test
-    void whenNoRentalMatchesTheStaffIsToldWhyAndNothingIsCreated() throws Exception {
-        when(issueService.findBookingForViolation(any(), any()))
-                .thenThrow(new NoSuchElementException("Không có đơn thuê nào của xe này tại thời điểm vi phạm"));
-
-        mvc.perform(get("/admin/issues/traffic-fine").session(staff)
-                        .param("plate", "51A-123.45").param("occurredAt", "2026-10-20T14:30"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/admin/issues"))
-                .andExpect(flash().attribute("error", "Không có đơn thuê nào của xe này tại thời điểm vi phạm"));
-
-        verify(issueService, never()).create(any(), any());
-    }
-
-    @Test
-    void theNewFormComesFilledInForATrafficFine() throws Exception {
-        when(bookingService.getBookingDetailForAdmin(42L)).thenReturn(booking());
-
-        mvc.perform(get("/admin/issues/new").session(staff)
-                        .param("bookingId", "42").param("issueType", "TRAFFIC_FINE").param("occurredAt", "2026-10-20T14:30"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("value=\"TRAFFIC_FINE\" selected=\"selected\"")))
-                .andExpect(content().string(containsString("2026-10-20T14:30")));
-    }
-
-    @Test
-    void theListOffersTheTrafficFineLookup() throws Exception {
+    void theListNoLongerOffersTheTrafficFineLookup() throws Exception {
         when(issueService.searchForAdmin(any())).thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 10), 0));
         when(issueService.countOpen()).thenReturn(0L);
 
         mvc.perform(get("/admin/issues").session(staff))
-                .andExpect(content().string(containsString("/admin/issues/traffic-fine")))
-                .andExpect(content().string(containsString("Tra đơn thuê")));
+                .andExpect(content().string(not(containsString("/admin/issues/traffic-fine"))))
+                .andExpect(content().string(not(containsString("Tra đơn thuê"))));
     }
 
     @Test

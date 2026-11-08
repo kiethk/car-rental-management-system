@@ -96,7 +96,7 @@ public class VehicleTypeServiceImpl implements VehicleTypeService {
     @Override
     public VehicleType update(Long id, VehicleTypeFormDTO dto) {
         VehicleType vt = vehicleTypeRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle model not found with ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dòng xe có mã: " + id));
 
         vt.setName(dto.getName().trim());
         vt.setBrand(dto.getBrand().trim());
@@ -121,12 +121,12 @@ public class VehicleTypeServiceImpl implements VehicleTypeService {
     public void delete(Long id) {
         long vehicleCount = vehicleRepository.countByVehicleTypeId(id);
         if (vehicleCount > 0) {
-            throw new IllegalStateException("Cannot delete car model because " + vehicleCount + " physical vehicles are linked to it!");
+            throw new IllegalStateException("Không xóa được dòng xe vì có " + vehicleCount + " xe thuộc dòng xe này!");
         }
 
         long slotCount = slotRepository.countByVehicleTypeId(id);
         if (slotCount > 0) {
-            throw new IllegalStateException("Cannot delete car model because " + slotCount + " slots are linked to it!");
+            throw new IllegalStateException("Không xóa được dòng xe vì có " + slotCount + " khung giờ liên quan!");
         }
 
         vehicleTypeRepository.deleteById(id);

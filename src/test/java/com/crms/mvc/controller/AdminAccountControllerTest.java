@@ -77,8 +77,8 @@ class AdminAccountControllerTest {
                         .param("password", "short").param("role", "root"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/accounts/form"))
-                .andExpect(content().string(containsString("Name is required")))
-                .andExpect(content().string(containsString("Role must be staff or admin")));
+                .andExpect(content().string(containsString("Vui lòng nhập họ tên")))
+                .andExpect(content().string(containsString("Vai trò phải là nhân viên hoặc quản trị viên")));
     }
 
     @Test
@@ -93,6 +93,6 @@ class AdminAccountControllerTest {
                         .param("name", "New Staff").param("phone", "0900000000").param("email", "new@crms.test")
                         .param("password", "temporary1").param("role", "staff"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Email is already in use")));
+                .andExpect(content().string(containsString("Email này đã được sử dụng")));
     }
 }

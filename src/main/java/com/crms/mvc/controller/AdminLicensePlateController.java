@@ -28,7 +28,7 @@ public class AdminLicensePlateController {
     @GetMapping("/vehicle/{vehicleId}")
     public String history(@PathVariable Long vehicleId, Model model) {
         Vehicle vehicle = vehicleService.findEntityById(vehicleId)
-                .orElseThrow(() -> new IllegalArgumentException("Car not found with ID: " + vehicleId));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + vehicleId));
         if (!model.containsAttribute("plateForm")) {
             model.addAttribute("plateForm", new LicensePlateChangeDTO());
         }
@@ -44,7 +44,7 @@ public class AdminLicensePlateController {
                               RedirectAttributes ra) {
         if (result.hasErrors()) {
             Vehicle vehicle = vehicleService.findEntityById(vehicleId)
-                    .orElseThrow(() -> new IllegalArgumentException("Car not found with ID: " + vehicleId));
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + vehicleId));
             addHistoryModel(model, vehicle);
             return "admin/license-plates/history";
         }

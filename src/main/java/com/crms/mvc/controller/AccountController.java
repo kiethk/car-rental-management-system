@@ -117,7 +117,7 @@ public class AccountController {
             request.getSession().invalidate();
             return "redirect:/login";
         } catch (DataAccessException exception) {
-            model.addAttribute("error", "Could not update account. Please try again later.");
+            model.addAttribute("error", "Không thể cập nhật tài khoản. Vui lòng thử lại sau.");
             return view;
         }
     }

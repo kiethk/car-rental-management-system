@@ -69,10 +69,10 @@
                         </thead>
                         <tbody>
                             <tr th:each="account : ${accounts}">
-                                <td class="font-weight-bold text-navy" th:text="${account.name}">Name</td>
+                                <td class="font-weight-bold text-navy" th:text="${account.name}">Họ tên</td>
                                 <td th:text="${account.email}">name@example.com</td>
                                 <td th:text="${account.phone}">0900000000</td>
-                                <td th:if="${query.type == 'employee'}" class="text-capitalize" th:text="${account.role}">staff</td>
+                                <td th:if="${query.type == 'employee'}" ><span th:replace="~{fragments/labels :: role(${account.role})}">Nhân viên</span></td>
                                 <td class="text-center">
                                     <span th:if="${account.active}" class="admin-status-badge badge-success">Hoạt động</span>
                                     <span th:unless="${account.active}" class="admin-status-badge badge-danger">Đã khóa</span>
@@ -85,7 +85,7 @@
                                         <button type="submit" class="btn btn-sm font-weight-bold rounded-lg"
                                                 th:classappend="${account.active} ? 'btn-outline-danger' : 'btn-outline-success'"
                                                 th:text="${account.active} ? 'Khóa' : 'Kích hoạt'"
-                                                th:onclick="${account.active} ? 'return confirm(\'Lock this account? The user will be signed out.\');' : null">Lock</button>
+                                                th:attr="data-confirm=${account.active} ? 'Khóa tài khoản này?' : null" data-confirm-detail="Người dùng sẽ bị đăng xuất." data-confirm-ok="Khóa" data-confirm-tone="danger">Khóa</button>
                                     </form>
                                 </td>
                             </tr>

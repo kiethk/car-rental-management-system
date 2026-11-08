@@ -12,7 +12,7 @@
         Hiển thị <strong class="text-navy" th:text="${nav.firstItem}">1</strong>–<strong class="text-navy" th:text="${nav.lastItem}">10</strong> trong số <strong class="text-navy" th:text="${nav.totalElements}">80</strong>
     </span>
 
-    <nav th:unless="${nav.singlePage}" aria-label="Pages">
+    <nav th:unless="${nav.singlePage}" aria-label="Phân trang">
         <ul class="pagination pagination-sm mb-0">
             <li class="page-item" th:classappend="${nav.previousUrl == null} ? 'disabled'">
                 <a class="page-link" th:href="${nav.previousUrl != null ? nav.previousUrl : '#'}">Trước</a>

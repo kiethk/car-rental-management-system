@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
     public String handleResponseStatus(ResponseStatusException ex, HttpServletResponse response, Model model) {
         response.setStatus(ex.getStatusCode().value());
         model.addAttribute("errorCode", String.valueOf(ex.getStatusCode().value()));
-        model.addAttribute("errorMessage", ex.getReason() != null ? ex.getReason() : "Resource not found");
+        model.addAttribute("errorMessage", ex.getReason() != null ? ex.getReason() : "Không tìm thấy dữ liệu");
         return ex.getStatusCode().value() == 404 ? "error/404" : "error/default";
     }
 
@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleNotFound(NoSuchElementException ex, Model model) {
         model.addAttribute("errorCode", "404");
-        model.addAttribute("errorMessage", ex.getMessage() != null ? ex.getMessage() : "Resource not found");
+        model.addAttribute("errorMessage", ex.getMessage() != null ? ex.getMessage() : "Không tìm thấy dữ liệu");
         return "error/404";
     }
 
@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleNoResourceFound(org.springframework.web.servlet.resource.NoResourceFoundException ex, Model model) {
         model.addAttribute("errorCode", "404");
-        model.addAttribute("errorMessage", "Resource not found: " + ex.getResourcePath());
+        model.addAttribute("errorMessage", "Không tìm thấy: " + ex.getResourcePath());
         return "error/404";
     }
 
@@ -50,7 +50,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public String handleDataAccess(DataAccessException ex, Model model) {
         model.addAttribute("errorCode", "503");
-        model.addAttribute("errorMessage", "The service is temporarily unavailable. Please try again later.");
+        model.addAttribute("errorMessage", "Dịch vụ tạm thời gián đoạn. Vui lòng thử lại sau.");
         return "error/default";
     }
 
@@ -58,7 +58,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String handleGeneralException(Exception ex, Model model) {
         model.addAttribute("errorCode", "500");
-        model.addAttribute("errorMessage", "An unexpected error occurred. Please try again later.");
+        model.addAttribute("errorMessage", "Đã có lỗi không mong muốn. Vui lòng thử lại sau.");
         model.addAttribute("errorDetail", ex.getMessage());
         return "error/500";
     }

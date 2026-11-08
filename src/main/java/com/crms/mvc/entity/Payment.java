@@ -9,6 +9,9 @@ import java.time.OffsetDateTime;
 public class Payment {
     /** What a customer pays later for the fees of issues resolved after settlement. */
     public static final String TYPE_ISSUE_COMPENSATION = "ISSUE_COMPENSATION";
+    /** The rest of the rent, collected by staff at handover. */
+    public static final String TYPE_RENTAL_BALANCE = "RENTAL_BALANCE";
+    /** Settlement: only the fees still unpaid (late fee, return charges, open Issues). */
     public static final String TYPE_FINAL = "FINAL";
     public static final String TYPE_REFUND = "REFUND";
     public static final String TYPE_DEPOSIT = "DEPOSIT";

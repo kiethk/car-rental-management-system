@@ -109,30 +109,21 @@
                                         class="w-28 h-20 rounded-xl object-cover bg-slate-100 flex-shrink-0 border border-slate-200 shadow-2xs"
                                     />
                                     <div class="flex-1 min-w-0">
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <span
-                                                class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200"
-                                                th:text="${vehicleType.category}"
-                                                >Sedan</span
-                                            >
-                                            <span
-                                                class="text-xs text-slate-500 capitalize"
-                                                th:text="${vehicleType.brand}"
-                                                >Toyota</span
-                                            >
-                                        </div>
+                                        <!-- Name on top, specs as compact chips underneath -->
                                         <h2
-                                            class="font-bold text-slate-900 text-lg leading-tight truncate"
+                                            class="font-bold text-slate-900 text-xl leading-tight truncate"
                                             th:text="${vehicleType.brand != null and vehicleType.name.toLowerCase().startsWith(vehicleType.brand.toLowerCase()) ? vehicleType.name : (vehicleType.brand + ' ' + vehicleType.name)}"
                                         >
                                             Toyota Vios 2023
                                         </h2>
-                                        <div class="text-xs text-slate-500 flex items-center gap-2 mt-1 capitalize">
+                                        <div class="flex flex-wrap items-center gap-x-2 mt-1.5 text-sm text-slate-500">
+                                            <span class="uppercase" th:text="${vehicleType.category}">Sedan</span>
+                                            <span>·</span>
                                             <span th:text="${vehicleType.seats + ' chỗ'}">5 chỗ</span>
                                             <span>·</span>
-                                            <span th:text="${vehicleType.transmission == 'automatic' ? 'Số tự động' : (vehicleType.transmission == 'manual' ? 'Số sàn' : vehicleType.transmission)}">Số tự động</span>
+                                            <span th:replace="~{fragments/labels :: transmission(${vehicleType.transmission})}">Số tự động</span>
                                             <span>·</span>
-                                            <span th:text="${vehicleType.fuelType == 'gasoline' ? 'Xăng' : (vehicleType.fuelType == 'diesel' ? 'Dầu' : (vehicleType.fuelType == 'electric' ? 'Điện' : (vehicleType.fuelType == 'hybrid' ? 'Hybrid' : vehicleType.fuelType)))}">Xăng</span>
+                                            <span th:replace="~{fragments/labels :: fuel(${vehicleType.fuelType})}">Xăng</span>
                                         </div>
                                     </div>
                                 </div>
@@ -151,8 +142,8 @@
 
                                     <!-- Duration / Direction indicator -->
                                     <div class="checkout-timeline-mid">
-                                        <span class="checkout-duration-pill" th:text="${rentalHours + ' Hours'}"
-                                            >9 Hours</span
+                                        <span class="checkout-duration-pill" th:text="${rentalHours + ' giờ'}"
+                                            >9 giờ</span
                                         >
                                     </div>
 
@@ -278,13 +269,13 @@
                                                         />
                                                         <span
                                                             class="plate-badge text-xs"
-                                                            th:text="${car.licensePlate != null ? car.licensePlate.plate : ('Unit #' + car.id)}"
+                                                            th:text="${car.licensePlate != null ? car.licensePlate.plate : ('Xe #' + car.id)}"
                                                             >51A-123.45</span
                                                         >
                                                         <span
                                                             class="text-xs text-slate-600 font-medium"
                                                             th:text="${car.color + ' · ' + car.year}"
-                                                            >White · 2023</span
+                                                            >Trắng · 2023</span
                                                         >
                                                     </div>
                                                     <div class="plate-selected-check text-slate-900">
@@ -308,7 +299,7 @@
                             <!-- CARD 2: Driver Verification -->
                             <div class="checkout-section">
                                 <label class="block text-xs font-bold text-slate-800 uppercase tracking-wide mb-3"
-                                    >Xác minh Giấy phép lái xe (GPLX)</label>
+                                    >Giấy phép lái xe (GPLX) <span class="normal-case font-medium text-slate-400">· không bắt buộc</span></label>
 
                                 <div
                                     th:if="${hasValidLicense}"
@@ -329,7 +320,7 @@
                                             </svg>
                                         </div>
                                         <div>
-                                            <span class="font-bold text-emerald-950">Giấy phép lái xe đã lưu</span>
+                                            <span class="font-bold text-emerald-950">Đã có giấy phép lái xe</span>
                                             <span
                                                 class="text-emerald-800 font-mono ml-1"
                                                 th:if="${customerLicense != null}"
@@ -341,7 +332,7 @@
                                     <a
                                         th:href="@{/licenses/my-license}"
                                         class="text-xs font-bold text-emerald-800 hover:underline"
-                                        >View</a
+                                        >Xem</a
                                     >
                                 </div>
 
@@ -365,13 +356,13 @@
                                                 <line x1="15" y1="8" x2="17" y2="8" />
                                             </svg>
                                         </div>
-                                        <span class="font-bold text-slate-900">Yêu cầu xác minh GPLX</span>
+                                        <span class="font-bold text-slate-900">Bạn chưa tải GPLX lên (không bắt buộc)</span>
                                     </div>
                                     <a
                                         th:href="@{/licenses/my-license}"
                                         class="btn-outline-shadcn inline-flex items-center justify-center gap-1.5 py-1 px-3 text-xs font-semibold whitespace-nowrap text-decoration-none"
                                     >
-                                        <span>Tải lên GPLX</span>
+                                        <span>Tải lên</span>
                                         <svg
                                             class="w-3.5 h-3.5"
                                             viewBox="0 0 24 24"
@@ -404,7 +395,7 @@
                                                 <line x1="9" y1="9" x2="15" y2="15" />
                                             </svg>
                                         </div>
-                                        <span class="font-bold text-red-950">GPLX hết hạn trước ngày trả xe</span>
+                                        <span class="font-bold text-red-950">GPLX đã tải lên hết hạn trước ngày trả xe</span>
                                     </div>
                                     <a
                                         th:href="@{/licenses/my-license}"
@@ -466,7 +457,7 @@
                                         class="hidden justify-between items-center text-emerald-600 text-xs"
                                     >
                                         <span id="discountLabel" class="text-emerald-600 font-medium"
-                                            >Promotion Discount</span
+                                            >Giảm giá khuyến mãi</span
                                         >
                                         <span class="font-bold text-emerald-600"
                                             >-<span id="discountAmountDisplay">0</span> đ</span
@@ -541,7 +532,7 @@
                                     <div
                                         class="pt-2.5 border-t border-slate-200/80 flex justify-between items-center text-xs text-slate-600"
                                     >
-                                        <span>Tiền thuê còn lại (thanh toán khi trả xe)</span>
+                                        <span>Tiền thuê còn lại (thanh toán khi nhận xe)</span>
                                         <span class="font-bold text-slate-900 whitespace-nowrap"
                                             ><span
                                                 id="remainingBalanceDisplay"
@@ -570,9 +561,9 @@
                                     </span>
                                 </label>
 
-                                <!-- CTA Action Button (Feedback 3: Dimmed/Disabled with changed text when no license) -->
+                                <!-- CTA Action Button (the driving license is optional, so it is always enabled) -->
                                 <div class="space-y-2">
-                                    <div th:if="${hasValidLicense}">
+                                    <div>
                                         <button
                                             type="submit"
                                             class="btn-amber w-full py-3.5 text-sm font-bold shadow-sm hover:shadow-md transition-all justify-center"
@@ -588,27 +579,6 @@
                                                 <path d="M5 12h14M12 5l7 7-7 7" />
                                             </svg>
                                         </button>
-                                    </div>
-
-                                    <div
-                                        th:if="${!hasValidLicense}"
-                                        class="space-y-2"
-                                    >
-                                        <button
-                                            type="button"
-                                            disabled
-                                            class="w-full py-3.5 px-4 rounded-xl text-sm font-bold bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed flex items-center justify-center gap-1.5 opacity-60"
-                                        >
-                                            <span>Xác nhận & Thanh toán cọc</span>
-                                        </button>
-                                        <div class="text-center">
-                                            <a
-                                                th:href="@{/licenses/my-license}"
-                                                class="inline-flex items-center gap-1 text-xs font-bold text-amber-700 hover:text-amber-800 hover:underline"
-                                            >
-                                                <span th:text="${licenseExpired} ? 'Update your driver license to unlock booking →' : 'Tải lên GPLX để mở khóa đặt xe →'">Tải lên GPLX để mở khóa đặt xe →</span>
-                                            </a>
-                                        </div>
                                     </div>
                                 </div>
 

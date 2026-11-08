@@ -47,6 +47,35 @@ class AdminDashboardVehicleCountTest {
                 .andExpect(content().string(containsString("xe ngừng khai thác")));
     }
 
+    @Test
+    void theRegistrationAlertNamesTheCarsThatAreExpiringAndExpired() throws Exception {
+        java.time.LocalDate today = java.time.LocalDate.now();
+        when(licensePlateService.findAllOverviews()).thenReturn(List.of(
+                overview(1L, "Toyota Vios", "available", "51A-111.11", today.plusDays(12)),
+                overview(2L, "Honda CR-V", "available", "51A-222.22", today.minusDays(3)),
+                overview(3L, "Kia Morning", "available", "51A-333.33", today.plusDays(2)),
+                overview(4L, "Ford Ranger", "retired", "51A-444.44", today.minusDays(40)),
+                overview(5L, "Mazda 3", "available", "51A-555.55", today.plusYears(1))));
+
+        mvc.perform(get("/admin/dashboard").session(admin()))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("expiringSoonCount", 2))
+                .andExpect(model().attribute("expiredCount", 1))
+                .andExpect(content().string(containsString("Honda CR-V")))
+                .andExpect(content().string(containsString("quá hạn 3 ngày")))
+                .andExpect(content().string(containsString("Toyota Vios")))
+                .andExpect(content().string(containsString("còn 12 ngày")))
+                .andExpect(content().string(containsString("/admin/inspections/new?vehicleId=3")))
+                // a retired car is out of service for good, and a car with a year left is not an alert
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("Ford Ranger"))))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("Mazda 3"))));
+    }
+
+    private static com.crms.mvc.dto.LicensePlateOverviewDTO overview(Long id, String name, String status, String plate,
+                                                                    java.time.LocalDate expiry) {
+        return new com.crms.mvc.dto.LicensePlateOverviewDTO(id, name, status, plate, "TP. Hồ Chí Minh", null, expiry);
+    }
+
     private static Vehicle vehicle(Long id, String status) {
         Vehicle vehicle = new Vehicle();
         vehicle.setId(id);

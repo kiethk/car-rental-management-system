@@ -31,6 +31,7 @@ public class BookingDetailDTO implements Serializable {
     private Long slotId;
     private OffsetDateTime pickupTime;
     private OffsetDateTime scheduledEndTime;
+    private OffsetDateTime actualPickupTime;
     private OffsetDateTime actualReturnTime;
 
     private BigDecimal pricePerHour;
@@ -151,6 +152,9 @@ public class BookingDetailDTO implements Serializable {
     public void setPickupTime(OffsetDateTime pickupTime) { this.pickupTime = pickupTime; }
     public OffsetDateTime getScheduledEndTime() { return scheduledEndTime; }
     public void setScheduledEndTime(OffsetDateTime scheduledEndTime) { this.scheduledEndTime = scheduledEndTime; }
+    public OffsetDateTime getActualPickupTime() { return actualPickupTime; }
+    public void setActualPickupTime(OffsetDateTime actualPickupTime) { this.actualPickupTime = actualPickupTime; }
+
     public OffsetDateTime getActualReturnTime() { return actualReturnTime; }
     public void setActualReturnTime(OffsetDateTime actualReturnTime) { this.actualReturnTime = actualReturnTime; }
     public BigDecimal getPricePerHour() { return pricePerHour; }

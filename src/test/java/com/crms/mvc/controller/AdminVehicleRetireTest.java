@@ -92,10 +92,10 @@ class AdminVehicleRetireTest {
 
         mvc.perform(get("/admin/vehicles").session(admin))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("ngừng khai thác vĩnh viễn")));
+                .andExpect(content().string(containsString("Ngừng khai thác xe này?")));
         mvc.perform(get("/admin/vehicles").session(staff))
                 .andExpect(status().isOk())
-                .andExpect(content().string(not(containsString("ngừng khai thác vĩnh viễn"))));
+                .andExpect(content().string(not(containsString("Ngừng khai thác xe này?"))));
     }
 
     @Test
@@ -105,7 +105,7 @@ class AdminVehicleRetireTest {
         mvc.perform(get("/admin/vehicles").session(admin))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Đã ngừng khai thác")))
-                .andExpect(content().string(not(containsString("ngừng khai thác vĩnh viễn"))))
+                .andExpect(content().string(not(containsString("Ngừng khai thác xe này?"))))
                 .andExpect(content().string(not(containsString("Set Available"))))
                 .andExpect(content().string(not(containsString("Set Maintenance"))));
     }

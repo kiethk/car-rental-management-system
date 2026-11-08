@@ -36,7 +36,7 @@ public class BookingFeeServiceImpl implements BookingFeeService {
     @Override
     public BookingFee recordFee(Long bookingId, String feeType, BigDecimal amount, String description, Long issueId) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy đơn đặt xe: " + bookingId));
 
         Issue issue = null;
         if (issueId != null) {
