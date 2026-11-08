@@ -194,13 +194,13 @@
                                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; margin-top: 16px; margin-bottom: 16px;">
                                     <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 6px;">Trạm nhận xe & Nhân viên bàn giao</div>
                                     <div style="font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 8px;">
-                                        📍 <span th:text="${booking.stationAddress}">Kho xe DriveNow - ĐH FPT TP.HCM (Khu Công nghệ cao, TP. Thủ Đức)</span>
+                                        <span th:text="${booking.stationAddress}">Kho xe DriveNow - ĐH FPT TP.HCM (Khu Công nghệ cao, TP. Thủ Đức)</span>
                                     </div>
                                     <div style="font-size: 12px; color: #64748b; margin-top: -4px; margin-bottom: 8px;">Mở cửa hàng ngày: <span th:text="${openingHours != null ? openingHours.label : '24/24'}">24/24</span></div>
                                     <div style="font-size: 13px; color: #334155;">
-                                        👤 <span>Nhân viên bàn giao: </span><strong th:text="${booking.staffName}">Nhân viên hỗ trợ</strong>
+                                        <span>Nhân viên bàn giao: </span><strong th:text="${booking.staffName}">Nhân viên hỗ trợ</strong>
                                         <span style="margin: 0 6px;">•</span>
-                                        📞 <span>Số điện thoại: </span><strong style="color: #002B49;" th:text="${booking.staffPhone}">0977777777</strong>
+                                        <span>Số điện thoại: </span><strong style="color: #002B49;" th:text="${booking.staffPhone}">0977777777</strong>
                                     </div>
                                 </div>
 

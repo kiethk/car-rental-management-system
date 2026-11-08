@@ -18,15 +18,12 @@
                 </p>
                 <div class="crms-footer-info-list flex flex-col gap-2 text-xs text-slate-700">
                     <div class="crms-footer-info-item flex items-start gap-2">
-                        <span class="text-amber">📍</span>
                         <span class="font-medium" th:text="${stationAddress != null ? stationAddress : 'Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM'}">Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM</span>
                     </div>
                     <div class="crms-footer-info-item flex items-start gap-2">
-                        <span class="text-amber">⏰</span>
                         <span>Giờ hoạt động: <strong class="text-slate-900" th:text="${openingHours != null ? openingHours.label : '24/24'}">24/24</strong> (Tất cả các ngày)</span>
                     </div>
                     <div class="crms-footer-info-item flex items-start gap-2">
-                        <span class="text-amber">📞</span>
                         <span>Hotline: <strong class="text-slate-900" th:text="${stationPhone != null ? stationPhone : '1900 6868'}">1900 6868</strong></span>
                     </div>
                 </div>
@@ -36,8 +33,8 @@
             <div class="lg:pl-8">
                 <h4 class="crms-footer-heading font-bold text-sm text-slate-900 mb-3 tracking-tight">Liên kết nhanh</h4>
                 <div class="crms-footer-links flex flex-col gap-2">
-                    <a th:href="@{/}" class="crms-footer-link text-xs text-slate-500 hover:text-slate-900 transition-colors inline-block">Trang chủ DriveNow</a>
-                    <a th:href="@{/vehicles}" class="crms-footer-link text-xs text-slate-500 hover:text-slate-900 transition-colors inline-block">Danh sách xe cho thuê</a>
+                    <a th:href="@{/}" class="crms-footer-link text-xs text-slate-500 hover:text-slate-900 transition-colors inline-block">Trang chủ</a>
+                    <a th:href="@{/vehicles}" class="crms-footer-link text-xs text-slate-500 hover:text-slate-900 transition-colors inline-block">Danh sách dòng xe cho thuê</a>
                     <a th:href="@{/search}" class="crms-footer-link text-xs text-slate-500 hover:text-slate-900 transition-colors inline-block">Tìm kiếm & Lọc lịch trình</a>
                     <a th:href="@{/bookings/my-bookings}" class="crms-footer-link text-xs text-slate-500 hover:text-slate-900 transition-colors inline-block">Quản lý đơn thuê của tôi</a>
                     <a th:href="@{/licenses/my-license}" class="crms-footer-link text-xs text-slate-500 hover:text-slate-900 transition-colors inline-block">Cập nhật Giấy phép lái xe</a>
