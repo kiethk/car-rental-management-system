@@ -64,7 +64,6 @@
                     <div class="surface-card">
                         <!-- Title & Holding Timer -->
                         <div class="card-header-row">
-                            <h2 class="card-title">Phương thức thanh toán</h2>
                             <div class="holding-badge">
                                 <span class="pulse-dot"></span>
                                 <span>Đang giữ chỗ xe · <strong id="depositTimer" class="font-mono" th:data-created-at="${booking.createdAt}" th:data-expires-at="${booking.createdAt != null ? booking.createdAt.plusMinutes(15) : ''}">15:00</strong></span>
@@ -82,11 +81,6 @@
                                                 <span style="color: #005baa">VN</span><span style="color: #ed1c24">PAY</span>
                                             </span>
                                         </div>
-                                    </div>
-                                    <div class="method-channels">
-                                        <span class="channel-pill">VNPAY-QR Ứng dụng ngân hàng</span>
-                                        <span class="channel-pill">40+ ngân hàng nội địa (ATM)</span>
-                                        <span class="channel-pill">Visa · Mastercard · JCB</span>
                                     </div>
                                 </div>
                             </div>
@@ -203,7 +197,7 @@
                         </div>
 
                         <!-- Card 2: Cost Breakdown & Cancellation Terms -->
-                        <div class="surface-card">
+                        <div class="surface-card mt-3">
                             <!-- Total Rental Fee -->
                             <div class="cost-row">
                                 <span class="cost-label">Tổng tiền thuê dự kiến</span>
