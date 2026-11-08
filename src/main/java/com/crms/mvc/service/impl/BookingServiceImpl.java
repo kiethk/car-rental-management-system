@@ -36,8 +36,8 @@ public class BookingServiceImpl implements BookingService {
     private int openingHour = com.crms.mvc.config.OpeningHours.DEFAULT.open();
     @org.springframework.beans.factory.annotation.Value("${crms.opening-hours.close:22}")
     private int closingHour = com.crms.mvc.config.OpeningHours.DEFAULT.close();
-    @org.springframework.beans.factory.annotation.Value("${crms.station.address:Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM}")
-    private String stationAddress = "Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM";
+    @org.springframework.beans.factory.annotation.Value("${crms.station.address:Kho xe DriveNow - ĐH FPT TP.HCM (Khu Công nghệ cao, TP. Thủ Đức)}")
+    private String stationAddress = "Kho xe DriveNow - ĐH FPT TP.HCM (Khu Công nghệ cao, TP. Thủ Đức)";
 
     private final BookingRepository bookingRepository;
     private final CustomerRepository customerRepository;
