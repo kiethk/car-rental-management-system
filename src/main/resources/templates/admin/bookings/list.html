@@ -40,8 +40,7 @@
                                 <a
                                     th:href="@{/admin/bookings(status='all')}"
                                     th:class="'btn ' + (${currentStatus == 'all' or currentStatus == null} ? 'btn-navy' : 'btn-outline-secondary')"
-                                    >All</a
-                                >
+                                    >Tất cả</a>
                                 <a
                                     th:href="@{/admin/bookings(status='refund')}"
                                     th:class="'btn ' + (${currentStatus == 'refund'} ? 'btn-danger font-weight-bold text-white' : 'btn-outline-danger')"
@@ -58,28 +57,23 @@
                                 <a
                                     th:href="@{/admin/bookings(status='pending_payment')}"
                                     th:class="'btn ' + (${currentStatus == 'pending_payment'} ? 'btn-navy' : 'btn-outline-secondary')"
-                                    >Pending Deposit</a
-                                >
+                                    >Chờ cọc</a>
                                 <a
                                     th:href="@{/admin/bookings(status='confirmed')}"
                                     th:class="'btn ' + (${currentStatus == 'confirmed'} ? 'btn-navy' : 'btn-outline-secondary')"
-                                    >Confirmed</a
-                                >
+                                    >Đã xác nhận</a>
                                 <a
                                     th:href="@{/admin/bookings(status='active')}"
                                     th:class="'btn ' + (${currentStatus == 'active'} ? 'btn-navy' : 'btn-outline-secondary')"
-                                    >Active Trips</a
-                                >
+                                    >Đang thuê</a>
                                 <a
                                     th:href="@{/admin/bookings(status='completed')}"
                                     th:class="'btn ' + (${currentStatus == 'completed'} ? 'btn-navy' : 'btn-outline-secondary')"
-                                    >Completed</a
-                                >
+                                    >Hoàn thành</a>
                                 <a
                                     th:href="@{/admin/bookings(status='cancelled')}"
                                     th:class="'btn ' + (${currentStatus == 'cancelled'} ? 'btn-navy' : 'btn-outline-secondary')"
-                                    >Cancelled</a
-                                >
+                                    >Đã hủy</a>
                             </div>
                         </div>
 
@@ -188,18 +182,15 @@
                                             <span
                                                 th:if="${not b.hasPendingRefund and b.status == 'pending_payment'}"
                                                 class="admin-status-badge badge-warning text-dark"
-                                                >Pending Deposit</span
-                                            >
+                                                >Chờ cọc</span>
                                             <span
                                                 th:if="${not b.hasPendingRefund and b.status == 'confirmed'}"
                                                 class="admin-status-badge badge-info"
-                                                >Confirmed</span
-                                            >
+                                                >Đã xác nhận</span>
                                             <span
                                                 th:if="${not b.hasPendingRefund and b.status == 'active'}"
                                                 class="admin-status-badge badge-primary"
-                                                >Active</span
-                                            >
+                                                >Đang thuê</span>
                                             <span
                                                 th:if="${b.pickupDeadline != null}"
                                                 class="admin-status-badge badge-warning d-block mt-1"
@@ -215,13 +206,11 @@
                                             <span
                                                 th:if="${not b.hasPendingRefund and b.status == 'completed'}"
                                                 class="admin-status-badge badge-success"
-                                                >Completed</span
-                                            >
+                                                >Hoàn thành</span>
                                             <span
                                                 th:if="${not b.hasPendingRefund and b.status == 'cancelled'}"
                                                 class="admin-status-badge badge-secondary"
-                                                >Cancelled</span
-                                            >
+                                                >Đã hủy</span>
                                         </td>
                                         <td class="text-center">
                                             <a
