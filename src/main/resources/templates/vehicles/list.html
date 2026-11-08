@@ -168,8 +168,8 @@
             </div>
 
             <!-- Vehicle Cards Grid (Synchronized Card Component) -->
-            <div th:unless="${#lists.isEmpty(vehicles)}" class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
-                <div class="col mb-4" th:each="v : ${vehicles}">
+            <div th:unless="${#lists.isEmpty(vehicles)}" class="row g-4">
+                <div class="col-12 col-md-6 col-xl-4 mb-4" th:each="v : ${vehicles}">
                     <div class="car-card shadow-sm">
                         <!-- Car Image (No corner badge per requirement) -->
                         <div class="car-img-wrapper">

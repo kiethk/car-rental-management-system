@@ -51,10 +51,12 @@
                                 stroke-width="2.5"
                             >
                                 <polyline points="20 6 9 17 4 12" />
-                            </svg> Kiểm tra & Xác nhận
+                            </svg> Xác nhận
                         </span>
                         <span class="text-slate-300">→</span>
                         <span class="inline-flex items-center gap-1.5 font-bold text-slate-900 bg-slate-100 px-3 py-1 rounded-full border border-slate-300"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Đặt cọc</span>
+                        <span class="text-slate-300">→</span>
+                        <span class="text-slate-400 font-medium" style="font-size: 12px;">Đã xác nhận cọc</span>
                     </div>
                 </div>
 
@@ -70,19 +72,15 @@
                             </div>
                         </div>
 
-                        <!-- VNPay Payment Method Card (Subtle clean border) -->
-                        <div class="method-card">
-                            <div class="method-top">
-                                <div class="method-info">
-                                    <div class="method-title-line">
-                                        <div class="method-name-wrap">
-                                            <span class="method-name">Cổng thanh toán điện tử VNPay</span>
-                                            <span class="vnpay-badge">
-                                                <span style="color: #005baa">VN</span><span style="color: #ed1c24">PAY</span>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
+                        <!-- VNPay Payment Minimalist (No box, Big Logo) -->
+                        <div style="padding: 24px 0 16px; text-align: center;">
+                            <div style="margin-bottom: 8px;">
+                                <span style="font-family: system-ui, -apple-system, sans-serif; font-size: 2.25rem; font-weight: 900; letter-spacing: -0.5px;">
+                                    <span style="color: #005baa">VN</span><span style="color: #ed1c24">PAY</span>
+                                </span>
+                            </div>
+                            <div style="font-size: 13px; color: #64748b;">
+                                Cổng thanh toán điện tử VNPAY
                             </div>
                         </div>
 
@@ -199,10 +197,11 @@
                         <!-- Card 2: Cost Breakdown & Cancellation Terms -->
                         <div class="surface-card mt-3">
                             <!-- Total Rental Fee -->
-                            <div class="cost-row">
-                                <span class="cost-label">Tổng tiền thuê dự kiến</span>
+                            <div class="cost-row" style="align-items: center; padding-bottom: 12px;">
+                                <span class="cost-label" style="font-size: 15px; font-weight: 700; color: #0f172a;">Tổng tiền thuê dự kiến</span>
                                 <span
                                     class="cost-val"
+                                    style="font-size: 1.35rem; font-weight: 800; color: #0f172a;"
                                     th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"
                                 >
                                     1,440,000 đ
@@ -245,8 +244,6 @@
                 </div>
             </div>
         </main>
-
-        <div th:replace="~{fragments/footer :: footer}"></div>
 
         <script th:inline="javascript">
             // Dynamic 15-Minute Countdown Timer based on booking.createdAt

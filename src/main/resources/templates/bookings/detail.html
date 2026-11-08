@@ -416,9 +416,9 @@
                         </span>
                     </div>
 
-                    <div class="cost-total-row">
-                        <span class="cost-total-label">Tổng tiền thuê dự kiến</span>
-                        <span class="cost-total-val">
+                    <div class="cost-total-row" style="align-items: center; padding-bottom: 12px;">
+                        <span class="cost-total-label" style="font-size: 15px; font-weight: 700; color: #0f172a;">Tổng tiền thuê dự kiến</span>
+                        <span class="cost-total-val" style="font-size: 1.35rem; font-weight: 800; color: #0f172a;">
                             <span th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT')}">1,440,000</span> đ
                         </span>
                     </div>
@@ -426,11 +426,21 @@
                     <!-- Amber Security Deposit Box -->
                     <div class="deposit-amber-box">
                         <div>
-                            <div class="deposit-box-label">Tiền cọc giữ xe</div>
+                            <div class="deposit-box-label font-bold text-slate-800">Tiền cọc giữ xe</div>
+                            <span class="text-xs text-slate-500 font-medium" th:if="${booking.status != 'pending_payment'}">✓ Đã thanh toán</span>
+                            <span class="text-xs text-amber-600 font-medium" th:if="${booking.status == 'pending_payment'}">Chờ thanh toán cọc</span>
                         </div>
-                        <div class="deposit-box-val">
+                        <div class="deposit-box-val font-extrabold" th:classappend="${booking.status != 'pending_payment'} ? 'text-emerald-600' : 'text-amber-600'">
                             <span th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}">720,000</span> đ
                         </div>
+                    </div>
+
+                    <!-- Remaining balance at station -->
+                    <div class="flex justify-between items-center py-2.5 px-3 rounded-lg bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700 mt-2"
+                         th:if="${booking.totalPrice != null and booking.depositAmount != null}">
+                        <span>Tiền thuê còn lại (khi nhận xe)</span>
+                        <span class="font-bold text-slate-900 text-sm" style="font-family: 'JetBrains Mono', monospace;"
+                              th:text="${#numbers.formatDecimal(booking.totalPrice - booking.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">720,000 đ</span>
                     </div>
 
                     <!-- Pay deposit CTA if pending -->
@@ -490,13 +500,25 @@
                               th:text="${booking.contract.terms.lateFeePercent} + '% đơn giá theo giờ'">200% đơn giá theo giờ</span>
                     </div>
 
-                    <div class="agreement-terms-box contract-terms-text" th:text="${booking.contract.terms.termsContent}">
-                        Quyền và nghĩa vụ của các bên.
-                    </div>
+                    <!-- Collapsible Dropdown for Terms Content -->
+                    <details class="group mt-3 rounded-lg border border-slate-200 bg-slate-50 overflow-hidden text-xs">
+                        <summary class="flex items-center justify-between p-3 font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors list-none select-none">
+                            <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                <span>Xem toàn văn điều khoản hợp đồng</span>
+                            </span>
+                            <span class="text-slate-400 group-open:rotate-180 transition-transform">▾</span>
+                        </summary>
+                        <div class="p-3.5 bg-white border-t border-slate-200 text-slate-600 leading-relaxed font-sans max-h-60 overflow-y-auto whitespace-pre-line text-[11px] contract-terms-text"
+                             th:text="${booking.contract.terms.termsContent}">
+                            Quyền và nghĩa vụ của các bên.
+                        </div>
+                    </details>
 
                     <a th:if="${booking.contract.issued}" th:href="@{/bookings/{id}/contract(id=${booking.id})}"
-                       target="_blank" rel="noopener" class="btn-download-contract">
-                        Tải hợp đồng thuê xe (PDF)
+                       target="_blank" rel="noopener" class="btn-download-contract mt-3 flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>Tải hợp đồng thuê xe (PDF)</span>
                     </a>
                     <div th:if="${!booking.contract.issued and booking.status != 'pending_payment' and booking.status != 'cancelled'}"
                          class="agreement-meta-label" style="margin-top: 10px;">
@@ -612,8 +634,6 @@
 
     </div>
 </main>
-
-<div th:replace="~{fragments/footer :: footer}"></div>
 
 </body>
 </html>

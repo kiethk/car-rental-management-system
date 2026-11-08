@@ -61,10 +61,12 @@
                                 class="inline-flex items-center gap-1.5 font-bold text-slate-900 bg-slate-100 px-3 py-1 rounded-full border border-slate-300"
                             >
                                 <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                                Kiểm tra & Xác nhận
+                                Xác nhận
                             </span>
                             <span class="text-slate-300">→</span>
                             <span class="text-slate-400 font-medium">Đặt cọc</span>
+                            <span class="text-slate-300">→</span>
+                            <span class="text-slate-400 font-medium">Đã xác nhận cọc</span>
                         </div>
                     </div>
                 </div>
@@ -476,9 +478,9 @@
                                     </div>
 
                                     <!-- Net Total Fee -->
-                                    <div class="flex justify-between items-center pt-2.5 border-t border-slate-100">
-                                        <span class="font-bold text-slate-900 text-sm">Tổng tiền thuê dự kiến</span>
-                                        <span class="font-extrabold text-slate-900 text-base"
+                                    <div class="flex justify-between items-center pt-3 border-t border-slate-100">
+                                        <span class="font-bold text-slate-900 text-base">Tổng tiền thuê dự kiến</span>
+                                        <span class="font-black text-slate-900 text-xl"
                                             ><span
                                                 id="totalRentalFeeDisplay"
                                                 th:text="${#numbers.formatDecimal(estimatedTotal, 0, 'COMMA', 0, 'POINT')}"
@@ -616,8 +618,6 @@
                 </form>
             </div>
         </main>
-
-        <div th:replace="~{fragments/footer :: footer}"></div>
 
         <script th:inline="javascript">
             function togglePlatePicker() {
