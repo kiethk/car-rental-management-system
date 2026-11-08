@@ -179,10 +179,12 @@
                         <!-- Title & Rating -->
                         <div class="mb-2">
                             <h3 class="text-lg font-bold text-navy mb-1" th:text="${vt.displayName}">Toyota Vios 2023</h3>
-                            <div class="flex items-center gap-1.5 text-xs text-amber font-semibold">
+                            <div class="flex items-center gap-1.5 text-xs text-amber font-semibold"
+                                 th:with="revSummary=${reviewSummaries != null ? reviewSummaries.get(vt.id) : null}">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                <span>4.8</span>
-                                <span class="text-muted-foreground font-normal">(124 đánh giá)</span>
+                                <span th:if="${revSummary != null and revSummary.reviewCount > 0}" th:text="${#numbers.formatDecimal(revSummary.averageRating, 1, 1)}">5.0</span>
+                                <span th:if="${revSummary != null and revSummary.reviewCount > 0}" class="text-muted-foreground font-normal" th:text="'(' + ${revSummary.reviewCount} + ' đánh giá)'">(1 đánh giá)</span>
+                                <span th:if="${revSummary == null or revSummary.reviewCount == 0}" class="text-muted-foreground font-normal">5.0 (Mới)</span>
                             </div>
                         </div>
 
@@ -223,6 +225,15 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Action to view all vehicles -->
+            <div class="mt-10 text-center">
+                <a th:href="@{/vehicles}"
+                   class="inline-flex items-center gap-2 px-8 py-3.5 bg-navy text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition shadow-sm hover:shadow-md">
+                    <span>Xem tất cả <span th:text="${totalVehicleCount != null ? totalVehicleCount : 20}">20</span> dòng xe</span>
+                    <span>→</span>
+                </a>
             </div>
         </div>
     </section>
