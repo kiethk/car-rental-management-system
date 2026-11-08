@@ -5,6 +5,7 @@ import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.event.DepositConfirmedEvent;
+import com.crms.mvc.event.PaymentReceivedEvent;
 import com.crms.mvc.event.RefundCompletedEvent;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.PaymentRepository;
@@ -281,6 +282,7 @@ public class VnPayServiceImpl implements PaymentService {
         }
         Payment saved = paymentRepository.save(payment);
         bookingFeeService.confirmPayment(saved);
+        eventPublisher.publishEvent(PaymentReceivedEvent.of(saved.getBooking(), saved, PaymentReceivedEvent.Kind.ISSUE_FEES));
         return saved;
     }
 
@@ -347,7 +349,10 @@ public class VnPayServiceImpl implements PaymentService {
         payment.setPaymentMethod(paymentMethod);
         payment.setTransactionCode(type + "-" + bookingId + "-" + System.currentTimeMillis());
         payment.setPaidAt(OffsetDateTime.now());
-        return paymentRepository.save(payment);
+        Payment saved = paymentRepository.save(payment);
+        eventPublisher.publishEvent(PaymentReceivedEvent.of(booking, saved,
+                Payment.TYPE_RENTAL_BALANCE.equals(type) ? PaymentReceivedEvent.Kind.RENTAL_BALANCE : PaymentReceivedEvent.Kind.SETTLEMENT));
+        return saved;
     }
 
     @Override

@@ -75,7 +75,7 @@ class InspectionRulesTest {
         BookingRepository bookings = mock(BookingRepository.class);
         VehicleRepository vehicles = mock(VehicleRepository.class);
         BookingServiceImpl service = new BookingServiceImpl(bookings, null, null, null, vehicles, null, null,
-                null, null, null, null, null, null);
+                null, null, null, null, null);
         LocalDate today = LocalDate.now();
         Vehicle expiring = car(1L, today.plusDays(1));
         Vehicle fine = car(2L, today.plusYears(1));
@@ -92,7 +92,7 @@ class InspectionRulesTest {
         BookingRepository bookings = mock(BookingRepository.class);
         VehicleRepository vehicles = mock(VehicleRepository.class);
         BookingServiceImpl service = new BookingServiceImpl(bookings, null, null, null, vehicles, null, null,
-                null, null, null, null, null, null);
+                null, null, null, null, null);
         LocalDate today = LocalDate.now();
         // registration valid through day 3; the rental ends at 00:00 on day 4, so it is driven only on days 1-3
         Vehicle car = car(1L, today.plusDays(3));
@@ -117,7 +117,7 @@ class InspectionRulesTest {
 
         VehicleInspectionFormDTO form = new VehicleInspectionFormDTO();
         form.setVehicleId(7L);
-        form.setScheduledAt(LocalDateTime.now().plusDays(2).truncatedTo(ChronoUnit.HOURS));
+        form.setScheduledDate(LocalDate.now().plusDays(2));
 
         assertThatThrownBy(() -> service.schedule(form))
                 .isInstanceOf(IllegalStateException.class)
@@ -138,7 +138,7 @@ class InspectionRulesTest {
 
         VehicleInspectionFormDTO form = new VehicleInspectionFormDTO();
         form.setVehicleId(7L);
-        form.setScheduledAt(LocalDateTime.now().plusDays(2).truncatedTo(ChronoUnit.HOURS));
+        form.setScheduledDate(LocalDate.now().plusDays(2));
 
         assertThat(service.schedule(form).getStatus()).isEqualTo("scheduled");
     }

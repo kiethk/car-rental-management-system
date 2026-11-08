@@ -312,7 +312,7 @@ class CoreRentalE2EFlowTest {
         inspection.setId(1L);
         inspection.setVehicle(vehicle);
         inspection.setStatus("SCHEDULED");
-        inspection.setScheduledAt(OffsetDateTime.now().plusDays(1));
+        inspection.setScheduledDate(java.time.LocalDate.now().plusDays(1));
 
         when(inspectionRepository.save(any(VehicleInspection.class))).thenAnswer(inv -> inv.getArgument(0));
 

@@ -69,8 +69,6 @@ public class ContractTemplateServiceImpl implements ContractTemplateService {
         draft.setFreeCancellationHours(active.getFreeCancellationHours());
         draft.setFreeCancelAfterDepositHours(active.getFreeCancelAfterDepositHours());
         draft.setPickupWaitHours(active.getPickupWaitHours());
-        draft.setCompensationVoucherPercent(active.getCompensationVoucherPercent());
-        draft.setCompensationVoucherDays(active.getCompensationVoucherDays());
         draft.setStatus(ContractTemplateStatus.DRAFT);
         draft.setCreatedBy(employee);
         draft.setCreatedAt(OffsetDateTime.now());
@@ -88,8 +86,6 @@ public class ContractTemplateServiceImpl implements ContractTemplateService {
         draft.setFreeCancellationHours(form.getFreeCancellationHours());
         draft.setFreeCancelAfterDepositHours(form.getFreeCancelAfterDepositHours());
         draft.setPickupWaitHours(form.getPickupWaitHours());
-        draft.setCompensationVoucherPercent(form.getCompensationVoucherPercent());
-        draft.setCompensationVoucherDays(form.getCompensationVoucherDays());
         return ContractTemplateDTO.fromEntity(draft);
     }
 

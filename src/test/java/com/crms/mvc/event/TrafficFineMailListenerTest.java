@@ -49,6 +49,7 @@ class TrafficFineMailListenerTest {
         assertThat(attachments.getValue()).containsOnlyKeys("bien-ban-phat-nguoi.png");
         assertThat(attachments.getValue().get("bien-ban-phat-nguoi.png")).isSameAs(photo);
         assertThat(variables.getValue()).containsEntry("hasAttachment", true);
+        assertThat(variables.getValue()).containsEntry("attachmentName", "bien-ban-phat-nguoi.png");
     }
 
     @Test

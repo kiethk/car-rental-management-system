@@ -56,10 +56,6 @@ _Avoid_: Phí phạt nguội, nợ phạt nguội
 Nhân viên ghi nhận Sự cố vào hệ thống; không đổi về sau.
 _Avoid_: Người xử lý, assignee
 
-**Thời gian chờ thông báo (Notice grace period)**:
-30 giây đầu sau khi lập Sự cố, khách chưa được thông báo. Huỷ trong khoảng này coi như Sự cố chưa từng tồn tại với khách; sửa phí trong khoảng này chỉ dẫn tới một thông báo duy nhất với mức phí cuối.
-_Avoid_: Nháp, draft
-
 ### Xe
 
 **Ngừng khai thác (Retired)**:
@@ -81,12 +77,8 @@ Khoảng cách tối thiểu 1 giờ giữa giờ kết thúc của lượt thu�
 _Avoid_: Đệm, buffer, giờ nghỉ, khoảng trống, downtime, nhận xe sớm
 
 **Đổi xe (Vehicle swap)**:
-Thay xe đã gán cho đơn thuê bằng một xe cùng loại còn trống trong khung giờ thuê, khi xe đang gán chưa về hoặc chưa sẵn sàng. Không bao giờ đổi sang loại xe khác. Chỉ làm được trước khi Bàn giao; xe khách thực sự nhận là xe ghi trong biên bản Bàn giao, dù hợp đồng đã phát hành ghi xe dự kiến khác. Nếu không còn xe cùng loại, đơn bị huỷ, khách được hoàn 100% Tiền cọc tại quầy dù đã quá hạn huỷ miễn phí và nhận Voucher bù.
+Thay xe đã gán cho đơn thuê bằng một xe cùng loại còn trống trong khung giờ thuê, khi xe đang gán chưa về hoặc chưa sẵn sàng. Không bao giờ đổi sang loại xe khác. Chỉ làm được trước khi Bàn giao; xe khách thực sự nhận là xe ghi trong biên bản Bàn giao, dù hợp đồng đã phát hành ghi xe dự kiến khác. Nếu không còn xe cùng loại, đơn bị huỷ, khách được hoàn 100% Tiền cọc tại quầy dù đã quá hạn huỷ miễn phí. Khách không nhận thêm voucher hay khoản bù nào khác.
 _Avoid_: Nâng hạng, phân khúc cao hơn, xe tương đương
-
-**Voucher bù (Compensation voucher)**:
-Mã giảm 10% tiền thuê, dùng 1 lần trong 90 ngày, tặng riêng cho khách có đơn bị huỷ vì bên cho thuê không còn xe cùng loại để giao. Chỉ là giảm giá cho lần thuê sau, không bao giờ quy đổi thành tiền mặt.
-_Avoid_: Hoàn tiền thêm, bồi thường bằng tiền
 
 **Bàn giao (Handover)**:
 Biên bản ghi nhận lúc giao xe cho khách (nhận xe) hoặc nhận lại xe từ khách (trả xe): số km, ảnh giấy tờ, ghi chú; mức nhiên liệu chỉ ghi lúc giao xe. Không phải Sự cố và không mang phí. Lúc nhận xe, nhân viên thu Tiền thuê còn lại; khách còn đơn trước chưa quyết toán thì chưa được bàn giao. Lúc trả xe, màn hình hiện tình trạng đã ghi lúc nhận xe để nhân viên đối chiếu và chỉ lập Sự cố cho hư hỏng mới.

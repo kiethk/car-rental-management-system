@@ -32,7 +32,7 @@ class BookingPickedPlateTest {
                 bookingRepository, customerRepository, mock(SlotRepository.class), vehicleTypeRepository,
                 vehicleRepository, mock(EmployeeRepository.class), mock(PromotionRepository.class),
                 mock(PaymentService.class), mock(ContractService.class), contractTemplateService,
-                mock(BookingFeeService.class), mock(PricingService.class), mock(CompensationVoucherService.class));
+                mock(BookingFeeService.class), mock(PricingService.class));
 
         when(customerRepository.findById(1L)).thenReturn(Optional.of(new Customer()));
         VehicleType type = new VehicleType();

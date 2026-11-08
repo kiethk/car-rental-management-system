@@ -4,6 +4,7 @@ import com.crms.mvc.config.VnPayConfig;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Payment;
+import com.crms.mvc.event.PaymentReceivedEvent;
 import com.crms.mvc.event.RefundCompletedEvent;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.PaymentRepository;
@@ -243,6 +244,38 @@ public class VnPayServiceTest {
         Payment again = paymentService.confirmIssuePayment(77L, "VNP999", 70000000L);
         assertSame(pending, again);
         assertEquals("VNP123", again.getTransactionCode());
+
+        // The gateway may call back twice, but the customer is thanked once.
+        org.mockito.ArgumentCaptor<PaymentReceivedEvent> thanks = org.mockito.ArgumentCaptor.forClass(PaymentReceivedEvent.class);
+        Mockito.verify(eventPublisher, Mockito.times(1)).publishEvent(thanks.capture());
+        assertEquals(PaymentReceivedEvent.Kind.ISSUE_FEES, thanks.getValue().kind());
+        assertEquals(42L, thanks.getValue().bookingId());
+        assertEquals(new BigDecimal("700000"), thanks.getValue().amount());
+    }
+
+    @Test
+    public void testTheRemainingRentIsAcknowledgedWithAThankYou() {
+        openRentalOf(5L);
+        Mockito.when(paymentRepository.save(Mockito.any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        paymentService.recordRentalBalancePayment(42L, new BigDecimal("500000"), "CASH");
+
+        org.mockito.ArgumentCaptor<PaymentReceivedEvent> thanks = org.mockito.ArgumentCaptor.forClass(PaymentReceivedEvent.class);
+        Mockito.verify(eventPublisher).publishEvent(thanks.capture());
+        assertEquals(PaymentReceivedEvent.Kind.RENTAL_BALANCE, thanks.getValue().kind());
+        assertEquals("CASH", thanks.getValue().paymentMethod());
+    }
+
+    @Test
+    public void testTheSettlementPaymentIsAcknowledgedWithAThankYou() {
+        openRentalOf(5L);
+        Mockito.when(paymentRepository.save(Mockito.any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        paymentService.recordFinalPayment(42L, new BigDecimal("300000"), "BANK_TRANSFER");
+
+        org.mockito.ArgumentCaptor<PaymentReceivedEvent> thanks = org.mockito.ArgumentCaptor.forClass(PaymentReceivedEvent.class);
+        Mockito.verify(eventPublisher).publishEvent(thanks.capture());
+        assertEquals(PaymentReceivedEvent.Kind.SETTLEMENT, thanks.getValue().kind());
     }
 
     @Test
@@ -317,6 +350,7 @@ public class VnPayServiceTest {
         payment.setPaymentType(Payment.TYPE_ISSUE_COMPENSATION);
         payment.setStatus("pending");
         payment.setAmount(new BigDecimal(amount));
+        payment.setBooking(openRentalOf(5L));
         Mockito.when(paymentRepository.findById(id)).thenReturn(Optional.of(payment));
         Mockito.when(paymentRepository.save(Mockito.any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
         return payment;

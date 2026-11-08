@@ -40,7 +40,8 @@ class ContractDocumentGeneratorTest {
 
         generator = new OpenHtmlToPdfContractGenerator(engine,
                 new ClassPathResource("fonts/LiberationSerif-Regular.ttf"),
-                new ClassPathResource("fonts/LiberationSerif-Bold.ttf"));
+                new ClassPathResource("fonts/LiberationSerif-Bold.ttf"),
+                "Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM");
     }
 
     @Test

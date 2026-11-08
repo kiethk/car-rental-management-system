@@ -37,7 +37,7 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     @Override
     @Transactional(readOnly = true)
     public List<VehicleInspection> findAll() {
-        return vehicleInspectionRepository.findAllByOrderByScheduledAtDesc();
+        return vehicleInspectionRepository.findAllByOrderByScheduledDateDesc();
     }
 
     @Override
@@ -52,18 +52,17 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + dto.getVehicleId()));
         requireNotRetired(vehicle);
 
-        if (dto.getScheduledAt() != null && dto.getScheduledAt().isBefore(LocalDateTime.now().minusMinutes(5))) {
-            throw new IllegalArgumentException("Thời gian lên lịch đăng kiểm không được ở trong quá khứ");
+        LocalDate today = LocalDate.now(ZoneOffset.ofHours(7));
+        if (dto.getScheduledDate() != null && dto.getScheduledDate().isBefore(today)) {
+            throw new IllegalArgumentException("Ngày lên lịch đăng kiểm không được ở trong quá khứ");
         }
 
         VehicleInspection inspection = new VehicleInspection();
         inspection.setVehicle(vehicle);
 
-        OffsetDateTime scheduledAt = dto.getScheduledAt() != null
-                ? dto.getScheduledAt().atOffset(ZoneOffset.ofHours(7))
-                : OffsetDateTime.now(ZoneOffset.ofHours(7));
-        requireNoRentalOnThatDay(vehicle, scheduledAt);
-        inspection.setScheduledAt(scheduledAt);
+        LocalDate scheduledDate = dto.getScheduledDate() != null ? dto.getScheduledDate() : today;
+        requireNoRentalOnThatDay(vehicle, scheduledDate);
+        inspection.setScheduledDate(scheduledDate);
         inspection.setStatus("scheduled");
         inspection.setNotes(dto.getNotes());
 
@@ -124,13 +123,13 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     }
 
     /** The whole day is reserved for the inspection, so the car must not already be promised to a customer that day. */
-    private void requireNoRentalOnThatDay(Vehicle vehicle, OffsetDateTime scheduledAt) {
-        OffsetDateTime dayStart = scheduledAt.toLocalDate().atStartOfDay().atOffset(scheduledAt.getOffset());
+    private void requireNoRentalOnThatDay(Vehicle vehicle, LocalDate scheduledDate) {
+        OffsetDateTime dayStart = scheduledDate.atStartOfDay().atOffset(ZoneOffset.ofHours(7));
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.ofHours(7));
         List<Long> bookedVehicleIds = bookingRepository.findBookedVehicleIdsInTimeRange(
                 dayStart, dayStart.plusDays(1), now.minusMinutes(Payment.PAYMENT_TIMEOUT_MINUTES), now);
         if (bookedVehicleIds.contains(vehicle.getId())) {
-            throw new IllegalStateException("Xe này đã có đơn thuê trong ngày " + scheduledAt.toLocalDate()
+            throw new IllegalStateException("Xe này đã có đơn thuê trong ngày " + scheduledDate
                     + ", không thể lên lịch đăng kiểm vào ngày này. Hãy chọn ngày khác.");
         }
     }
@@ -145,6 +144,6 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     @Override
     @Transactional(readOnly = true)
     public List<VehicleInspection> findByVehicleId(Long vehicleId) {
-        return vehicleInspectionRepository.findByVehicleIdOrderByScheduledAtDesc(vehicleId);
+        return vehicleInspectionRepository.findByVehicleIdOrderByScheduledDateDesc(vehicleId);
     }
 }

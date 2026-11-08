@@ -37,7 +37,7 @@ class UnsettledRentalGuardTest {
         BookingServiceImpl service = new BookingServiceImpl(bookings, customers, mock(SlotRepository.class),
                 mock(VehicleTypeRepository.class), mock(VehicleRepository.class), mock(EmployeeRepository.class),
                 mock(PromotionRepository.class), mock(PaymentService.class), mock(ContractService.class), templates,
-                mock(BookingFeeService.class), mock(PricingService.class), mock(CompensationVoucherService.class));
+                mock(BookingFeeService.class), mock(PricingService.class));
         when(customers.findById(1L)).thenReturn(Optional.of(new Customer()));
         ContractTemplateDTO terms = new ContractTemplateDTO();
         terms.setId(9L);
