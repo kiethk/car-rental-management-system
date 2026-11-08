@@ -1,15 +1,77 @@
 <!doctype html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <body>
-<footer th:fragment="footer" class="bg-white border-t border-border mt-auto py-8">
-    <div class="max-w-7xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row justify-between items-center text-xs text-muted-foreground gap-4">
-        <div class="flex items-center gap-2">
-            <span class="font-bold text-navy">DriveNow CRMS</span>
-            <span>·</span>
-            <span>Dịch vụ thuê xe ô tô tự lái tại TP. Hồ Chí Minh</span>
+<footer th:fragment="footer" class="bg-white border-t border-border mt-auto pt-12 pb-8">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pb-10 border-b border-slate-200">
+            <!-- Cột 1: Thông tin trạm xe -->
+            <div>
+                <div class="flex items-center gap-2 mb-3">
+                    <img th:src="@{/images/car-rental-logo.svg}" alt="Logo" class="h-6 w-auto"
+                         onerror="this.onerror=null; this.style.display='none';">
+                    <span class="font-bold text-navy text-base" th:text="${stationName != null ? stationName : 'Kho xe DriveNow - ĐH FPT TP.HCM'}">Kho xe DriveNow - ĐH FPT TP.HCM</span>
+                </div>
+                <p class="text-xs text-muted-foreground leading-relaxed mb-4">
+                    Dịch vụ cho thuê xe ô tô tự lái chuẩn công nghệ tại TP. Hồ Chí Minh. Xe được khử khuẩn, kiểm định an toàn và giao nhận đúng hẹn.
+                </p>
+                <div class="space-y-2 text-xs text-slate-700">
+                    <div class="flex items-start gap-2">
+                        <span class="text-amber">📍</span>
+                        <span class="font-medium" th:text="${stationAddress != null ? stationAddress : 'Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM'}">Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-amber">⏰</span>
+                        <span>Giờ hoạt động: <strong class="text-navy" th:text="${openingHours != null ? (openingHours.open + ':00 - ' + openingHours.close + ':00') : '06:00 - 22:00'}">06:00 - 22:00</strong> (Tất cả các ngày)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-amber">📞</span>
+                        <span>Hotline: <strong class="text-navy" th:text="${stationPhone != null ? stationPhone : '1900 6868'}">1900 6868</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cột 2: Liên kết nhanh -->
+            <div class="md:pl-6">
+                <h4 class="font-bold text-navy text-sm mb-3">Liên kết & Dịch vụ</h4>
+                <ul class="space-y-2 text-xs text-muted-foreground">
+                    <li><a th:href="@{/}" class="hover:text-navy transition">Trang chủ DriveNow</a></li>
+                    <li><a th:href="@{/vehicles}" class="hover:text-navy transition">Danh sách 20 dòng xe cho thuê</a></li>
+                    <li><a th:href="@{/search}" class="hover:text-navy transition">Tìm kiếm & Lọc lịch trình</a></li>
+                    <li><a th:href="@{/my-bookings}" class="hover:text-navy transition">Quản lý đơn thuê của tôi</a></li>
+                    <li><a th:href="@{/licenses/upload}" class="hover:text-navy transition">Cập nhật Giấy phép lái xe</a></li>
+                </ul>
+            </div>
+
+            <!-- Cột 3: Google Maps trực tiếp vị trí trường FPT -->
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="font-bold text-navy text-sm">Vị trí trạm xe</h4>
+                    <span class="text-[11px] text-muted-foreground">ĐH FPT Campus TP.HCM</span>
+                </div>
+                <div class="rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100" style="height: 180px;">
+                    <iframe
+                        th:src="${stationMapEmbedUrl != null ? stationMapEmbedUrl : 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.7204527239955!2d106.80730807480559!3d10.841127589311382!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752731176b07b1%3A0xb752b24b379bae5e!2sFPT%20University%20HCMC!5e1!3m2!1sen!2s!4v1794108631900!5m2!1sen!2s'}"
+                        width="100%"
+                        height="180"
+                        style="border:0;"
+                        allowfullscreen=""
+                        loading="lazy"
+                        referrerpolicy="strict-origin-when-cross-origin">
+                    </iframe>
+                </div>
+            </div>
         </div>
-        <div>
-            © 2026 DriveNow Inc. All rights reserved.
+
+        <!-- Dòng bản quyền chân trang -->
+        <div class="pt-6 flex flex-col sm:flex-row justify-between items-center text-xs text-muted-foreground gap-3">
+            <div class="flex items-center gap-2">
+                <span class="font-bold text-navy">DriveNow CRMS</span>
+                <span>·</span>
+                <span>Hệ thống Quản lý và Cho thuê xe ô tô tự lái</span>
+            </div>
+            <div>
+                © 2026 DriveNow Inc. All rights reserved.
+            </div>
         </div>
     </div>
 </footer>

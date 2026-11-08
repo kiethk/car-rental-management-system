@@ -141,7 +141,7 @@
                             </div>
                             <div class="timeline-content">
                                 <div class="timeline-step-title">Thời gian nhận xe</div>
-                                <div class="timeline-step-desc" th:text="${booking.stationAddress != null ? booking.stationAddress : 'Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM'}">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</div>
+                                <div class="timeline-step-desc" th:text="${booking.stationAddress != null ? booking.stationAddress : 'Kho xe DriveNow - ĐH FPT TP.HCM (Khu Công nghệ cao, TP. Thủ Đức)'}">Kho xe DriveNow - ĐH FPT TP.HCM (Khu Công nghệ cao, TP. Thủ Đức)</div>
                             </div>
                         </div>
 
@@ -170,7 +170,7 @@
                     <div style="display: flex; gap: 20px; align-items: flex-start; margin-top: 12px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 250px;">
                             <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px;">Trạm nhận xe</div>
-                            <div style="font-size: 14px; font-weight: 600; color: #0f172a;" th:text="${booking.stationAddress}">Kho xe DriveNow - 268 Lý Thường Kiệt, P.14, Q.10, TP.HCM</div>
+                            <div style="font-size: 14px; font-weight: 600; color: #0f172a;" th:text="${booking.stationAddress}">Kho xe DriveNow - ĐH FPT TP.HCM (Khu Công nghệ cao, TP. Thủ Đức)</div>
                             <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Mở cửa hàng ngày: <span th:text="${openingHours != null ? openingHours.label : '06:00 - 22:00'}">06:00 - 22:00</span></div>
                         </div>
                         <div style="flex: 1; min-width: 250px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px;">
