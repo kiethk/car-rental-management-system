@@ -66,3 +66,27 @@ body[data-screen="customer/bookings/detail"] .cancel-modal-header,
 body[data-screen="customer/bookings/detail"] .cancel-modal-footer { padding: 1rem 1.25rem; }
 
 body[data-screen="customer/bookings/detail"] .cancel-modal-close { border: 0; background: transparent; }
+
+/* Remaining rental amount: readable, prominent */
+body[data-screen="customer/bookings/detail"] .bookings-detail-remaining-row {
+    margin-top: .6rem;
+    margin-bottom: .6rem;
+    padding: .7rem .85rem !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--color-body);
+    font-size: .88rem;
+    flex-wrap: wrap;
+    gap: .3rem .75rem;
+}
+body[data-screen="customer/bookings/detail"] .bookings-detail-remaining-row > span:first-child { flex: 1 1 100%; font-weight: 600; }
+body[data-screen="customer/bookings/detail"] .bookings-detail-remaining-val {
+    color: var(--color-obsidian) !important;
+    font-family: var(--font-mono);
+    font-size: 1.15rem;
+    font-weight: 800 !important;
+    letter-spacing: -.02em;
+    white-space: nowrap;
+    margin-left: auto;
+}

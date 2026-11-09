@@ -15,11 +15,11 @@
     --color-obsidian-2: #141A22;
     --color-ink: #11151B;
     --color-body: #3A4049;
-    --color-muted: #6C727C;
+    --color-muted: #5F646D;
     /* 10% — champagne accent */
     --color-accent: #C6A15B;
     --color-accent-strong: #A9823F;
-    --color-accent-deep: #8C6A32;
+    --color-accent-deep: #7A5A28;
     --color-accent-soft: rgba(198, 161, 91, .12);
     --color-accent-ink: #221A0D;
 
@@ -176,6 +176,7 @@ body[data-screen] .btn {
     --bs-btn-border-radius: var(--fleet-radius-sm);
     --bs-btn-focus-box-shadow: 0 0 0 .25rem var(--fleet-ring);
     font-size: .875rem;
+    white-space: nowrap;
     transition: color .15s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
 }
 /* Champagne CTA — dark ink text for contrast */
@@ -377,7 +378,7 @@ body[data-screen] .pagination {
     --bs-pagination-focus-box-shadow: 0 0 0 .25rem var(--fleet-ring);
     --bs-pagination-active-bg: var(--color-obsidian);
     --bs-pagination-active-border-color: var(--color-obsidian);
-    --bs-pagination-disabled-color: #A29C8E;
+    --bs-pagination-disabled-color: var(--color-muted);
     --bs-pagination-disabled-bg: #fff;
     gap: .25rem;
 }

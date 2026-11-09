@@ -48,7 +48,7 @@
                 </dl>
               </div>
               <div class="col-md-6 text-center">
-                <img th:src="@{/licenses/{id}/image(id=${currentLicense.id})}" alt="Ảnh giấy phép lái xe đã tải lên" class="img-fluid border rounded-3 shadow-sm licenses-upload-img-detail">
+                <img th:src="@{/licenses/{id}/image(id=${currentLicense.id})}" data-image-zoom loading="lazy" decoding="async" alt="Ảnh giấy phép lái xe đã tải lên" class="img-fluid border rounded-3 shadow-sm licenses-upload-img-detail">
               </div>
             </div>
           </section>

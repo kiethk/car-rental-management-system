@@ -26,7 +26,6 @@ body[data-screen^="admin/"] .bg-white.rounded-xl, body[data-screen^="admin/"] .b
 @media (max-width: 991.98px) { body[data-screen^="admin/"] .admin-workspace { padding: 12px; } body[data-screen^="admin/"] .admin-sidebar-column { flex-basis: 100%; width: 100%; } }
 @media (prefers-reduced-motion: reduce) { body[data-screen^="admin/"] *, body[data-screen^="admin/"] *::before, body[data-screen^="admin/"] *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
 body[data-screen^="admin/"] [hidden] { display: none !important; }
-body[data-screen^="admin/"] .is-upload-locked { opacity: .5; pointer-events: none; }
 body[data-screen^="admin/"] .admin-card { background: transparent !important; box-shadow: none !important; border: 0 !important; border-bottom: 1px solid var(--color-border) !important; border-radius: 0 !important; }
 body[data-screen^="admin/"] .admin-card-header { background: transparent !important; border: 0 !important; }
 body[data-screen^="admin/"] .card { box-shadow: none !important; border: 1px solid var(--color-border) !important; border-radius: .45rem !important; }

@@ -301,7 +301,7 @@
                                             <span th:text="${#numbers.formatDecimal(pendingRefund.amount, 0, 'COMMA', 0, 'POINT')}">500,000</span> đ
                                         </div>
 
-                                        <img th:if="${vietQrUrl != null}" th:src="${vietQrUrl}"
+                                        <img th:if="${vietQrUrl != null}" th:src="${vietQrUrl}" loading="lazy" decoding="async" data-image-zoom
                                              alt="Mã VietQR hoàn tiền"
                                              class="img-fluid rounded border my-2 shadow-xs mx-auto bookings-manage-img-detail"
                                              />

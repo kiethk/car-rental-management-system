@@ -43,10 +43,10 @@
             <div class="home-hero-media">
               <div id="hero-carousel" class="promotion-carousel overflow-hidden" th:attr="aria-label=${hasPromotionImages ? 'Khuyến mãi hiện có' : 'Xe cho thuê nổi bật'}">
                 <article th:if="${hasPromotionImages}" th:each="promotion, iter : ${promotions}" class="promotion-slide" th:classappend="${iter.index == 0 ? ' active' : ''}" th:attr="aria-hidden=${iter.index != 0}">
-                  <img th:src="${promotion.urlImagePromotion}" th:alt="${'Khuyến mãi ' + promotion.code}">
+                  <img th:src="${promotion.urlImagePromotion}" decoding="async" th:attr="loading=${iter.index == 0 ? 'eager' : 'lazy'}" th:alt="${'Khuyến mãi ' + promotion.code}">
                 </article>
                 <article th:unless="${hasPromotionImages}" th:each="car, iter : ${fallbackVehicleImages}" class="promotion-slide" th:classappend="${iter.index == 0 ? ' active' : ''}" th:attr="aria-hidden=${iter.index != 0}">
-                  <img th:src="${car.value}" th:alt="${car.key}">
+                  <img th:src="${car.value}" decoding="async" th:attr="loading=${iter.index == 0 ? 'eager' : 'lazy'}" th:alt="${car.key}">
                 </article>
                 <div class="promotion-controls" th:if="${hasPromotionImages ? #lists.size(promotions) > 1 : fallbackVehicleImages.size() > 1}">
                   <button type="button" data-promotion-direction="-1" th:attr="aria-label=${hasPromotionImages ? 'Khuyến mãi trước' : 'Xe trước'}">‹</button>
@@ -116,7 +116,7 @@
           <div class="home-cars">
             <article th:each="vt : ${featuredVehicles}" class="car-card home-car-card">
               <div class="car-img-wrapper">
-                <img th:src="${vt.imageUrl != null and !vt.imageUrl.isBlank() ? vt.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${vt.displayName}" data-fallback-src="/images/car-rental-logo.svg">
+                <img th:src="${vt.imageUrl != null and !vt.imageUrl.isBlank() ? vt.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${vt.displayName}" data-fallback-src="/images/car-rental-logo.svg" loading="lazy" decoding="async">
                 <span class="home-car-cat" th:text="${vt.category}">Sedan</span>
                 <div class="home-car-price">
                   <span>từ</span>

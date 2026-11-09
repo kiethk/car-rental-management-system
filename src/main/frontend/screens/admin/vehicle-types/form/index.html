@@ -105,37 +105,30 @@
                             <small class="text-danger" th:if="${#fields.hasErrors('fuelType')}" th:errors="*{fuelType}"></small>
                         </div>
 
-                        <!-- Photo: Upload file or Online URL -->
+                        <!-- Photo: uploaded file only; imageUrl stays hidden so editing keeps the current photo -->
                         <div class="col-12 form-group mb-3 p-3 bg-surface rounded-xl border">
                             <div class="fw-bold small text-navy mb-2">
                                 Hình ảnh dòng xe:
-                            </label>
+                            </div>
+                            <input type="hidden" th:field="*{imageUrl}">
 
-                            <div class="row align-items-center">
-                                <div class="col-md-6 mb-3 mb-md-0">
-                                    <label for="imageFileInput" class="small fw-bold text-navy mb-1 d-block">Cách 1: Tải ảnh từ máy</label>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <label for="imageFileInput" class="btn btn-outline-navy btn-sm mb-0 px-3 py-1 fw-bold vehicle-types-form-label-detail">
-                                            Chọn tệp
-                                        </label>
-                                        <input type="file" id="imageFileInput" name="imageFile" accept="image/png, image/jpeg, image/webp" class="visually-hidden" data-vehicle-type-image>
-                                        <span id="chosenFileName" class="small text-muted text-truncate vehicle-types-form-chosen-file-name">Chưa chọn tệp</span>
-                                        <button type="button" id="clearFileBtn" class="btn btn-sm btn-link text-danger p-0 vehicle-types-form-clear-file-btn" data-clear-vehicle-type-image title="Bỏ tệp đã chọn" hidden>✕</button>
-                                    </div>
-                                    <small class="form-text text-muted mt-1">Formats: JPG, PNG, WebP (Saved to uploads/)</small>
+                            <div class="vehicle-types-form-upload form-group mb-0">
+                                <label for="imageFileInput" class="small fw-bold text-navy mb-1 d-block">Tải ảnh từ máy</label>
+                                <div class="d-flex align-items-center gap-2 vehicle-types-form-file-row">
+                                    <label for="imageFileInput" class="btn btn-outline-navy btn-sm mb-0 px-3 py-1 fw-bold vehicle-types-form-label-detail">
+                                        Chọn tệp
+                                    </label>
+                                    <input type="file" id="imageFileInput" name="imageFile" accept="image/png, image/jpeg, image/webp" class="visually-hidden" data-vehicle-type-image>
+                                    <span id="chosenFileName" class="small text-muted text-truncate vehicle-types-form-chosen-file-name">Chưa chọn tệp</span>
+                                    <button type="button" id="clearFileBtn" class="btn btn-sm btn-link text-danger p-0 vehicle-types-form-clear-file-btn" data-clear-vehicle-type-image title="Bỏ tệp đã chọn" hidden>✕</button>
                                 </div>
-                                <div class="col-md-6">
-                                    <label for="imageUrlInput" class="small fw-bold text-navy mb-1 d-block">Cách 2: Dán đường dẫn ảnh</label>
-                                    <input type="url" id="imageUrlInput" th:field="*{imageUrl}" class="form-control form-control-sm rounded-lg"
-                                           placeholder="https://images.unsplash.com/...">
-                                    <small id="imageUrlHelp" class="form-text text-muted">Dán đường dẫn ảnh trên mạng nếu không tải tệp.</small>
-                                </div>
+                                <small class="form-text text-muted mt-1">Định dạng: JPG, PNG, WebP · tối đa 5MB</small>
                             </div>
 
                             <!-- Image Preview if available -->
-                            <div th:if="${typeForm.imageUrl != null and !typeForm.imageUrl.isBlank()}" class="mt-3 pt-2 border-top">
+                            <div th:if="${typeForm.imageUrl != null and !typeForm.imageUrl.isBlank()}" class="mt-3 pt-2 border-top vehicle-types-form-current-image">
                                 <span class="small text-muted me-2">Ảnh hiện tại:</span>
-                                <img th:src="${typeForm.imageUrl}" class="rounded border mt-1 vehicle-types-form-img-detail"
+                                <img th:src="${typeForm.imageUrl}" data-image-zoom class="rounded border mt-1 vehicle-types-form-img-detail" loading="lazy" decoding="async"
                                      data-image-fallback="/images/car-rental-logo.svg">
                             </div>
                         </div>

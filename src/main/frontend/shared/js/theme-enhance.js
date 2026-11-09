@@ -161,7 +161,7 @@
                         labels: {
                             show: true,
                             value: { fontFamily: 'Roboto Mono, monospace', fontWeight: 800, fontSize: '28px', color: '#11151B' },
-                            total: { show: true, label: 'Tổng xe', color: '#6C727C', fontSize: '12px', formatter: () => String(series.reduce((a, b) => a + b, 0)) },
+                            total: { show: true, label: 'Tổng xe', color: '#5F646D', fontSize: '12px', formatter: () => String(series.reduce((a, b) => a + b, 0)) },
                         },
                     },
                 },

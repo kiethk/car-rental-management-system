@@ -74,8 +74,8 @@
                             <div class="row g-2" th:unless="${#lists.isEmpty(issue.evidences)}">
                                 <div class="col-6 col-md-4 col-xl-3" th:each="photo : ${issue.evidences}">
                                     <div class="border rounded p-1 position-relative">
-                                        <a th:href="@{/admin/issues/{id}/evidences/{eid}(id=${issue.id},eid=${photo.id})}" target="_blank">
-                                            <img th:src="@{/admin/issues/{id}/evidences/{eid}(id=${issue.id},eid=${photo.id})}"
+                                        <a th:href="@{/admin/issues/{id}/evidences/{eid}(id=${issue.id},eid=${photo.id})}" target="_blank" data-image-zoom>
+                                            <img th:src="@{/admin/issues/{id}/evidences/{eid}(id=${issue.id},eid=${photo.id})}" loading="lazy" decoding="async"
                                                  class="img-fluid rounded issue-evidence-thumb" alt="Bằng chứng">
                                         </a>
                                         <form th:if="${issue.open}" method="post"

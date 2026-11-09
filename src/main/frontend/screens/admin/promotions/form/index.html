@@ -98,7 +98,7 @@
                             <small class="text-muted">Tùy chọn. Định dạng JPG, PNG hoặc WebP; dung lượng tối đa 5 MB. Để trống để giữ nguyên hình ảnh hiện tại.</small>
                             <div th:if="${promotionForm.urlImagePromotion != null and !promotionForm.urlImagePromotion.isBlank()}" class="mt-2">
                                 <span class="small text-muted d-block">Hình ảnh hiện tại:</span>
-                                <img th:src="${promotionForm.urlImagePromotion}" alt="Hình ảnh khuyến mãi"
+                                <img th:src="${promotionForm.urlImagePromotion}" data-image-zoom loading="lazy" decoding="async" alt="Hình ảnh khuyến mãi"
                                      class="rounded border mt-1 promotions-form-img-detail">
                             </div>
                         </div>

@@ -133,8 +133,8 @@
                                     <form method="post" th:action="@{/admin/vehicles/{id}/odometer(id=${v.id})}" class="m-0">
                                         <input type="hidden" name="returnTo" th:value="${listUrl}" />
                                         <div class="admin-odometer-wrap">
-                                            <input type="number" name="odometer" th:value="${v.odometer}" min="0" required>
-                                            <button type="submit" title="Lưu số km mới">✓</button>
+                                            <input type="number" name="odometer" th:value="${v.odometer}" min="0" required aria-label="Số km hiện tại">
+                                            <button type="submit" title="Lưu số km mới" aria-label="Lưu số km mới">✓</button>
                                         </div>
                                     </form>
                                 </td>

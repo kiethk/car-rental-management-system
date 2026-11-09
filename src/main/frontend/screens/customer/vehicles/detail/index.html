@@ -33,7 +33,7 @@
         <div class="col-lg-7 mb-4">
           <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
             <div class="vehicles-detail-div-detail">
-              <img th:src="${vehicle.imageUrl != null and !vehicle.imageUrl.isBlank() ? vehicle.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${vehicle.displayName}" class="w-100 h-100 object-cover" data-fallback-src="/images/car-rental-logo.svg">
+              <img th:src="${vehicle.imageUrl != null and !vehicle.imageUrl.isBlank() ? vehicle.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${vehicle.displayName}" class="w-100 h-100 object-cover" data-fallback-src="/images/car-rental-logo.svg" fetchpriority="high" decoding="async">
               <div class="position-absolute vehicles-detail-div-detail-f706">
                 <span class="badge badge-dark text-uppercase px-3 py-2 shadow-sm fw-bold vehicles-detail-span-detail" th:text="${vehicle.category}">Sedan</span>
               </div>

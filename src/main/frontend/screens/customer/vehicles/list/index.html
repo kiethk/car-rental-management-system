@@ -28,19 +28,19 @@
         <div class="crms-sidebar mb-4">
           <div class="card border-0 shadow-sm rounded-4 p-4">
             <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-              <h5 class="fw-bold text-navy mb-0">Bộ lọc xe</h5>
+              <h2 class="h5 fw-bold text-navy mb-0">Bộ lọc xe</h2>
               <a th:href="@{/vehicles}" class="text-muted small text-decoration-none">Đặt lại</a>
             </div>
             <form method="get" th:action="@{/vehicles}" id="filterForm">
               <!-- Keyword search -->
               <div class="form-group mb-3">
-                <label class="small fw-bold text-muted mb-1">Từ khóa tìm kiếm</label>
-                <input type="text" name="keyword" th:value="${filter.keyword}" class="form-control form-control-sm rounded-3" placeholder="Tên xe hoặc hãng...">
+                <label for="filterKeyword" class="small fw-bold text-muted mb-1">Từ khóa tìm kiếm</label>
+                <input id="filterKeyword" type="text" name="keyword" th:value="${filter.keyword}" class="form-control form-control-sm rounded-3" placeholder="Tên xe hoặc hãng...">
               </div>
               <!-- Brand filter -->
               <div class="form-group mb-3">
-                <label class="small fw-bold text-muted mb-1">Hãng xe</label>
-                <select name="brand" class="form-control form-control-sm rounded-3">
+                <label for="filterBrand" class="small fw-bold text-muted mb-1">Hãng xe</label>
+                <select id="filterBrand" name="brand" class="form-control form-control-sm rounded-3">
                   <option value="all" th:selected="${filter.brand == null or filter.brand == 'all'}">Tất cả hãng xe</option>
                   <option th:each="b : ${brands}" th:value="${b}" th:text="${b}" th:selected="${filter.brand != null and filter.brand.equalsIgnoreCase(b)}">
                   </option>
@@ -48,8 +48,8 @@
               </div>
               <!-- Category filter -->
               <div class="form-group mb-3">
-                <label class="small fw-bold text-muted mb-1">Loại xe</label>
-                <select name="category" class="form-control form-control-sm rounded-3">
+                <label for="filterCategory" class="small fw-bold text-muted mb-1">Loại xe</label>
+                <select id="filterCategory" name="category" class="form-control form-control-sm rounded-3">
                   <option value="all" th:selected="${filter.category == null or filter.category == 'all'}">Tất cả loại xe</option>
                   <option th:each="c : ${categories}" th:value="${c}" th:text="${#strings.capitalize(c)}" th:selected="${filter.category != null and filter.category.equalsIgnoreCase(c)}">
                   </option>
@@ -57,8 +57,8 @@
               </div>
               <!-- Seats filter -->
               <div class="form-group mb-3">
-                <label class="small fw-bold text-muted mb-1">Số chỗ</label>
-                <select name="seats" class="form-control form-control-sm rounded-3">
+                <label for="filterSeats" class="small fw-bold text-muted mb-1">Số chỗ</label>
+                <select id="filterSeats" name="seats" class="form-control form-control-sm rounded-3">
                   <option value="0" th:selected="${filter.seats == null or filter.seats == 0}">Bất kỳ</option>
                   <option value="4" th:selected="${filter.seats == 4}">4 chỗ trở lên</option>
                   <option value="5" th:selected="${filter.seats == 5}">5 chỗ trở lên</option>
@@ -67,8 +67,8 @@
               </div>
               <!-- Transmission filter -->
               <div class="form-group mb-3">
-                <label class="small fw-bold text-muted mb-1">Hộp số</label>
-                <select name="transmission" class="form-control form-control-sm rounded-3">
+                <label for="filterTransmission" class="small fw-bold text-muted mb-1">Hộp số</label>
+                <select id="filterTransmission" name="transmission" class="form-control form-control-sm rounded-3">
                   <option value="all" th:selected="${filter.transmission == null or filter.transmission == 'all'}">Tất cả hộp số</option>
                   <option value="automatic" th:selected="${filter.transmission == 'automatic'}">Số tự động</option>
                   <option value="manual" th:selected="${filter.transmission == 'manual'}">Số sàn</option>
@@ -117,7 +117,7 @@
           <div th:unless="${#lists.isEmpty(vehicles)}" class="vlist-grid">
             <article class="car-card vlist-card" th:each="v : ${vehicles}">
               <div class="car-img-wrapper vlist-media">
-                <img th:src="${v.imageUrl != null and !v.imageUrl.isBlank() ? v.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${v.displayName}" data-fallback-src="/images/car-rental-logo.svg">
+                <img th:src="${v.imageUrl != null and !v.imageUrl.isBlank() ? v.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${v.displayName}" data-fallback-src="/images/car-rental-logo.svg" loading="lazy" decoding="async">
                 <span class="vlist-cat" th:text="${v.category}">Sedan</span>
                 <div class="vlist-price">
                   <span>từ</span>

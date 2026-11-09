@@ -19,7 +19,7 @@
     --ev-border-strong: #D3CFC4;
     --ev-ink: #11151B;
     --ev-body: #3A4049;
-    --ev-muted: #6C727C;
+    --ev-muted: #5F646D;
     --ev-shadow: 0 4px 20px -2px rgba(12, 16, 22, .06), 0 2px 6px -1px rgba(12, 16, 22, .04);
     --ev-shadow-hover: 0 14px 34px -8px rgba(12, 16, 22, .14), 0 4px 10px -2px rgba(12, 16, 22, .06);
     --ev-radius: 16px;
@@ -339,7 +339,8 @@ body .nav-pills {
 }
 body .nav-pills .nav-link { border-radius: 10px; }
 body .nav-pills .nav-link.active, body .nav-pills .nav-link.active.bg-navy {
-    background: var(--ev-glass-dark) !important;
+    background-color: var(--color-obsidian) !important;
+    background-image: var(--ev-glass-dark) !important;
     color: #fff !important;
     box-shadow: 0 6px 16px -8px rgba(12, 16, 22, 0.6);
 }

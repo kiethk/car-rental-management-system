@@ -6,4 +6,61 @@
 [data-screen="admin/vehicles/list"] .vehicles-list-small-detail { font-size: 11px; }
 [data-screen="admin/vehicles/list"] .vehicles-list-div-detail { gap: 6px; }
 
+/* Compact odometer editor: input + save icon in one row */
+[data-screen="admin/vehicles/list"] .admin-odometer-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+}
+[data-screen="admin/vehicles/list"] .admin-odometer-wrap input[type="number"] {
+    width: 6.5rem;
+    min-height: 2rem;
+    padding: .3rem .5rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 7px;
+    background: #fff;
+    color: var(--color-obsidian);
+    font-family: var(--font-mono);
+    font-size: .78rem;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+[data-screen="admin/vehicles/list"] .admin-odometer-wrap input[type="number"]:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 .2rem rgba(198, 161, 91, .24);
+}
+[data-screen="admin/vehicles/list"] .admin-odometer-wrap input[type="number"]::-webkit-outer-spin-button,
+[data-screen="admin/vehicles/list"] .admin-odometer-wrap input[type="number"]::-webkit-inner-spin-button {
+    margin: 0;
+    -webkit-appearance: none;
+}
+[data-screen="admin/vehicles/list"] .admin-odometer-wrap input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
+[data-screen="admin/vehicles/list"] .admin-odometer-wrap button {
+    display: inline-grid;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+    place-items: center;
+    border: 1px solid rgba(198, 161, 91, .9);
+    border-radius: 7px;
+    color: var(--color-accent-ink);
+    background: var(--color-accent);
+    font-size: .8rem;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+[data-screen="admin/vehicles/list"] .admin-odometer-wrap button:hover {
+    background: var(--color-accent-strong);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px -4px rgba(198, 161, 91, .7);
+}
+[data-screen="admin/vehicles/list"] .admin-odometer-wrap button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 .2rem rgba(198, 161, 91, .3);
+}
+
 /* Shared screen behavior hooks */

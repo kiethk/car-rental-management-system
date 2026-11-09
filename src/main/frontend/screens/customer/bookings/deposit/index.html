@@ -53,19 +53,22 @@
                 </span>
               </div>
             </div>
-            <!-- VNPay Payment Minimalist (No box, Big Logo) -->
-            <div class="bookings-deposit-div-detail">
-              <div class="bookings-deposit-div-detail-e8df">
-                <span class="bookings-deposit-span-detail-eccd">
-                  <span class="bookings-deposit-span-detail-49c5">VN</span>
-                  <span class="bookings-deposit-span-detail-dcaf">PAY</span>
-                </span>
+            <!-- Payment methods list: VNPay is available; space reserved for future methods -->
+            <form th:action="@{/bookings/{id}/pay-deposit(id=${booking.id})}" method="post" class="deposit-payment-form">
+              <h2 class="payment-method-title">Phương thức thanh toán</h2>
+              <div class="payment-method-list" role="radiogroup" aria-label="Phương thức thanh toán">
+                <label class="payment-method">
+                  <input class="payment-method-input" type="radio" name="method" value="VNPAY" checked>
+                  <span class="payment-method-logo" aria-hidden="true">
+                    <span class="vnpay-wordmark"><span>VN</span><span>PAY</span></span>
+                  </span>
+                  <span class="payment-method-info">
+                    <span class="payment-method-name">VNPay</span>
+                    <span class="payment-method-desc">Cổng thanh toán điện tử — ATM, Visa/Mastercard, VNPAYQR</span>
+                  </span>
+                  <span class="payment-method-check" aria-hidden="true">✓</span>
+                </label>
               </div>
-              <div class="bookings-deposit-div-detail-d433"> Cổng thanh toán điện tử </div>
-            </div>
-            <!-- Submit Button -->
-            <form th:action="@{/bookings/{id}/pay-deposit(id=${booking.id})}" method="post">
-              <input type="hidden" name="method" value="VNPAY">
               <button type="submit" id="submitPaymentBtn" class="btn-submit-vnpay">
                 <span>Chuyển đến cổng thanh toán VNPay</span>
                 <span>→</span>
@@ -82,7 +85,7 @@
               </div>
               <!-- Vehicle Summary -->
               <div class="vehicle-summary-top">
-                <img th:src="${booking.imageUrl != null and !booking.imageUrl.isBlank() ? booking.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${booking.vehicleTypeName}" class="sidebar-vehicle-img" data-fallback-src="/images/car-rental-logo.svg" />
+                <img th:src="${booking.imageUrl != null and !booking.imageUrl.isBlank() ? booking.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${booking.vehicleTypeName}" class="sidebar-vehicle-img" data-fallback-src="/images/car-rental-logo.svg" loading="lazy" decoding="async" />
                 <div class="bookings-deposit-div-detail-8006">
                   <div class="sidebar-car-meta" th:text="${booking.vehicleCategory + ' · ' + (booking.seats != null ? (booking.seats + ' chỗ') : '5 chỗ')}" > Sedan · 5 chỗ </div>
                   <div class="sidebar-car-name" th:text="${booking.vehicleTypeName}">Accent 2024</div>

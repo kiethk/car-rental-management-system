@@ -109,7 +109,7 @@
               <div th:each="v : ${results}" class="car-card-row">
                 <!-- Left: Image (Full height of the card) -->
                 <div class="car-card-img-wrap">
-                  <img th:src="${v.imageUrl != null and !v.imageUrl.isBlank() ? v.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${v.displayName}" class="w-100 h-100 object-cover" data-fallback-src="/images/car-rental-logo.svg">
+                  <img th:src="${v.imageUrl != null and !v.imageUrl.isBlank() ? v.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${v.displayName}" class="w-100 h-100 object-cover" data-fallback-src="/images/car-rental-logo.svg" loading="lazy" decoding="async">
                 </div>
                 <!-- Middle & Right details -->
                 <div class="car-card-details-wrap">

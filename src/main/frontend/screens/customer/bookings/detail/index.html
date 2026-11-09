@@ -60,7 +60,7 @@
               <h2 class="card-title">Phương tiện & Lịch trình di chuyển</h2>
               <!-- Vehicle Strip -->
               <div class="vehicle-strip">
-                <img th:src="${booking.imageUrl != null and !booking.imageUrl.isBlank() ? booking.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${booking.vehicleTypeName}" class="vehicle-img" data-fallback-src="/images/car-rental-logo.svg">
+                <img th:src="${booking.imageUrl != null and !booking.imageUrl.isBlank() ? booking.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${booking.vehicleTypeName}" class="vehicle-img" data-fallback-src="/images/car-rental-logo.svg" loading="lazy" decoding="async">
                 <div>
                   <div class="vehicle-cat" th:text="${booking.vehicleCategory + ' · ' + booking.seats + ' chỗ'}">Sedan · 5 chỗ</div>
                   <h3 class="vehicle-name" th:text="${booking.vehicleTypeName}"> Accent 2024 </h3>
@@ -207,8 +207,8 @@
                 </div>
                 <p th:if="${issue.description != null}" class="issue-description" th:text="${issue.description}">Mô tả</p>
                 <div th:if="${!issue.evidences.isEmpty()}" class="issue-photo-row">
-                  <a th:each="photo : ${issue.evidences}" target="_blank" rel="noopener" th:href="@{/bookings/{bid}/issues/{iid}/evidences/{eid}(bid=${booking.id},iid=${issue.id},eid=${photo.id})}">
-                    <img th:src="@{/bookings/{bid}/issues/{iid}/evidences/{eid}(bid=${booking.id},iid=${issue.id},eid=${photo.id})}" alt="Ảnh sự cố" class="issue-photo-thumb">
+                  <a th:each="photo : ${issue.evidences}" target="_blank" rel="noopener" data-image-zoom th:href="@{/bookings/{bid}/issues/{iid}/evidences/{eid}(bid=${booking.id},iid=${issue.id},eid=${photo.id})}">
+                    <img th:src="@{/bookings/{bid}/issues/{iid}/evidences/{eid}(bid=${booking.id},iid=${issue.id},eid=${photo.id})}" loading="lazy" decoding="async" alt="Ảnh sự cố" class="issue-photo-thumb">
                   </a>
                 </div>
               </div>
@@ -308,9 +308,9 @@
                   <span th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}">720,000</span> đ </div>
               </div>
               <!-- Remaining balance at station -->
-              <div class="d-flex justify-content-between align-items-center customer-py-2 px-3 rounded-3 bg-light border border customer-text-xs fw-medium text-body mt-2 mb-2" th:if="${booking.totalPrice != null and booking.depositAmount != null}">
+              <div class="bookings-detail-remaining-row d-flex justify-content-between align-items-center customer-py-2 px-3 rounded-3 border border mt-2 mb-2" th:if="${booking.totalPrice != null and booking.depositAmount != null}">
                 <span>Tiền thuê còn lại (khi nhận xe)</span>
-                <span class="fw-bold text-dark small bookings-detail-span-detail-a859" th:text="${#numbers.formatDecimal(booking.totalPrice - booking.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">720,000 đ</span>
+                <span class="bookings-detail-remaining-val fw-bold text-dark bookings-detail-span-detail-a859" th:text="${#numbers.formatDecimal(booking.totalPrice - booking.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">720,000 đ</span>
               </div>
               <!-- Pay deposit CTA if pending -->
               <a th:if="${booking.status == 'pending_payment'}" th:href="@{/bookings/{id}/pay-deposit(id=${booking.id})}" class="btn-pay-now"> Thanh toán cọc ngay → </a>

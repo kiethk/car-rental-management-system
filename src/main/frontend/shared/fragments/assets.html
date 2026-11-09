@@ -4,8 +4,10 @@
 <th:block th:fragment="common">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta name="description" content="DriveNow — Dịch vụ thuê xe ô tô tự lái tại TP. Hồ Chí Minh. Chọn dòng xe, đặt lịch theo giờ, nhận xe nhanh chóng và minh bạch chi phí.">
+    <meta name="theme-color" content="#0C1016">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+    <link rel="stylesheet" th:href="@{/css/vendor/flatpickr/flatpickr.min.css}">
     <link rel="stylesheet" th:href="@{/css/vendor/bootstrap/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/shared/app.css}">
     <link rel="stylesheet" th:href="@{/css/shared/confirm-modal.css}">
@@ -14,15 +16,17 @@
     <link rel="stylesheet" th:href="@{/css/shared/layout.css}">
     <link rel="stylesheet" th:href="@{/css/shared/theme.css}">
     <link rel="stylesheet" th:href="@{/css/shared/theme-elevate.css}">
+    <link rel="stylesheet" th:href="@{/css/shared/image-preview.css}">
     <script th:src="@{/js/vendor/bootstrap/bootstrap.bundle.min.js}" defer></script>
-    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/vn.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.1/dist/apexcharts.min.js" defer></script>
+    <script th:src="@{/js/vendor/lucide/lucide.min.js}" defer></script>
+    <script th:src="@{/js/vendor/flatpickr/flatpickr.min.js}" defer></script>
+    <script th:src="@{/js/vendor/flatpickr/vn.js}" defer></script>
+    <script th:src="@{/js/vendor/apexcharts/apexcharts.min.js}" defer></script>
     <script th:src="@{/js/shared/app.js}" defer></script>
     <script th:src="@{/js/shared/confirm-modal.js}" defer></script>
     <script th:src="@{/js/shared/rental-search-form.js}" defer></script>
     <script th:src="@{/js/shared/theme-enhance.js}" defer></script>
+    <script th:src="@{/js/shared/image-preview.js}" defer></script>
 </th:block>
 </body>
 </html>

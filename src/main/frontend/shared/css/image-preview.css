@@ -1,0 +1,76 @@
+/* Shared image preview: thumbnails + click-to-zoom lightbox */
+body.image-preview-open { overflow: hidden; }
+img[data-image-zoom], a[data-image-zoom] { cursor: zoom-in; }
+img[data-image-zoom] { transition: transform .25s ease, box-shadow .25s ease; }
+img[data-image-zoom]:hover { transform: scale(1.02); box-shadow: 0 10px 24px -12px rgba(12, 16, 22, .35); }
+
+.image-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: rgba(12, 16, 22, .84);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+.image-lightbox.is-open { display: flex; }
+.image-lightbox img {
+    max-width: min(92vw, 1100px);
+    max-height: 86vh;
+    object-fit: contain;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .6);
+}
+.image-lightbox-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: inline-grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .35);
+    border-radius: 50%;
+    color: #fff;
+    background: rgba(255, 255, 255, .14);
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+}
+.image-lightbox-close:hover { background: rgba(255, 255, 255, .24); }
+
+.image-upload-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .35rem;
+    width: fit-content;
+    margin-top: .6rem;
+}
+.image-upload-preview img {
+    width: 160px;
+    height: 100px;
+    object-fit: cover;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: var(--color-surface-2);
+    cursor: zoom-in;
+}
+.image-upload-preview figcaption {
+    color: var(--color-muted);
+    font-size: .7rem;
+}
+
+@media (max-width: 575.98px) {
+    .image-lightbox { padding: .75rem; }
+    .image-lightbox img { max-width: 94vw; max-height: 80vh; }
+    .image-upload-preview img { width: 130px; height: 84px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    img[data-image-zoom] { transition: none; }
+    img[data-image-zoom]:hover { transform: none; }
+}

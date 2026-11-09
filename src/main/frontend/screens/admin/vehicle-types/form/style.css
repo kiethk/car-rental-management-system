@@ -1,7 +1,11 @@
 /* Screen-scoped DriveNow admin workspace */
 [data-screen="admin/vehicle-types/form"] .vehicle-types-form-label-detail { cursor: pointer; }
-[data-screen="admin/vehicle-types/form"] .vehicle-types-form-chosen-file-name { max-width: 200px; }
+[data-screen="admin/vehicle-types/form"] .vehicle-types-form-file-row { flex-wrap: wrap; row-gap: .4rem; }
+[data-screen="admin/vehicle-types/form"] .vehicle-types-form-upload { max-width: 36rem; }
+[data-screen="admin/vehicle-types/form"] .vehicle-types-form-chosen-file-name { max-width: min(100%, 220px); min-width: 0; }
 [data-screen="admin/vehicle-types/form"] .vehicle-types-form-clear-file-btn { text-decoration: none; }
 [data-screen="admin/vehicle-types/form"] .vehicle-types-form-img-detail { max-height: 80px; }
+[data-screen="admin/vehicle-types/form"] .vehicle-types-form-current-image { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+[data-screen="admin/vehicle-types/form"] .vehicle-types-form-current-image .small { margin-right: 0 !important; }
 
 /* Shared screen behavior hooks */

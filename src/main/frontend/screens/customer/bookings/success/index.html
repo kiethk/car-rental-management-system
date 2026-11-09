@@ -130,7 +130,7 @@
                 <!-- Station & Contact Staff Notice Box -->
                 <div class="bookings-success-div-detail-eccd">
                   <div class="bookings-success-div-detail-49c5">Trạm nhận xe & Nhân viên bàn giao</div>
-                  <div class="bookings-success-div-detail-dcaf"> 📍 <span th:text="${booking.stationAddress}">Kho xe DriveNow - ĐH FPT TP.HCM (Khu Công nghệ cao, TP. Thủ Đức)</span>
+                  <div class="bookings-success-div-detail-dcaf">  <span th:text="${booking.stationAddress}">Kho xe DriveNow - ĐH FPT TP.HCM (Khu Công nghệ cao, TP. Thủ Đức)</span>
                   </div>
                   <div class="bookings-success-div-detail-d433">Mở cửa hàng ngày: <span th:text="${openingHours != null ? openingHours.label : '24/24'}">24/24</span>
                   </div>
@@ -164,7 +164,7 @@
             <!-- Vehicle Card -->
             <div class="surface-card">
               <div class="vehicle-card-content">
-                <img th:src="${booking.imageUrl != null and !booking.imageUrl.isBlank() ? booking.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${booking.vehicleTypeName}" class="vehicle-img" data-fallback-src="/images/car-rental-logo.svg" />
+                <img th:src="${booking.imageUrl != null and !booking.imageUrl.isBlank() ? booking.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${booking.vehicleTypeName}" class="vehicle-img" data-fallback-src="/images/car-rental-logo.svg" loading="lazy" decoding="async" />
                 <div class="bookings-success-div-detail-3d14">
                   <h3 class="vehicle-meta-name" th:text="${booking.vehicleTypeName}">Vios 2023</h3>
                   <div class="plate-frame">
