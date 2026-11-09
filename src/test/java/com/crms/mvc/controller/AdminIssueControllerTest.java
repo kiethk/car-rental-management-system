@@ -1,5 +1,7 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.service.LicenseDocumentService;
+import com.crms.mvc.enums.BookingStatus;
 import com.crms.mvc.support.PassThroughSessionAccountService;
 import org.springframework.context.annotation.Import;
 import com.crms.mvc.support.TestSessions;
@@ -9,8 +11,8 @@ import com.crms.mvc.dto.IssueDTO;
 import com.crms.mvc.dto.IssueFormDTO;
 import com.crms.mvc.dto.IssueQueryDTO;
 import com.crms.mvc.entity.Issue;
-import com.crms.mvc.entity.IssueStatus;
-import com.crms.mvc.entity.IssueType;
+import com.crms.mvc.enums.IssueStatus;
+import com.crms.mvc.enums.IssueType;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.IssueService;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,6 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(AdminIssueController.class)
 @Import(PassThroughSessionAccountService.class)
 class AdminIssueControllerTest {
+    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private IssueService issueService;
     @MockitoBean private BookingService bookingService;

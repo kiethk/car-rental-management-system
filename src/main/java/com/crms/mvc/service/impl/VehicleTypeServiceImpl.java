@@ -1,5 +1,9 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.FuelType;
+import com.crms.mvc.enums.Transmission;
+import com.crms.mvc.enums.VehicleCategory;
 import com.crms.mvc.dto.PageQueryDTO;
 import com.crms.mvc.dto.VehicleTypeFormDTO;
 import com.crms.mvc.entity.VehicleType;
@@ -75,10 +79,10 @@ public class VehicleTypeServiceImpl implements VehicleTypeService {
         VehicleType vt = new VehicleType();
         vt.setName(dto.getName().trim());
         vt.setBrand(dto.getBrand().trim());
-        vt.setCategory(dto.getCategory().trim().toLowerCase());
+        vt.setCategory(VehicleCategory.from(dto.getCategory()));
         vt.setSeats(dto.getSeats());
-        vt.setTransmission(dto.getTransmission().trim().toLowerCase());
-        vt.setFuelType(dto.getFuelType().trim().toLowerCase());
+        vt.setTransmission(Transmission.from(dto.getTransmission()));
+        vt.setFuelType(FuelType.from(dto.getFuelType()));
         vt.setPricePerHour(dto.getPricePerHour());
         vt.setDescription(dto.getDescription());
 
@@ -100,10 +104,10 @@ public class VehicleTypeServiceImpl implements VehicleTypeService {
 
         vt.setName(dto.getName().trim());
         vt.setBrand(dto.getBrand().trim());
-        vt.setCategory(dto.getCategory().trim().toLowerCase());
+        vt.setCategory(VehicleCategory.from(dto.getCategory()));
         vt.setSeats(dto.getSeats());
-        vt.setTransmission(dto.getTransmission().trim().toLowerCase());
-        vt.setFuelType(dto.getFuelType().trim().toLowerCase());
+        vt.setTransmission(Transmission.from(dto.getTransmission()));
+        vt.setFuelType(FuelType.from(dto.getFuelType()));
         vt.setPricePerHour(dto.getPricePerHour());
         vt.setDescription(dto.getDescription());
 
@@ -141,7 +145,7 @@ public class VehicleTypeServiceImpl implements VehicleTypeService {
     @Override
     @Transactional(readOnly = true)
     public List<String> getDistinctCategories() {
-        return vehicleTypeRepository.findDistinctCategories();
+        return vehicleTypeRepository.findDistinctCategories().stream().map(EnumTokens::of).toList();
     }
 
     @Override

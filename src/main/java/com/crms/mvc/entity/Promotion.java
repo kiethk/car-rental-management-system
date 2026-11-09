@@ -1,5 +1,6 @@
 package com.crms.mvc.entity;
 
+import com.crms.mvc.enums.DiscountType;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,8 +16,9 @@ public class Promotion {
     @Column(name = "code", nullable = false, unique = true, length = 50)
     private String code;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "discount_type", nullable = false, length = 20)
-    private String discountType;
+    private DiscountType discountType;
 
     @Column(name = "discount_value", nullable = false, precision = 14, scale = 2)
     private BigDecimal discountValue;
@@ -39,8 +41,8 @@ public class Promotion {
     public String getCode() { return code; }
     public void setCode(String code) { this.code = code; }
 
-    public String getDiscountType() { return discountType; }
-    public void setDiscountType(String discountType) { this.discountType = discountType; }
+    public DiscountType getDiscountType() { return discountType; }
+    public void setDiscountType(DiscountType discountType) { this.discountType = discountType; }
 
     public BigDecimal getDiscountValue() { return discountValue; }
     public void setDiscountValue(BigDecimal discountValue) { this.discountValue = discountValue; }

@@ -1,5 +1,6 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.service.LicenseDocumentService;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.TrafficFineFormDTO;
 import com.crms.mvc.dto.TrafficFineNoticeDTO;
@@ -42,6 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(AdminTrafficFineController.class)
 @Import(PassThroughSessionAccountService.class)
 class AdminTrafficFineControllerTest {
+    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private TrafficFineService trafficFineService;
     @MockitoBean private BookingService bookingService;

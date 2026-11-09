@@ -1,10 +1,13 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.enums.PaymentStatus;
+import com.crms.mvc.enums.PaymentType;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Issue;
-import com.crms.mvc.entity.IssueStatus;
 import com.crms.mvc.entity.Payment;
+import com.crms.mvc.enums.FeeType;
+import com.crms.mvc.enums.IssueStatus;
 import com.crms.mvc.repository.BookingFeeRepository;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.IssueRepository;
@@ -34,7 +37,7 @@ public class BookingFeeServiceImpl implements BookingFeeService {
     }
 
     @Override
-    public BookingFee recordFee(Long bookingId, String feeType, BigDecimal amount, String description, Long issueId) {
+    public BookingFee recordFee(Long bookingId, FeeType feeType, BigDecimal amount, String description, Long issueId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy đơn đặt xe: " + bookingId));
 
@@ -45,13 +48,18 @@ public class BookingFeeServiceImpl implements BookingFeeService {
 
         BookingFee fee = new BookingFee();
         fee.setBooking(booking);
-        fee.setFeeType(feeType);
+        fee.setFeeType(feeType != null ? feeType : FeeType.OTHER);
         fee.setAmount(amount != null ? amount : BigDecimal.ZERO);
-        fee.setDescription(description != null ? description : feeType);
+        fee.setDescription(description != null ? description : (feeType != null ? feeType.getLabel() : ""));
         fee.setIssue(issue);
         fee.setCreatedAt(OffsetDateTime.now());
 
         return bookingFeeRepository.save(fee);
+    }
+
+    @Override
+    public BookingFee recordFee(Long bookingId, String feeType, BigDecimal amount, String description, Long issueId) {
+        return recordFee(bookingId, FeeType.from(feeType), amount, description, issueId);
     }
 
     @Override
@@ -64,8 +72,8 @@ public class BookingFeeServiceImpl implements BookingFeeService {
     @Transactional(readOnly = true)
     public List<BookingFee> getSettleableIssueFees(Long bookingId) {
         return bookingFeeRepository.findByBookingIdOrderByCreatedAtAsc(bookingId).stream()
-                .filter(fee -> BookingFee.FEE_TYPE_ISSUE_COMPENSATION.equals(fee.getFeeType()))
-                .filter(fee -> fee.getPayment() == null || !Payment.STATUS_PAID.equalsIgnoreCase(fee.getPayment().getStatus()))
+                .filter(fee -> FeeType.ISSUE_COMPENSATION.equals(fee.getFeeType()))
+                .filter(fee -> fee.getPayment() == null || PaymentStatus.PAID != fee.getPayment().getStatus())
                 .filter(fee -> fee.getIssue() != null && fee.getIssue().getStatus() == IssueStatus.OPEN)
                 .toList();
     }
@@ -74,11 +82,11 @@ public class BookingFeeServiceImpl implements BookingFeeService {
     public void attachPayment(Collection<BookingFee> fees, Payment payment) {
         fees.forEach(fee -> {
             fee.setPayment(payment);
-            if (Payment.STATUS_PAID.equalsIgnoreCase(payment.getStatus()) && fee.getIssue() != null) {
+            if (PaymentStatus.PAID == payment.getStatus() && fee.getIssue() != null) {
                 Issue issue = fee.getIssue();
                 if (issue.getStatus() == IssueStatus.OPEN) {
                     issue.setStatus(IssueStatus.RESOLVED);
-                    issue.setResolutionNote(Payment.TYPE_FINAL.equalsIgnoreCase(payment.getPaymentType())
+                    issue.setResolutionNote(PaymentType.FINAL == payment.getPaymentType()
                             ? "Đã thu cùng quyết toán khi trả xe"
                             : "Đã thanh toán (" + payment.getPaymentMethod() + ")");
                     issue.setResolvedAt(OffsetDateTime.now());
@@ -114,13 +122,13 @@ public class BookingFeeServiceImpl implements BookingFeeService {
     @Transactional(readOnly = true)
     public BigDecimal calculatePrepaidIssueFees(Long bookingId) {
         return bookingFeeRepository.findByBookingIdOrderByCreatedAtAsc(bookingId).stream()
-                .filter(fee -> BookingFee.FEE_TYPE_ISSUE_COMPENSATION.equals(fee.getFeeType()))
+                .filter(fee -> FeeType.ISSUE_COMPENSATION.equals(fee.getFeeType()))
                 .filter(this::isPaid)
                 .map(BookingFee::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private boolean isPaid(BookingFee fee) {
-        return fee.getPayment() != null && Payment.STATUS_PAID.equalsIgnoreCase(fee.getPayment().getStatus());
+        return fee.getPayment() != null && PaymentStatus.PAID == fee.getPayment().getStatus();
     }
 }

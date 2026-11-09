@@ -1,11 +1,12 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.PaymentStatus;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Customer;
 import com.crms.mvc.entity.Issue;
 import com.crms.mvc.entity.IssueEvidence;
-import com.crms.mvc.entity.IssueStatus;
+import com.crms.mvc.enums.IssueStatus;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.repository.BookingFeeRepository;
 import com.crms.mvc.repository.BookingRepository;
@@ -102,11 +103,11 @@ class IssueEvidenceTest {
 
     @Test
     void onceAPaymentHasTakenTheFeeNoMorePhotosCanBeAdded() {
-        for (String paymentStatus : List.of("pending", "paid")) {
+        for (PaymentStatus paymentStatus : List.of(PaymentStatus.PENDING, PaymentStatus.PAID)) {
             Issue issue = issue(IssueStatus.RESOLVED);
             feeTakenBy(issue, paymentStatus);
 
-            assertThrows(IllegalStateException.class, () -> service.addEvidence(7L, photo), paymentStatus);
+            assertThrows(IllegalStateException.class, () -> service.addEvidence(7L, photo), paymentStatus.name());
         }
         verify(fileUploadService, never()).saveIssueEvidence(any());
     }
@@ -213,7 +214,7 @@ class IssueEvidenceTest {
         return issue;
     }
 
-    private void feeTakenBy(Issue issue, String paymentStatus) {
+    private void feeTakenBy(Issue issue, PaymentStatus paymentStatus) {
         Payment payment = new Payment();
         payment.setStatus(paymentStatus);
         BookingFee fee = new BookingFee();

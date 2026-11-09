@@ -1,7 +1,7 @@
 package com.crms.mvc.dto;
 
-import com.crms.mvc.entity.IssueStatus;
-import com.crms.mvc.entity.IssueType;
+import com.crms.mvc.enums.IssueStatus;
+import com.crms.mvc.enums.IssueType;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

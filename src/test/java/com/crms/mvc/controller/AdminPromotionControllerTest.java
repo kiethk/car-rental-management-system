@@ -1,5 +1,7 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.service.LicenseDocumentService;
+import com.crms.mvc.enums.DiscountType;
 import com.crms.mvc.entity.Promotion;
 import com.crms.mvc.dto.SessionAccount;
 import com.crms.mvc.service.PromotionService;
@@ -29,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(PassThroughSessionAccountService.class)
 @WebMvcTest(AdminPromotionController.class)
 class AdminPromotionControllerTest {
+    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private PromotionService promotionService;
 
@@ -86,7 +89,7 @@ class AdminPromotionControllerTest {
         Promotion promotion = new Promotion();
         promotion.setId(4L);
         promotion.setCode("WELCOME10");
-        promotion.setDiscountType("percent");
+        promotion.setDiscountType(DiscountType.PERCENT);
         promotion.setDiscountValue(new BigDecimal("10"));
         promotion.setStartDate(LocalDate.now().minusDays(1));
         promotion.setEndDate(LocalDate.now().plusDays(10));

@@ -1,5 +1,6 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.BookingStatus;
 import com.crms.mvc.config.StationProperties;
 import com.crms.mvc.dto.BookingSummaryDTO;
 import com.crms.mvc.entity.Booking;
@@ -40,7 +41,7 @@ class BookingQueryServiceTest {
 
     @Test
     void aBookingCanOnlyBeOpenedByItsOwner() {
-        when(bookings.findById(42L)).thenReturn(Optional.of(booking(42L, 7L, Booking.STATUS_CONFIRMED)));
+        when(bookings.findById(42L)).thenReturn(Optional.of(booking(42L, 7L, BookingStatus.CONFIRMED)));
 
         assertThatThrownBy(() -> service.getBookingDetail(42L, 8L))
                 .isInstanceOf(IllegalStateException.class)
@@ -55,29 +56,29 @@ class BookingQueryServiceTest {
 
     @Test
     void theOwnerAndTheAdminSeeTheSameDetail() {
-        when(bookings.findById(42L)).thenReturn(Optional.of(booking(42L, 7L, Booking.STATUS_CONFIRMED)));
+        when(bookings.findById(42L)).thenReturn(Optional.of(booking(42L, 7L, BookingStatus.CONFIRMED)));
 
         assertThat(service.getBookingDetail(42L, 7L).getId()).isEqualTo(42L);
-        assertThat(service.getBookingDetail(42L, null).getStatus()).isEqualTo(Booking.STATUS_CONFIRMED);
+        assertThat(service.getBookingDetail(42L, null).getStatus()).isEqualTo("confirmed");
         assertThat(service.getBookingDetailForAdmin(42L).getCustomerId()).isEqualTo(7L);
         assertThat(service.getBookingDetailForAdmin(42L).getStationAddress()).isEqualTo(StationProperties.DEFAULT_ADDRESS);
     }
 
     @Test
     void aBookingWithoutACarShowsAsUnassigned() {
-        when(bookings.findByCustomerIdOrderByCreatedAtDesc(7L)).thenReturn(List.of(booking(42L, 7L, Booking.STATUS_CONFIRMED)));
+        when(bookings.findByCustomerIdOrderByCreatedAtDesc(7L)).thenReturn(List.of(booking(42L, 7L, BookingStatus.CONFIRMED)));
 
         List<BookingSummaryDTO> mine = service.getMyBookings(7L);
 
         assertThat(mine).hasSize(1);
         assertThat(mine.get(0).getLicensePlate()).isEqualTo("Unassigned");
-        assertThat(mine.get(0).getStatus()).isEqualTo(Booking.STATUS_CONFIRMED);
+        assertThat(mine.get(0).getStatus()).isEqualTo("confirmed");
         assertThat(mine.get(0).getVehicleTypeName()).isEqualTo("Vios");
     }
 
     @Test
     void theRefundFilterListsBookingsWaitingForARefundAndMarksThem() {
-        Booking waiting = booking(42L, 7L, Booking.STATUS_CANCELLED);
+        Booking waiting = booking(42L, 7L, BookingStatus.CANCELLED);
         when(payments.getPendingRefundBookingIds()).thenReturn(List.of(42L));
         when(bookings.findBookingsWithPendingRefund()).thenReturn(List.of(waiting));
 
@@ -92,8 +93,8 @@ class BookingQueryServiceTest {
     @Test
     void noFilterListsEveryBookingAndAStatusFilterIsTrimmed() {
         when(payments.getPendingRefundBookingIds()).thenReturn(List.of());
-        when(bookings.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(booking(1L, 7L, Booking.STATUS_ACTIVE)));
-        when(bookings.findByStatusOrderByCreatedAtDesc("active")).thenReturn(List.of(booking(2L, 7L, Booking.STATUS_ACTIVE)));
+        when(bookings.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(booking(1L, 7L, BookingStatus.ACTIVE)));
+        when(bookings.findByStatusOrderByCreatedAtDesc(BookingStatus.ACTIVE)).thenReturn(List.of(booking(2L, 7L, BookingStatus.ACTIVE)));
 
         assertThat(service.getAllBookings(null)).extracting(BookingSummaryDTO::getId).containsExactly(1L);
         assertThat(service.getAllBookings("all")).extracting(BookingSummaryDTO::getId).containsExactly(1L);
@@ -101,7 +102,7 @@ class BookingQueryServiceTest {
         verify(bookings, never()).findBookingsWithPendingRefund();
     }
 
-    private static Booking booking(Long id, Long customerId, String status) {
+    private static Booking booking(Long id, Long customerId, BookingStatus status) {
         VehicleType type = new VehicleType();
         type.setId(1L);
         type.setName("Vios");

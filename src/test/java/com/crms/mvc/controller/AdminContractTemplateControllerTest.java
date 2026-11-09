@@ -1,10 +1,11 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.service.LicenseDocumentService;
 import com.crms.mvc.support.TestSessions;
 import org.springframework.context.annotation.Import;
 import com.crms.mvc.support.PassThroughSessionAccountService;
 import com.crms.mvc.dto.ContractTemplateDTO;
-import com.crms.mvc.entity.ContractTemplateStatus;
+import com.crms.mvc.enums.ContractTemplateStatus;
 import com.crms.mvc.service.ContractTemplateService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(PassThroughSessionAccountService.class)
 @WebMvcTest(AdminContractTemplateController.class)
 class AdminContractTemplateControllerTest {
+    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private ContractTemplateService contractTemplateService;
 

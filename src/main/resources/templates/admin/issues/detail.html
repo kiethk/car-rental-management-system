@@ -42,7 +42,7 @@
                             <div class="admin-card-title-group"><h2 class="admin-card-title">Thông tin sự cố</h2></div>
                             <div class="admin-card-actions">
                                 <div th:replace="~{fragments/admin-components :: statusBadge(
-                                    status=${issue.status.dbValue()},
+                                    status=${issue.status.name()},
                                     label=${issue.status.label},
                                     variant=${issue.status.name() == 'OPEN' ? 'warning' : (issue.status.name() == 'RESOLVED' ? 'success' : 'neutral')})}"></div>
                                 <a th:if="${issue.open}" th:href="@{/admin/issues/{id}/edit(id=${issue.id})}" class="admin-btn admin-btn-secondary admin-btn-sm issue-action-btn">Sửa mức phí</a>

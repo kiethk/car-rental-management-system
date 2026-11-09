@@ -1,5 +1,6 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.enums.BookingStatus;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.BookingSummaryDTO;
 import com.crms.mvc.entity.Booking;
@@ -57,7 +58,8 @@ public class BookingQueryServiceImpl implements BookingQueryService {
         } else if (status == null || status.isBlank() || "all".equalsIgnoreCase(status.trim())) {
             bookings = bookingRepository.findAllByOrderByCreatedAtDesc();
         } else {
-            bookings = bookingRepository.findByStatusOrderByCreatedAtDesc(status.trim());
+            BookingStatus wanted = BookingStatus.from(status);
+            bookings = wanted == null ? List.of() : bookingRepository.findByStatusOrderByCreatedAtDesc(wanted);
         }
         return bookings.stream().map(b -> mapper.toAdminSummary(b, pendingRefunds)).toList();
     }

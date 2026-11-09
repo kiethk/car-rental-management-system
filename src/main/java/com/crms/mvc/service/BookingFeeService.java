@@ -2,11 +2,13 @@ package com.crms.mvc.service;
 
 import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Payment;
+import com.crms.mvc.enums.FeeType;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
 public interface BookingFeeService {
+    BookingFee recordFee(Long bookingId, FeeType feeType, BigDecimal amount, String description, Long issueId);
     BookingFee recordFee(Long bookingId, String feeType, BigDecimal amount, String description, Long issueId);
     List<BookingFee> getFeesByBooking(Long bookingId);
 

@@ -1,5 +1,7 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.enums.EmployeeRole;
+import com.crms.mvc.util.EnumTokens;
 import com.crms.mvc.dto.AccountQueryDTO;
 import com.crms.mvc.dto.AccountSummaryDTO;
 import com.crms.mvc.dto.EmployeeCreateDTO;
@@ -79,7 +81,7 @@ public class AccountManagementServiceImpl implements AccountManagementService {
         employee.setPhone(form.getPhone().trim());
         employee.setEmail(email);
         employee.setPasswordHash(passwordEncoder.encode(form.getPassword()));
-        employee.setRole(form.getRole());
+        employee.setRole(EmployeeRole.from(form.getRole()));
         employeeRepository.save(employee);
     }
 
@@ -88,7 +90,7 @@ public class AccountManagementServiceImpl implements AccountManagementService {
         if (SessionAccount.EMPLOYEE.equals(query.getType())) {
             return employeeRepository.search(query.getLikePattern(), pageable)
                     .map(employee -> new AccountSummaryDTO(employee.getId(), SessionAccount.EMPLOYEE, employee.getName(),
-                            employee.getEmail(), employee.getPhone(), employee.getRole(), employee.isActive()));
+                            employee.getEmail(), employee.getPhone(), EnumTokens.of(employee.getRole()), employee.isActive()));
         }
         return customerRepository.search(query.getLikePattern(), pageable)
                 .map(customer -> new AccountSummaryDTO(customer.getId(), SessionAccount.CUSTOMER, customer.getName(),

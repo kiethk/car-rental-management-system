@@ -1,5 +1,14 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.enums.PaymentMethod;
+
+import com.crms.mvc.enums.DiscountType;
+import com.crms.mvc.enums.SlotStatus;
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.VehicleStatus;
+import com.crms.mvc.enums.BookingStatus;
+import com.crms.mvc.enums.PaymentStatus;
+import com.crms.mvc.enums.PaymentType;
 import com.crms.mvc.config.OpeningHours;
 import com.crms.mvc.dto.BookingCancelDTO;
 import com.crms.mvc.dto.BookingCreateDTO;
@@ -164,7 +173,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setDepositAmount(quote.getDepositAmount());
         booking.setDiscountAmount(quote.getDiscountAmount());
         booking.setTotalPrice(quote.getTotalPrice());
-        booking.setStatus(Booking.STATUS_PENDING_PAYMENT);
+        booking.setStatus(BookingStatus.PENDING_PAYMENT);
         booking.setCreatedAt(OffsetDateTime.now());
         booking.setEmployee(leastLoadedStaff());
 
@@ -209,7 +218,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         for (Booking oldPending : bookingRepository.findPendingBookingsByCustomerAndTimeRange(customerId, start, end)) {
-            oldPending.setStatus(Booking.STATUS_CANCELLED);
+            oldPending.setStatus(BookingStatus.CANCELLED);
             oldPending.setCancelledAt(OffsetDateTime.now());
             bookingRepository.save(oldPending);
         }
@@ -239,8 +248,7 @@ public class BookingServiceImpl implements BookingService {
         slot.setVehicleType(type);
         slot.setStartTime(start);
         slot.setEndTime(end);
-        slot.setCapacity(1);
-        slot.setStatus("open");
+        slot.setStatus(SlotStatus.OPEN);
         return slotRepository.save(slot);
     }
 
@@ -263,7 +271,7 @@ public class BookingServiceImpl implements BookingService {
         if (promotion == null) {
             return BigDecimal.ZERO;
         }
-        if (!"percent".equalsIgnoreCase(promotion.getDiscountType())) {
+        if (promotion.getDiscountType() != DiscountType.PERCENT) {
             return promotion.getDiscountValue();
         }
         long roughHours = pricingService.calculateRentalHours(start, end);
@@ -309,16 +317,16 @@ public class BookingServiceImpl implements BookingService {
         if (customerId != null && !b.getCustomer().getId().equals(customerId)) {
             throw new IllegalStateException("Unauthorized action");
         }
-        if (!Booking.STATUS_PENDING_PAYMENT.equalsIgnoreCase(b.getStatus()) && !Booking.STATUS_CONFIRMED.equalsIgnoreCase(b.getStatus())) {
+        if (b.getStatus() != BookingStatus.PENDING_PAYMENT && b.getStatus() != BookingStatus.CONFIRMED) {
             throw new IllegalStateException("Không thể hủy đơn ở trạng thái: " + b.getStatus());
         }
 
         boolean refundEligible = false;
         // B7 + B16: Hoàn cọc 100% nếu hủy trước mốc freeCancellationHours theo hợp đồng khách đã đồng ý
-        if (Booking.STATUS_CONFIRMED.equalsIgnoreCase(b.getStatus())) {
+        if (b.getStatus() == BookingStatus.CONFIRMED) {
             OffsetDateTime depositPaidAt = paymentService.getPaymentsByBooking(bookingId).stream()
-                    .filter(p -> Payment.TYPE_DEPOSIT.equalsIgnoreCase(p.getPaymentType())
-                            && Payment.STATUS_PAID.equalsIgnoreCase(p.getStatus()))
+                    .filter(p -> PaymentType.DEPOSIT == p.getPaymentType()
+                            && PaymentStatus.PAID == p.getStatus())
                     .map(Payment::getPaidAt)
                     .filter(Objects::nonNull)
                     .findFirst().orElse(null);
@@ -330,7 +338,7 @@ public class BookingServiceImpl implements BookingService {
             }
         }
 
-        b.setStatus(Booking.STATUS_CANCELLED);
+        b.setStatus(BookingStatus.CANCELLED);
         b.setCancelledAt(OffsetDateTime.now());
         bookingRepository.save(b);
         return refundEligible;
@@ -339,7 +347,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public void cancelForUnavailableCar(Long bookingId, String refundMethod) {
         Booking b = find(bookingId);
-        if (!Booking.STATUS_CONFIRMED.equalsIgnoreCase(b.getStatus())) {
+        if (b.getStatus() != BookingStatus.CONFIRMED) {
             throw new IllegalStateException("Chỉ huỷ theo cách này với đơn đã đặt cọc và chưa bàn giao (trạng thái đơn: " + b.getStatus() + ")");
         }
         // Only when the company really has no car of the booked type left: otherwise staff swap the car instead,
@@ -348,8 +356,8 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalStateException("Vẫn còn xe cùng loại trống trong khung giờ thuê: hãy đổi xe cho khách thay vì huỷ đơn.");
         }
         // The contract cannot be fulfilled: the whole deposit goes back at the counter, whatever the cancellation deadline.
-        paymentService.recordCounterRefund(bookingId, b.getDepositAmount(), refundMethod);
-        b.setStatus(Booking.STATUS_CANCELLED);
+        paymentService.recordCounterRefund(bookingId, b.getDepositAmount(), PaymentMethod.from(refundMethod));
+        b.setStatus(BookingStatus.CANCELLED);
         b.setCancelledAt(OffsetDateTime.now());
         bookingRepository.save(b);
     }
@@ -367,7 +375,7 @@ public class BookingServiceImpl implements BookingService {
     public void assignVehicle(Long bookingId, Long vehicleId) {
         Booking b = find(bookingId);
         // A car can only be swapped before handover: afterwards the customer is driving the assigned one.
-        if (!Booking.STATUS_PENDING_PAYMENT.equalsIgnoreCase(b.getStatus()) && !Booking.STATUS_CONFIRMED.equalsIgnoreCase(b.getStatus())) {
+        if (b.getStatus() != BookingStatus.PENDING_PAYMENT && b.getStatus() != BookingStatus.CONFIRMED) {
             throw new IllegalStateException("Chỉ đổi được xe trước khi bàn giao (trạng thái đơn: " + b.getStatus() + ")");
         }
         Vehicle v = vehicleRepository.findByIdForUpdate(vehicleId)
@@ -376,7 +384,7 @@ public class BookingServiceImpl implements BookingService {
         if (!v.getVehicleType().getId().equals(b.getSlot().getVehicleType().getId())) {
             throw new IllegalStateException("Chỉ đổi được sang xe cùng loại với loại xe khách đã đặt.");
         }
-        if (Vehicle.STATUS_MAINTENANCE.equalsIgnoreCase(v.getStatus()) || Vehicle.STATUS_RETIRED.equalsIgnoreCase(v.getStatus())) {
+        if (v.getStatus() == VehicleStatus.MAINTENANCE || v.getStatus() == VehicleStatus.RETIRED) {
             throw new IllegalStateException("Xe này không thể gán cho đơn thuê");
         }
 

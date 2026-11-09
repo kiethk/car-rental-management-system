@@ -1,5 +1,6 @@
 package com.crms.mvc.dto;
 
+import com.crms.mvc.util.EnumTokens;
 import com.crms.mvc.entity.VehicleType;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
@@ -56,10 +57,10 @@ public class VehicleTypeFormDTO {
         dto.setId(vt.getId());
         dto.setName(vt.getName());
         dto.setBrand(vt.getBrand());
-        dto.setCategory(vt.getCategory());
+        dto.setCategory(EnumTokens.of(vt.getCategory()));
         dto.setSeats(vt.getSeats());
-        dto.setTransmission(vt.getTransmission());
-        dto.setFuelType(vt.getFuelType());
+        dto.setTransmission(EnumTokens.of(vt.getTransmission()));
+        dto.setFuelType(EnumTokens.of(vt.getFuelType()));
         dto.setPricePerHour(vt.getPricePerHour());
         dto.setDescription(vt.getDescription());
         dto.setImageUrl(vt.getImageUrl());

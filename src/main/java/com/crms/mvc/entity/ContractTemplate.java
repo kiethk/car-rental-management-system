@@ -1,5 +1,6 @@
 package com.crms.mvc.entity;
 
+import com.crms.mvc.enums.ContractTemplateStatus;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

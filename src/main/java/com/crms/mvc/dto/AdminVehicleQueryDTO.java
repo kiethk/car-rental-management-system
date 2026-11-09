@@ -1,5 +1,6 @@
 package com.crms.mvc.dto;
 
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.entity.Vehicle;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -9,8 +10,7 @@ import java.util.Set;
 public class AdminVehicleQueryDTO extends PageQueryDTO {
     public static final String STATUS_ALL = "all";
     public static final String SORT_PLATE_ASC = "plate_asc";
-    private static final Set<String> STATUSES = Set.of(STATUS_ALL, Vehicle.STATUS_AVAILABLE, Vehicle.STATUS_RENTED,
-            Vehicle.STATUS_MAINTENANCE, Vehicle.STATUS_RETIRED);
+    private static final Set<String> STATUSES = Set.of(STATUS_ALL, "available", "rented", "maintenance", "retired");
 
     private String status = STATUS_ALL;
 

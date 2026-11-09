@@ -1,5 +1,7 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.enums.VehicleStatus;
+import com.crms.mvc.enums.InspectionStatus;
 import com.crms.mvc.dto.VehicleInspectionFormDTO;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.entity.Vehicle;
@@ -62,7 +64,7 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
         LocalDate scheduledDate = dto.getScheduledDate() != null ? dto.getScheduledDate() : today;
         requireNoRentalOnThatDay(vehicle, scheduledDate);
         inspection.setScheduledDate(scheduledDate);
-        inspection.setStatus("scheduled");
+        inspection.setStatus(InspectionStatus.SCHEDULED);
         inspection.setNotes(dto.getNotes());
 
         return vehicleInspectionRepository.save(inspection);
@@ -75,38 +77,38 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
 
         Vehicle vehicle = inspection.getVehicle();
         requireNotRetired(vehicle);
-        if (Vehicle.STATUS_RENTED.equalsIgnoreCase(vehicle.getStatus())) {
+        if (vehicle.getStatus() == VehicleStatus.RENTED) {
             throw new IllegalStateException("Không đăng kiểm được khi xe đang cho thuê!");
         }
 
-        vehicle.setStatus(Vehicle.STATUS_MAINTENANCE);
+        vehicle.setStatus(VehicleStatus.MAINTENANCE);
         vehicleRepository.save(vehicle);
     }
 
     @Override
-    public void recordResult(Long inspectionId, String status, String notes, LocalDate newRegistrationExpiry) {
+    public void recordResult(Long inspectionId, InspectionStatus status, String notes, LocalDate newRegistrationExpiry) {
         VehicleInspection inspection = vehicleInspectionRepository.findById(inspectionId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch đăng kiểm có mã: " + inspectionId));
 
-        if (!"passed".equalsIgnoreCase(status) && !"failed".equalsIgnoreCase(status)) {
+        if (status != InspectionStatus.PASSED && status != InspectionStatus.FAILED) {
             throw new IllegalArgumentException("Kết quả đăng kiểm phải là đạt hoặc không đạt");
         }
         requireNotRetired(inspection.getVehicle());
 
-        if ("passed".equalsIgnoreCase(status) && newRegistrationExpiry != null && newRegistrationExpiry.isBefore(LocalDate.now())) {
+        if (status == InspectionStatus.PASSED && newRegistrationExpiry != null && newRegistrationExpiry.isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("Hạn đăng kiểm mới không được ở trong quá khứ");
         }
 
-        inspection.setStatus(status.toLowerCase());
+        inspection.setStatus(status);
         inspection.setCompletedAt(OffsetDateTime.now(DateTimeUtils.VIETNAM_ZONE));
         if (notes != null && !notes.isBlank()) {
             inspection.setNotes(notes.trim());
         }
 
         Vehicle vehicle = inspection.getVehicle();
-        if ("passed".equalsIgnoreCase(status)) {
+        if (status == InspectionStatus.PASSED) {
             // Restore vehicle to available
-            vehicle.setStatus(Vehicle.STATUS_AVAILABLE);
+            vehicle.setStatus(VehicleStatus.AVAILABLE);
 
             // The new inspection sticker belongs to the vehicle, whatever plate it carries
             if (newRegistrationExpiry != null) {
@@ -114,7 +116,7 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
             }
         } else {
             // Keep in maintenance for repairs
-            vehicle.setStatus(Vehicle.STATUS_MAINTENANCE);
+            vehicle.setStatus(VehicleStatus.MAINTENANCE);
         }
 
         vehicleRepository.save(vehicle);

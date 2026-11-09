@@ -1,5 +1,6 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.BookingStatus;
 import com.crms.mvc.config.StationProperties;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.entity.Booking;
@@ -53,7 +54,7 @@ class NoShowTest {
         when(bookings.findConfirmedWithPickupBefore(NOW)).thenReturn(List.of(booking));
 
         assertThat(service.cancelNoShows(NOW)).isZero();
-        assertThat(booking.getStatus()).isEqualTo("confirmed");
+        assertThat(booking.getStatus()).isEqualTo(BookingStatus.CONFIRMED);
         verifyNoInteractions(events);
     }
 
@@ -63,7 +64,7 @@ class NoShowTest {
         when(bookings.findConfirmedWithPickupBefore(NOW)).thenReturn(List.of(booking));
 
         assertThat(service.cancelNoShows(NOW)).isEqualTo(1);
-        assertThat(booking.getStatus()).isEqualTo("cancelled");
+        assertThat(booking.getStatus()).isEqualTo(BookingStatus.CANCELLED);
         assertThat(booking.getCancelledAt()).isEqualTo(NOW);
         verify(events).publishEvent(any(NoShowCancelledEvent.class));
     }
@@ -101,7 +102,7 @@ class NoShowTest {
         customer.setEmail("an@example.com");
         Booking booking = new Booking();
         booking.setId(7L);
-        booking.setStatus("confirmed");
+        booking.setStatus(BookingStatus.CONFIRMED);
         booking.setSlot(slot);
         booking.setCustomer(customer);
         booking.setPickupTime(pickup);

@@ -8,7 +8,7 @@ import com.crms.mvc.dto.IssueQueryDTO;
 import com.crms.mvc.dto.PageNavDTO;
 import com.crms.mvc.dto.SessionAccount;
 import com.crms.mvc.entity.Issue;
-import com.crms.mvc.entity.IssueType;
+import com.crms.mvc.enums.IssueType;
 import com.crms.mvc.service.BookingQueryService;
 import com.crms.mvc.service.IssueService;
 import com.crms.mvc.util.DateTimeUtils;

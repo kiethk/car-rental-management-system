@@ -1,7 +1,7 @@
 package com.crms.mvc.dto;
 
-import com.crms.mvc.entity.IssueStatus;
-import com.crms.mvc.entity.IssueType;
+import com.crms.mvc.enums.IssueStatus;
+import com.crms.mvc.enums.IssueType;
 import com.crms.mvc.util.DateTimeUtils;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -30,13 +30,13 @@ public class IssueQueryDTO extends PageQueryDTO {
 
     public void setStatus(String status) {
         String normalized = status == null ? ALL : status.trim().toLowerCase();
-        boolean known = Arrays.stream(IssueStatus.values()).anyMatch(s -> s.dbValue().equals(normalized));
+        boolean known = Arrays.stream(IssueStatus.values()).anyMatch(s -> s.name().toLowerCase().equals(normalized));
         this.status = known ? normalized : ALL;
     }
 
     /** The status to filter by, or null for all. */
     public IssueStatus getIssueStatus() {
-        return ALL.equals(status) ? null : IssueStatus.fromDbValue(status);
+        return ALL.equals(status) ? null : IssueStatus.valueOf(status.toUpperCase());
     }
 
     public String getType() { return type; }

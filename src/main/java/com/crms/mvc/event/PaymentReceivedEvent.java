@@ -1,5 +1,6 @@
 package com.crms.mvc.event;
 
+import com.crms.mvc.util.EnumTokens;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Payment;
 
@@ -28,6 +29,6 @@ public record PaymentReceivedEvent(Long bookingId, String customerName, String c
         return new PaymentReceivedEvent(booking.getId(),
                 booking.getCustomer() != null ? booking.getCustomer().getName() : null,
                 booking.getCustomer() != null ? booking.getCustomer().getEmail() : null,
-                vehicleName, payment.getAmount(), payment.getPaymentMethod(), payment.getPaidAt(), kind);
+                vehicleName, payment.getAmount(), EnumTokens.name(payment.getPaymentMethod()), payment.getPaidAt(), kind);
     }
 }

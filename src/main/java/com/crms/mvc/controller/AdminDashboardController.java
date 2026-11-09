@@ -1,8 +1,11 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.dto.LicensePlateOverviewDTO;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleInspection;
+import com.crms.mvc.enums.InspectionStatus;
 import com.crms.mvc.service.BookingQueryService;
 import com.crms.mvc.service.LicensePlateService;
 import com.crms.mvc.service.VehicleInspectionService;
@@ -37,14 +40,14 @@ public class AdminDashboardController {
         List<Vehicle> vehicles = vehicleService.findAll();
         long retiredVehicles = vehicles.stream().filter(Vehicle::isRetired).count();
         long totalVehicles = vehicles.size() - retiredVehicles;
-        long availableVehicles = vehicles.stream().filter(v -> Vehicle.STATUS_AVAILABLE.equalsIgnoreCase(v.getStatus())).count();
-        long rentedVehicles = vehicles.stream().filter(v -> Vehicle.STATUS_RENTED.equalsIgnoreCase(v.getStatus())).count();
-        long maintenanceVehicles = vehicles.stream().filter(v -> Vehicle.STATUS_MAINTENANCE.equalsIgnoreCase(v.getStatus())).count();
+        long availableVehicles = vehicles.stream().filter(v -> v.getStatus() == VehicleStatus.AVAILABLE).count();
+        long rentedVehicles = vehicles.stream().filter(v -> v.getStatus() == VehicleStatus.RENTED).count();
+        long maintenanceVehicles = vehicles.stream().filter(v -> v.getStatus() == VehicleStatus.MAINTENANCE).count();
 
         List<VehicleInspection> inspections = vehicleInspectionService.findAll();
-        long scheduledInspections = inspections.stream().filter(i -> "scheduled".equalsIgnoreCase(i.getStatus())).count();
-        long passedInspections = inspections.stream().filter(i -> "passed".equalsIgnoreCase(i.getStatus())).count();
-        long failedInspections = inspections.stream().filter(i -> "failed".equalsIgnoreCase(i.getStatus())).count();
+        long scheduledInspections = inspections.stream().filter(i -> i.getStatus() == InspectionStatus.SCHEDULED).count();
+        long passedInspections = inspections.stream().filter(i -> i.getStatus() == InspectionStatus.PASSED).count();
+        long failedInspections = inspections.stream().filter(i -> i.getStatus() == InspectionStatus.FAILED).count();
 
         long totalBookings = bookingQueryService.countTotalBookings();
 
@@ -82,7 +85,7 @@ public class AdminDashboardController {
     private static List<LicensePlateOverviewDTO> registrationAlerts(List<LicensePlateOverviewDTO> plates, String status) {
         return plates.stream()
                 .filter(p -> status.equals(p.getExpiryStatus()))
-                .filter(p -> !Vehicle.STATUS_RETIRED.equalsIgnoreCase(p.getVehicleStatus()))
+                .filter(p -> !EnumTokens.is(VehicleStatus.RETIRED, p.getVehicleStatus()))
                 .sorted(Comparator.comparing(LicensePlateOverviewDTO::getRegistrationExpiry))
                 .toList();
     }

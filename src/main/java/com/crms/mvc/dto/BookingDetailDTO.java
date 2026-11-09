@@ -1,5 +1,7 @@
 package com.crms.mvc.dto;
 
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.VehicleStatus;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -137,7 +139,7 @@ public class BookingDetailDTO implements Serializable {
     public void setVehicleStatus(String vehicleStatus) { this.vehicleStatus = vehicleStatus; }
 
     /** The assigned car can be handed over now: the same check HandoverService.checkIn makes. */
-    public boolean isVehicleReadyForHandover() { return Vehicle.STATUS_AVAILABLE.equalsIgnoreCase(vehicleStatus); }
+    public boolean isVehicleReadyForHandover() { return EnumTokens.is(VehicleStatus.AVAILABLE, vehicleStatus); }
 
     public boolean isVehicleRetired() { return vehicleRetired; }
     public void setVehicleRetired(boolean vehicleRetired) { this.vehicleRetired = vehicleRetired; }

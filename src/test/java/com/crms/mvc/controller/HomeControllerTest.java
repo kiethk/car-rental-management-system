@@ -1,5 +1,6 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.service.LicenseDocumentService;
 import com.crms.mvc.dto.RatingSummaryDTO;
 import com.crms.mvc.entity.Promotion;
 import com.crms.mvc.entity.VehicleType;
@@ -27,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(PassThroughSessionAccountService.class)
 @WebMvcTest(HomeController.class)
 class HomeControllerTest {
+    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private VehicleTypeService vehicleTypeService;
     @MockitoBean private PromotionService promotionService;

@@ -1,5 +1,7 @@
 package com.crms.mvc.dto;
 
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.entity.Vehicle;
 
 import java.math.BigDecimal;
@@ -14,7 +16,7 @@ public class VehicleSearchFilterDTO {
     private BigDecimal minPrice;
     private BigDecimal maxPrice;
     private String sortBy = "price_asc";
-    private String status = Vehicle.STATUS_AVAILABLE;
+    private String status = EnumTokens.of(VehicleStatus.AVAILABLE);
 
     public VehicleSearchFilterDTO() {}
 

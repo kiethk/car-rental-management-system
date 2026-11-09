@@ -1,5 +1,7 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.service.LicenseDocumentService;
+import com.crms.mvc.enums.EmployeeRole;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.CheckInDTO;
 import com.crms.mvc.dto.HandoverRecordDTO;
@@ -40,6 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(PassThroughSessionAccountService.class)
 @WebMvcTest(AdminBookingController.class)
 class AdminHandoverViewTest {
+    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private BookingService bookingService;
     @MockitoBean private com.crms.mvc.service.BookingQueryService bookingQueryService;
@@ -175,7 +178,7 @@ class AdminHandoverViewTest {
         Employee staff = new Employee();
         staff.setId(2L);
         staff.setName("Support Staff");
-        staff.setRole("staff");
+        staff.setRole(EmployeeRole.STAFF);
         when(handoverService.findAssignableEmployees()).thenReturn(List.of(staff));
 
         mvc.perform(get("/admin/bookings/42").session(TestSessions.admin(1L)))

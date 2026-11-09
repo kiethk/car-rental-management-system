@@ -1,5 +1,10 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.PaymentMethod;
+import com.crms.mvc.enums.BookingStatus;
+import com.crms.mvc.enums.PaymentStatus;
+import com.crms.mvc.enums.PaymentType;
 import com.crms.mvc.dto.DepositSessionDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.BookingFee;
@@ -11,7 +16,7 @@ import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.PaymentRepository;
 import com.crms.mvc.service.BookingFeeService;
 import com.crms.mvc.service.PaymentService;
-import com.crms.mvc.service.VnPayGateway;
+import com.crms.mvc.service.PaymentGateway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -32,13 +37,13 @@ public class PaymentServiceImpl implements PaymentService {
     private final BookingRepository bookingRepository;
     private final BookingFeeService bookingFeeService;
     private final ApplicationEventPublisher eventPublisher;
-    private final VnPayGateway gateway;
+    private final PaymentGateway gateway;
 
     public PaymentServiceImpl(PaymentRepository paymentRepository,
             BookingRepository bookingRepository,
             BookingFeeService bookingFeeService,
             ApplicationEventPublisher eventPublisher,
-            VnPayGateway gateway) {
+            PaymentGateway gateway) {
         this.paymentRepository = paymentRepository;
         this.bookingRepository = bookingRepository;
         this.bookingFeeService = bookingFeeService;
@@ -51,7 +56,7 @@ public class PaymentServiceImpl implements PaymentService {
     public Optional<DepositSessionDTO> findDepositSession(Long bookingId) {
         return bookingRepository.findById(bookingId).map(booking -> new DepositSessionDTO(booking.getId(),
                 booking.getCustomer() != null ? booking.getCustomer().getId() : null,
-                booking.getStatus(), booking.getDepositAmount(), booking.getCreatedAt()));
+                EnumTokens.of(booking.getStatus()), booking.getDepositAmount(), booking.getCreatedAt()));
     }
 
     @Override
@@ -64,26 +69,26 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public Payment confirmDeposit(Long bookingId, String transactionNo, String paymentMethod) {
+    public Payment confirmDeposit(Long bookingId, String transactionNo, PaymentMethod paymentMethod) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy đơn thuê: " + bookingId));
 
-        if (Booking.STATUS_CONFIRMED.equalsIgnoreCase(booking.getStatus())) {
-            return paymentRepository.findByBookingIdAndPaymentType(bookingId, Payment.TYPE_DEPOSIT).orElse(null);
+        if (booking.getStatus() == BookingStatus.CONFIRMED) {
+            return paymentRepository.findByBookingIdAndPaymentType(bookingId, PaymentType.DEPOSIT).orElse(null);
         }
 
         Payment payment = new Payment();
         payment.setBooking(booking);
-        payment.setPaymentType(Payment.TYPE_DEPOSIT);
+        payment.setPaymentType(PaymentType.DEPOSIT);
         payment.setTransactionCode(
                 transactionNo != null ? transactionNo : "TXN-DEP-" + bookingId + "-" + System.currentTimeMillis());
-        payment.setPaymentMethod(paymentMethod != null ? paymentMethod : Payment.METHOD_VNPAY);
+        payment.setPaymentMethod(paymentMethod != null ? paymentMethod : PaymentMethod.VNPAY);
         payment.setAmount(booking.getDepositAmount());
-        payment.setStatus(Payment.STATUS_PAID);
+        payment.setStatus(PaymentStatus.PAID);
         payment.setPaidAt(OffsetDateTime.now());
         paymentRepository.save(payment);
 
-        booking.setStatus(Booking.STATUS_CONFIRMED);
+        booking.setStatus(BookingStatus.CONFIRMED);
         bookingRepository.save(booking);
 
         eventPublisher.publishEvent(new DepositConfirmedEvent(bookingId));
@@ -94,7 +99,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public boolean hasLiveIssuePaymentSession(Long bookingId) {
         Optional<Payment> pending = paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(
-                bookingId, Payment.TYPE_ISSUE_COMPENSATION, Payment.STATUS_PENDING);
+                bookingId, PaymentType.ISSUE_COMPENSATION, PaymentStatus.PENDING);
         if (pending.isEmpty()) {
             return false;
         }
@@ -106,19 +111,24 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    public boolean isValidGatewayReturn(Map<String, String> queryParams) {
+        return gateway.verifySignature(queryParams);
+    }
+
+    @Override
     public String createIssuePaymentUrl(Long bookingId, Long customerId, String clientIp) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy đơn thuê: " + bookingId));
         if (customerId == null || !customerId.equals(booking.getCustomer().getId())) {
             throw new NoSuchElementException("Không tìm thấy đơn thuê: " + bookingId);
         }
-        if (!Booking.STATUS_ACTIVE.equalsIgnoreCase(booking.getStatus())) {
+        if (booking.getStatus() != BookingStatus.ACTIVE) {
             throw new IllegalStateException("Chỉ thanh toán được phí sự cố khi đơn đang thuê");
         }
 
         // Kiểm tra lượt thanh toán pending trước đó
         Optional<Payment> existingPending = paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(
-                bookingId, Payment.TYPE_ISSUE_COMPENSATION, Payment.STATUS_PENDING);
+                bookingId, PaymentType.ISSUE_COMPENSATION, PaymentStatus.PENDING);
 
         if (existingPending.isPresent()) {
             Payment prev = existingPending.get();
@@ -140,10 +150,10 @@ public class PaymentServiceImpl implements PaymentService {
 
         Payment pending = new Payment();
         pending.setBooking(booking);
-        pending.setPaymentType(Payment.TYPE_ISSUE_COMPENSATION);
+        pending.setPaymentType(PaymentType.ISSUE_COMPENSATION);
         pending.setAmount(total);
-        pending.setPaymentMethod(Payment.METHOD_VNPAY);
-        pending.setStatus(Payment.STATUS_PENDING);
+        pending.setPaymentMethod(PaymentMethod.VNPAY);
+        pending.setStatus(PaymentStatus.PENDING);
         pending.setTransactionCode("ISSUE-" + bookingId + "-" + System.currentTimeMillis());
         Payment saved = paymentRepository.save(pending);
         bookingFeeService.attachPayment(owed, saved);
@@ -155,10 +165,10 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public Payment confirmIssuePayment(Long paymentId, String transactionNo, long amountInCents) {
         Payment payment = findIssuePayment(paymentId);
-        if (Payment.STATUS_PAID.equalsIgnoreCase(payment.getStatus())) {
+        if (PaymentStatus.PAID == payment.getStatus()) {
             return payment; // Cổng có thể gọi callback nhiều lần
         }
-        if (!Payment.STATUS_PENDING.equalsIgnoreCase(payment.getStatus())) {
+        if (PaymentStatus.PENDING != payment.getStatus()) {
             // Cứu giao dịch: Nếu khách đã thanh toán trên tab cũ bị đánh dấu failed nhưng phí vẫn chưa được thanh toán
             Long bookingId = payment.getBooking() != null ? payment.getBooking().getId() : null;
             List<BookingFee> owed = bookingId != null ? bookingFeeService.getSettleableIssueFees(bookingId) : List.of();
@@ -172,7 +182,7 @@ public class PaymentServiceImpl implements PaymentService {
             throw new IllegalArgumentException("Số tiền thanh toán không khớp");
         }
 
-        payment.setStatus(Payment.STATUS_PAID);
+        payment.setStatus(PaymentStatus.PAID);
         payment.setPaidAt(OffsetDateTime.now());
         if (transactionNo != null && !transactionNo.isBlank()) {
             payment.setTransactionCode(transactionNo.trim());
@@ -186,7 +196,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public Payment failIssuePayment(Long paymentId) {
         Payment payment = findIssuePayment(paymentId);
-        if (Payment.STATUS_PENDING.equalsIgnoreCase(payment.getStatus())) {
+        if (PaymentStatus.PENDING == payment.getStatus()) {
             cancelPending(payment);
         }
         return payment;
@@ -195,14 +205,14 @@ public class PaymentServiceImpl implements PaymentService {
     private Payment findIssuePayment(Long paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy khoản thanh toán: " + paymentId));
-        if (!Payment.TYPE_ISSUE_COMPENSATION.equals(payment.getPaymentType())) {
+        if (PaymentType.ISSUE_COMPENSATION != payment.getPaymentType()) {
             throw new IllegalStateException("Giao dịch này không phải là thanh toán phí sự cố");
         }
         return payment;
     }
 
     private void cancelPending(Payment payment) {
-        payment.setStatus(Payment.STATUS_FAILED);
+        payment.setStatus(PaymentStatus.FAILED);
         paymentRepository.save(payment);
         bookingFeeService.detachPayment(payment);
     }
@@ -226,29 +236,29 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public Payment recordFinalPayment(Long bookingId, BigDecimal amount, String paymentMethod) {
-        return recordCounterPayment(bookingId, amount, paymentMethod, Payment.TYPE_FINAL);
+    public Payment recordFinalPayment(Long bookingId, BigDecimal amount, PaymentMethod paymentMethod) {
+        return recordCounterPayment(bookingId, amount, paymentMethod, PaymentType.FINAL);
     }
 
     @Override
-    public Payment recordRentalBalancePayment(Long bookingId, BigDecimal amount, String paymentMethod) {
-        return recordCounterPayment(bookingId, amount, paymentMethod, Payment.TYPE_RENTAL_BALANCE);
+    public Payment recordRentalBalancePayment(Long bookingId, BigDecimal amount, PaymentMethod paymentMethod) {
+        return recordCounterPayment(bookingId, amount, paymentMethod, PaymentType.RENTAL_BALANCE);
     }
 
-    private Payment recordCounterPayment(Long bookingId, BigDecimal amount, String paymentMethod, String type) {
+    private Payment recordCounterPayment(Long bookingId, BigDecimal amount, PaymentMethod paymentMethod, PaymentType type) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy đơn thuê: " + bookingId));
         Payment payment = new Payment();
         payment.setBooking(booking);
         payment.setPaymentType(type);
         payment.setAmount(amount);
-        payment.setStatus(Payment.STATUS_PAID);
+        payment.setStatus(PaymentStatus.PAID);
         payment.setPaymentMethod(paymentMethod);
         payment.setTransactionCode(type + "-" + bookingId + "-" + System.currentTimeMillis());
         payment.setPaidAt(OffsetDateTime.now());
         Payment saved = paymentRepository.save(payment);
         eventPublisher.publishEvent(PaymentReceivedEvent.of(booking, saved,
-                Payment.TYPE_RENTAL_BALANCE.equals(type) ? PaymentReceivedEvent.Kind.RENTAL_BALANCE : PaymentReceivedEvent.Kind.SETTLEMENT));
+                PaymentType.RENTAL_BALANCE == type ? PaymentReceivedEvent.Kind.RENTAL_BALANCE : PaymentReceivedEvent.Kind.SETTLEMENT));
         return saved;
     }
 
@@ -267,11 +277,11 @@ public class PaymentServiceImpl implements PaymentService {
 
         Payment refund = new Payment();
         refund.setBooking(booking);
-        refund.setPaymentType(Payment.TYPE_REFUND);
+        refund.setPaymentType(PaymentType.REFUND);
         refund.setAmount(amount != null ? amount
                 : (booking.getDepositAmount() != null ? booking.getDepositAmount() : BigDecimal.ZERO));
-        refund.setPaymentMethod(Payment.METHOD_BANK_TRANSFER);
-        refund.setStatus(Payment.STATUS_PENDING);
+        refund.setPaymentMethod(PaymentMethod.BANK_TRANSFER);
+        refund.setStatus(PaymentStatus.PENDING);
 
         String cleanBank = (bankCode != null && !bankCode.isBlank()) ? bankCode.trim().toUpperCase() : "BANK";
         String cleanAcc = (accountNumber != null && !accountNumber.isBlank()) ? accountNumber.trim() : "";
@@ -292,14 +302,14 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy khoản thanh toán: " + paymentId));
 
-        if (!Payment.TYPE_REFUND.equalsIgnoreCase(payment.getPaymentType())) {
+        if (PaymentType.REFUND != payment.getPaymentType()) {
             throw new IllegalStateException("Giao dịch không phải là khoản hoàn tiền");
         }
-        if (!Payment.STATUS_PENDING.equalsIgnoreCase(payment.getStatus())) {
+        if (PaymentStatus.PENDING != payment.getStatus()) {
             return payment; // Idempotent
         }
 
-        payment.setStatus(Payment.STATUS_PAID);
+        payment.setStatus(PaymentStatus.PAID);
         payment.setPaidAt(OffsetDateTime.now());
         if (transactionNo != null && !transactionNo.isBlank()) {
             payment.setTransactionCode(transactionNo.trim());
@@ -312,18 +322,18 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public Payment recordCounterRefund(Long bookingId, BigDecimal amount, String paymentMethod) {
-        if (!"CASH".equals(paymentMethod) && !Payment.METHOD_BANK_TRANSFER.equals(paymentMethod)) {
+    public Payment recordCounterRefund(Long bookingId, BigDecimal amount, PaymentMethod paymentMethod) {
+        if (paymentMethod != PaymentMethod.CASH && paymentMethod != PaymentMethod.BANK_TRANSFER) {
             throw new IllegalArgumentException("Hình thức hoàn tiền phải là tiền mặt hoặc chuyển khoản");
         }
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy đơn thuê: " + bookingId));
         Payment refund = new Payment();
         refund.setBooking(booking);
-        refund.setPaymentType(Payment.TYPE_REFUND);
+        refund.setPaymentType(PaymentType.REFUND);
         refund.setAmount(amount);
         refund.setPaymentMethod(paymentMethod);
-        refund.setStatus(Payment.STATUS_PAID);
+        refund.setStatus(PaymentStatus.PAID);
         refund.setTransactionCode("REFUND-" + bookingId + "-" + System.currentTimeMillis());
         refund.setPaidAt(OffsetDateTime.now());
         Payment saved = paymentRepository.save(refund);
@@ -334,13 +344,13 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional(readOnly = true)
     public Optional<Payment> getPendingRefund(Long bookingId) {
-        return paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(bookingId, Payment.TYPE_REFUND, Payment.STATUS_PENDING);
+        return paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(bookingId, PaymentType.REFUND, PaymentStatus.PENDING);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Payment> getPendingRefunds() {
-        return paymentRepository.findByPaymentTypeAndStatus(Payment.TYPE_REFUND, Payment.STATUS_PENDING);
+        return paymentRepository.findByPaymentTypeAndStatus(PaymentType.REFUND, PaymentStatus.PENDING);
     }
 
     @Override

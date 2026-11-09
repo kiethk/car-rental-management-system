@@ -1,5 +1,7 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.dto.PhysicalCarItemDTO;
 import com.crms.mvc.dto.VehicleReviewSummaryDTO;
 import com.crms.mvc.dto.VehicleDTO;
@@ -78,7 +80,7 @@ public class VehicleController {
                     v.getLicensePlate() != null ? v.getLicensePlate().getPlate() : "Unassigned",
                     v.getColor(),
                     v.getYear(),
-                    v.getStatus()
+                    EnumTokens.of(v.getStatus())
             )).toList();
             model.addAttribute("physicalCars", physicalCars);
         }
@@ -95,7 +97,7 @@ public class VehicleController {
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy xe!");
         }
-        if (Vehicle.STATUS_RETIRED.equalsIgnoreCase(schedule.getVehicleStatus())) {
+        if (EnumTokens.is(VehicleStatus.RETIRED, schedule.getVehicleStatus())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Xe đã ngừng hoạt động");
         }
         model.addAttribute("schedule", schedule);

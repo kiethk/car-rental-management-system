@@ -1,5 +1,8 @@
 package com.crms.mvc.entity;
 
+import com.crms.mvc.enums.IssueStatus;
+import com.crms.mvc.enums.IssueType;
+
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -17,14 +20,6 @@ public class Issue {
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "slot_id")
-    private Slot slot;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "vehicle_id", nullable = false)
-    private Vehicle vehicle;
-
     /** The employee who filed the report; never changes afterwards. */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "employee_id", nullable = false)
@@ -40,7 +35,7 @@ public class Issue {
     @Column(name = "description")
     private String description;
 
-    @Convert(converter = IssueStatusConverter.class)
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private IssueStatus status = IssueStatus.OPEN;
 
@@ -71,9 +66,6 @@ public class Issue {
 
     public Booking getBooking() { return booking; }
     public void setBooking(Booking booking) { this.booking = booking; }
-
-    public Vehicle getVehicle() { return vehicle; }
-    public void setVehicle(Vehicle vehicle) { this.vehicle = vehicle; }
 
     public Employee getEmployee() { return employee; }
     public void setEmployee(Employee employee) { this.employee = employee; }
@@ -111,9 +103,6 @@ public class Issue {
     public List<IssueEvidence> getEvidences() { return evidences; }
     public void setEvidences(List<IssueEvidence> evidences) { this.evidences = evidences; }
 
-    public Slot getSlot() { return slot; }
-    public void setSlot(Slot slot) { this.slot = slot; }
-
     public void setIssueType(String typeStr) {
         if (typeStr == null) {
             this.issueType = null;
@@ -132,7 +121,7 @@ public class Issue {
             return;
         }
         for (IssueStatus s : IssueStatus.values()) {
-            if (s.name().equalsIgnoreCase(statusStr) || s.dbValue().equalsIgnoreCase(statusStr)) {
+            if (s.name().equalsIgnoreCase(statusStr)) {
                 this.status = s;
                 return;
             }

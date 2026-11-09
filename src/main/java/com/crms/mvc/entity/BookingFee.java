@@ -1,5 +1,6 @@
 package com.crms.mvc.entity;
 
+import com.crms.mvc.enums.FeeType;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -7,9 +8,6 @@ import java.time.OffsetDateTime;
 @Entity
 @Table(name = "booking_fees")
 public class BookingFee {
-    /** What a customer owes for an Issue (damage, collision, other); replaces the old DAMAGE_COMPENSATION. */
-    public static final String FEE_TYPE_ISSUE_COMPENSATION = "ISSUE_COMPENSATION";
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "booking_fee_id")
@@ -19,8 +17,9 @@ public class BookingFee {
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "fee_type", nullable = false, length = 40)
-    private String feeType;
+    private FeeType feeType;
 
     @Column(name = "amount", nullable = false, precision = 14, scale = 2)
     private BigDecimal amount;
@@ -46,8 +45,8 @@ public class BookingFee {
     public Booking getBooking() { return booking; }
     public void setBooking(Booking booking) { this.booking = booking; }
 
-    public String getFeeType() { return feeType; }
-    public void setFeeType(String feeType) { this.feeType = feeType; }
+    public FeeType getFeeType() { return feeType; }
+    public void setFeeType(FeeType feeType) { this.feeType = feeType; }
 
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }

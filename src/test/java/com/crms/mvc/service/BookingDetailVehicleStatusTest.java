@@ -1,5 +1,7 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.BookingStatus;
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Customer;
@@ -37,7 +39,7 @@ class BookingDetailVehicleStatusTest {
 
     @Test
     void detailFlagsABookingWhoseVehicleWasRetired() {
-        givenConfirmedBookingWithVehicleStatus(Vehicle.STATUS_RETIRED);
+        givenConfirmedBookingWithVehicleStatus(VehicleStatus.RETIRED);
 
         BookingDetailDTO detail = service.getBookingDetailForAdmin(42L);
 
@@ -46,14 +48,14 @@ class BookingDetailVehicleStatusTest {
 
     @Test
     void detailDoesNotFlagABookingWhoseVehicleIsWorking() {
-        givenConfirmedBookingWithVehicleStatus("available");
+        givenConfirmedBookingWithVehicleStatus(VehicleStatus.AVAILABLE);
 
         BookingDetailDTO detail = service.getBookingDetailForAdmin(42L);
 
         assertFalse(detail.isVehicleRetired());
     }
 
-    private void givenConfirmedBookingWithVehicleStatus(String vehicleStatus) {
+    private void givenConfirmedBookingWithVehicleStatus(VehicleStatus vehicleStatus) {
         VehicleType type = new VehicleType();
         type.setId(1L);
         Slot slot = new Slot();
@@ -70,7 +72,7 @@ class BookingDetailVehicleStatusTest {
         booking.setCustomer(customer);
         booking.setSlot(slot);
         booking.setVehicle(vehicle);
-        booking.setStatus("confirmed");
+        booking.setStatus(BookingStatus.CONFIRMED);
         booking.setPickupTime(OffsetDateTime.now().plusDays(1));
         booking.setScheduledEndTime(OffsetDateTime.now().plusDays(2));
         booking.setPricePerHour(new BigDecimal("150000"));

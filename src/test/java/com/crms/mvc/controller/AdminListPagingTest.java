@@ -1,5 +1,10 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.service.LicenseDocumentService;
+import com.crms.mvc.enums.FuelType;
+import com.crms.mvc.enums.Transmission;
+import com.crms.mvc.enums.VehicleCategory;
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.support.TestSessions;
 import org.springframework.context.annotation.Import;
 import com.crms.mvc.support.PassThroughSessionAccountService;
@@ -40,6 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(PassThroughSessionAccountService.class)
 @WebMvcTest({AdminVehicleController.class, AdminVehicleTypeController.class})
 class AdminListPagingTest {
+    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private VehicleService vehicleService;
     @MockitoBean private VehicleTypeService vehicleTypeService;
@@ -162,10 +168,10 @@ class AdminListPagingTest {
         type.setId(id);
         type.setName(name);
         type.setBrand(brand);
-        type.setCategory("sedan");
+        type.setCategory(VehicleCategory.SEDAN);
         type.setSeats(5);
-        type.setTransmission("automatic");
-        type.setFuelType("gasoline");
+        type.setTransmission(Transmission.AUTOMATIC);
+        type.setFuelType(FuelType.GASOLINE);
         type.setPricePerHour(new BigDecimal("150000"));
         type.setDescription("desc");
         return type;

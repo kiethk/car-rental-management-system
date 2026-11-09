@@ -1,5 +1,6 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.dto.AdminVehicleQueryDTO;
 import com.crms.mvc.dto.VehicleDTO;
 import com.crms.mvc.dto.VehicleFormDTO;
@@ -45,7 +46,7 @@ public interface VehicleService {
 
     List<Vehicle> findByVehicleTypeIdWithDetails(Long typeId);
 
-    List<Vehicle> findByStatusWithDetails(String status);
+    List<Vehicle> findByStatusWithDetails(VehicleStatus status);
 
     void delete(Long id);
 }

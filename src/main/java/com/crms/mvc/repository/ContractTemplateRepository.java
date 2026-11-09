@@ -1,7 +1,7 @@
 package com.crms.mvc.repository;
 
 import com.crms.mvc.entity.ContractTemplate;
-import com.crms.mvc.entity.ContractTemplateStatus;
+import com.crms.mvc.enums.ContractTemplateStatus;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

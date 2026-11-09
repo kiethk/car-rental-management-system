@@ -1,5 +1,7 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.BookingStatus;
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.dto.CustomerRegisterDTO;
 import com.crms.mvc.dto.AccountProfileDTO;
 import com.crms.mvc.dto.VehicleFormDTO;
@@ -146,7 +148,7 @@ class BookingServiceSchedulingAndValidationTest {
     void testVehicleServiceUpdateStatusValidation() {
         Vehicle vehicle = new Vehicle();
         vehicle.setId(10L);
-        vehicle.setStatus("available");
+        vehicle.setStatus(VehicleStatus.AVAILABLE);
 
         when(vehicleRepository.findById(10L)).thenReturn(Optional.of(vehicle));
 
@@ -158,7 +160,7 @@ class BookingServiceSchedulingAndValidationTest {
                 .isInstanceOf(IllegalArgumentException.class);
 
         vehicleService.updateStatus(10L, "maintenance");
-        assertThat(vehicle.getStatus()).isEqualTo("maintenance");
+        assertThat(vehicle.getStatus()).isEqualTo(VehicleStatus.MAINTENANCE);
         verify(vehicleRepository, times(1)).save(vehicle);
     }
 
@@ -174,7 +176,7 @@ class BookingServiceSchedulingAndValidationTest {
         Booking booking = new Booking();
         booking.setId(bookingId);
         booking.setCustomer(customer);
-        booking.setStatus("confirmed");
+        booking.setStatus(BookingStatus.CONFIRMED);
         booking.setDepositAmount(new BigDecimal("500000"));
         booking.setPickupTime(OffsetDateTime.now(ZoneOffset.ofHours(7)).plusDays(5));
 
@@ -192,7 +194,7 @@ class BookingServiceSchedulingAndValidationTest {
         boolean refundCreated = bookingService.cancelBooking(bookingId, customerId, dto);
 
         assertThat(refundCreated).isTrue();
-        assertThat(booking.getStatus()).isEqualTo("cancelled");
+        assertThat(booking.getStatus()).isEqualTo(BookingStatus.CANCELLED);
         verify(paymentService, times(1)).createPendingRefund(bookingId, new BigDecimal("500000"), "VCB", "0123456789", "NGUYEN VAN A");
         verify(bookingRepository, times(1)).save(booking);
     }
@@ -209,7 +211,7 @@ class BookingServiceSchedulingAndValidationTest {
         Booking booking = new Booking();
         booking.setId(bookingId);
         booking.setCustomer(customer);
-        booking.setStatus("confirmed");
+        booking.setStatus(BookingStatus.CONFIRMED);
         booking.setDepositAmount(new BigDecimal("500000"));
         booking.setPickupTime(OffsetDateTime.now(ZoneOffset.ofHours(7)).plusHours(10)); // < 72h
 
@@ -227,7 +229,7 @@ class BookingServiceSchedulingAndValidationTest {
         boolean refundCreated = bookingService.cancelBooking(bookingId, customerId, dto);
 
         assertThat(refundCreated).isFalse();
-        assertThat(booking.getStatus()).isEqualTo("cancelled");
+        assertThat(booking.getStatus()).isEqualTo(BookingStatus.CANCELLED);
         verify(paymentService, never()).createPendingRefund(any(), any(), any(), any(), any());
         verify(bookingRepository, times(1)).save(booking);
     }
@@ -240,7 +242,7 @@ class BookingServiceSchedulingAndValidationTest {
         Booking booking = new Booking();
         booking.setId(103L);
         booking.setCustomer(customer);
-        booking.setStatus("confirmed");
+        booking.setStatus(BookingStatus.CONFIRMED);
         booking.setDepositAmount(new BigDecimal("500000"));
         booking.setPickupTime(OffsetDateTime.now().plusHours(2));
         when(bookingRepository.findById(103L)).thenReturn(Optional.of(booking));
@@ -261,7 +263,7 @@ class BookingServiceSchedulingAndValidationTest {
         Booking booking = new Booking();
         booking.setId(104L);
         booking.setCustomer(customer);
-        booking.setStatus("confirmed");
+        booking.setStatus(BookingStatus.CONFIRMED);
         booking.setPickupTime(OffsetDateTime.now().plusDays(5));
         when(bookingRepository.findById(104L)).thenReturn(Optional.of(booking));
         when(contractService.getTermsOfBooking(104L))
@@ -269,7 +271,7 @@ class BookingServiceSchedulingAndValidationTest {
 
         assertThatThrownBy(() -> bookingService.cancelBooking(104L, 1L, null))
                 .isInstanceOf(java.util.NoSuchElementException.class);
-        assertThat(booking.getStatus()).isEqualTo("confirmed");
+        assertThat(booking.getStatus()).isEqualTo(BookingStatus.CONFIRMED);
         verify(bookingRepository, never()).save(any());
     }
 
@@ -285,7 +287,7 @@ class BookingServiceSchedulingAndValidationTest {
         Booking booking = new Booking();
         booking.setId(bookingId);
         booking.setCustomer(customer);
-        booking.setStatus("pending_payment");
+        booking.setStatus(BookingStatus.PENDING_PAYMENT);
         booking.setDepositAmount(new BigDecimal("500000"));
         booking.setPickupTime(OffsetDateTime.now(ZoneOffset.ofHours(7)).plusDays(5));
 
@@ -294,7 +296,7 @@ class BookingServiceSchedulingAndValidationTest {
         boolean refundCreated = bookingService.cancelBooking(bookingId, customerId, null);
 
         assertThat(refundCreated).isFalse();
-        assertThat(booking.getStatus()).isEqualTo("cancelled");
+        assertThat(booking.getStatus()).isEqualTo(BookingStatus.CANCELLED);
         verify(paymentService, never()).createPendingRefund(any(), any(), any(), any(), any());
         verify(bookingRepository, times(1)).save(booking);
     }
@@ -309,11 +311,11 @@ class BookingServiceSchedulingAndValidationTest {
         Booking booking = new Booking();
         booking.setId(200L);
         booking.setSlot(slot);
-        booking.setStatus("confirmed");
+        booking.setStatus(BookingStatus.CONFIRMED);
         Vehicle retired = new Vehicle();
         retired.setId(9L);
         retired.setVehicleType(type);
-        retired.setStatus(Vehicle.STATUS_RETIRED);
+        retired.setStatus(VehicleStatus.RETIRED);
         when(bookingRepository.findById(200L)).thenReturn(Optional.of(booking));
         when(vehicleRepository.findByIdForUpdate(9L)).thenReturn(Optional.of(retired));
 
@@ -328,7 +330,7 @@ class BookingServiceSchedulingAndValidationTest {
     void testSwapAfterHandoverIsRejected() {
         Booking booking = new Booking();
         booking.setId(201L);
-        booking.setStatus("active");
+        booking.setStatus(BookingStatus.ACTIVE);
         when(bookingRepository.findById(201L)).thenReturn(Optional.of(booking));
 
         assertThatThrownBy(() -> bookingService.assignVehicle(201L, 9L))
@@ -342,9 +344,9 @@ class BookingServiceSchedulingAndValidationTest {
     @Test
     @DisplayName("Vehicles offered for a time range exclude retired and maintenance ones")
     void testAvailableVehiclesExcludeRetiredAndMaintenance() {
-        Vehicle ready = vehicleWithStatus(1L, "available");
-        Vehicle repairing = vehicleWithStatus(2L, "maintenance");
-        Vehicle retired = vehicleWithStatus(3L, Vehicle.STATUS_RETIRED);
+        Vehicle ready = vehicleWithStatus(1L, VehicleStatus.AVAILABLE);
+        Vehicle repairing = vehicleWithStatus(2L, VehicleStatus.MAINTENANCE);
+        Vehicle retired = vehicleWithStatus(3L, VehicleStatus.RETIRED);
         when(vehicleRepository.findByVehicleTypeIdWithDetails(3L)).thenReturn(java.util.List.of(ready, repairing, retired));
 
         var offered = new VehicleAvailabilityServiceImpl(bookingRepository, vehicleRepository, null, null, null)
@@ -353,7 +355,7 @@ class BookingServiceSchedulingAndValidationTest {
         assertThat(offered).containsExactly(ready);
     }
 
-    private static Vehicle vehicleWithStatus(Long id, String status) {
+    private static Vehicle vehicleWithStatus(Long id, VehicleStatus status) {
         Vehicle vehicle = new Vehicle();
         vehicle.setId(id);
         vehicle.setStatus(status);

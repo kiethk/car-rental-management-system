@@ -1,9 +1,11 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.FuelType;
+import com.crms.mvc.enums.Transmission;
 import com.crms.mvc.config.StationProperties;
 import com.crms.mvc.dto.ContractDocumentDTO;
 import com.crms.mvc.dto.ContractTemplateDTO;
-import com.crms.mvc.entity.ContractTemplateStatus;
+import com.crms.mvc.enums.ContractTemplateStatus;
 import com.crms.mvc.service.impl.OpenHtmlToPdfContractGenerator;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;

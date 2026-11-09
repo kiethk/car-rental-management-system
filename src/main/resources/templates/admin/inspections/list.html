@@ -102,7 +102,7 @@
                                         51A-123.45
                                     </span>
                                     <span th:if="${ins.vehicle != null}"
-                                          th:class="'admin-status-badge ml-1 ' + (${ins.vehicle.status == 'available'} ? 'badge-success' : (${ins.vehicle.status == 'maintenance'} ? 'badge-secondary' : (${ins.vehicle.status == 'retired'} ? 'badge-dark' : 'badge-warning text-dark')))"
+                                          th:class="'admin-status-badge ml-1 ' + (${#strings.toLowerCase(ins.vehicle.status) == 'available'} ? 'badge-success' : (${#strings.toLowerCase(ins.vehicle.status) == 'maintenance'} ? 'badge-secondary' : (${#strings.toLowerCase(ins.vehicle.status) == 'retired'} ? 'badge-dark' : 'badge-warning text-dark')))"
                                           style="height: 24px !important; min-height: 24px !important; font-size: 10px !important; padding: 0 6px !important;"
                                           th:text="${#strings.toUpperCase(ins.vehicle.status == 'available' ? 'sẵn sàng' : (ins.vehicle.status == 'rented' ? 'đang thuê' : (ins.vehicle.status == 'maintenance' ? 'bảo dưỡng' : 'ngừng khai thác')))}">SẴN SÀNG</span>
                                 </td>
@@ -116,13 +116,13 @@
                                     <span th:if="${ins.completedAt == null}" class="text-muted small">Đang chờ...</span>
                                 </td>
                                 <td class="text-center">
-                                    <span th:if="${ins.status == 'scheduled'}" class="admin-status-badge badge-warning text-dark">
+                                    <span th:if="${ins.status.name() == 'SCHEDULED'}" class="admin-status-badge badge-warning text-dark">
                                         ĐÃ LÊN LỊCH
                                     </span>
-                                    <span th:if="${ins.status == 'passed'}" class="admin-status-badge badge-success">
+                                    <span th:if="${ins.status.name() == 'PASSED'}" class="admin-status-badge badge-success">
                                         ĐẠT
                                     </span>
-                                    <span th:if="${ins.status == 'failed'}" class="admin-status-badge badge-danger">
+                                    <span th:if="${ins.status.name() == 'FAILED'}" class="admin-status-badge badge-danger">
                                         KHÔNG ĐẠT
                                     </span>
                                 </td>
@@ -132,14 +132,14 @@
                                 </td>
                                 <td class="text-center">
                                     <!-- Action buttons -->
-                                    <div th:if="${ins.status == 'scheduled'}">
+                                    <div th:if="${ins.status.name() == 'SCHEDULED'}">
                                         <a th:href="@{/admin/inspections/{id}/result(id=${ins.id})}"
                                            class="admin-btn btn-soft-primary"
                                            title="Ghi nhận kết quả từ trạm đăng kiểm">
                                             Ghi kết quả
                                         </a>
                                     </div>
-                                    <div th:if="${ins.status != 'scheduled'}">
+                                    <div th:if="${ins.status.name() != 'SCHEDULED'}">
                                         <span class="admin-status-badge badge-light border text-muted">Đã hoàn tất</span>
                                     </div>
                                 </td>

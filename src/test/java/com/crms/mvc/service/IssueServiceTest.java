@@ -1,13 +1,15 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.BookingStatus;
 import com.crms.mvc.dto.IssueActor;
 import com.crms.mvc.dto.IssueFormDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Employee;
 import com.crms.mvc.entity.Issue;
-import com.crms.mvc.entity.IssueStatus;
-import com.crms.mvc.entity.IssueType;
+import com.crms.mvc.enums.FeeType;
+import com.crms.mvc.enums.IssueStatus;
+import com.crms.mvc.enums.IssueType;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.repository.BookingFeeRepository;
 import com.crms.mvc.repository.BookingRepository;
@@ -17,7 +19,6 @@ import com.crms.mvc.repository.IssueRepository;
 import com.crms.mvc.repository.LicensePlateRepository;
 import com.crms.mvc.util.DateTimeUtils;
 import com.crms.mvc.service.impl.IssueServiceImpl;
-import com.crms.mvc.util.EmployeeRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
@@ -47,7 +48,7 @@ class IssueServiceTest {
     private BookingFeeRepository bookingFeeRepository;
     private IssueService service;
 
-    private final IssueActor staff = new IssueActor(2L, EmployeeRole.STAFF);
+    private final IssueActor staff = new IssueActor(2L, "staff");
 
     @BeforeEach
     void setUp() {
@@ -68,12 +69,11 @@ class IssueServiceTest {
 
     @Test
     void anIssueTakesItsVehicleFromTheBookingAndStartsOpen() {
-        Booking booking = bookingWithStatus(Booking.STATUS_ACTIVE);
+        Booking booking = bookingWithStatus(BookingStatus.ACTIVE);
 
         Issue issue = service.create(form(booking, "200000"), staff);
 
         assertSame(booking, issue.getBooking());
-        assertSame(booking.getVehicle(), issue.getVehicle());
         assertEquals(2L, issue.getEmployee().getId());
         assertEquals(IssueStatus.OPEN, issue.getStatus());
         assertEquals(IssueType.DAMAGE, issue.getIssueType());
@@ -83,14 +83,14 @@ class IssueServiceTest {
 
     @Test
     void aFeeAboveZeroCreatesOneIssueCompensationFeeForTheBooking() {
-        Booking booking = bookingWithStatus(Booking.STATUS_ACTIVE);
+        Booking booking = bookingWithStatus(BookingStatus.ACTIVE);
 
         Issue issue = service.create(form(booking, "200000"), staff);
 
         ArgumentCaptor<BookingFee> captor = ArgumentCaptor.forClass(BookingFee.class);
         verify(bookingFeeRepository).save(captor.capture());
         BookingFee fee = captor.getValue();
-        assertEquals(BookingFee.FEE_TYPE_ISSUE_COMPENSATION, fee.getFeeType());
+        assertEquals(FeeType.ISSUE_COMPENSATION, fee.getFeeType());
         assertEquals(new BigDecimal("200000"), fee.getAmount());
         assertSame(issue, fee.getIssue());
         assertSame(booking, fee.getBooking());
@@ -99,7 +99,7 @@ class IssueServiceTest {
 
     @Test
     void feeMustBeStrictlyPositive() {
-        Booking booking = bookingWithStatus(Booking.STATUS_ACTIVE);
+        Booking booking = bookingWithStatus(BookingStatus.ACTIVE);
 
         assertThrows(IllegalArgumentException.class, () -> service.create(form(booking, null), staff));
         assertThrows(IllegalArgumentException.class, () -> service.create(form(booking, "0"), staff));
@@ -110,13 +110,13 @@ class IssueServiceTest {
 
     @Test
     void issuesCanBeRecordedOnlyWhileTheRentalIsOpen() {
-        for (String status : List.of("pending_payment", "confirmed", "cancelled", "completed")) {
+        for (BookingStatus status : List.of(BookingStatus.PENDING_PAYMENT, BookingStatus.CONFIRMED, BookingStatus.CANCELLED, BookingStatus.COMPLETED)) {
             Booking booking = bookingWithStatus(status);
-            assertThrows(IllegalStateException.class, () -> service.create(form(booking, "200000"), staff), status);
+            assertThrows(IllegalStateException.class, () -> service.create(form(booking, "200000"), staff), status.name());
         }
         verify(issueRepository, never()).save(any());
 
-        assertNotNull(service.create(form(bookingWithStatus(Booking.STATUS_ACTIVE), "200000"), staff));
+        assertNotNull(service.create(form(bookingWithStatus(BookingStatus.ACTIVE), "200000"), staff));
     }
 
     @Test
@@ -176,14 +176,14 @@ class IssueServiceTest {
 
     @Test
     void aNegativeFeeIsRejected() {
-        Booking booking = bookingWithStatus(Booking.STATUS_ACTIVE);
+        Booking booking = bookingWithStatus(BookingStatus.ACTIVE);
 
         assertThrows(IllegalArgumentException.class, () -> service.create(form(booking, "-5"), staff));
 
         verify(issueRepository, never()).save(any());
     }
 
-    private Booking bookingWithStatus(String status) {
+    private Booking bookingWithStatus(BookingStatus status) {
         Vehicle vehicle = new Vehicle();
         vehicle.setId(9L);
         Booking booking = new Booking();
@@ -206,11 +206,10 @@ class IssueServiceTest {
     }
 
     private Issue openIssue() {
-        Booking booking = bookingWithStatus(Booking.STATUS_ACTIVE);
+        Booking booking = bookingWithStatus(BookingStatus.ACTIVE);
         Issue issue = new Issue();
         issue.setId(7L);
         issue.setBooking(booking);
-        issue.setVehicle(booking.getVehicle());
         issue.setIssueType(IssueType.DAMAGE);
         issue.setSubject("Scratch on the bumper");
         issue.setStatus(IssueStatus.OPEN);
@@ -223,7 +222,7 @@ class IssueServiceTest {
         BookingFee fee = new BookingFee();
         fee.setBooking(issue.getBooking());
         fee.setIssue(issue);
-        fee.setFeeType(BookingFee.FEE_TYPE_ISSUE_COMPENSATION);
+        fee.setFeeType(FeeType.ISSUE_COMPENSATION);
         fee.setAmount(new BigDecimal(amount));
         when(bookingFeeRepository.findByIssueId(issue.getId())).thenReturn(List.of(fee));
         return issue;

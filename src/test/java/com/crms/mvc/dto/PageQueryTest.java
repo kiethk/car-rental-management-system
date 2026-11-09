@@ -1,5 +1,6 @@
 package com.crms.mvc.dto;
 
+import com.crms.mvc.enums.VehicleStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;

@@ -1,5 +1,8 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.PaymentMethod;
+import com.crms.mvc.enums.BookingStatus;
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Slot;
 import com.crms.mvc.entity.Vehicle;
@@ -44,7 +47,7 @@ class CarSwapTest {
         booking = new Booking();
         booking.setId(10L);
         booking.setSlot(slot);
-        booking.setStatus("confirmed");
+        booking.setStatus(BookingStatus.CONFIRMED);
         booking.setPricePerHour(new BigDecimal("100000"));
         booking.setDepositAmount(new BigDecimal("500000"));
         // Pickup is 2 hours away, long past the 72-hour free-cancellation deadline.
@@ -79,8 +82,8 @@ class CarSwapTest {
 
         service.cancelForUnavailableCar(10L, "CASH");
 
-        assertThat(booking.getStatus()).isEqualTo("cancelled");
-        verify(paymentService).recordCounterRefund(10L, new BigDecimal("500000"), "CASH");
+        assertThat(booking.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+        verify(paymentService).recordCounterRefund(10L, new BigDecimal("500000"), PaymentMethod.CASH);
         verify(paymentService, never()).createPendingRefund(any(), any(), any(), any(), any());
     }
 
@@ -91,13 +94,13 @@ class CarSwapTest {
         assertThatThrownBy(() -> service.cancelForUnavailableCar(10L, "CASH"))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("đổi xe");
-        assertThat(booking.getStatus()).isEqualTo("confirmed");
+        assertThat(booking.getStatus()).isEqualTo(BookingStatus.CONFIRMED);
         verify(paymentService, never()).recordCounterRefund(any(), any(), any());
     }
 
     @Test
     void aBookingAlreadyHandedOverCannotBeCancelledThisWay() {
-        booking.setStatus("active");
+        booking.setStatus(BookingStatus.ACTIVE);
 
         assertThatThrownBy(() -> service.cancelForUnavailableCar(10L, "CASH"))
                 .isInstanceOf(IllegalStateException.class);
@@ -114,7 +117,7 @@ class CarSwapTest {
     private static Vehicle car(Long id, VehicleType type) {
         Vehicle vehicle = new Vehicle();
         vehicle.setId(id);
-        vehicle.setStatus(Vehicle.STATUS_AVAILABLE);
+        vehicle.setStatus(VehicleStatus.AVAILABLE);
         vehicle.setVehicleType(type);
         return vehicle;
     }

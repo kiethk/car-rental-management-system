@@ -60,8 +60,8 @@
                             </td>
                             <td class="font-weight-bold" th:text="${promotion.code}">WELCOME10</td>
                             <td>
-                                <span th:text="${promotion.discountType == 'percent' ? #numbers.formatDecimal(promotion.discountValue, 0, 'POINT', 2, 'POINT') + '%' : #numbers.formatDecimal(promotion.discountValue, 0, 'COMMA', 0, 'POINT') + ' VND'}">10%</span>
-                                <small class="d-block text-muted text-capitalize" th:text="${promotion.discountType == 'percent' ? 'Phần trăm' : 'Cố định'}">percent</small>
+                                <span th:text="${#strings.toLowerCase(promotion.discountType) == 'percent' ? #numbers.formatDecimal(promotion.discountValue, 0, 'POINT', 2, 'POINT') + '%' : #numbers.formatDecimal(promotion.discountValue, 0, 'COMMA', 0, 'POINT') + ' VND'}">10%</span>
+                                <small class="d-block text-muted text-capitalize" th:text="${#strings.toLowerCase(promotion.discountType) == 'percent' ? 'Phần trăm' : 'Cố định'}">percent</small>
                             </td>
                             <td th:text="${#temporals.format(promotion.startDate, 'dd/MM/yyyy')}">01/01/2026</td>
                             <td th:text="${#temporals.format(promotion.endDate, 'dd/MM/yyyy')}">31/12/2026</td>

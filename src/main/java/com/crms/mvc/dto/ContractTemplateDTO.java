@@ -1,7 +1,7 @@
 package com.crms.mvc.dto;
 
 import com.crms.mvc.entity.ContractTemplate;
-import com.crms.mvc.entity.ContractTemplateStatus;
+import com.crms.mvc.enums.ContractTemplateStatus;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
