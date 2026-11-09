@@ -6,7 +6,7 @@ body[data-screen^="customer/"] {
     --customer-muted: var(--crms-muted);
     --customer-line: var(--crms-border);
     color: var(--customer-ink);
-    background: #f4f6f8;
+    background: var(--crms-surface);
     min-height: 100vh;
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -28,7 +28,7 @@ body[data-screen^="customer/"] :focus-visible { outline: 3px solid rgba(237,138,
 body[data-screen^="customer/"] .btn-navy,
 body[data-screen^="customer/"] .btn-primary { background: var(--customer-navy); border-color: var(--customer-navy); color: #fff; }
 body[data-screen^="customer/"] .btn-amber,
-body[data-screen^="customer/"] .btn-orange { background: var(--customer-orange); border-color: var(--customer-orange); color: #172b3d; }
+body[data-screen^="customer/"] .btn-orange { background: var(--customer-orange); border-color: var(--customer-orange); color: #fff; }
 body[data-screen^="customer/"] .form-control:focus,
 body[data-screen^="customer/"] .form-select:focus { border-color: var(--customer-orange); box-shadow: 0 0 0 .2rem rgba(237,138,36,.2); }
 
@@ -42,9 +42,9 @@ body[data-screen="customer/error/404"] .card-drivenow,
 body[data-screen="customer/error/500"] .card-drivenow,
 body[data-screen="customer/error/default"] .card-drivenow { max-width: 34rem; }
 
-body[data-screen="customer/home"] .crms-container,
-body[data-screen="customer/bookings/search"] .crms-container,
-body[data-screen="customer/vehicles/list"] .crms-container { padding-block: 1.5rem; }
+body[data-screen="customer/home"] main .crms-container,
+body[data-screen="customer/bookings/search"] main .crms-container,
+body[data-screen="customer/vehicles/list"] main.crms-container { padding-block: 1.5rem; }
 body[data-screen="customer/home"] .car-card,
 body[data-screen="customer/vehicles/list"] .car-card { border-color: var(--customer-line); border-radius: .75rem; }
 body[data-screen="customer/home"] .car-card:hover,
@@ -148,7 +148,7 @@ body[data-screen^="customer/"] .customer-stack-6 > * + * { margin-top: 2rem; }
 body[data-screen^="customer/"] .bg-navy { background: var(--customer-navy); }
 body[data-screen^="customer/"] .text-navy { color: var(--customer-navy); }
 body[data-screen^="customer/"] .text-amber { color: var(--customer-orange); }
-body[data-screen^="customer/"] .bg-surface { background-color: #f4f6f8; }
+body[data-screen^="customer/"] .bg-surface { background-color: var(--crms-surface); }
 body[data-screen^="customer/"] .bg-surface-2 { background-color: #eef1f4; }
 body[data-screen^="customer/"] .border-border { border-color: var(--customer-line) !important; }
 body[data-screen^="customer/"] .text-muted-foreground { color: var(--customer-muted); }

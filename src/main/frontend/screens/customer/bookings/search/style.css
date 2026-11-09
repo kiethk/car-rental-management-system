@@ -1,3 +1,125 @@
-body[data-screen="customer/bookings/search"] .bookings-search-car-category-badge {font-size: 10px; line-height: 1; padding: 2px 5px; font-weight: 600; text-transform: uppercase; background-color: #f1f5f9; color: #64748b; border-radius: 4px;}
-
-
+/* Search results keep image, description and quote within the card at every width. */
+body[data-screen="customer/bookings/search"] .crms-content {
+    container: rental-results / inline-size;
+}
+body[data-screen="customer/bookings/search"] .search-filter-panel { padding: 0; }
+body[data-screen="customer/bookings/search"] .search-filter-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--crms-navy);
+}
+body[data-screen="customer/bookings/search"] .search-filter-heading h3 { margin: 0; font-size: .95rem; }
+body[data-screen="customer/bookings/search"] .search-filter-panel :is(input:not([type="hidden"]), select) {
+    min-height: 42px;
+    border-color: #a9bacb !important;
+    color: var(--crms-ink);
+    background: #fff;
+}
+body[data-screen="customer/bookings/search"] .search-filter-panel label { font-size: .85rem; color: var(--crms-muted) !important; }
+body[data-screen="customer/bookings/search"] .search-filter-panel button { border: 0; min-height: 42px; }
+body[data-screen="customer/bookings/search"] .car-card-row {
+    display: grid;
+    grid-template-columns: clamp(220px, 28%, 300px) minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+    min-width: 0;
+    border: 1px solid var(--crms-border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 5px rgb(16 43 72 / 5%);
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+body[data-screen="customer/bookings/search"] .car-card-row:hover {
+    border-color: #708ba6;
+    background: #fff;
+    box-shadow: 0 4px 14px rgb(16 43 72 / 10%);
+}
+body[data-screen="customer/bookings/search"] .car-card-img-wrap { min-width: 0; height: 220px; overflow: hidden; background: #dfe7ef; }
+body[data-screen="customer/bookings/search"] .car-card-img-wrap img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    object-fit: cover;
+}
+body[data-screen="customer/bookings/search"] .car-card-details-wrap {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 220px;
+    gap: 20px;
+    min-width: 0;
+    padding: 20px;
+}
+body[data-screen="customer/bookings/search"] .car-card-info-col { display: flex; flex-direction: column; gap: 0; min-width: 0; }
+body[data-screen="customer/bookings/search"] .car-card-info-col > div:first-child > div:first-child { flex-wrap: wrap; }
+body[data-screen="customer/bookings/search"] .car-card-info-col h3 { margin: 0; font-size: 1.25rem !important; overflow-wrap: anywhere; }
+body[data-screen="customer/bookings/search"] .car-card-info-col > div:last-child { margin-top: 16px !important; }
+body[data-screen="customer/bookings/search"] .car-category-badge {
+    display: inline-flex;
+    padding: 3px 7px;
+    border-radius: 4px;
+    color: #284c6d;
+    background: #e6eef7;
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+body[data-screen="customer/bookings/search"] .car-card-pricing-col {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+    min-width: 0;
+    gap: 16px;
+    padding-left: 20px;
+    border-left: 1px solid var(--crms-border);
+    text-align: right;
+}
+body[data-screen="customer/bookings/search"] .price-box > div:first-child { font-size: .7rem; font-weight: 700; color: var(--crms-muted) !important; }
+body[data-screen="customer/bookings/search"] .price-box > div:nth-child(2) { font-size: 1.5rem !important; line-height: 1.35; color: var(--crms-navy) !important; }
+body[data-screen="customer/bookings/search"] .car-card-available-text { margin-top: 10px; color: #17633c; }
+body[data-screen="customer/bookings/search"] .action-box :is(a, button) {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 10px 14px !important;
+    white-space: normal !important;
+    border: 1px solid var(--crms-orange);
+    color: #fff;
+    background: var(--crms-orange);
+    font-size: .875rem;
+}
+body[data-screen="customer/bookings/search"] .action-box a:hover { background: var(--crms-orange-dark); border-color: var(--crms-orange-dark); }
+@container rental-results (max-width: 850px) {
+    body[data-screen="customer/bookings/search"] .car-card-row { grid-template-columns: 210px minmax(0, 1fr); }
+    body[data-screen="customer/bookings/search"] .car-card-img-wrap { height: 100%; min-height: 250px; }
+    body[data-screen="customer/bookings/search"] .car-card-details-wrap { grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 16px; }
+    body[data-screen="customer/bookings/search"] .car-card-pricing-col {
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 12px 0 0;
+        border-left: 0;
+        border-top: 1px solid var(--crms-border);
+        text-align: left;
+    }
+    body[data-screen="customer/bookings/search"] .action-box { flex: 1 0 150px; }
+}
+@container rental-results (max-width: 560px) {
+    body[data-screen="customer/bookings/search"] .car-card-row { grid-template-columns: minmax(0, 1fr); }
+    body[data-screen="customer/bookings/search"] .car-card-img-wrap { height: 190px; min-height: 0; }
+    body[data-screen="customer/bookings/search"] .car-card-pricing-col { align-items: stretch; }
+    body[data-screen="customer/bookings/search"] .price-box { flex: 1 0 100%; }
+    body[data-screen="customer/bookings/search"] .action-box { flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    body[data-screen="customer/bookings/search"] .car-card-row { transition: none; }
+}

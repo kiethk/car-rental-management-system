@@ -1,14 +1,14 @@
 /* DriveNow shared Bootstrap 5 foundation. Keep screen-specific rules in each screen folder. */
 :root {
     color-scheme: light;
-    --crms-navy: #132b45;
-    --crms-navy-strong: #0d2036;
-    --crms-orange: #ef7b25;
-    --crms-orange-dark: #cf5d12;
-    --crms-ink: #202b38;
-    --crms-muted: #687586;
-    --crms-border: #dce3e9;
-    --crms-surface: #f4f6f8;
+    --crms-navy: #102b48;
+    --crms-navy-strong: #091d33;
+    --crms-orange: #c94c0c;
+    --crms-orange-dark: #a63b08;
+    --crms-ink: #182c42;
+    --crms-muted: #42556b;
+    --crms-border: #bdcbd9;
+    --crms-surface: #eaf0f6;
     --crms-success: #18794e;
     --crms-danger: #b42318;
     --crms-radius: .625rem;
@@ -18,6 +18,9 @@
     --bs-link-color: #174f7a;
     --bs-link-hover-color: var(--crms-orange-dark);
     --bs-border-color: var(--crms-border);
+    --bs-secondary-color: var(--crms-muted);
+    --bs-secondary-rgb: 66, 85, 107;
+    --bs-body-color: var(--crms-ink);
     font-synthesis: none;
     text-rendering: optimizeLegibility;
 }
@@ -27,7 +30,7 @@ body {
     min-height: 100vh;
     margin: 0;
     color: var(--crms-ink);
-    background: #f6f7f9;
+    background: var(--crms-surface);
     font-family: Inter, "Segoe UI", Arial, sans-serif;
     font-size: .9375rem;
     line-height: 1.5;

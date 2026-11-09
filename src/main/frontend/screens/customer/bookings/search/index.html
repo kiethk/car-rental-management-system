@@ -21,7 +21,7 @@
         <div class="crms-hero-banner">
           <div>
             <h1>Thuê xe ô tô tự lái trực tuyến</h1>
-            <p>Lựa chọn lịch trình, xem dòng xe còn trống và chi phí dự kiến theo giờ.</p>
+            <p>Lựa chọn lịch trình và xem chi phí dự kiến theo giờ.</p>
           </div>
         </div>
         <!-- Rental Schedule Component Bar -->
@@ -33,8 +33,8 @@
         <div class="crms-layout-sidebar">
           <!-- Left Filters Sidebar (Consistent with Browse page filter fields - Sticky scrolling) -->
           <div class="crms-sidebar mb-4">
-            <div class="card-shadcn p-5 customer-stack-4">
-              <div class="d-flex align-items-center justify-content-between pb-3 border-bottom border">
+            <div class="search-filter-panel customer-stack-4">
+              <div class="search-filter-heading">
                 <h3 class="fw-bold text-navy small text-uppercase">Bộ lọc tìm kiếm</h3>
                 <a th:href="@{/search(startDate=${selectedStartDate}, endDate=${selectedEndDate}, startTime=${selectedStart}, endTime=${selectedEnd})}" class="customer-text-xs text-secondary text-decoration-none fw-medium">Đặt lại</a>
               </div>
@@ -106,7 +106,7 @@
             </div>
             <!-- Horizontal Car Cards (Clean, synchronized design with Estimated Cost) -->
             <div class="customer-stack-4">
-              <div th:each="v : ${results}" class="car-card-row group bg-white border border rounded-4 overflow-hidden ">
+              <div th:each="v : ${results}" class="car-card-row">
                 <!-- Left: Image (Full height of the card) -->
                 <div class="car-card-img-wrap">
                   <img th:src="${v.imageUrl != null and !v.imageUrl.isBlank() ? v.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${v.displayName}" class="w-100 h-100 object-cover" data-fallback-src="/images/car-rental-logo.svg">

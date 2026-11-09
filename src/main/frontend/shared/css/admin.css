@@ -1,5 +1,5 @@
 /* Shared admin workspace, forms and tables. */
-body[data-screen^="admin/"] { background: #f4f6f9; color: #17263d; }
+body[data-screen^="admin/"] { background: var(--crms-surface); color: var(--crms-ink); }
 body[data-screen^="admin/"] .admin-workspace { width: 100%; max-width: none; padding: 14px 20px 24px; margin: 0; }
 body[data-screen^="admin/"] .admin-workspace > .row { --bs-gutter-x: 1rem; --bs-gutter-y: .75rem; }
 body[data-screen^="admin/"] .admin-sidebar-column { flex: 0 0 224px; width: 224px; }
