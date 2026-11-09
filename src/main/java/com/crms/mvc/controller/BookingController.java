@@ -465,7 +465,12 @@ public class BookingController {
                 if (reviewEligible) {
                     ReviewDTO review = reviewService.findForCustomer(bookingId, customerId);
                     model.addAttribute("review", review);
-                    model.addAttribute("reviewForm", new ReviewFormDTO());
+                    ReviewFormDTO reviewForm = new ReviewFormDTO();
+                    if (review != null) {
+                        reviewForm.setRating(review.getRating());
+                        reviewForm.setComment(review.getComment());
+                    }
+                    model.addAttribute("reviewForm", reviewForm);
                 }
             }
             return "bookings/detail";
@@ -490,6 +495,27 @@ public class BookingController {
         try {
             reviewService.submit(bookingId, customerId, form);
             ra.addFlashAttribute("success", "Cảm ơn bạn đã chia sẻ đánh giá về chuyến đi!");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/bookings/" + bookingId;
+    }
+
+    @PostMapping("/bookings/{id}/review/update")
+    public String updateReview(@PathVariable("id") Long bookingId,
+                               @Valid @ModelAttribute("reviewForm") ReviewFormDTO form,
+                               BindingResult result, HttpSession session, RedirectAttributes ra) {
+        Long customerId = CurrentAccount.customerId(session).orElse(null);
+        if (customerId == null) return "redirect:/login";
+
+        if (result.hasErrors()) {
+            ra.addFlashAttribute("error", result.getAllErrors().get(0).getDefaultMessage());
+            return "redirect:/bookings/" + bookingId;
+        }
+
+        try {
+            reviewService.update(bookingId, customerId, form);
+            ra.addFlashAttribute("success", "Đánh giá đã được cập nhật.");
         } catch (IllegalArgumentException | IllegalStateException e) {
             ra.addFlashAttribute("error", e.getMessage());
         }

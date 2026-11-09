@@ -110,6 +110,25 @@ VALUES
     (2, 'GIAM100K', 'fixed', 100000.00, CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE + INTERVAL '20 days', 50)
 ON CONFLICT (promotion_id) DO NOTHING;
 
+INSERT INTO promotions (
+    promotion_id, code, discount_type, discount_value, start_date, end_date, quantity, url_image_promotion
+)
+VALUES
+    (3, 'WEEKEND10', 'percent', 10.00, CURRENT_DATE - INTERVAL '1 day', CURRENT_DATE + INTERVAL '60 days', 100,
+     '/images/promotions/weekend-getaway.png'),
+    (4, 'FAMILY100K', 'fixed', 100000.00, CURRENT_DATE - INTERVAL '1 day', CURRENT_DATE + INTERVAL '60 days', 100,
+     '/images/promotions/family-road-trip.png'),
+    (5, 'MEMBER15', 'percent', 15.00, CURRENT_DATE - INTERVAL '1 day', CURRENT_DATE + INTERVAL '60 days', 100,
+     '/images/promotions/member-special.png')
+ON CONFLICT (promotion_id) DO UPDATE SET
+    code = EXCLUDED.code,
+    discount_type = EXCLUDED.discount_type,
+    discount_value = EXCLUDED.discount_value,
+    start_date = EXCLUDED.start_date,
+    end_date = EXCLUDED.end_date,
+    quantity = EXCLUDED.quantity,
+    url_image_promotion = EXCLUDED.url_image_promotion;
+
 -- 7. LICENSE_DOCUMENTS
 -- status: 'pending' | 'approved' | 'rejected'
 INSERT INTO license_documents (license_document_id, customer_id, license_number, license_class, license_expiry, license_image_url, submitted_at)
@@ -162,6 +181,15 @@ VALUES
         2900000.00,
         'confirmed', CURRENT_TIMESTAMP - INTERVAL '2 hours',
         300000.00, 8000000.00, 100000.00
+    ),
+    -- Booking 4: Completed and intentionally has no review so the customer can test submitting one.
+    (
+        4, 1, 2, 1, 2, NULL,
+        CURRENT_TIMESTAMP - INTERVAL '4 days', CURRENT_TIMESTAMP - INTERVAL '3 days 16 hours',
+        CURRENT_TIMESTAMP - INTERVAL '3 days 16 hours',
+        1200000.00,
+        'completed', CURRENT_TIMESTAMP - INTERVAL '5 days',
+        150000.00, 600000.00, 0.00
     )
 ON CONFLICT (booking_id) DO NOTHING;
 
@@ -193,7 +221,8 @@ INSERT INTO contracts (contract_id, contract_number, booking_id, contract_templa
 VALUES
     (1, 'CTR-20261018-0001', 1, 1, CURRENT_TIMESTAMP - INTERVAL '4 days', '127.0.0.1', NULL, NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '4 days'),
     (2, 'CTR-20261021-0002', 2, 1, CURRENT_TIMESTAMP - INTERVAL '1 day', '127.0.0.1', NULL, NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '1 day'),
-    (3, 'CTR-20261022-0003', 3, 1, CURRENT_TIMESTAMP - INTERVAL '1 hour', '127.0.0.1', NULL, NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '1 hour')
+    (3, 'CTR-20261022-0003', 3, 1, CURRENT_TIMESTAMP - INTERVAL '1 hour', '127.0.0.1', NULL, NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '1 hour'),
+    (4, 'CTR-DEMO-REVIEW-0004', 4, 1, CURRENT_TIMESTAMP - INTERVAL '5 days', '127.0.0.1', NULL, NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '5 days')
 ON CONFLICT (contract_id) DO NOTHING;
 
 -- 12. PAYMENTS
@@ -205,7 +234,9 @@ VALUES
     (2, 1, 'TXN-FIN-1002', 'FINAL', 1350000.00, 'VIETQR', 'paid', CURRENT_TIMESTAMP - INTERVAL '2 days'),
     (3, 1, 'TXN-REF-1003', 'REFUND', 5000000.00, 'BANK_TRANSFER', 'paid', CURRENT_TIMESTAMP - INTERVAL '2 days'),
     (4, 2, 'TXN-DEP-2001', 'DEPOSIT', 5000000.00, 'VIETQR', 'paid', CURRENT_TIMESTAMP - INTERVAL '1 day'),
-    (5, 3, 'TXN-DEP-3001', 'DEPOSIT', 8000000.00, 'VIETQR', 'paid', CURRENT_TIMESTAMP - INTERVAL '1 hour')
+    (5, 3, 'TXN-DEP-3001', 'DEPOSIT', 8000000.00, 'VIETQR', 'paid', CURRENT_TIMESTAMP - INTERVAL '1 hour'),
+    (6, 4, 'TXN-DEP-DEMO-0004', 'DEPOSIT', 600000.00, 'VIETQR', 'paid', CURRENT_TIMESTAMP - INTERVAL '5 days'),
+    (7, 4, 'TXN-FIN-DEMO-0004', 'FINAL', 600000.00, 'VIETQR', 'paid', CURRENT_TIMESTAMP - INTERVAL '3 days 16 hours')
 ON CONFLICT (payment_id) DO NOTHING;
 
 -- 13. REVIEWS
@@ -395,4 +426,3 @@ SELECT setval('license_plates_license_plate_id_seq', (SELECT MAX(license_plate_i
 SELECT setval('vehicles_vehicle_id_seq', (SELECT MAX(vehicle_id) FROM vehicles));
 
 COMMIT;
-

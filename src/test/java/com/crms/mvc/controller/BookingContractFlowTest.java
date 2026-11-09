@@ -216,6 +216,9 @@ class BookingContractFlowTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("★★★★☆")))
                 .andExpect(content().string(containsString("Xe sạch và nhân viên hỗ trợ tốt.")))
+                .andExpect(content().string(containsString("/bookings/42/review/update")))
+                .andExpect(content().string(containsString("Cập nhật đánh giá")))
+                .andExpect(content().string(containsString("value=\"4\" id=\"rating4\" name=\"rating\" checked=\"checked\"")))
                 .andExpect(content().string(not(containsString("Gửi đánh giá"))));
     }
 
@@ -229,6 +232,18 @@ class BookingContractFlowTest {
                 .andExpect(flash().attribute("success", "Cảm ơn bạn đã chia sẻ đánh giá về chuyến đi!"));
 
         verify(reviewService).submit(eq(42L), eq(1L), any());
+    }
+
+    @Test
+    void customerCanUpdateReviewForCompletedBooking() throws Exception {
+        mvc.perform(post("/bookings/42/review/update").session(customerSession)
+                        .param("rating", "4")
+                        .param("comment", "Đã cập nhật đánh giá."))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/bookings/42"))
+                .andExpect(flash().attribute("success", "Đánh giá đã được cập nhật."));
+
+        verify(reviewService).update(eq(42L), eq(1L), any());
     }
 
     @Test

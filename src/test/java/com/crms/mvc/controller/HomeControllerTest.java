@@ -28,7 +28,7 @@ class HomeControllerTest {
     @MockitoBean private PromotionService promotionService;
 
     @Test
-    void rendersPromotionImagesInTheHeroCarousel() throws Exception {
+    void rendersPromotionImagesOnlyInGalleryAboveHowItWorks() throws Exception {
         Promotion promotion = new Promotion();
         promotion.setCode("WELCOME10");
         promotion.setUrlImagePromotion("/uploads/promotions/welcome.png");
@@ -36,9 +36,12 @@ class HomeControllerTest {
 
         mvc.perform(get("/"))
                 .andExpect(status().isOk())
+                .andExpect(content().string(containsString("/images/vehicles/vios.jpg")))
+                .andExpect(content().string(containsString("promotion-gallery__track")))
                 .andExpect(content().string(containsString("/uploads/promotions/welcome.png")))
-                .andExpect(content().string(containsString("WELCOME10")))
-                .andExpect(content().string(containsString("aria-label=\"Current promotions\"")))
+                .andExpect(content().string(containsString("Các chương trình khuyến mãi")))
+                .andExpect(content().string(containsString("aria-label=\"Featured rental cars\"")))
+                .andExpect(content().string(not(containsString("WELCOME10"))))
                 .andExpect(content().string(not(containsString("images.unsplash.com"))));
     }
 
@@ -52,6 +55,8 @@ class HomeControllerTest {
                 .andExpect(content().string(containsString("/images/vehicles/vfe34.jpg")))
                 .andExpect(content().string(containsString("Toyota Vios")))
                 .andExpect(content().string(containsString("aria-label=\"Featured rental cars\"")))
+                .andExpect(content().string(containsString("Không có khuyến mãi")))
+                .andExpect(content().string(not(containsString("id=\"promotion-gallery-track\""))))
                 .andExpect(content().string(not(containsString("images.unsplash.com"))));
     }
 }

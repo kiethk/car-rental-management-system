@@ -1,0 +1,116 @@
+.review-rating {
+    border: 0;
+    margin: 0 0 18px;
+    padding: 0;
+}
+
+.review-rating legend {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.review-rating__choices {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 64px));
+    gap: 4px;
+}
+
+.review-rating__choice {
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: #94a3b8;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    justify-content: center;
+    min-height: 64px;
+    padding: 5px 2px;
+    position: relative;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.review-rating__choice:hover {
+    background: #fffbeb;
+    color: #d97706;
+}
+
+.review-rating__choice:has(input:checked),
+.review-rating__choice.is-selected {
+    background: #fffbeb;
+    border-color: #fcd34d;
+    color: #d97706;
+}
+
+.review-rating__choice.is-active .review-rating__star {
+    color: #d97706;
+}
+
+.review-rating__choice:focus-within {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+.review-rating__choice input {
+    height: 1px;
+    margin: 0;
+    opacity: 0;
+    position: absolute;
+    width: 1px;
+}
+
+.review-rating__star {
+    font-size: 28px;
+    line-height: 1;
+}
+
+.review-rating__label {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.review-rating__choice:has(input:checked) .review-rating__label,
+.review-rating__choice.is-selected .review-rating__label,
+.review-rating__choice:hover .review-rating__label {
+    color: #92400e;
+}
+
+.vehicle-review__stars {
+    color: #e2583e;
+    font-size: 22px;
+    letter-spacing: 1px;
+    line-height: 1.2;
+    margin-bottom: 3px;
+}
+
+@media (max-width: 420px) {
+    .review-rating__choices {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 2px;
+    }
+
+    .review-rating__star {
+        font-size: 25px;
+    }
+
+    .review-rating__label {
+        font-size: 9px;
+    }
+
+    .review-rating--display .review-rating__choices {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 2px;
+    }
+
+    .review-rating--display .review-rating__star {
+        font-size: 30px;
+    }
+
+    .review-rating--display .review-rating__label {
+        font-size: 10px;
+    }
+}

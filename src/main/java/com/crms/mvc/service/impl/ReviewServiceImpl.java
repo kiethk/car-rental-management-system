@@ -84,6 +84,22 @@ public class ReviewServiceImpl implements ReviewService {
         reviewRepository.save(review);
     }
 
+    @Override
+    public void update(Long bookingId, Long customerId, ReviewFormDTO form) {
+        Booking booking = findOwnedBooking(bookingId, customerId);
+        if (!isFinanciallyComplete(booking)) {
+            throw new IllegalStateException("Chỉ có thể sửa đánh giá khi chuyến đi và giao dịch đã hoàn tất.");
+        }
+
+        Review review = reviewRepository.findByBookingId(bookingId)
+                .orElseThrow(() -> new IllegalStateException("Đơn này chưa có đánh giá."));
+        review.setRating(form.getRating());
+        review.setComment(form.getComment() == null || form.getComment().isBlank()
+                ? null
+                : form.getComment().trim());
+        reviewRepository.save(review);
+    }
+
     private boolean isFinanciallyComplete(Booking booking) {
         return "completed".equalsIgnoreCase(booking.getStatus())
                 && !paymentRepository.existsByBookingIdAndStatus(booking.getId(), "pending");

@@ -17,6 +17,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import static org.hamcrest.Matchers.containsString;
@@ -83,15 +84,24 @@ class VehicleControllerTest {
     @Test void vehicleDetailShowsReviewsForItsVehicleType() throws Exception {
         when(vehicleService.findById(1L)).thenReturn(Optional.of(vehicle));
         when(reviewService.findPublicReviewsForVehicleType(1L)).thenReturn(
-                new VehicleReviewSummaryDTO(new BigDecimal("4.5"),
-                        List.of(new ReviewDTO(5, "Excellent service", null),
-                                new ReviewDTO(4, "Clean car", null))));
+                new VehicleReviewSummaryDTO(new BigDecimal("4.7"),
+                        List.of(new ReviewDTO(5, "Excellent service", null, "Customer One"),
+                                new ReviewDTO(4, "Clean car", OffsetDateTime.parse("2026-11-09T14:00:00+07:00"), "Customer Two"),
+                                new ReviewDTO(5, null, null, "Customer Three"))));
 
         mvc.perform(get("/vehicles/1"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("4.5 / 5 · 2 reviews")))
+                .andExpect(content().string(containsString("4.7 / 5 · 3 reviews")))
+                .andExpect(content().string(containsString("Customer One")))
+                .andExpect(content().string(containsString("Customer Two")))
+                .andExpect(content().string(containsString("Customer Three")))
+                .andExpect(content().string(containsString("vehicle-review__stars")))
+                .andExpect(content().string(containsString("4 trên 5 sao")))
+                .andExpect(content().string(not(containsString("2026-11-09"))))
                 .andExpect(content().string(containsString("Excellent service")))
-                .andExpect(content().string(containsString("Clean car")));
+                .andExpect(content().string(containsString("Clean car")))
+                .andExpect(content().string(containsString("No written comment.")))
+                .andExpect(content().string(not(containsString("customer@example.com"))));
     }
     @Test void unknownVehicleReturns404() throws Exception {
         when(vehicleService.findById(99L)).thenReturn(Optional.empty());

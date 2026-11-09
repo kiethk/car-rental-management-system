@@ -12,4 +12,6 @@ public interface ReviewService {
     VehicleReviewSummaryDTO findPublicReviewsForVehicleType(Long vehicleTypeId);
 
     void submit(Long bookingId, Long customerId, ReviewFormDTO form);
+
+    void update(Long bookingId, Long customerId, ReviewFormDTO form);
 }
