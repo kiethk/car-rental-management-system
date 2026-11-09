@@ -147,10 +147,10 @@
         const n = (k) => Number(el.dataset[k]) || 0;
         const series = [n('available'), n('rented'), n('maintenance')];
         const chart = new window.ApexCharts(el, {
-            chart: { type: 'donut', height: 240, fontFamily: 'Plus Jakarta Sans, sans-serif', animations: { easing: 'easeinout', speed: 700 } },
+            chart: { type: 'donut', height: 240, fontFamily: 'Roboto, sans-serif', animations: { easing: 'easeinout', speed: 700 } },
             series,
             labels: ['Sẵn sàng', 'Đang thuê', 'Bảo dưỡng'],
-            colors: ['#10b981', '#4f46e5', '#f43f5e'],
+            colors: ['#10b981', '#C6A15B', '#f43f5e'],
             legend: { show: false },
             dataLabels: { enabled: false },
             stroke: { width: 3, colors: ['#ffffff'] },
@@ -160,8 +160,8 @@
                         size: '74%',
                         labels: {
                             show: true,
-                            value: { fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, fontSize: '28px', color: '#0b0f19' },
-                            total: { show: true, label: 'Tổng xe', color: '#64748b', fontSize: '12px', formatter: () => String(series.reduce((a, b) => a + b, 0)) },
+                            value: { fontFamily: 'Roboto Mono, monospace', fontWeight: 800, fontSize: '28px', color: '#11151B' },
+                            total: { show: true, label: 'Tổng xe', color: '#6C727C', fontSize: '12px', formatter: () => String(series.reduce((a, b) => a + b, 0)) },
                         },
                     },
                 },

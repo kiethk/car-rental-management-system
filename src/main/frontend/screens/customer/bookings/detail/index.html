@@ -238,7 +238,7 @@
                         </div>
                       </td>
                       <td>
-                        <div class="bookings-detail-div-detail-fc1b" th:styleappend="${p.paymentType == 'REFUND' ? 'color: #059669;' : 'color: #0f172a;'}">
+                        <div class="bookings-detail-div-detail-fc1b" th:classappend="${p.paymentType == 'REFUND'} ? ' is-refund' : ''">
                           <span th:text="${(p.paymentType == 'REFUND' ? '+' : '') + #numbers.formatDecimal(p.amount, 0, 'COMMA', 0, 'POINT')}">720,000</span> đ </div>
                       </td>
                       <td class="bookings-detail-td-detail">

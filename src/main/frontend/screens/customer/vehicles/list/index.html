@@ -16,12 +16,12 @@
     <th:block th:fragment="screenContent">
     
     <main class="crms-container py-4 flex-grow-1">
-      <!-- Top Hero Banner with Rounded Corners (Unified with Rent page) -->
-      <div class="crms-hero-banner">
-        <div>
-          <h1>Danh sách xe có tại cửa hàng</h1>
-        </div>
-      </div>
+      <!-- Page Hero -->
+      <header class="vlist-hero">
+        <p class="vlist-eyebrow"><span class="vlist-eyebrow-dot"></span> Bộ sưu tập xe</p>
+        <h1>Danh sách xe có tại cửa hàng</h1>
+        <p class="vlist-hero-desc">Chọn dòng xe phù hợp với hành trình của bạn — đầy đủ thông số, giá thuê theo giờ và tình trạng sẵn sàng.</p>
+      </header>
       <!-- Main Content: Sidebar + Grid -->
       <div class="crms-layout-sidebar">
         <!-- Sidebar Filter (Left - Sticky scrolling) -->
@@ -114,50 +114,33 @@
             </div>
           </div>
           <!-- Vehicle Cards Grid (Synchronized Card Component) -->
-          <div th:unless="${#lists.isEmpty(vehicles)}" class="row g-4">
-            <div class="col-12 col-md-6 mb-4" th:each="v : ${vehicles}">
-              <div class="car-card shadow-sm">
-                <!-- Car Image (No corner badge per requirement) -->
-                <div class="car-img-wrapper">
-                  <img th:src="${v.imageUrl != null and !v.imageUrl.isBlank() ? v.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${v.displayName}" data-fallback-src="/images/car-rental-logo.svg">
-                </div>
-                <!-- Card Body -->
-                <div class="p-4 d-flex flex-column flex-grow-1">
-                  <!-- Title & Rating -->
-                  <div class="mb-2">
-                    <h3 class="h6 fw-bold text-navy mb-1" th:text="${v.displayName}">Toyota Vios 2023</h3>
-                    <div class="small text-muted">
-                      <span th:replace="~{fragments/labels :: rating(${ratings[v.id]})}">★ 4.8 (12 đánh giá)</span>
-                    </div>
-                  </div>
-                  <!-- Specs in Description: Category, Seats, Transmission, Fuel Type -->
-                  <div class="small text-muted fw-medium mb-2 vehicles-list-div-detail-e8df">
-                    <span class="text-navy fw-bold text-uppercase" th:text="${v.category}">Sedan</span>
-                    <span class="mx-1">·</span>
-                    <span th:text="${v.seats + ' chỗ'}">5 chỗ</span>
-                    <span class="mx-1">·</span>
-                    <span th:replace="~{fragments/labels :: transmission(${v.transmission})}">Số tự động</span>
-                    <span class="mx-1">·</span>
-                    <span th:replace="~{fragments/labels :: fuel(${v.fuelType})}">Xăng</span>
-                  </div>
-                  <p class="small text-muted mb-3 flex-grow-1 vehicles-list-p-detail" th:text="${v.description != null ? v.description : 'Xe sạch sẽ, bền bỉ và tiết kiệm, phù hợp cho di chuyển trong phố lẫn những chuyến đi cuối tuần.'}"> Car description... </p>
-                  <!-- Price & Action (Bottom) -->
-                  <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
-                    <div>
-                      <span class="small text-muted d-block vehicles-list-span-detail">Giá theo giờ</span>
-                      <div class="fw-bold text-navy vehicles-list-div-detail-dcaf">
-                        <span th:text="${#numbers.formatDecimal(v.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span>
-                        <span class="small fw-normal text-muted">đ/h</span>
-                      </div>
-                    </div>
-                    <div class="d-flex gap-2">
-                      <a th:href="@{/vehicles/{id}(id=${v.id})}" class="car-action-btn-secondary"> Chi tiết</a>
-                      <a th:href="@{/search(keyword=${v.displayName})}" class="car-action-btn-primary"> Thuê ngay</a>
-                    </div>
-                  </div>
+          <div th:unless="${#lists.isEmpty(vehicles)}" class="vlist-grid">
+            <article class="car-card vlist-card" th:each="v : ${vehicles}">
+              <div class="car-img-wrapper vlist-media">
+                <img th:src="${v.imageUrl != null and !v.imageUrl.isBlank() ? v.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${v.displayName}" data-fallback-src="/images/car-rental-logo.svg">
+                <span class="vlist-cat" th:text="${v.category}">Sedan</span>
+                <div class="vlist-price">
+                  <span>từ</span>
+                  <strong><span th:text="${#numbers.formatDecimal(v.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span><small>đ/h</small></strong>
                 </div>
               </div>
-            </div>
+              <div class="vlist-body">
+                <div class="vlist-head">
+                  <h3 th:text="${v.displayName}">Toyota Vios 2023</h3>
+                  <span class="vlist-rating" th:replace="~{fragments/labels :: rating(${ratings[v.id]})}">★ 4.8 (12 đánh giá)</span>
+                </div>
+                <div class="vlist-specs">
+                  <span class="vlist-spec"><i data-lucide="users" aria-hidden="true"></i><span th:text="${v.seats + ' chỗ'}">5 chỗ</span></span>
+                  <span class="vlist-spec"><i data-lucide="settings-2" aria-hidden="true"></i><span th:replace="~{fragments/labels :: transmission(${v.transmission})}">Số tự động</span></span>
+                  <span class="vlist-spec"><i data-lucide="fuel" aria-hidden="true"></i><span th:replace="~{fragments/labels :: fuel(${v.fuelType})}">Xăng</span></span>
+                </div>
+                <p class="vlist-desc" th:text="${v.description != null ? v.description : 'Xe sạch sẽ, bền bỉ và tiết kiệm, phù hợp cho di chuyển trong phố lẫn những chuyến đi cuối tuần.'}"> Car description... </p>
+                <div class="vlist-foot">
+                  <a th:href="@{/vehicles/{id}(id=${v.id})}" class="vlist-btn vlist-btn-ghost">Chi tiết</a>
+                  <a th:href="@{/search(keyword=${v.displayName})}" class="vlist-btn vlist-btn-primary">Thuê ngay <i data-lucide="arrow-right" aria-hidden="true"></i></a>
+                </div>
+              </div>
+            </article>
           </div>
         </div>
       </div>

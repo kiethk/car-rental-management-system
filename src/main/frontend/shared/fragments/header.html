@@ -6,8 +6,12 @@
     <div class="crms-container">
         <div class="flex items-center justify-between h-16">
             
-            <!-- Logo -->
-            <a th:href="${isAdminPage != null and isAdminPage} ? @{/admin/dashboard} : @{/}" class="flex items-center gap-2.5 hover:opacity-90 transition-opacity text-decoration-none">
+            <!-- Brand + admin mobile menu -->
+            <div class="header-brand-wrap flex items-center gap-2">
+                <button th:if="${isAdminPage != null and isAdminPage}" type="button" class="admin-mobile-menu-btn" data-admin-sidebar-mobile-toggle aria-controls="admin-sidebar-content" aria-expanded="false" aria-label="Mở menu quản trị">
+                    <i data-lucide="menu" aria-hidden="true"></i>
+                </button>
+                <a th:href="${isAdminPage != null and isAdminPage} ? @{/admin/dashboard} : @{/}" class="flex items-center gap-2.5 hover:opacity-90 transition-opacity text-decoration-none">
                 <img th:src="@{/images/car-rental-logo.svg}" alt="DriveNow Logo" class="w-8 h-8 rounded-lg object-contain flex-shrink-0" width="32" height="32">
                 <div class="flex items-center gap-2">
                     <span class="font-bold text-lg leading-none tracking-tight text-navy">DriveNow</span>
@@ -16,7 +20,8 @@
                         Vận hành
                     </span>
                 </div>
-            </a>
+                </a>
+            </div>
 
             <!-- Desktop Nav for Customers, Guests & Previewing Staff (shown on customer-facing pages) -->
             <nav th:if="${isAdminPage == null or !isAdminPage}" class="header-customer-only hidden lg:flex items-center gap-1">

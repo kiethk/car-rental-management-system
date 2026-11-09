@@ -1,26 +1,55 @@
 /* DriveNow shared Bootstrap 5 foundation. Keep screen-specific rules in each screen folder. */
 :root {
     color-scheme: light;
-    --crms-navy: #0f172a;
-    --crms-navy-strong: #0f172a;
-    --crms-orange: #2563eb;
-    --crms-orange-dark: #1d4ed8;
-    --crms-ink: #334155;
-    --crms-muted: #64748b;
-    --crms-border: #e2e8f0;
-    --crms-surface: #f8fafc;
+
+    /* ===== Obsidian & Champagne — 60-30-10 (canonical source of truth) ===== */
+    /* 60% — canvas & neutral surfaces */
+    --color-canvas: #F6F5F1;
+    --color-surface: #FFFFFF;
+    --color-surface-2: #EDEBE5;
+    --color-border: #E5E2DA;
+    --color-border-strong: #D3CFC4;
+    /* 30% — structure & text */
+    --color-obsidian: #0C1016;
+    --color-obsidian-2: #141A22;
+    --color-ink: #11151B;
+    --color-body: #3A4049;
+    --color-muted: #6C727C;
+    /* 10% — champagne accent */
+    --color-accent: #C6A15B;
+    --color-accent-strong: #A9823F;
+    --color-accent-deep: #8C6A32;
+    --color-accent-soft: rgba(198, 161, 91, .12);
+    --color-accent-ink: #221A0D;
+
+    /* Legacy aliases keep existing class contracts working. */
+    --crms-navy: var(--color-obsidian);
+    --crms-navy-strong: #0A0D12;
+    --crms-orange: var(--color-accent);
+    --crms-orange-dark: var(--color-accent-strong);
+    --crms-ink: var(--color-body);
+    --crms-muted: var(--color-muted);
+    --crms-border: var(--color-border);
+    --crms-surface: var(--color-canvas);
     --crms-success: #047857;
-    --crms-danger: #be123c;
-    --crms-radius: .75rem;
-    --crms-focus: 0 0 0 .25rem rgba(37, 99, 235, .18);
-    --bs-primary: #2563eb;
-    --bs-primary-rgb: 37, 99, 235;
-    --bs-link-color: #2563eb;
-    --bs-link-hover-color: #1d4ed8;
+    --crms-danger: #BE123C;
+    --crms-radius: 10px;
+    --crms-focus: 0 0 0 .25rem rgba(198, 161, 91, .28);
+
+    --font-ui: "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    --bs-primary: var(--color-obsidian);
+    --bs-primary-rgb: 12, 16, 22;
+    --bs-link-color: var(--color-accent-deep);
+    --bs-link-color-rgb: 140, 106, 50;
+    --bs-link-hover-color: var(--color-accent-strong);
+    --bs-link-hover-color-rgb: 169, 130, 63;
     --bs-border-color: var(--crms-border);
     --bs-secondary-color: var(--crms-muted);
-    --bs-secondary-rgb: 66, 85, 107;
+    --bs-secondary-rgb: 108, 114, 124;
     --bs-body-color: var(--crms-ink);
+    --bs-body-bg: var(--color-canvas);
     font-synthesis: none;
     text-rendering: optimizeLegibility;
 }
@@ -31,7 +60,7 @@ body {
     margin: 0;
     color: var(--crms-ink);
     background: var(--crms-surface);
-    font-family: Inter, "Segoe UI", Arial, sans-serif;
+    font-family: var(--font-ui);
     font-size: .9375rem;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
@@ -44,19 +73,19 @@ button, [role="button"] { touch-action: manipulation; }
 
 .text-navy { color: var(--crms-navy) !important; }
 .bg-navy { background-color: var(--crms-navy) !important; }
-.text-amber { color: #c65b0b !important; }
+.text-amber { color: var(--color-accent-deep) !important; }
 .bg-surface { background-color: var(--crms-surface) !important; }
 .text-muted-foreground { color: var(--crms-muted) !important; }
 .border-border { border-color: var(--crms-border) !important; }
 .btn-navy, .admin-btn-primary { --bs-btn-color: #fff; --bs-btn-bg: var(--crms-navy); --bs-btn-border-color: var(--crms-navy); --bs-btn-hover-color: #fff; --bs-btn-hover-bg: var(--crms-navy-strong); --bs-btn-hover-border-color: var(--crms-navy-strong); --bs-btn-focus-shadow-rgb: 19,43,69; }
-.car-action-btn-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 2.25rem; padding: .5rem 1rem; border: 1px solid var(--crms-orange); border-radius: var(--crms-radius); color: #fff; background: var(--crms-orange); font-weight: 650; text-decoration: none; }
-.car-action-btn-primary:hover { color: #fff; background: var(--crms-orange-dark); border-color: var(--crms-orange-dark); }
+.car-action-btn-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 2.25rem; padding: .5rem 1rem; border: 1px solid var(--crms-orange); border-radius: var(--crms-radius); color: var(--color-accent-ink); background: var(--crms-orange); font-weight: 650; text-decoration: none; }
+.car-action-btn-primary:hover { color: var(--color-accent-ink); background: var(--crms-orange-dark); border-color: var(--crms-orange-dark); }
 .rounded-lg { border-radius: var(--crms-radius) !important; }
 .rounded-xl { border-radius: .875rem !important; }
 .font-weight-bold, .font-bold { font-weight: 700 !important; }
 .font-semibold { font-weight: 600 !important; }
 .font-medium { font-weight: 500 !important; }
-.font-mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace !important; font-variant-numeric: tabular-nums; }
+.font-mono { font-family: var(--font-mono) !important; font-variant-numeric: tabular-nums; }
 .text-xs { font-size: .75rem !important; }
 .text-sm { font-size: .875rem !important; }
 .text-lg { font-size: 1.125rem !important; }
@@ -95,7 +124,7 @@ button, [role="button"] { touch-action: manipulation; }
 .text-base { font-size: 1rem; } .text-2xl { font-size: 1.5rem; }
 .text-emerald-600 { color: #059669; } .text-emerald-700 { color: #047857; }
 .text-slate-300 { color: #cbd5e1; } .text-slate-100 { color: #f1f5f9; }
-.bg-slate-800 { background: #1e293b; } .bg-slate-900 { background: #0f172a; }
+.bg-slate-800 { background: var(--color-obsidian-2); } .bg-slate-900 { background: var(--color-obsidian); }
 .bg-amber { background: #f59e0b; } .bg-light { background: #f8f9fa; }
 .bg-surface-2 { background: #eef1f4; } .border-slate-100 { border-color: #f1f5f9; }
 .border-slate-300 { border-color: #cbd5e1; } .border-slate-400 { border-color: #94a3b8; }
@@ -133,7 +162,7 @@ button, [role="button"] { touch-action: manipulation; }
 .bg-slate-200 { background-color: #e2e8f0 !important; } .bg-amber-50 { background-color: #fffbeb !important; }
 .bg-amber-100 { background-color: #fef3c7 !important; } .bg-emerald-50 { background-color: #ecfdf3 !important; }
 .bg-red-50 { background-color: #fef2f2 !important; } .bg-white\/50 { background-color: rgb(255 255 255 / 50%) !important; }
-.text-slate-900 { color: #0f172a !important; } .text-slate-800 { color: #1e293b !important; }
+.text-slate-900 { color: var(--color-obsidian) !important; } .text-slate-800 { color: var(--color-ink) !important; }
 .text-slate-700 { color: #334155 !important; } .text-slate-600 { color: #475569 !important; }
 .text-slate-500 { color: #64748b !important; } .text-slate-400 { color: #94a3b8 !important; }
 .text-amber-800 { color: #92400e !important; } .text-amber-600 { color: #d97706 !important; }
@@ -144,7 +173,7 @@ button, [role="button"] { touch-action: manipulation; }
 .hover\:bg-slate-50:hover { background-color: #f8fafc !important; }
 .hover\:bg-amber-100:hover { background-color: #fef3c7 !important; }
 .hover\:bg-red-50:hover { background-color: #fef2f2 !important; }
-.hover\:text-slate-900:hover { color: #0f172a !important; }
+.hover\:text-slate-900:hover { color: var(--color-obsidian) !important; }
 .hover\:text-red-700:hover { color: #b91c1c !important; }
 .text-decoration-none { text-decoration: none !important; }
 .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -342,8 +371,8 @@ body.sidebar-collapsed .admin-sidebar-link { justify-content: center; }
 /* Remaining screen migration compatibility helpers. */
 .h-18 { height: 4.5rem; }
 .bg-navy-dark { background: var(--crms-navy-strong); }
-.font-heading { font-family: Inter, "Segoe UI", Arial, sans-serif; }
-.font-mono-data { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-variant-numeric: tabular-nums; }
+.font-heading { font-family: var(--font-ui); }
+.font-mono-data { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .car-action-btn-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 2.25rem; padding: .5rem .9rem; border: 1px solid var(--crms-border); border-radius: var(--crms-radius); color: var(--crms-navy); background: #fff; font-weight: 600; text-decoration: none; }
 .car-action-btn-secondary:hover { color: var(--crms-navy-strong); background: var(--crms-surface); }
 .btn-amber { --bs-btn-color: #fff; --bs-btn-bg: var(--crms-orange); --bs-btn-border-color: var(--crms-orange); --bs-btn-hover-color: #fff; --bs-btn-hover-bg: var(--crms-orange-dark); --bs-btn-hover-border-color: var(--crms-orange-dark); }

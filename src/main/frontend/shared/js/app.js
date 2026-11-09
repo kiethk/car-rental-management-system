@@ -24,6 +24,12 @@
         try { localStorage.setItem("crms_admin_sidebar_collapsed", String(collapsed)); } catch (_) { /* Storage may be disabled. */ }
     };
 
+    const isMobileAdmin = () => window.matchMedia("(max-width: 767.98px)").matches;
+    const setMobileSidebar = (open) => {
+        document.body.classList.toggle("sidebar-mobile-open", open);
+        document.querySelector("[data-admin-sidebar-mobile-toggle]")?.setAttribute("aria-expanded", String(open));
+    };
+
     const respectMotionPreference = () => {
         if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
         document.querySelectorAll(".carousel").forEach((element) => {
@@ -55,9 +61,19 @@
         });
 
         document.querySelectorAll("[data-admin-sidebar-toggle]").forEach((button) => {
-            button.addEventListener("click", () => setSidebarState(!document.body.classList.contains("sidebar-collapsed")));
+            button.addEventListener("click", () => {
+                if (isMobileAdmin()) setMobileSidebar(false);
+                else setSidebarState(!document.body.classList.contains("sidebar-collapsed"));
+            });
             button.setAttribute("aria-controls", "admin-sidebar-content");
             button.setAttribute("aria-expanded", String(!document.body.classList.contains("sidebar-collapsed")));
+        });
+
+        document.querySelectorAll("[data-admin-sidebar-mobile-toggle]").forEach((button) => {
+            button.addEventListener("click", () => setMobileSidebar(!document.body.classList.contains("sidebar-mobile-open")));
+        });
+        window.matchMedia("(max-width: 767.98px)").addEventListener?.("change", (event) => {
+            if (!event.matches) setMobileSidebar(false);
         });
 
         document.querySelectorAll("[data-admin-profile-toggle]").forEach((button) => {
@@ -74,6 +90,11 @@
 
         document.addEventListener("click", (event) => {
             if (!event.target.closest(".crms-dropdown, .user-dropdown-container")) closeHeaderMenus();
+            if (document.body.classList.contains("sidebar-mobile-open")
+                && !event.target.closest(".admin-sidebar-column")
+                && !event.target.closest("[data-admin-sidebar-mobile-toggle]")) {
+                setMobileSidebar(false);
+            }
             const wrap = event.target.closest(".admin-sidebar-profile-wrap");
             const menu = document.getElementById("adminProfileMenu");
             const button = document.getElementById("adminProfileDropdownToggle");
@@ -85,6 +106,7 @@
         document.addEventListener("keydown", (event) => {
             if (event.key !== "Escape") return;
             closeHeaderMenus(null, true);
+            if (document.body.classList.contains("sidebar-mobile-open")) setMobileSidebar(false);
             const menu = document.getElementById("adminProfileMenu");
             if (menu && !menu.classList.contains("hidden")) {
                 const returnFocus = menu.contains(document.activeElement);

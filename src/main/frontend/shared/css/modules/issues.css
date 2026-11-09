@@ -7,9 +7,9 @@
 }
 
 .issue-fee-amount {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   font-weight: 600;
-  color: var(--color-navy-dark, #0f172a);
+  color: var(--color-obsidian, #0f172a);
   white-space: nowrap;
 }
 
@@ -58,13 +58,13 @@
 
 /* Header actions on the issue detail page: one quiet outlined style for all of them. */
 .admin-btn.issue-action-btn {
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border-strong);
   background-color: #ffffff;
-  color: #334155 !important;
+  color: var(--color-body) !important;
 }
 .admin-btn.issue-action-btn:hover {
-  background-color: #f1f5f9;
-  border-color: #94a3b8;
+  background-color: var(--color-surface-2);
+  border-color: var(--color-border-strong);
 }
 .admin-btn.issue-action-btn-danger {
   color: #b91c1c !important;
