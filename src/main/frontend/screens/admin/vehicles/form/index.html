@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${vehicleForm.id != null ? 'Sửa xe #' + vehicleForm.id : 'Thêm xe mới'} + ' — Quản trị DriveNow'">Quản lý xe</title>
+    <th:block th:replace="~{fragments/assets :: common}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/screens/admin/vehicles/form/style.css}">
+    <script defer th:src="@{/js/screens/admin/vehicles/form/script.js}"></script>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface" data-screen="admin/vehicles/form">
+
+<th:block th:replace="~{layouts/admin :: shell(~{::screenContent}, 'vehicles')}">
+    <th:block th:fragment="screenContent">
+<!-- Flash Error -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show border-0 rounded-lg shadow-sm" role="alert">
+                <span th:text="${error}"></span>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-xl p-4 p-md-5 bg-white max-w-4xl">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                    <div>
+                        <h1 class="h4 fw-bold text-navy mb-1"
+                            th:text="${vehicleForm.id != null ? 'Sửa xe #' + vehicleForm.id : 'Thêm xe mới'}">
+                            Thêm xe mới
+                        </h1>
+                        <p class="text-muted small mb-0">Cấu hình thông số xe thực tế. Một xe lưu lại toàn bộ biển số từng gắn; biển số hiện tại là biển số không có ngày kết thúc.</p>
+                    </div>
+                    <a th:href="@{/admin/vehicles}" class="btn btn-outline-secondary btn-sm rounded-lg">
+                        Quay lại danh sách xe
+                    </a>
+                </div>
+
+                <form method="post"
+                      th:action="${vehicleForm.id != null ? '/admin/vehicles/' + vehicleForm.id : '/admin/vehicles'}"
+                      th:object="${vehicleForm}">
+
+                    <input type="hidden" th:field="*{id}" />
+
+                    <!-- SECTION 1: PHYSICAL VEHICLE SPECS -->
+                    <h5 class="h6 fw-bold text-navy text-uppercase mb-3 vehicles-form-h5-detail">
+                        1. Thông tin xe thực tế
+                    </h5>
+
+                    <div class="row g-3 mb-4">
+                        <!-- Vehicle Model -->
+                        <div class="col-md-6 form-group mb-3">
+                            <label for="vehicleTypeId" class="fw-bold small text-navy mb-1">Dòng xe <span class="text-danger">*</span></label>
+                            <select th:field="*{vehicleTypeId}" class="form-control rounded-lg" required>
+                                <option value="" disabled selected>-- Chọn dòng xe trong danh mục --</option>
+                                <option th:each="vt : ${vehicleTypes}" th:value="${vt.id}"
+                                        th:text="${vt.displayName + ' (' + vt.seats + ' seats, ' + #numbers.formatDecimal(vt.pricePerHour, 0, 'COMMA', 0, 'POINT') + ' đ/h)'}"></option>
+                            </select>
+                            <small class="text-danger" th:if="${#fields.hasErrors('vehicleTypeId')}" th:errors="*{vehicleTypeId}"></small>
+                        </div>
+
+                        <!-- Color -->
+                        <div class="col-md-6 form-group mb-3">
+                            <label for="color" class="fw-bold small text-navy mb-1">Màu xe <span class="text-danger">*</span></label>
+                            <input type="text" th:field="*{color}" class="form-control rounded-lg"
+                                   placeholder="VD: Trắng, Đen, Bạc, Trắng ngọc trai..." required>
+                            <small class="text-danger" th:if="${#fields.hasErrors('color')}" th:errors="*{color}"></small>
+                        </div>
+
+                        <!-- Manufacturing Year -->
+                        <div class="col-md-4 form-group mb-3">
+                            <label for="year" class="fw-bold small text-navy mb-1">Năm sản xuất <span class="text-danger">*</span></label>
+                            <input type="number" th:field="*{year}" class="form-control rounded-lg" min="1990" max="2100" required>
+                            <small class="text-danger" th:if="${#fields.hasErrors('year')}" th:errors="*{year}"></small>
+                        </div>
+
+                        <!-- Current Odometer -->
+                        <div class="col-md-4 form-group mb-3">
+                            <label for="odometer" class="fw-bold small text-navy mb-1">Số km hiện tại <span class="text-danger">*</span></label>
+                            <input type="number" th:field="*{odometer}" class="form-control rounded-lg" min="0" placeholder="0" required>
+                            <small class="text-danger" th:if="${#fields.hasErrors('odometer')}" th:errors="*{odometer}"></small>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="col-md-4 form-group mb-3">
+                            <label for="status" class="fw-bold small text-navy mb-1">Trạng thái ban đầu <span class="text-danger">*</span></label>
+                            <select th:field="*{status}" class="form-control rounded-lg" required>
+                                <option value="available">Sẵn sàng cho thuê</option>
+                                <option value="maintenance">Đang bảo dưỡng / đăng kiểm</option>
+                                <option th:if="${vehicleForm.status == 'rented'}" value="rented" disabled>Đang cho thuê (Quản lý theo vòng đời đơn đặt)</option>
+                                <option th:if="${vehicleForm.id != null and (vehicleForm.status == 'retired' or (session.account != null and session.account.admin))}"
+                                        value="retired">Ngừng khai thác (vĩnh viễn, không thể hoàn tác)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- SECTION 2: LICENSE PLATE & REGISTRATION -->
+                    <div class="p-3 bg-surface rounded-xl border mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="h6 fw-bold text-navy text-uppercase mb-0 vehicles-form-h5-detail-bcac">
+                                2. Biển số & đăng kiểm
+                            </h5>
+                            <a th:if="${vehicleForm.id != null}" th:href="@{/admin/license-plates/vehicle/{id}(id=${vehicleForm.id})}"
+                               class="btn btn-outline-secondary btn-sm rounded-lg">Đổi biển số / lịch sử</a>
+                            <span th:if="${vehicleForm.id == null}" class="badge bg-light text-dark border text-muted">Biển số đầu tiên của xe</span>
+                        </div>
+
+
+                        <div class="row g-3">
+                            <!-- Plate number -->
+                            <div class="col-md-4 form-group mb-3">
+                                <label for="plateInput" class="fw-bold small text-navy mb-1">Biển số <span class="text-danger">*</span></label>
+                                <input type="text" id="plateInput" th:field="*{plate}" class="form-control rounded-lg fw-bold text-uppercase"
+                                       placeholder="VD: 51K-987.65" required th:readonly="${vehicleForm.id != null}">
+                                <small th:if="${vehicleForm.id != null}" class="text-muted vehicles-form-small-detail">Muốn gắn biển số khác cho xe này, hãy dùng "Đổi biển số / lịch sử" để biển số cũ vẫn được lưu lại.</small>
+                                <small class="text-danger" th:if="${#fields.hasErrors('plate')}" th:errors="*{plate}"></small>
+                            </div>
+
+                            <!-- Province -->
+                            <div class="col-md-4 form-group mb-3">
+                                <label for="provinceInput" class="fw-bold small text-navy mb-1">Tỉnh / thành phố đăng ký</label>
+                                <input type="text" id="provinceInput" th:field="*{province}" class="form-control rounded-lg"
+                                       placeholder="VD: TP. Hồ Chí Minh, Hà Nội..." th:readonly="${vehicleForm.id != null}">
+                            </div>
+
+                            <!-- Expiry date -->
+                            <div class="col-md-4 form-group mb-3">
+                                <label for="expiryInput" class="fw-bold small text-navy mb-1">Hạn đăng kiểm</label>
+                                <input type="date" id="expiryInput" th:field="*{registrationExpiry}" class="form-control rounded-lg">
+                                <small class="text-muted vehicles-form-small-detail-798f">Tem đăng kiểm của xe; tem này không thay đổi khi đổi biển số</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a th:href="@{/admin/vehicles}" class="btn btn-light px-4 rounded-lg">Hủy</a>
+                        <button type="submit" class="btn btn-navy fw-bold px-4 rounded-lg shadow-sm">
+                            Lưu xe
+                        </button>
+                    </div>
+                </form>
+            </div>
+    </th:block>
+</th:block>
+
+</body>
+</html>

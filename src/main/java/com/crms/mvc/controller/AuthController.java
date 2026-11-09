@@ -35,7 +35,7 @@ public class AuthController {
     @GetMapping("/login")
     public String loginForm(Model model) {
         model.addAttribute("loginForm", new LoginDTO());
-        return "auth/login";
+        return "screens/customer/auth/login/index";
     }
 
     @PostMapping("/login")
@@ -44,13 +44,13 @@ public class AuthController {
                         HttpServletRequest request,
                         Model model) {
         if (result.hasErrors()) {
-            return "auth/login";
+            return "screens/customer/auth/login/index";
         }
 
         LoginIdentityDTO account = authService.login(form.getEmail(), form.getPassword());
         if (account == null) {
             model.addAttribute("error", "Email hoặc mật khẩu không đúng");
-            return "auth/login";
+            return "screens/customer/auth/login/index";
         }
 
         HttpSession oldSession = request.getSession(false);
@@ -67,7 +67,7 @@ public class AuthController {
     @GetMapping("/register")
     public String registerForm(Model model) {
         model.addAttribute("registerForm", new CustomerRegisterDTO());
-        return "auth/register";
+        return "screens/customer/auth/register/index";
     }
 
     @PostMapping("/register")
@@ -75,12 +75,12 @@ public class AuthController {
                            BindingResult result,
                            Model model) {
         if (result.hasErrors()) {
-            return "auth/register";
+            return "screens/customer/auth/register/index";
         }
 
         if (!customerService.register(form)) {
             model.addAttribute("error", "Email này đã được sử dụng");
-            return "auth/register";
+            return "screens/customer/auth/register/index";
         }
 
         return "redirect:/login";

@@ -1,0 +1,9 @@
+/* Screen-scoped DriveNow admin workspace */
+[data-screen="admin/vehicles/list"] .vehicles-list-form-detail { gap: 8px; }
+[data-screen="admin/vehicles/list"] .vehicles-list-keyword { max-width: 340px; }
+[data-screen="admin/vehicles/list"] .vehicles-list-sort { width: auto; }
+[data-screen="admin/vehicles/list"] .vehicles-list-size { width: auto; }
+[data-screen="admin/vehicles/list"] .vehicles-list-small-detail { font-size: 11px; }
+[data-screen="admin/vehicles/list"] .vehicles-list-div-detail { gap: 6px; }
+
+/* Shared screen behavior hooks */

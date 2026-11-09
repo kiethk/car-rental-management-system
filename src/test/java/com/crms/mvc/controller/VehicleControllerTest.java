@@ -58,7 +58,7 @@ class VehicleControllerTest {
     @Test void listsDatabaseResultsThroughThymeleaf() throws Exception {
         when(vehicleService.searchWithFilter(any())).thenReturn(List.of(vehicle));
         mvc.perform(get("/vehicles").param("keyword", "Toyota"))
-                .andExpect(status().isOk()).andExpect(view().name("vehicles/list"))
+                .andExpect(status().isOk()).andExpect(view().name("screens/customer/vehicles/list/index"))
                 .andExpect(content().string(containsString("Toyota Vios")))
                 .andExpect(content().string(containsString("/vehicles/1")));
     }
@@ -98,7 +98,7 @@ class VehicleControllerTest {
         when(vehicleAvailabilityService.getVehicleSchedule(eq(5L), any(), anyInt())).thenReturn(schedule);
 
         mvc.perform(get("/vehicles/cars/5/schedule")).andExpect(status().isOk())
-                .andExpect(view().name("vehicles/schedule"))
+                .andExpect(view().name("screens/customer/vehicles/schedule/index"))
                 .andExpect(content().string(containsString("51A-123.45")))
                 .andExpect(content().string(containsString("sch-cell sch-booked")))
                 .andExpect(content().string(containsString("sch-cell sch-buffer")))

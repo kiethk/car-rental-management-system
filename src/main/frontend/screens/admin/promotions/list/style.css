@@ -1,0 +1,5 @@
+/* Screen-scoped DriveNow admin workspace */
+[data-screen="admin/promotions/list"] .promotions-list-img-detail { width: 76px; height: 48px; object-fit: cover; }
+[data-screen="admin/promotions/list"] .promotions-list-div-detail { gap: 6px; }
+
+/* Shared screen behavior hooks */

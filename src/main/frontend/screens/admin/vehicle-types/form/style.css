@@ -1,0 +1,7 @@
+/* Screen-scoped DriveNow admin workspace */
+[data-screen="admin/vehicle-types/form"] .vehicle-types-form-label-detail { cursor: pointer; }
+[data-screen="admin/vehicle-types/form"] .vehicle-types-form-chosen-file-name { max-width: 200px; }
+[data-screen="admin/vehicle-types/form"] .vehicle-types-form-clear-file-btn { text-decoration: none; }
+[data-screen="admin/vehicle-types/form"] .vehicle-types-form-img-detail { max-height: 80px; }
+
+/* Shared screen behavior hooks */

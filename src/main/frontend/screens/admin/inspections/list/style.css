@@ -1,0 +1,8 @@
+/* Screen-scoped DriveNow admin workspace */
+[data-screen="admin/inspections/list"] .inspections-list-div-detail { border-left-width: 4px !important; }
+[data-screen="admin/inspections/list"] .inspections-list-div-detail-bcac { border-left-width: 4px !important; }
+[data-screen="admin/inspections/list"] .inspections-list-div-detail-3ea6 { border-left-width: 4px !important; }
+[data-screen="admin/inspections/list"] .inspections-list-span-detail { height: 24px !important; min-height: 24px !important; font-size: 10px !important; padding: 0 6px !important; }
+[data-screen="admin/inspections/list"] .inspections-list-small-detail { max-width: 250px; }
+
+/* Shared screen behavior hooks */

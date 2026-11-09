@@ -1,0 +1,72 @@
+body[data-screen="customer/home"] .car-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+body[data-screen="customer/home"] .car-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.12);
+            border-color: #cbd5e1;
+        }
+body[data-screen="customer/home"] .car-img-wrapper {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            aspect-ratio: 16 / 10;
+            background-color: #f1f5f9;
+            overflow: hidden;
+            border-top-left-radius: 1rem;
+            border-top-right-radius: 1rem;
+        }
+body[data-screen="customer/home"] .car-img-wrapper img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            object-position: center;
+            border-top-left-radius: 1rem;
+            border-top-right-radius: 1rem;
+            transition: transform 0.4s ease;
+        }
+body[data-screen="customer/home"] .car-card:hover .car-img-wrapper img {
+            transform: scale(1.05);
+        }
+
+        /* Hero carousel styles live in <head> so slides are positioned before first paint
+           (otherwise every slide image flashes stacked vertically on reload). */
+        /* Soft frame: a faint 1px ring and a diffuse shadow instead of a hard border; isolation keeps the
+           rounded corners clipping cleanly while slides move. */
+body[data-screen="customer/home"] .promotion-carousel { position: relative; min-height: 240px; aspect-ratio: 11 / 7;
+            border-radius: 1.75rem; isolation: isolate;
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, .05), 0 18px 40px -18px rgba(15, 23, 42, .35); }
+        /* Slides sit side by side off-screen; the script slides the next one in and the current one out. */
+body[data-screen="customer/home"] .promotion-slide { position: absolute; inset: 0; transform: translateX(100%); visibility: hidden;
+            transition: transform .6s cubic-bezier(.4, 0, .2, 1); }
+body[data-screen="customer/home"] .promotion-slide.active { transform: translateX(0); visibility: visible; }
+body[data-screen="customer/home"] .promotion-slide img { width: 100%; height: 100%; object-fit: cover; }
+body[data-screen="customer/home"] .promotion-controls { position: absolute; inset: 50% .75rem auto; display: flex; justify-content: space-between;
+            transform: translateY(-50%); pointer-events: none; z-index: 2; }
+body[data-screen="customer/home"] .promotion-controls button { pointer-events: auto; width: 2.5rem; height: 2.5rem; border: 0; border-radius: 50%;
+            color: #0a192f; background: rgba(255, 255, 255, .45); font-size: 1.5rem; line-height: 1; opacity: .55;
+            backdrop-filter: blur(4px); cursor: pointer;
+            transition: opacity .25s ease, background-color .25s ease, transform .25s ease, box-shadow .25s ease; }
+body[data-screen="customer/home"] .promotion-carousel:hover .promotion-controls button { opacity: .8; }
+body[data-screen="customer/home"] .promotion-controls button:hover,
+body[data-screen="customer/home"] .promotion-controls button:focus-visible { opacity: 1; background: #fff; transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(10, 25, 47, .25); outline: none; }
+body[data-screen="customer/home"] .promotion-controls button:active { transform: scale(.95); }
+        @media (prefers-reduced-motion: reduce) {
+body[data-screen="customer/home"] body[data-screen="customer/home"] .promotion-slide, body[data-screen="customer/home"] .promotion-controls button { transition: none; }
+        }
+
+
+
+body[data-screen="customer/home"] .promotion-carousel { max-width: none; }
+
+body[data-screen="customer/home"] .promotion-slide img { border-radius: inherit; }
+
+body[data-screen="customer/home"] .promotion-controls button { min-width: 2.75rem; min-height: 2.75rem; }

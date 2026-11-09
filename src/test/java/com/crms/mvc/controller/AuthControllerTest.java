@@ -28,13 +28,13 @@ class AuthControllerTest {
     @MockitoBean private CustomerService customerService;
 
     @Test void showsLoginForm() throws Exception {
-        mvc.perform(get("/login")).andExpect(status().isOk()).andExpect(view().name("auth/login"))
+        mvc.perform(get("/login")).andExpect(status().isOk()).andExpect(view().name("screens/customer/auth/login/index"))
                 .andExpect(content().string(containsString("name=\"email\"")));
     }
 
     @Test void blankFieldsShowValidationErrors() throws Exception {
         mvc.perform(post("/login").param("email", "").param("password", ""))
-                .andExpect(status().isOk()).andExpect(view().name("auth/login"))
+                .andExpect(status().isOk()).andExpect(view().name("screens/customer/auth/login/index"))
                 .andExpect(content().string(containsString("Vui lòng nhập email")))
                 .andExpect(content().string(containsString("Vui lòng nhập mật khẩu")));
     }

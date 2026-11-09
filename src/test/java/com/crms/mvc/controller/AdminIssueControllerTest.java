@@ -92,7 +92,7 @@ class AdminIssueControllerTest {
 
         mvc.perform(post("/admin/issues").session(staff).param("bookingId", "42").param("issueType", "DAMAGE"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/issues/form"));
+                .andExpect(view().name("screens/admin/issues/form/index"));
 
         verify(issueService, never()).create(any(), any());
     }
@@ -113,7 +113,7 @@ class AdminIssueControllerTest {
 
         mvc.perform(get("/admin/issues/new").session(staff).param("bookingId", "42"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/issues/form"))
+                .andExpect(view().name("screens/admin/issues/form/index"))
                 .andExpect(content().string(containsString("Nguyễn Văn An")));
     }
 
@@ -124,7 +124,7 @@ class AdminIssueControllerTest {
 
         mvc.perform(get("/admin/issues").session(staff))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/issues/list"))
+                .andExpect(view().name("screens/admin/issues/list/index"))
                 .andExpect(content().string(containsString("Scratch on the bumper")))
                 .andExpect(content().string(containsString("Hư hỏng")));
     }
@@ -135,7 +135,7 @@ class AdminIssueControllerTest {
 
         mvc.perform(get("/admin/issues/7").session(staff))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/issues/detail"))
+                .andExpect(view().name("screens/admin/issues/detail/index"))
                 .andExpect(content().string(containsString("Scratch on the bumper")))
                 .andExpect(content().string(containsString("200")));
     }

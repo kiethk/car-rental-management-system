@@ -2,13 +2,11 @@ package com.crms.mvc.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * Enables @Async and @EnableScheduling; Spring Boot supplies default thread pools.
+ * Enables asynchronous notification delivery; Spring Boot supplies the default thread pool.
  */
 @Configuration
 @EnableAsync
-@EnableScheduling
 public class AsyncConfig {
 }

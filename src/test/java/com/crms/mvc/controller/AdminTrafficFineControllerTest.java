@@ -63,7 +63,7 @@ class AdminTrafficFineControllerTest {
 
         mvc.perform(get("/admin/traffic-fines").session(staff))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/traffic-fines/list"))
+                .andExpect(view().name("screens/admin/traffic-fines/list/index"))
                 .andExpect(content().string(containsString("51A-123.45")))
                 .andExpect(content().string(containsString("CTR-0001")))
                 .andExpect(content().string(containsString("20/10/2026 09:00")))
@@ -120,7 +120,7 @@ class AdminTrafficFineControllerTest {
                         .session(staff)
                         .param("bookingId", "42").param("plate", "51A-123.45"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/traffic-fines/list"));
+                .andExpect(view().name("screens/admin/traffic-fines/list/index"));
 
         verify(trafficFineService, never()).record(any(), any());
     }

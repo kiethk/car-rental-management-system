@@ -34,7 +34,7 @@ public class AdminContractTemplateController {
     public String list(HttpSession session, Model model) {
         model.addAttribute("templates", contractTemplateService.getAllTemplates());
         model.addAttribute("isAdmin", isAdmin(session));
-        return "admin/contract-templates/list";
+        return "screens/admin/contract-templates/list/index";
     }
 
     @GetMapping("/{id}")
@@ -45,7 +45,7 @@ public class AdminContractTemplateController {
         }
         model.addAttribute("template", template);
         model.addAttribute("isAdmin", isAdmin(session));
-        return "admin/contract-templates/detail";
+        return "screens/admin/contract-templates/detail/index";
     }
 
     @PostMapping("/draft")
@@ -76,7 +76,7 @@ public class AdminContractTemplateController {
         if (result.hasErrors()) {
             model.addAttribute("template", contractTemplateService.getTemplate(id));
             model.addAttribute("isAdmin", true);
-            return "admin/contract-templates/detail";
+            return "screens/admin/contract-templates/detail/index";
         }
         try {
             contractTemplateService.updateDraft(id, form);

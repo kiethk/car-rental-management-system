@@ -1,0 +1,62 @@
+/* Page shells: a continuous desktop workspace, independent of screen contents. */
+.crms-container { width: 100%; max-width: none; margin-inline: auto; padding-inline: 24px; }
+body > header, body > div > header { border-bottom: 1px solid var(--crms-border); }
+header .crms-container > div { min-height: 64px; }
+body[data-screen^="customer/"] header .header-customer-only { display: flex !important; }
+.crms-hero-banner { margin-bottom: 20px; padding: 0 0 16px; border-bottom: 1px solid var(--crms-border); color: var(--crms-ink); background: transparent; box-shadow: none; border-radius: 0; }
+.crms-hero-banner h1 { color: var(--crms-navy); font-size: 1.65rem; }
+.crms-hero-banner p { max-width: 78ch; color: var(--crms-muted); }
+.crms-layout-sidebar { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 24px; align-items: start; }
+.crms-sidebar { position: sticky; top: 84px; min-width: 0; }
+.crms-sidebar > :is(.card, .card-shadcn) { padding: 0 !important; border: 0; border-radius: 0 !important; box-shadow: none !important; background: transparent; }
+.crms-content { min-width: 0; }
+main.crms-container { padding-block: 20px; }
+
+body[data-screen^="admin/"] main.admin-workspace { width: 100%; max-width: none; margin: 0; padding: 0; }
+body[data-screen^="admin/"] main.admin-workspace > .row { display: flex; flex-wrap: nowrap; margin: 0; --bs-gutter-x: 0; --bs-gutter-y: 0; align-items: stretch; }
+body[data-screen^="admin/"] main.admin-workspace > .row > div:first-child:has(.admin-sidebar-nav) { flex: 0 0 236px; width: 236px; max-width: 236px; padding: 0; background: var(--crms-navy-strong); }
+body[data-screen^="admin/"] main.admin-workspace > .row > div:last-child { flex: 1 1 0%; width: auto; max-width: none; min-width: 0; padding: 20px 24px 32px; }
+body[data-screen^="admin/"] .admin-sidebar-nav { position: sticky; top: 64px; display: flex; flex-direction: column; width: 236px; height: calc(100vh - 64px); min-height: 0; overflow-y: auto; }
+body[data-screen^="admin/"].sidebar-collapsed main.admin-workspace > .row > div:first-child:has(.admin-sidebar-nav) { flex-basis: 68px; width: 68px; max-width: 68px; }
+body[data-screen^="admin/"].sidebar-collapsed .admin-sidebar-nav { width: 68px; padding-inline: 8px; }
+body[data-screen^="admin/"].sidebar-collapsed .admin-nav-label,
+body[data-screen^="admin/"].sidebar-collapsed .admin-sidebar-heading,
+body[data-screen^="admin/"].sidebar-collapsed .admin-sidebar-title-wrap,
+body[data-screen^="admin/"].sidebar-collapsed .admin-profile-info,
+body[data-screen^="admin/"].sidebar-collapsed .admin-sidebar-badge-soon { display: none; }
+body[data-screen^="admin/"].sidebar-collapsed .admin-sidebar-link { justify-content: center; }
+body[data-screen^="admin/"] .admin-sidebar-nav .admin-profile-btn .text-slate-900,
+body[data-screen^="admin/"] .admin-sidebar-nav .admin-profile-btn .text-slate-700,
+body[data-screen^="admin/"] .admin-sidebar-nav .admin-profile-btn .text-slate-500 { color: #e8eef4 !important; }
+body[data-screen^="admin/"] .admin-card { border-inline: 0; border-radius: 0; box-shadow: none; }
+body[data-screen^="admin/"] .admin-stat-card { min-height: 0; padding: 12px 16px; box-shadow: none; }
+body[data-screen^="admin/"] .admin-page-title { font-size: 1.4rem; }
+body[data-screen^="admin/"] .admin-card-body { padding: 16px 0; }
+body[data-screen^="admin/"] .admin-card-header { padding: 12px 0; }
+body[data-screen^="admin/"] .admin-card-header > :last-child { margin-left: auto; }
+@media (max-width: 991.98px) {
+    body[data-screen^="customer/"] header .header-customer-only {
+        display: flex !important;
+        order: 3;
+        flex: 0 0 100%;
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    .crms-site-header .crms-container > div { flex-wrap: wrap; gap: 8px; padding-block: 10px; }
+    .crms-site-header .header-nav-link { flex: 0 0 auto; }
+    .crms-layout-sidebar { grid-template-columns: 1fr; }
+    .crms-sidebar { position: static; }
+}
+@media (max-width: 767.98px) {
+    .crms-container { padding-inline: 16px; }
+    body[data-screen^="admin/"] main.admin-workspace > .row { flex-wrap: wrap; }
+    body[data-screen^="admin/"] main.admin-workspace > .row > div:first-child:has(.admin-sidebar-nav) { flex: 0 0 100%; width: 100%; max-width: none; }
+    body[data-screen^="admin/"] .admin-sidebar-nav { position: static; width: 100%; height: auto; }
+}
+
+/* Header spacing is independent of the content container's page padding. */
+.crms-site-header { border-bottom: 1px solid var(--crms-border); box-shadow: 0 2px 8px rgb(16 43 72 / 7%); }
+.crms-site-header .crms-container { padding-block: 0; }
+.crms-site-header .header-nav-link { color: var(--crms-navy); font-weight: 600; }
+.crms-site-header .header-nav-link.active { color: var(--crms-orange-dark); background: #fff0e5; box-shadow: inset 0 -3px var(--crms-orange); }

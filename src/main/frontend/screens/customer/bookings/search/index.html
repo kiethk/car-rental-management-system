@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Thuê xe ô tô tự lái — DriveNow</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <th:block th:replace="~{fragments/assets :: common}">
+    </th:block>
+    <link rel="stylesheet" th:href="@{/css/screens/customer/bookings/search/style.css}">
+    <script defer th:src="@{/js/screens/customer/bookings/search/script.js}">
+    </script>
+  </head>
+  <body class="bg-surface text-navy min-vh-100 d-flex flex-column" data-screen="customer/bookings/search">
+<th:block th:replace="~{layouts/customer :: shell(~{::screenContent})}">
+    <th:block th:fragment="screenContent">
+    
+    <main class="flex-fill">
+      <div class="crms-container py-4">
+        <!-- Top Hero Banner with Rounded Corners (Unified with Browse page) -->
+        <div class="crms-hero-banner">
+          <div>
+            <h1>Thuê xe ô tô tự lái trực tuyến</h1>
+            <p>Lựa chọn lịch trình và xem chi phí dự kiến theo giờ.</p>
+          </div>
+        </div>
+        <!-- Rental Schedule Component Bar -->
+        <div class="mb-4">
+          <div th:replace="~{fragments/rental-search-form :: rentalSearchForm( title='Lịch trình thuê xe', buttonText='Cập nhật lịch trình', formId='search-schedule-form' )}">
+          </div>
+        </div>
+        <!-- Main Content: Filters + Horizontal Results -->
+        <div class="crms-layout-sidebar">
+          <!-- Left Filters Sidebar (Consistent with Browse page filter fields - Sticky scrolling) -->
+          <div class="crms-sidebar mb-4">
+            <div class="search-filter-panel customer-stack-4">
+              <div class="search-filter-heading">
+                <h3 class="fw-bold text-navy small text-uppercase">Bộ lọc tìm kiếm</h3>
+                <a th:href="@{/search(startDate=${selectedStartDate}, endDate=${selectedEndDate}, startTime=${selectedStart}, endTime=${selectedEnd})}" class="customer-text-xs text-secondary text-decoration-none fw-medium">Đặt lại</a>
+              </div>
+              <form method="get" th:action="@{/search}" class="customer-stack-4">
+                <!-- Preserved schedule query hidden params -->
+                <input type="hidden" name="startDate" th:value="${selectedStartDate}" />
+                <input type="hidden" name="endDate" th:value="${selectedEndDate}" />
+                <input type="hidden" name="startTime" th:value="${selectedStart}" />
+                <input type="hidden" name="endTime" th:value="${selectedEnd}" />
+                <!-- Search keyword input -->
+                <div>
+                  <label class="d-block customer-text-xs fw-semibold text-secondary mb-1">Từ khóa tìm kiếm</label>
+                  <input type="text" name="keyword" th:value="${keyword}" class="w-100 customer-text-xs px-3 py-2 border border rounded-3" placeholder="Tên xe, dòng xe...">
+                </div>
+                <!-- Brand filter -->
+                <div>
+                  <label class="d-block customer-text-xs fw-semibold text-secondary mb-1">Hãng sản xuất</label>
+                  <select name="brand" class="w-100 customer-text-xs px-3 py-2 border border rounded-3 bg-white">
+                    <option value="all" th:selected="${brand == null or brand == 'all'}">Tất cả hãng xe</option>
+                    <option th:each="b : ${brands}" th:value="${b}" th:text="${b}" th:selected="${brand != null and brand.equalsIgnoreCase(b)}">
+                    </option>
+                  </select>
+                </div>
+                <!-- Category filter -->
+                <div>
+                  <label class="d-block customer-text-xs fw-semibold text-secondary mb-1">Loại xe</label>
+                  <select name="category" class="w-100 customer-text-xs px-3 py-2 border border rounded-3 bg-white">
+                    <option value="all" th:selected="${category == null or category == 'all'}">Tất cả loại xe</option>
+                    <option th:each="c : ${categories}" th:value="${c}" th:text="${#strings.capitalize(c)}" th:selected="${category != null and category.equalsIgnoreCase(c)}">
+                    </option>
+                  </select>
+                </div>
+                <!-- Seats filter -->
+                <div>
+                  <label class="d-block customer-text-xs fw-semibold text-secondary mb-1">Số chỗ ngồi</label>
+                  <select name="seats" class="w-100 customer-text-xs px-3 py-2 border border rounded-3 bg-white">
+                    <option value="0" th:selected="${minSeats == null or minSeats == 0}">Tất cả số chỗ</option>
+                    <option value="4" th:selected="${minSeats == 4}">4 chỗ trở lên</option>
+                    <option value="5" th:selected="${minSeats == 5}">5 chỗ trở lên</option>
+                    <option value="7" th:selected="${minSeats == 7}">7 chỗ trở lên</option>
+                  </select>
+                </div>
+                <!-- Transmission filter -->
+                <div>
+                  <label class="d-block customer-text-xs fw-semibold text-secondary mb-1">Hộp số</label>
+                  <select name="transmission" class="w-100 customer-text-xs px-3 py-2 border border rounded-3 bg-white">
+                    <option value="all" th:selected="${transmission == null or transmission == 'all'}">Tất cả hộp số</option>
+                    <option value="automatic" th:selected="${transmission == 'automatic'}">Số tự động</option>
+                    <option value="manual" th:selected="${transmission == 'manual'}">Số sàn</option>
+                  </select>
+                </div>
+                <button type="submit" class="w-100 bg-navy text-white customer-text-xs fw-semibold customer-py-2 rounded-3 shadow-sm"> Áp dụng bộ lọc </button>
+              </form>
+            </div>
+          </div>
+          <!-- Right Results List -->
+          <div class="crms-content">
+            <!-- No Results State -->
+            <div th:if="${results.isEmpty()}" class="card-shadcn customer-py-16 px-4 text-center text-secondary bg-white rounded-4 my-4">
+              <div class="customer-icon-3xl customer-icon-3xl rounded-pill bg-light text-secondary d-flex align-items-center justify-content-center mx-auto mb-3">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                </svg>
+              </div>
+              <p class="fs-6 fw-bold text-navy mb-1">Không tìm thấy dòng xe phù hợp với điều kiện</p>
+              <p class="customer-text-xs text-secondary customer-reading-width mx-auto mb-4">Vui lòng thử xóa từ khóa tìm kiếm hoặc điều chỉnh lại thời gian nhận và trả xe.</p>
+              <a th:href="@{/search(startDate=${selectedStartDate}, endDate=${selectedEndDate}, startTime=${selectedStart}, endTime=${selectedEnd})}" class="btn-navy customer-text-xs fw-semibold px-4 py-2 text-decoration-none d-inline-block rounded-3">Đặt lại bộ lọc</a>
+            </div>
+            <!-- Horizontal Car Cards (Clean, synchronized design with Estimated Cost) -->
+            <div class="customer-stack-4">
+              <div th:each="v : ${results}" class="car-card-row">
+                <!-- Left: Image (Full height of the card) -->
+                <div class="car-card-img-wrap">
+                  <img th:src="${v.imageUrl != null and !v.imageUrl.isBlank() ? v.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${v.displayName}" class="w-100 h-100 object-cover" data-fallback-src="/images/car-rental-logo.svg">
+                </div>
+                <!-- Middle & Right details -->
+                <div class="car-card-details-wrap">
+                  <div class="car-card-info-col">
+                    <!-- Row 1: Car Name & Subtle Category Tag -->
+                    <div>
+                      <div class="d-flex align-items-center gap-2">
+                        <h3 class="fw-bold text-navy fs-4 lh-sm" th:text="${v.displayName}">Toyota Vios 2023</h3>
+                        <span class="car-category-badge bookings-search-car-category-badge" th:text="${v.category}">Sedan</span>
+                      </div>
+                      <!-- Row 2: Star rating below car name -->
+                      <div class="customer-text-xs text-secondary mt-1">
+                        <span th:replace="~{fragments/labels :: rating(${ratings[v.id]})}">★ 5.0 (1 đánh giá)</span>
+                      </div>
+                    </div>
+                    <!-- Row 3: Specs Micro-Badges (Seats, Transmission, Fuel) -->
+                    <div class="d-flex flex-wrap align-items-center gap-2 mt-4">
+                      <span class="d-inline-flex align-items-center customer-gap-1 customer-px-2 py-1 rounded-2 customer-text-xs fw-medium bg-light text-body border border">
+                        <svg class="customer-icon-sm customer-icon-sm text-body-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                          <circle cx="9" cy="7" r="4"/>
+                          <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        <span th:text="${v.seats + ' chỗ'}">5 chỗ</span>
+                      </span>
+                      <span class="d-inline-flex align-items-center customer-gap-1 customer-px-2 py-1 rounded-2 customer-text-xs fw-medium bg-light text-body border border">
+                        <svg class="customer-icon-sm customer-icon-sm text-body-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="12" cy="12" r="3"/>
+                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                        <span th:replace="~{fragments/labels :: transmission(${v.transmission})}">Số tự động</span>
+                      </span>
+                      <span class="d-inline-flex align-items-center customer-gap-1 customer-px-2 py-1 rounded-2 customer-text-xs fw-medium bg-light text-body border border">
+                        <svg class="customer-icon-sm customer-icon-sm text-body-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M3 22h12M4 9h10M4 22V4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v18M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L19.4 6.4a2 2 0 0 0-1.4-.4H16"/>
+                        </svg>
+                        <span th:replace="~{fragments/labels :: fuel(${v.fuelType})}">Xăng</span>
+                      </span>
+                    </div>
+                  </div>
+                  <!-- Right: Pricing & Select Button -->
+                  <div class="car-card-pricing-col">
+                    <div class="price-box">
+                      <div class="customer-text-xs fw-bold text-secondary text-uppercase text-nowrap">Tổng tiền tạm tính</div>
+                      <div class="fs-4 customer-sm-text-2xl fw-bold text-navy text-nowrap">
+                        <span th:text="${#numbers.formatDecimal(v.estimatedTotal, 0, 'COMMA', 0, 'POINT')}">1,350,000</span>
+                        <span class="small fw-semibold text-secondary">đ</span>
+                      </div>
+                      <div class="customer-text-xs text-secondary customer-mt-1 text-nowrap">
+                        <span th:text="${#numbers.formatDecimal(v.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span> đ / giờ </div>
+                      <!-- Available status -->
+                      <div class="car-card-available-text text-nowrap">
+                        <span th:if="${v.availableCount > 0}" class="d-inline-flex align-items-center customer-gap-1 text-body fw-bold customer-text-xs">
+                          <span class="d-inline-block w-2 h-2 rounded-pill bg-success">
+                          </span>
+                          <span>Còn <span th:text="${v.availableCount}">3</span> xe khả dụng</span>
+                        </span>
+                        <span th:if="${v.availableCount == 0}" class="text-body-secondary customer-text-xs"> Hết xe tạm thời </span>
+                      </div>
+                    </div>
+                    <div class="action-box">
+                      <a th:if="${v.availableCount > 0}" th:href="@{/bookings/checkout(vehicleTypeId=${v.id}, startDate=${selectedStartDate}, endDate=${selectedEndDate}, startTime=${selectedStart}, endTime=${selectedEnd})}" class="btn-navy w-100 customer-text-xs fw-bold customer-py-2 px-5 rounded-3 shadow-sm text-decoration-none text-center d-block text-nowrap"> Chọn xe này &rarr; </a>
+                      <button th:if="${v.availableCount == 0}" disabled class="w-100 bg-light text-secondary customer-text-xs fw-semibold customer-py-2 px-5 rounded-3 cursor-not-allowed text-nowrap"> Hết xe tạm thời </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    
+  
+    </th:block>
+</th:block>
+</body>
+</html>

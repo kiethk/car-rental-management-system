@@ -2,6 +2,7 @@ package com.crms.mvc.service;
 
 import com.crms.mvc.dto.BookingCancelDTO;
 import com.crms.mvc.dto.BookingCreateDTO;
+import com.crms.mvc.dto.PriceQuoteDTO;
 import com.crms.mvc.entity.Booking;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,8 @@ import java.time.LocalDateTime;
  * {@link BookingQueryService}; which cars are free is {@link VehicleAvailabilityService}.
  */
 public interface BookingService {
+    PriceQuoteDTO previewPrice(BookingCreateDTO dto);
+
     /** clientIp is stored as clickwrap evidence on the contract. */
     Booking createBooking(Long customerId, BookingCreateDTO dto, String clientIp);
 

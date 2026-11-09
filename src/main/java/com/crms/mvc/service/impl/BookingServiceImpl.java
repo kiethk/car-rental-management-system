@@ -126,6 +126,29 @@ public class BookingServiceImpl implements BookingService {
         return time.getMinute() == 0 && time.getSecond() == 0 && time.getNano() == 0;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public PriceQuoteDTO previewPrice(BookingCreateDTO dto) {
+        validateRentalSchedule(dto.getStartTime(), dto.getEndTime());
+        if (dto.getVehicleTypeId() == null) {
+            throw new IllegalArgumentException("Vui lòng chọn dòng xe.");
+        }
+        VehicleType type = vehicleTypeRepository.findById(dto.getVehicleTypeId())
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dòng xe."));
+        ContractTemplateDTO terms = requireTermsTheCustomerSaw(dto);
+        String code = dto.getPromotionCode();
+        Promotion promotion = null;
+        if (code != null && !code.isBlank()) {
+            promotion = promotionRepository.findByCodeIgnoreCase(code.trim())
+                    .filter(BookingServiceImpl::isUsableToday)
+                    .orElseThrow(() -> new IllegalArgumentException("Mã giảm giá không hợp lệ, đã hết hạn hoặc hết lượt sử dụng."));
+        }
+        OffsetDateTime start = dto.getStartTime().atOffset(DateTimeUtils.VIETNAM_OFFSET);
+        OffsetDateTime end = dto.getEndTime().atOffset(DateTimeUtils.VIETNAM_OFFSET);
+        return pricingService.calculatePrice(start, end, type.getPricePerHour(), terms.getDepositRate(),
+                discountOf(promotion, type, start, end));
+    }
+
     // ---- create ----
 
     @Override

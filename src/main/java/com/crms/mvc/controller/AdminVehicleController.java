@@ -50,7 +50,7 @@ public class AdminVehicleController {
         model.addAttribute("statusCounts", statusCounts);
         model.addAttribute("totalCars", statusCounts.values().stream().mapToLong(Long::longValue).sum());
         model.addAttribute("activeNav", "vehicles");
-        return "admin/vehicles/list";
+        return "screens/admin/vehicles/list/index";
     }
 
     @GetMapping("/new")
@@ -60,7 +60,7 @@ public class AdminVehicleController {
         }
         model.addAttribute("vehicleTypes", vehicleTypeService.findAll());
         model.addAttribute("activeNav", "vehicles");
-        return "admin/vehicles/form";
+        return "screens/admin/vehicles/form/index";
     }
 
     @PostMapping
@@ -71,7 +71,7 @@ public class AdminVehicleController {
         if (result.hasErrors()) {
             model.addAttribute("vehicleTypes", vehicleTypeService.findAll());
             model.addAttribute("activeNav", "vehicles");
-            return "admin/vehicles/form";
+            return "screens/admin/vehicles/form/index";
         }
 
         try {
@@ -95,7 +95,7 @@ public class AdminVehicleController {
         }
         model.addAttribute("vehicleTypes", vehicleTypeService.findAll());
         model.addAttribute("activeNav", "vehicles");
-        return "admin/vehicles/form";
+        return "screens/admin/vehicles/form/index";
     }
 
     @PostMapping("/{id}")
@@ -108,7 +108,7 @@ public class AdminVehicleController {
         if (result.hasErrors()) {
             model.addAttribute("vehicleTypes", vehicleTypeService.findAll());
             model.addAttribute("activeNav", "vehicles");
-            return "admin/vehicles/form";
+            return "screens/admin/vehicles/form/index";
         }
 
         if (isNewRetirement(id, form.getStatus()) && !CurrentAccount.isAdmin(session)) {

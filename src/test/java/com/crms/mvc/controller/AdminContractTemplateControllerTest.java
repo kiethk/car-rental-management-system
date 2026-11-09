@@ -89,7 +89,7 @@ class AdminContractTemplateControllerTest {
                         .param("lateFeePercent", "200")
                         .param("freeCancellationHours", "72"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/contract-templates/detail"))
+                .andExpect(view().name("screens/admin/contract-templates/detail/index"))
                 .andExpect(content().string(containsString("Tiền cọc không được vượt quá 100%")));
 
         verify(contractTemplateService, never()).updateDraft(anyLong(), any());

@@ -30,7 +30,7 @@ public class AdminPromotionController {
         model.addAttribute("promotions", promotionService.findAll());
         model.addAttribute("today", LocalDate.now());
         model.addAttribute("activeNav", "promotions");
-        return "admin/promotions/list";
+        return "screens/admin/promotions/list/index";
     }
 
     @GetMapping("/new")
@@ -39,7 +39,7 @@ public class AdminPromotionController {
             model.addAttribute("promotionForm", new PromotionFormDTO());
         }
         model.addAttribute("activeNav", "promotions");
-        return "admin/promotions/form";
+        return "screens/admin/promotions/form/index";
     }
 
     @PostMapping
@@ -50,7 +50,7 @@ public class AdminPromotionController {
         if (result.hasErrors()) {
             form.setUrlImagePromotion(null);
             model.addAttribute("activeNav", "promotions");
-            return "admin/promotions/form";
+            return "screens/admin/promotions/form/index";
         }
         try {
             Promotion promotion = promotionService.create(form);
@@ -61,7 +61,7 @@ public class AdminPromotionController {
             model.addAttribute("error", ex.getMessage());
             form.setUrlImagePromotion(null);
             model.addAttribute("activeNav", "promotions");
-            return "admin/promotions/form";
+            return "screens/admin/promotions/form/index";
         }
     }
 
@@ -74,7 +74,7 @@ public class AdminPromotionController {
         }
         model.addAttribute("promotion", promotion);
         model.addAttribute("activeNav", "promotions");
-        return "admin/promotions/form";
+        return "screens/admin/promotions/form/index";
     }
 
     @PostMapping("/{id}")
@@ -88,7 +88,7 @@ public class AdminPromotionController {
             promotionService.findById(id).ifPresent(promotion ->
                     form.setUrlImagePromotion(promotion.getUrlImagePromotion()));
             model.addAttribute("activeNav", "promotions");
-            return "admin/promotions/form";
+            return "screens/admin/promotions/form/index";
         }
         try {
             Promotion promotion = promotionService.update(id, form);
@@ -100,7 +100,7 @@ public class AdminPromotionController {
             promotionService.findById(id).ifPresent(promotion ->
                     form.setUrlImagePromotion(promotion.getUrlImagePromotion()));
             model.addAttribute("activeNav", "promotions");
-            return "admin/promotions/form";
+            return "screens/admin/promotions/form/index";
         }
     }
 

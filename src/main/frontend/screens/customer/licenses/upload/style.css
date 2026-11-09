@@ -1,0 +1,4 @@
+body[data-screen="customer/licenses/upload"] .licenses-upload-img-detail {max-height: 200px; object-fit: contain;}
+body[data-screen="customer/licenses/upload"] .licenses-upload-small-detail {font-size: 11px;}
+
+

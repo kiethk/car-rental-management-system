@@ -22,8 +22,8 @@ import java.util.Optional;
 
 @Controller
 public class AccountController {
-    private static final String CUSTOMER_VIEW = "profile/index";
-    private static final String EMPLOYEE_VIEW = "admin/profile";
+    private static final String CUSTOMER_VIEW = "screens/customer/profile/index/index";
+    private static final String EMPLOYEE_VIEW = "screens/admin/profile/index";
 
     private final AccountService accountService;
 

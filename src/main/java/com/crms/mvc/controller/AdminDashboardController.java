@@ -71,12 +71,12 @@ public class AdminDashboardController {
         model.addAttribute("recentInspections", inspections.stream().limit(6).toList());
         model.addAttribute("activeNav", "dashboard");
 
-        return "admin/dashboard";
+        return "screens/admin/dashboard/index";
     }
 
     @GetMapping("/admin/ui-kit")
     public String uiKit() {
-        return "admin/starter-kit";
+        return "screens/admin/starter-kit/index";
     }
 
     private static List<LicensePlateOverviewDTO> registrationAlerts(List<LicensePlateOverviewDTO> plates, String status) {
