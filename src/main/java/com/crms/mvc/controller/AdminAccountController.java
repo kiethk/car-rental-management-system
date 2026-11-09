@@ -47,7 +47,7 @@ public class AdminAccountController {
         model.addAttribute("accounts", page.getContent());
         model.addAttribute("nav", PageNavDTO.of(page, number -> query.urlForPage(LIST_PATH, number)));
         model.addAttribute("currentAccountId", CurrentAccount.of(session).map(SessionAccount::getId).orElse(null));
-        return "admin/accounts/list";
+        return "screens/admin/accounts/list/index";
     }
 
     @PostMapping("/{type}/{id}/status")
@@ -71,7 +71,7 @@ public class AdminAccountController {
     public String employeeForm(HttpSession session, Model model) {
         requireAdmin(session);
         model.addAttribute("employeeForm", new EmployeeCreateDTO());
-        return "admin/accounts/form";
+        return "screens/admin/accounts/form/index";
     }
 
     @PostMapping("/employees")
@@ -82,13 +82,13 @@ public class AdminAccountController {
                                  RedirectAttributes ra) {
         requireAdmin(session);
         if (result.hasErrors()) {
-            return "admin/accounts/form";
+            return "screens/admin/accounts/form/index";
         }
         try {
             accountManagementService.createEmployee(form);
         } catch (IllegalArgumentException | DataIntegrityViolationException e) {
             model.addAttribute("error", "Email này đã được sử dụng");
-            return "admin/accounts/form";
+            return "screens/admin/accounts/form/index";
         }
         ra.addFlashAttribute("success", "Đã tạo tài khoản nhân viên.");
         ra.addAttribute("type", SessionAccount.EMPLOYEE);

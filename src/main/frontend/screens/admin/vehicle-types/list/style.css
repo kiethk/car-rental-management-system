@@ -1,0 +1,11 @@
+/* Screen-scoped DriveNow admin workspace */
+[data-screen="admin/vehicle-types/list"] .vehicle-types-list-form-detail { gap: 8px; }
+[data-screen="admin/vehicle-types/list"] .vehicle-types-list-keyword { max-width: 340px; }
+[data-screen="admin/vehicle-types/list"] .vehicle-types-list-sort { width: auto; }
+[data-screen="admin/vehicle-types/list"] .vehicle-types-list-size { width: auto; }
+[data-screen="admin/vehicle-types/list"] .vehicle-types-list-td-detail { width: 80px; }
+[data-screen="admin/vehicle-types/list"] .vehicle-types-list-img-detail { width: 70px; height: 45px; }
+[data-screen="admin/vehicle-types/list"] .vehicle-types-list-small-detail { max-width: 200px; }
+[data-screen="admin/vehicle-types/list"] .vehicle-types-list-div-detail { gap: 6px; }
+
+/* Shared screen behavior hooks */

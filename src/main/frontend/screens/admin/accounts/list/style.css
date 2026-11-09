@@ -1,0 +1,5 @@
+/* Screen-scoped DriveNow admin workspace */
+[data-screen="admin/accounts/list"] .accounts-list-div-detail { gap: 8px; }
+[data-screen="admin/accounts/list"] .accounts-list-form-detail { gap: 8px; }
+
+/* Shared screen behavior hooks */

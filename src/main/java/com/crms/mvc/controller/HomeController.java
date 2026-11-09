@@ -47,7 +47,7 @@ public class HomeController {
         model.addAttribute("promotions", promotions);
         model.addAttribute("hasPromotionImages", !promotions.isEmpty());
         model.addAttribute("fallbackVehicleImages", FALLBACK_VEHICLE_IMAGES);
-        return "home";
+        return "screens/customer/home/index";
     }
 
     private static Map<String, String> createFallbackVehicleImages() {

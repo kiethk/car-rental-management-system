@@ -1,0 +1,32 @@
+body[data-screen="admin/bookings/manage"] .bk-field { margin-bottom: 28px; }
+body[data-screen="admin/bookings/manage"] .bk-label { display: block; margin-bottom: 8px; font-size: 15px; font-weight: 700; color: #0f172a; }
+body[data-screen="admin/bookings/manage"] .bk-value { font-size: 14px; font-weight: 500; color: #334155; }
+body[data-screen="admin/bookings/manage"] .bk-note { display: block; margin-top: 4px; font-size: 13px; color: #64748b; }
+
+/* "Không còn xe cùng loại?": a quiet link that opens the counter refund, so it never competes with Đổi xe. */
+body[data-screen="admin/bookings/manage"] .no-car-refund > summary { list-style: none; display: inline-flex; align-items: center; gap: .35rem; cursor: pointer;
+        font-size: 12px; color: #64748b; text-decoration: underline; text-decoration-color: #cbd5e1; text-underline-offset: 3px;
+        transition: color .2s ease, text-decoration-color .2s ease; }
+body[data-screen="admin/bookings/manage"] .no-car-refund > summary::-webkit-details-marker { display: none; }
+body[data-screen="admin/bookings/manage"] .no-car-refund > summary::after { content: "›"; transition: transform .2s ease; }
+body[data-screen="admin/bookings/manage"] .no-car-refund[open] > summary::after { transform: rotate(90deg); }
+body[data-screen="admin/bookings/manage"] .no-car-refund > summary:hover { color: #b91c1c; text-decoration-color: #fca5a5; }
+body[data-screen="admin/bookings/manage"] .no-car-refund-body { margin-top: .75rem; padding: .875rem; border: 1px dashed #fecaca; border-radius: .75rem;
+        background: #fff7f7; font-size: 12px; color: #475569; }
+body[data-screen="admin/bookings/manage"] .no-car-refund-submit { color: #b91c1c !important; border-color: #fecaca !important; }
+body[data-screen="admin/bookings/manage"] .no-car-refund-submit:hover { background: #fee2e2 !important; }
+body[data-screen="admin/bookings/manage"] .admin-btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+/* Screen-scoped DriveNow admin workspace */
+[data-screen="admin/bookings/manage"] .bookings-manage-span-detail { font-size: 14px; }
+[data-screen="admin/bookings/manage"] .bookings-manage-td-detail { width: 35%; }
+[data-screen="admin/bookings/manage"] .bookings-manage-img-detail { max-width: 220px; }
+[data-screen="admin/bookings/manage"] .bookings-manage-modal-dialog { max-width: 500px }
+[data-screen="admin/bookings/manage"] .bookings-manage-modal-content { border-radius: 16px; overflow: hidden }
+[data-screen="admin/bookings/manage"] .bookings-manage-div-detail { width: 42px; height: 42px; border-radius: 50%; background-color: #ecfdf5; display: flex; align-items: center; justify-content: center; margin-right: 12px; flex-shrink: 0; }
+[data-screen="admin/bookings/manage"] .bookings-manage-svg-detail { width: 24px; height: 24px; color: #059669 }
+[data-screen="admin/bookings/manage"] .bookings-manage-div-detail-4b58 { background: #f8fafc; border: 1px solid #e2e8f0 }
+[data-screen="admin/bookings/manage"] .bookings-manage-modal-footer { gap: 10px }
+[data-screen="admin/bookings/manage"] .bookings-manage-button-detail { border: 1px solid #cbd5e1; border-radius: 8px }
+[data-screen="admin/bookings/manage"] .bookings-manage-button-detail-7b52 { border-radius: 8px; background-color: #059669; border-color: #059669 }
+
+/* Shared screen behavior hooks */

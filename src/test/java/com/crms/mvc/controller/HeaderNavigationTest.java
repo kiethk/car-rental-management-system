@@ -41,7 +41,7 @@ class HeaderNavigationTest {
 
         mvc.perform(get("/").session(staffSession))
                 .andExpect(status().isOk())
-                .andExpect(view().name("home"))
+                .andExpect(view().name("screens/customer/home/index"))
                 .andExpect(content().string(containsString("Về trang Quản trị")))
                 .andExpect(content().string(containsString("/admin/dashboard")))
                 .andExpect(content().string(containsString("Xem trước (Nhân viên)")))
@@ -55,7 +55,7 @@ class HeaderNavigationTest {
 
         mvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("home"))
+                .andExpect(view().name("screens/customer/home/index"))
                 .andExpect(content().string(containsString("Đăng nhập")))
                 .andExpect(content().string(containsString("Đăng ký")))
                 .andExpect(content().string(not(containsString("Về trang Quản trị"))))

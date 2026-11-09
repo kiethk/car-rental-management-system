@@ -110,7 +110,7 @@ class BookingContractFlowTest {
                         .param("startTime", "2026-10-24T09:00")
                         .param("endTime", "2026-10-24T19:00"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("bookings/checkout"))
+                .andExpect(view().name("screens/customer/bookings/checkout/index"))
                 // 10 hours x 100,000 = 1,000,000; deposit 30% from version 3
                 .andExpect(content().string(containsString("300,000")))
                 .andExpect(content().string(containsString("name=\"contractTemplateId\" value=\"3\"")))
@@ -359,7 +359,7 @@ class BookingContractFlowTest {
                         .param("startTime", "2026-10-24T09:00").param("endTime", "2026-10-24T19:00"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        org.assertj.core.api.Assertions.assertThat(html).containsPattern("value=\"9\"\\s+class=\"sr-only\"\\s+checked=\"checked\"");
+        org.assertj.core.api.Assertions.assertThat(html).containsPattern("<input(?=[^>]*name=\"vehicleId\")(?=[^>]*value=\"9\")(?=[^>]*checked=\"checked\")[^>]*>");
 
         mvc.perform(get("/bookings/checkout").session(customerSession)
                         .param("vehicleTypeId", "1").param("vehicleId", "8")

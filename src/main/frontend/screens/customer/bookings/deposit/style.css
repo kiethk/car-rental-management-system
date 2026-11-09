@@ -1,0 +1,24 @@
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-span-detail {font-size: 12px;}
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-div-detail {padding: 24px 0 16px; text-align: center;}
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-div-detail-e8df {margin-bottom: 8px;}
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-span-detail-eccd {font-family: system-ui, -apple-system, sans-serif; font-size: 2.25rem; font-weight: 900; letter-spacing: -0.5px;}
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-span-detail-49c5 {color: #005baa}
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-span-detail-dcaf {color: #ed1c24}
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-div-detail-d433 {font-size: 13px; color: #64748b;}
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-div-detail-db5f {margin-bottom: 14px}
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-div-detail-8006 {flex: 1; min-width: 0}
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-div-detail-e99d {flex: 1}
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-div-detail-1d32 {margin-top: 2px}
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-div-detail-8fe8 {flex: 1}
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-div-detail-3d14 {align-items: center; padding-bottom: 12px;}
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-span-detail-f88f {font-size: 15px; font-weight: 700; color: #0f172a;}
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-span-detail-78b2 {font-size: 1.35rem; font-weight: 800; color: #0f172a;}
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-span-detail-94c3 {font-family: 'JetBrains Mono', monospace; font-weight: 700}
+
+
+
+body[data-screen="customer/bookings/deposit"] .deposit-policy-note { margin-top: .75rem; padding: .65rem .8rem; border: 1px solid #f2d68c; border-radius: .5rem; background: #fff9e8; color: #664b13; font-size: .8rem; }
+
+body[data-screen="customer/bookings/deposit"] .holding-badge.is-expired { background: #fff0f0; color: #a32121; border-color: #f0bcbc; }
+
+body[data-screen="customer/bookings/deposit"] .sidebar-vehicle-img { object-fit: cover; }

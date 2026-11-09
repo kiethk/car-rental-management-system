@@ -1,0 +1,12 @@
+body[data-screen="customer/vehicles/detail"] .vehicles-detail-div-detail {height: 380px; background-color: #f1f5f9; position: relative;}
+body[data-screen="customer/vehicles/detail"] .vehicles-detail-div-detail-f706 {top: 15px; left: 15px;}
+body[data-screen="customer/vehicles/detail"] .vehicles-detail-span-detail {background-color: rgba(30, 41, 59, 0.9);}
+body[data-screen="customer/vehicles/detail"] .vehicles-detail-thead-detail {font-size: 11px;}
+body[data-screen="customer/vehicles/detail"] .vehicles-detail-p-detail {white-space: pre-wrap;}
+
+
+
+body[data-screen="customer/vehicles/detail"] .vehicle-gallery { min-height: 20rem; }
+
+body[data-screen="customer/vehicles/detail"] pre,
+body[data-screen="customer/vehicles/detail"] .vehicle-description { white-space: pre-wrap; }

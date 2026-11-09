@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Phạt nguội — Quản trị DriveNow</title>
+    <link rel="stylesheet" th:href="@{/css/shared/modules/issues.css}">
+    <th:block th:replace="~{fragments/assets :: common}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/screens/admin/traffic-fines/list/style.css}">
+    <script defer th:src="@{/js/screens/admin/traffic-fines/list/script.js}"></script>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface" data-screen="admin/traffic-fines/list">
+
+<th:block th:replace="~{layouts/admin :: shell(~{::screenContent}, 'traffic-fines')}">
+    <th:block th:fragment="screenContent">
+<div th:if="${success}" class="alert alert-success border-0 rounded-lg shadow-sm" role="alert" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger border-0 rounded-lg shadow-sm" role="alert" th:text="${error}"></div>
+
+            <div th:replace="~{fragments/admin-components :: pageHeader(
+                title='Phạt nguội',
+                subtitle='Ghi nhận biên bản công an gửi về và báo cho khách thuê. Hệ thống không thu tiền, công an sẽ liên hệ trực tiếp với khách.',
+                backUrl=null,
+                backText=null)}"></div>
+
+            <!-- 1. Tra cứu đơn thuê từ thông tin trên biên bản -->
+            <div class="admin-card mb-3">
+                <div class="admin-card-header">
+                    <div class="admin-card-title-group">
+                        <h2 class="admin-card-title">Tra cứu đơn thuê</h2>
+                        <p class="admin-card-subtitle">Nhập biển số và thời điểm vi phạm trên biên bản. Hệ thống tìm đơn thuê của xe tại thời điểm đó.</p>
+                    </div>
+                </div>
+                <div class="admin-card-body">
+                    <form th:action="@{/admin/traffic-fines}" method="get" class="row align-items-end">
+                        <div class="col-md-4 admin-form-group">
+                            <label class="admin-form-label" for="plate">Biển số (*)</label>
+                            <input id="plate" type="text" name="plate" th:value="${lookupPlate}" class="admin-form-input font-mono" placeholder="51A-123.45" required>
+                        </div>
+                        <div class="col-md-4 admin-form-group">
+                            <label class="admin-form-label" for="violationAt">Thời điểm vi phạm (*)</label>
+                            <input id="violationAt" type="datetime-local" name="violationAt" th:value="${lookupAt}" class="admin-form-input" required>
+                        </div>
+                        <div class="col-md-4 admin-form-group">
+                            <button type="submit" class="admin-btn admin-btn-primary">Tra đơn thuê</button>
+                        </div>
+                    </form>
+                    <div th:if="${lookupError}" class="admin-alert admin-alert-warning mt-2" th:text="${lookupError}"></div>
+                </div>
+            </div>
+
+            <!-- 2. Đơn thuê tìm được + ghi nhận biên bản -->
+            <div class="admin-card mb-3" th:if="${found != null and fineForm != null}">
+                <div class="admin-card-header">
+                    <div class="admin-card-title-group">
+                        <h2 class="admin-card-title">Ghi nhận phạt nguội</h2>
+                        <p class="admin-card-subtitle">Kiểm tra đúng đơn thuê rồi tải lên ảnh biên bản. Khách sẽ nhận email thông báo ngay.</p>
+                    </div>
+                </div>
+                <div class="admin-card-body">
+                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm mb-3">
+                        <div class="row">
+                            <div class="col-md-4 mb-2"><span class="text-muted d-block small">Đơn thuê</span>
+                                <a th:href="@{/admin/bookings/{id}(id=${found.id})}" class="fw-bold font-mono" th:text="'#' + ${found.id}">#42</a></div>
+                            <div class="col-md-4 mb-2"><span class="text-muted d-block small">Khách thuê</span>
+                                <strong th:text="${found.customerName}">Nguyễn Văn A</strong></div>
+                            <div class="col-md-4 mb-2"><span class="text-muted d-block small">Xe</span>
+                                <strong th:text="${found.vehicleTypeName + ' · ' + found.licensePlate}">Toyota Vios · 51A-123.45</strong></div>
+                            <div class="col-md-4"><span class="text-muted d-block small">Thời gian bàn giao</span>
+                                <strong th:text="${found.actualPickupTime != null ? #temporals.format(found.actualPickupTime, 'dd/MM/yyyy HH:mm') : #temporals.format(found.pickupTime, 'dd/MM/yyyy HH:mm')}">24/10/2026 09:00</strong></div>
+                            <div class="col-md-4"><span class="text-muted d-block small">Thời gian trả xe</span>
+                                <strong th:text="${found.actualReturnTime != null ? #temporals.format(found.actualReturnTime, 'dd/MM/yyyy HH:mm') : 'Chưa trả xe'}">24/10/2026 18:00</strong></div>
+                            <div class="col-md-4"><span class="text-muted d-block small">Hợp đồng</span>
+                                <strong th:text="${found.contract != null ? found.contract.contractNumber : 'Chưa có'}">CTR-0001</strong></div>
+                        </div>
+                        <div class="mt-2 pt-2 border-top small text-muted" th:if="${fineForm.violationAt != null}">
+                            Vi phạm lúc <strong class="text-navy" th:text="${#temporals.format(fineForm.violationAt, 'HH:mm dd/MM/yyyy')}">00:06 09/11/2026</strong> (giờ 24h),
+                            nằm trong thời gian khách giữ xe.
+                        </div>
+                    </div>
+
+                    <form th:action="@{/admin/traffic-fines}" th:object="${fineForm}" method="post" enctype="multipart/form-data" class="row align-items-end">
+                        <input type="hidden" th:field="*{bookingId}">
+                        <div class="col-md-3 admin-form-group">
+                            <label class="admin-form-label" for="fPlate">Biển số trên biên bản (*)</label>
+                            <input id="fPlate" type="text" th:field="*{plate}" class="admin-form-input font-mono" maxlength="20" required>
+                            <div class="text-danger small" th:if="${#fields.hasErrors('plate')}" th:errors="*{plate}"></div>
+                        </div>
+                        <div class="col-md-3 admin-form-group">
+                            <label class="admin-form-label" for="fViolationAt">Thời điểm vi phạm (*)</label>
+                            <input id="fViolationAt" type="datetime-local" th:field="*{violationAt}" class="admin-form-input" required>
+                            <div class="text-danger small" th:if="${#fields.hasErrors('violationAt')}" th:errors="*{violationAt}"></div>
+                        </div>
+                        <div class="col-md-4 admin-form-group">
+                            <label class="admin-form-label" for="fImage">Ảnh biên bản của công an (*)</label>
+                            <input id="fImage" type="file" name="image" class="admin-form-input" accept="image/jpeg,image/png,image/webp" required>
+                        </div>
+                        <div class="col-md-2 admin-form-group">
+                            <button type="submit" class="admin-btn admin-btn-primary w-100">Ghi nhận</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 3. Các bản ghi đã có -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div class="admin-card-title-group">
+                        <h2 class="admin-card-title">Bản ghi phạt nguội</h2>
+                    </div>
+                </div>
+                <div class="admin-card-body p-0">
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Vi phạm lúc</th>
+                                    <th>Biển số</th>
+                                    <th>Đơn thuê</th>
+                                    <th>Khách hàng</th>
+                                    <th>Bàn giao</th>
+                                    <th>Trả xe</th>
+                                    <th>Hợp đồng</th>
+                                    <th>Ghi nhận bởi</th>
+                                    <th class="text-end">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="n : ${notices}">
+                                    <td th:text="${#temporals.format(n.violationAt, 'dd/MM/yyyy HH:mm')}">24/10/2026 14:30</td>
+                                    <td class="font-mono" th:text="${n.plate}">51A-123.45</td>
+                                    <td><a th:href="@{/admin/bookings/{id}(id=${n.bookingId})}" class="font-mono" th:text="'#' + ${n.bookingId}">#42</a></td>
+                                    <td th:text="${n.customerName}">Nguyễn Văn A</td>
+                                    <td th:text="${n.handoverAt != null ? #temporals.format(n.handoverAt, 'dd/MM/yyyy HH:mm') : '—'}">24/10/2026 09:00</td>
+                                    <td th:text="${n.returnedAt != null ? #temporals.format(n.returnedAt, 'dd/MM/yyyy HH:mm') : 'Chưa trả xe'}">24/10/2026 18:00</td>
+                                    <td class="font-mono" th:text="${n.contractNumber != null ? n.contractNumber : '—'}">CTR-0001</td>
+                                    <td>
+                                        <span th:text="${n.recordedByName}">Nhân viên</span>
+                                        <div class="small text-muted" th:text="${#temporals.format(n.recordedAt, 'dd/MM/yyyy HH:mm')}">25/10/2026 10:00</div>
+                                    </td>
+                                    <td class="text-end">
+                                        <a th:href="@{/admin/traffic-fines/{id}/image(id=${n.id})}" target="_blank" rel="noopener" class="admin-btn btn-soft-primary">Xem ảnh</a>
+                                        <form method="post" th:action="@{/admin/traffic-fines/{id}/delete(id=${n.id})}" class="d-inline m-0"
+                                              data-confirm="Xóa bản ghi này?" data-confirm-detail="Khách sẽ nhận email thông báo đã gỡ." data-confirm-ok="Xóa" data-confirm-tone="danger">
+                                            <button type="submit" class="admin-btn btn-soft-danger">Xóa</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(notices)}">
+                                    <td colspan="9" class="text-center text-muted py-4">Chưa có bản ghi phạt nguội nào.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+    </th:block>
+</th:block>
+
+</body>
+</html>

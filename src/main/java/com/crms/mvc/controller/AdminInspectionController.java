@@ -41,7 +41,7 @@ public class AdminInspectionController {
         model.addAttribute("passedCount", passedCount);
         model.addAttribute("failedCount", failedCount);
         model.addAttribute("activeNav", "inspections");
-        return "admin/inspections/list";
+        return "screens/admin/inspections/list/index";
     }
 
     @GetMapping("/new")
@@ -56,7 +56,7 @@ public class AdminInspectionController {
         model.addAttribute("inspectionForm", form);
         model.addAttribute("vehicles", vehicles);
         model.addAttribute("activeNav", "inspections");
-        return "admin/inspections/schedule";
+        return "screens/admin/inspections/schedule/index";
     }
 
     @PostMapping
@@ -67,7 +67,7 @@ public class AdminInspectionController {
         if (result.hasErrors()) {
             model.addAttribute("vehicles", vehicleService.findAll());
             model.addAttribute("activeNav", "inspections");
-            return "admin/inspections/schedule";
+            return "screens/admin/inspections/schedule/index";
         }
 
         try {
@@ -105,7 +105,7 @@ public class AdminInspectionController {
         model.addAttribute("inspection", inspection);
         model.addAttribute("resultForm", form);
         model.addAttribute("activeNav", "inspections");
-        return "admin/inspections/result";
+        return "screens/admin/inspections/result/index";
     }
 
     @PostMapping("/{id}/result")

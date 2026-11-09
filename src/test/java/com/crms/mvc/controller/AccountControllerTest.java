@@ -45,7 +45,7 @@ class AccountControllerTest {
     void customerSeesSingleAccountForm() throws Exception {
         mvc.perform(get("/profile").session(TestSessions.customer(1L)))
                 .andExpect(status().isOk())
-                .andExpect(view().name("profile/index"))
+                .andExpect(view().name("screens/customer/profile/index/index"))
                 .andExpect(content().string(containsString("an@example.com")))
                 .andExpect(content().string(containsString("name=\"confirmPassword\"")));
     }
@@ -74,7 +74,7 @@ class AccountControllerTest {
                         .param("newPassword", "newSecret123")
                         .param("confirmPassword", "newSecret123"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("profile/index"))
+                .andExpect(view().name("screens/customer/profile/index/index"))
                 .andExpect(model().attributeHasFieldErrors("profileForm", "currentPassword"))
                 .andExpect(content().string(containsString("Mật khẩu hiện tại không đúng")));
     }

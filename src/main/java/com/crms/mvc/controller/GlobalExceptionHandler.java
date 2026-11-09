@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
         response.setStatus(ex.getStatusCode().value());
         model.addAttribute("errorCode", String.valueOf(ex.getStatusCode().value()));
         model.addAttribute("errorMessage", ex.getReason() != null ? ex.getReason() : "Không tìm thấy dữ liệu");
-        return ex.getStatusCode().value() == 404 ? "error/404" : "error/default";
+        return ex.getStatusCode().value() == 404 ? "screens/customer/error/404/index" : "screens/customer/error/default/index";
     }
 
     @ExceptionHandler(NoSuchElementException.class)
@@ -28,7 +28,7 @@ public class GlobalExceptionHandler {
     public String handleNotFound(NoSuchElementException ex, Model model) {
         model.addAttribute("errorCode", "404");
         model.addAttribute("errorMessage", ex.getMessage() != null ? ex.getMessage() : "Không tìm thấy dữ liệu");
-        return "error/404";
+        return "screens/customer/error/404/index";
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
     public String handleNoResourceFound(NoResourceFoundException ex, Model model) {
         model.addAttribute("errorCode", "404");
         model.addAttribute("errorMessage", "Không tìm thấy: " + ex.getResourcePath());
-        return "error/404";
+        return "screens/customer/error/404/index";
     }
 
     @ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class})
@@ -44,7 +44,7 @@ public class GlobalExceptionHandler {
     public String handleBadRequest(RuntimeException ex, Model model) {
         model.addAttribute("errorCode", "400");
         model.addAttribute("errorMessage", ex.getMessage());
-        return "error/default";
+        return "screens/customer/error/default/index";
     }
 
     @ExceptionHandler(DataAccessException.class)
@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
     public String handleDataAccess(DataAccessException ex, Model model) {
         model.addAttribute("errorCode", "503");
         model.addAttribute("errorMessage", "Dịch vụ tạm thời gián đoạn. Vui lòng thử lại sau.");
-        return "error/default";
+        return "screens/customer/error/default/index";
     }
 
     @ExceptionHandler(Exception.class)
@@ -61,6 +61,6 @@ public class GlobalExceptionHandler {
         model.addAttribute("errorCode", "500");
         model.addAttribute("errorMessage", "Đã có lỗi không mong muốn. Vui lòng thử lại sau.");
         model.addAttribute("errorDetail", ex.getMessage());
-        return "error/500";
+        return "screens/customer/error/500/index";
     }
 }

@@ -112,7 +112,7 @@ public class AdminTrafficFineController {
         model.addAttribute("lookupPlate", plate);
         model.addAttribute("lookupAt", violationAt);
         model.addAttribute("activeNav", "traffic-fines");
-        return "admin/traffic-fines/list";
+        return "screens/admin/traffic-fines/list/index";
     }
 
     private void showFound(Model model, Long bookingId) {

@@ -1,0 +1,5 @@
+/* Screen-scoped DriveNow admin workspace */
+[data-screen="admin/license-plates/history"] .license-plates-history-admin-status-badge { height: 24px !important; min-height: 24px !important; font-size: 10px !important; padding: 0 6px !important; }
+[data-screen="admin/license-plates/history"] .license-plates-history-h2-detail { letter-spacing: 0.05em; }
+
+/* Shared screen behavior hooks */

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="shell(content, active)">
+    <div th:replace="~{fragments/header :: header}"></div>
+    <main class="admin-workspace container-fluid flex-grow-1">
+        <div class="row">
+            <div class="admin-sidebar-column">
+                <div th:replace="~{fragments/admin-sidebar :: sidebar(active=${active})}"></div>
+            </div>
+            <div class="admin-content-column">
+                <th:block th:replace="${content}"></th:block>
+            </div>
+        </div>
+    </main>
+</th:block>
+</body>
+</html>

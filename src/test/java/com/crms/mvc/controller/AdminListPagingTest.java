@@ -61,7 +61,7 @@ class AdminListPagingTest {
         mvc.perform(get("/admin/vehicles").session(admin)
                         .param("keyword", "toyota").param("sort", "name_desc").param("status", "available").param("page", "2"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/vehicles/list"))
+                .andExpect(view().name("screens/admin/vehicles/list/index"))
                 // search box keeps the keyword, sort box keeps the choice
                 .andExpect(content().string(containsString("value=\"toyota\"")))
                 .andExpect(content().string(containsString("<option value=\"name_desc\" selected=\"selected\"")))
@@ -121,7 +121,7 @@ class AdminListPagingTest {
 
         mvc.perform(get("/admin/vehicle-types").session(admin).param("keyword", "to").param("sort", "name_desc"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/vehicle-types/list"))
+                .andExpect(view().name("screens/admin/vehicle-types/list/index"))
                 .andExpect(content().string(containsString("value=\"to\"")))
                 .andExpect(content().string(containsString("<option value=\"name_desc\" selected=\"selected\"")))
                 .andExpect(content().string(containsString("Toyota Vios")))

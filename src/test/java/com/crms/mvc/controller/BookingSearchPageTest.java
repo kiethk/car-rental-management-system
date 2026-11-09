@@ -80,7 +80,7 @@ class BookingSearchPageTest {
 
         mvc.perform(get("/search"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("bookings/search"))
+                .andExpect(view().name("screens/customer/bookings/search/index"))
                 .andExpect(model().attribute("startTime", LocalDateTime.of(tomorrow, java.time.LocalTime.of(9, 0))))
                 .andExpect(model().attribute("endTime", LocalDateTime.of(tomorrow, java.time.LocalTime.of(18, 0))))
                 .andExpect(model().attribute("selectedStartDate", tomorrow.toString()))
@@ -192,7 +192,7 @@ class BookingSearchPageTest {
 
     @Test
     void theLegacyVehiclesAvailableUrlShowsTheSamePage() throws Exception {
-        mvc.perform(get("/vehicles/available")).andExpect(status().isOk()).andExpect(view().name("bookings/search"));
+        mvc.perform(get("/vehicles/available")).andExpect(status().isOk()).andExpect(view().name("screens/customer/bookings/search/index"));
     }
 
     @SuppressWarnings("unchecked")
