@@ -28,21 +28,21 @@ class AuthControllerTest {
     @MockitoBean private CustomerService customerService;
 
     @Test void showsLoginForm() throws Exception {
-        mvc.perform(get("/login")).andExpect(status().isOk()).andExpect(view().name("auth/login"))
+        mvc.perform(get("/login")).andExpect(status().isOk()).andExpect(view().name("screens/customer/auth/login/index"))
                 .andExpect(content().string(containsString("name=\"email\"")));
     }
 
     @Test void blankFieldsShowValidationErrors() throws Exception {
         mvc.perform(post("/login").param("email", "").param("password", ""))
-                .andExpect(status().isOk()).andExpect(view().name("auth/login"))
-                .andExpect(content().string(containsString("Email is required")))
-                .andExpect(content().string(containsString("Password is required")));
+                .andExpect(status().isOk()).andExpect(view().name("screens/customer/auth/login/index"))
+                .andExpect(content().string(containsString("Vui lòng nhập email")))
+                .andExpect(content().string(containsString("Vui lòng nhập mật khẩu")));
     }
 
     @Test void wrongPasswordShowsError() throws Exception {
         when(authService.login("a@example.com", "wrong")).thenReturn(null);
         mvc.perform(post("/login").param("email", "a@example.com").param("password", "wrong"))
-                .andExpect(status().isOk()).andExpect(content().string(containsString("Invalid email or password")));
+                .andExpect(status().isOk()).andExpect(content().string(containsString("Email hoặc mật khẩu không đúng")));
     }
 
     @Test void validLoginRedirectsAndStoresSession() throws Exception {

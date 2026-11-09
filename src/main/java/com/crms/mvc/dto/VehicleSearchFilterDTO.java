@@ -1,5 +1,7 @@
 package com.crms.mvc.dto;
 
+import com.crms.mvc.entity.Vehicle;
+
 import java.math.BigDecimal;
 
 public class VehicleSearchFilterDTO {
@@ -12,7 +14,7 @@ public class VehicleSearchFilterDTO {
     private BigDecimal minPrice;
     private BigDecimal maxPrice;
     private String sortBy = "price_asc";
-    private String status = "available";
+    private String status = Vehicle.STATUS_AVAILABLE;
 
     public VehicleSearchFilterDTO() {}
 

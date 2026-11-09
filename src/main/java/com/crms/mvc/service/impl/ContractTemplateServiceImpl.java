@@ -57,7 +57,7 @@ public class ContractTemplateServiceImpl implements ContractTemplateService {
             throw new IllegalStateException("A draft version already exists. Edit or delete it first.");
         }
         Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new NoSuchElementException("Employee not found: " + employeeId));
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân viên: " + employeeId));
         ContractTemplate active = findActive();
 
         ContractTemplate draft = new ContractTemplate();
@@ -67,6 +67,8 @@ public class ContractTemplateServiceImpl implements ContractTemplateService {
         draft.setDepositRate(active.getDepositRate());
         draft.setLateFeeMultiplier(active.getLateFeeMultiplier());
         draft.setFreeCancellationHours(active.getFreeCancellationHours());
+        draft.setFreeCancelAfterDepositHours(active.getFreeCancelAfterDepositHours());
+        draft.setPickupWaitHours(active.getPickupWaitHours());
         draft.setStatus(ContractTemplateStatus.DRAFT);
         draft.setCreatedBy(employee);
         draft.setCreatedAt(OffsetDateTime.now());
@@ -82,6 +84,8 @@ public class ContractTemplateServiceImpl implements ContractTemplateService {
         draft.setDepositRate(toRate(form.getDepositPercent(), 4));
         draft.setLateFeeMultiplier(toRate(form.getLateFeePercent(), 2));
         draft.setFreeCancellationHours(form.getFreeCancellationHours());
+        draft.setFreeCancelAfterDepositHours(form.getFreeCancelAfterDepositHours());
+        draft.setPickupWaitHours(form.getPickupWaitHours());
         return ContractTemplateDTO.fromEntity(draft);
     }
 
@@ -106,12 +110,12 @@ public class ContractTemplateServiceImpl implements ContractTemplateService {
 
     private ContractTemplate findActive() {
         return contractTemplateRepository.findFirstByStatus(ContractTemplateStatus.ACTIVE)
-                .orElseThrow(() -> new IllegalStateException("No active rental terms. Please contact the administrator."));
+                .orElseThrow(() -> new IllegalStateException("Chưa có điều khoản thuê xe đang hiệu lực. Vui lòng liên hệ quản trị viên."));
     }
 
     private ContractTemplate findById(Long templateId) {
         return contractTemplateRepository.findById(templateId)
-                .orElseThrow(() -> new NoSuchElementException("Contract template not found: " + templateId));
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy mẫu hợp đồng: " + templateId));
     }
 
     private ContractTemplate findDraft(Long templateId) {

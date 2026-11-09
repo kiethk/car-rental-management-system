@@ -7,28 +7,27 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 
 public class VehicleInspectionFormDTO {
     private Long id;
 
-    @NotNull(message = "Please select a vehicle to inspect")
+    @NotNull(message = "Vui lòng chọn xe cần đăng kiểm")
     private Long vehicleId;
 
     private String vehiclePlate;
     private String vehicleName;
 
-    @NotNull(message = "Please select scheduled inspection time")
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private LocalDateTime scheduledAt = LocalDateTime.now();
+    /** The day the car goes in for inspection; the whole day is blocked for rentals, so no time is asked. */
+    @NotNull(message = "Vui lòng chọn ngày đăng kiểm")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate scheduledDate = LocalDate.now();
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime completedAt;
 
     private String status = "scheduled"; // scheduled, passed, failed
 
-    @Size(max = 1000, message = "Notes cannot exceed 1000 characters")
+    @Size(max = 1000, message = "Ghi chú tối đa 1000 ký tự")
     private String notes;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -49,8 +48,8 @@ public class VehicleInspectionFormDTO {
                 dto.setVehicleName(inspection.getVehicle().getVehicleType().getBrand() + " " + inspection.getVehicle().getVehicleType().getName());
             }
         }
-        if (inspection.getScheduledAt() != null) {
-            dto.setScheduledAt(inspection.getScheduledAt().toLocalDateTime());
+        if (inspection.getScheduledDate() != null) {
+            dto.setScheduledDate(inspection.getScheduledDate());
         }
         if (inspection.getCompletedAt() != null) {
             dto.setCompletedAt(inspection.getCompletedAt().toLocalDateTime());
@@ -72,8 +71,8 @@ public class VehicleInspectionFormDTO {
     public String getVehicleName() { return vehicleName; }
     public void setVehicleName(String vehicleName) { this.vehicleName = vehicleName; }
 
-    public LocalDateTime getScheduledAt() { return scheduledAt; }
-    public void setScheduledAt(LocalDateTime scheduledAt) { this.scheduledAt = scheduledAt; }
+    public LocalDate getScheduledDate() { return scheduledDate; }
+    public void setScheduledDate(LocalDate scheduledDate) { this.scheduledDate = scheduledDate; }
 
     public LocalDateTime getCompletedAt() { return completedAt; }
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }

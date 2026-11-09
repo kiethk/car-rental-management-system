@@ -22,4 +22,18 @@ public interface FileUploadService {
     String saveContractPdf(String contractNumber, byte[] content);
 
     Resource loadContractPdf(String fileName);
+
+    /** Stores one incident photo in a private folder (never publicly mapped) and returns its file name. */
+    String saveIssueEvidence(MultipartFile image);
+
+    Resource loadIssueEvidence(String fileName);
+
+    void deleteIssueEvidence(String fileName);
+
+    /** Photo of a police traffic fine notice: private, served only behind the staff login. */
+    String saveTrafficFineImage(MultipartFile image);
+
+    Resource loadTrafficFineImage(String fileName);
+
+    void deleteTrafficFineImage(String fileName);
 }

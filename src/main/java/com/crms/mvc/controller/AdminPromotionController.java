@@ -30,7 +30,7 @@ public class AdminPromotionController {
         model.addAttribute("promotions", promotionService.findAll());
         model.addAttribute("today", LocalDate.now());
         model.addAttribute("activeNav", "promotions");
-        return "admin/promotions/list";
+        return "screens/admin/promotions/list/index";
     }
 
     @GetMapping("/new")
@@ -39,7 +39,7 @@ public class AdminPromotionController {
             model.addAttribute("promotionForm", new PromotionFormDTO());
         }
         model.addAttribute("activeNav", "promotions");
-        return "admin/promotions/form";
+        return "screens/admin/promotions/form/index";
     }
 
     @PostMapping
@@ -50,7 +50,7 @@ public class AdminPromotionController {
         if (result.hasErrors()) {
             form.setUrlImagePromotion(null);
             model.addAttribute("activeNav", "promotions");
-            return "admin/promotions/form";
+            return "screens/admin/promotions/form/index";
         }
         try {
             Promotion promotion = promotionService.create(form);
@@ -61,20 +61,20 @@ public class AdminPromotionController {
             model.addAttribute("error", ex.getMessage());
             form.setUrlImagePromotion(null);
             model.addAttribute("activeNav", "promotions");
-            return "admin/promotions/form";
+            return "screens/admin/promotions/form/index";
         }
     }
 
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         Promotion promotion = promotionService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Promotion not found with ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khuyến mãi có mã: " + id));
         if (!model.containsAttribute("promotionForm")) {
             model.addAttribute("promotionForm", PromotionFormDTO.fromEntity(promotion));
         }
         model.addAttribute("promotion", promotion);
         model.addAttribute("activeNav", "promotions");
-        return "admin/promotions/form";
+        return "screens/admin/promotions/form/index";
     }
 
     @PostMapping("/{id}")
@@ -88,7 +88,7 @@ public class AdminPromotionController {
             promotionService.findById(id).ifPresent(promotion ->
                     form.setUrlImagePromotion(promotion.getUrlImagePromotion()));
             model.addAttribute("activeNav", "promotions");
-            return "admin/promotions/form";
+            return "screens/admin/promotions/form/index";
         }
         try {
             Promotion promotion = promotionService.update(id, form);
@@ -100,7 +100,7 @@ public class AdminPromotionController {
             promotionService.findById(id).ifPresent(promotion ->
                     form.setUrlImagePromotion(promotion.getUrlImagePromotion()));
             model.addAttribute("activeNav", "promotions");
-            return "admin/promotions/form";
+            return "screens/admin/promotions/form/index";
         }
     }
 
@@ -108,7 +108,7 @@ public class AdminPromotionController {
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             promotionService.delete(id);
-            redirectAttributes.addFlashAttribute("success", "Promotion deleted successfully.");
+            redirectAttributes.addFlashAttribute("success", "Đã xóa khuyến mãi.");
         } catch (IllegalArgumentException | IllegalStateException ex) {
             redirectAttributes.addFlashAttribute("error", ex.getMessage());
         }

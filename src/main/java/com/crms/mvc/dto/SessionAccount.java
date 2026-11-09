@@ -1,5 +1,7 @@
 package com.crms.mvc.dto;
 
+import com.crms.mvc.util.EmployeeRole;
+
 import java.io.Serializable;
 
 public final class SessionAccount implements Serializable {
@@ -39,10 +41,10 @@ public final class SessionAccount implements Serializable {
     }
 
     public boolean isAdmin() {
-        return isEmployee() && "admin".equals(role);
+        return isEmployee() && EmployeeRole.ADMIN.equals(role);
     }
 
     public boolean isStaffOrAdmin() {
-        return isEmployee() && ("admin".equals(role) || "staff".equals(role));
+        return isEmployee() && EmployeeRole.isEmployee(role);
     }
 }

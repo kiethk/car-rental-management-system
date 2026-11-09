@@ -1,5 +1,6 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.config.StationProperties;
 import com.crms.mvc.dto.ContractDocumentDTO;
 import com.crms.mvc.service.ContractDocumentGenerator;
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
@@ -29,19 +30,23 @@ public class OpenHtmlToPdfContractGenerator implements ContractDocumentGenerator
     private final ITemplateEngine templateEngine;
     private final Resource regularFont;
     private final Resource boldFont;
+    private final StationProperties station;
 
     public OpenHtmlToPdfContractGenerator(ITemplateEngine templateEngine,
                                           @Value("${crms.contract.font.regular}") Resource regularFont,
-                                          @Value("${crms.contract.font.bold}") Resource boldFont) {
+                                          @Value("${crms.contract.font.bold}") Resource boldFont,
+                                          StationProperties station) {
         this.templateEngine = templateEngine;
         this.regularFont = regularFont;
         this.boldFont = boldFont;
+        this.station = station;
     }
 
     @Override
     public byte[] generatePdf(ContractDocumentDTO document) {
         Context context = new Context(VIETNAMESE);
         context.setVariable("doc", document);
+        context.setVariable("stationAddress", station.address());
         String xhtml = templateEngine.process(TEMPLATE, context);
 
         try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
@@ -54,7 +59,7 @@ public class OpenHtmlToPdfContractGenerator implements ContractDocumentGenerator
             builder.run();
             return output.toByteArray();
         } catch (IOException exception) {
-            throw new IllegalStateException("Could not render contract PDF " + document.getContractNumber(), exception);
+            throw new IllegalStateException("Không thể tạo PDF hợp đồng " + document.getContractNumber(), exception);
         }
     }
 
@@ -62,7 +67,7 @@ public class OpenHtmlToPdfContractGenerator implements ContractDocumentGenerator
         try {
             return font.getInputStream();
         } catch (IOException exception) {
-            throw new UncheckedIOException("Contract font not found: " + font.getDescription(), exception);
+            throw new UncheckedIOException("Không tìm thấy phông chữ hợp đồng: " + font.getDescription(), exception);
         }
     }
 }

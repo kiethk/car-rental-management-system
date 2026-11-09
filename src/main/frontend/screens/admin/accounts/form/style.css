@@ -1,0 +1,4 @@
+/* Screen-scoped DriveNow admin workspace */
+[data-screen="admin/accounts/form"] .accounts-form-div-detail { gap: 8px; }
+
+/* Shared screen behavior hooks */

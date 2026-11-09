@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -47,7 +46,7 @@ public class AdminVehicleTypeController {
         model.addAttribute("nav", PageNavDTO.of(page, number -> query.urlForPage(LIST_PATH, number)));
         model.addAttribute("listUrl", query.urlForPage(LIST_PATH, query.getPage()));
         model.addAttribute("activeNav", "vehicles");
-        return "admin/vehicle-types/list";
+        return "screens/admin/vehicle-types/list/index";
     }
 
     @GetMapping("/new")
@@ -56,7 +55,7 @@ public class AdminVehicleTypeController {
             model.addAttribute("typeForm", new VehicleTypeFormDTO());
         }
         model.addAttribute("activeNav", "vehicles");
-        return "admin/vehicle-types/form";
+        return "screens/admin/vehicle-types/form/index";
     }
 
     @PostMapping
@@ -66,12 +65,12 @@ public class AdminVehicleTypeController {
                          Model model) {
         if (result.hasErrors()) {
             model.addAttribute("activeNav", "vehicles");
-            return "admin/vehicle-types/form";
+            return "screens/admin/vehicle-types/form/index";
         }
 
         try {
             VehicleType created = vehicleTypeService.create(form);
-            ra.addFlashAttribute("success", "Vehicle model created successfully: " + created.getBrand() + " " + created.getName());
+            ra.addFlashAttribute("success", "Đã tạo dòng xe: " + created.getBrand() + " " + created.getName());
             return "redirect:/admin/vehicle-types";
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
@@ -83,14 +82,14 @@ public class AdminVehicleTypeController {
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         VehicleType vt = vehicleTypeService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle model not found for ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dòng xe có mã: " + id));
 
         if (!model.containsAttribute("typeForm")) {
             model.addAttribute("typeForm", VehicleTypeFormDTO.fromEntity(vt));
         }
         model.addAttribute("vehicleType", vt);
         model.addAttribute("activeNav", "vehicles");
-        return "admin/vehicle-types/form";
+        return "screens/admin/vehicle-types/form/index";
     }
 
     @PostMapping("/{id}")
@@ -103,12 +102,12 @@ public class AdminVehicleTypeController {
             VehicleType vt = vehicleTypeService.findById(id).orElse(null);
             model.addAttribute("vehicleType", vt);
             model.addAttribute("activeNav", "vehicles");
-            return "admin/vehicle-types/form";
+            return "screens/admin/vehicle-types/form/index";
         }
 
         try {
             VehicleType updated = vehicleTypeService.update(id, form);
-            ra.addFlashAttribute("success", "Vehicle model updated successfully: " + updated.getBrand() + " " + updated.getName());
+            ra.addFlashAttribute("success", "Đã cập nhật dòng xe: " + updated.getBrand() + " " + updated.getName());
             return "redirect:/admin/vehicle-types";
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
@@ -122,7 +121,7 @@ public class AdminVehicleTypeController {
                          RedirectAttributes ra) {
         try {
             vehicleTypeService.delete(id);
-            ra.addFlashAttribute("success", "Vehicle model deleted ID: " + id);
+            ra.addFlashAttribute("success", "Đã xóa dòng xe có mã: " + id);
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
         }

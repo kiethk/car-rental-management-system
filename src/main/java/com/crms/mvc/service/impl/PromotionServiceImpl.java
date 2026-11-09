@@ -68,7 +68,7 @@ public class PromotionServiceImpl implements PromotionService {
     @Override
     public Promotion update(Long id, PromotionFormDTO form) {
         Promotion promotion = promotionRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Promotion not found with ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khuyến mãi có mã: " + id));
         validate(form, id);
         saveUploadedImage(form.getImageFile(), promotion);
         return promotionRepository.save(toEntity(form, promotion));
@@ -77,9 +77,9 @@ public class PromotionServiceImpl implements PromotionService {
     @Override
     public void delete(Long id) {
         Promotion promotion = promotionRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Promotion not found with ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khuyến mãi có mã: " + id));
         if (bookingRepository.existsByPromotionId(id)) {
-            throw new IllegalStateException("Cannot delete this promotion because it is linked to a booking.");
+            throw new IllegalStateException("Không xóa được khuyến mãi này vì đã được dùng trong đơn đặt xe.");
         }
         promotionRepository.delete(promotion);
     }
@@ -90,14 +90,14 @@ public class PromotionServiceImpl implements PromotionService {
                 ? promotionRepository.existsByCodeIgnoreCase(code)
                 : promotionRepository.existsByCodeIgnoreCaseAndIdNot(code, excludedId);
         if (duplicate) {
-            throw new IllegalArgumentException("Promotion code already exists: " + code);
+            throw new IllegalArgumentException("Mã khuyến mãi đã tồn tại: " + code);
         }
         if (form.getStartDate().isAfter(form.getEndDate())) {
-            throw new IllegalArgumentException("Start date must be on or before end date.");
+            throw new IllegalArgumentException("Ngày bắt đầu phải trước hoặc cùng ngày kết thúc.");
         }
         if ("percent".equalsIgnoreCase(form.getDiscountType())
                 && form.getDiscountValue().compareTo(new BigDecimal("100")) > 0) {
-            throw new IllegalArgumentException("Percentage discount cannot exceed 100%.");
+            throw new IllegalArgumentException("Giảm giá theo phần trăm không được vượt quá 100%.");
         }
     }
 

@@ -142,9 +142,9 @@ class ReviewServiceTest {
 
         VehicleReviewSummaryDTO summary = service.findPublicReviewsForVehicleType(2L);
 
-        assertEquals(new java.math.BigDecimal("4.5"), summary.getAverageRating());
-        assertEquals(2, summary.getReviewCount());
-        assertEquals(2, summary.getReviews().size());
+        assertEquals(new java.math.BigDecimal("4.5"), summary.averageRating());
+        assertEquals(2, summary.reviewCount());
+        assertEquals(2, summary.reviews().size());
         verify(reviewRepository).findPublicReviewsByVehicleTypeId(2L);
     }
 
@@ -154,8 +154,8 @@ class ReviewServiceTest {
 
         VehicleReviewSummaryDTO summary = service.findPublicReviewsForVehicleType(2L);
 
-        assertEquals(java.math.BigDecimal.ZERO, summary.getAverageRating());
-        assertEquals(0, summary.getReviewCount());
+        assertEquals(java.math.BigDecimal.ZERO, summary.averageRating());
+        assertEquals(0, summary.reviewCount());
     }
 
     private Booking booking(String status, Long bookingId, Long customerId) {

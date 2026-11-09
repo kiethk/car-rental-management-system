@@ -1,0 +1,7 @@
+/* Screen-scoped DriveNow admin workspace */
+[data-screen="admin/vehicles/form"] .vehicles-form-h5-detail { letter-spacing: 0.05em; }
+[data-screen="admin/vehicles/form"] .vehicles-form-h5-detail-bcac { letter-spacing: 0.05em; }
+[data-screen="admin/vehicles/form"] .vehicles-form-small-detail { font-size: 11px; }
+[data-screen="admin/vehicles/form"] .vehicles-form-small-detail-798f { font-size: 11px; }
+
+/* Shared screen behavior hooks */

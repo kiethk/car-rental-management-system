@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Objects;
+import com.crms.mvc.entity.Vehicle;
 
 public class BookingDetailDTO implements Serializable {
     private Long id;
@@ -21,10 +23,17 @@ public class BookingDetailDTO implements Serializable {
     private Long vehicleId;
     private String licensePlate;
     private String vehicleColor;
+    /** True when the assigned vehicle has been retired, so the booking needs another vehicle. */
+    private boolean vehicleRetired;
+    /** Status of the assigned car (available, rented, maintenance, retired); null when none is assigned. */
+    private String vehicleStatus;
+    /** Last odometer reading the system has for the assigned vehicle; the next handover cannot go below it. */
+    private Integer vehicleOdometer;
 
     private Long slotId;
     private OffsetDateTime pickupTime;
     private OffsetDateTime scheduledEndTime;
+    private OffsetDateTime actualPickupTime;
     private OffsetDateTime actualReturnTime;
 
     private BigDecimal pricePerHour;
@@ -39,6 +48,9 @@ public class BookingDetailDTO implements Serializable {
 
     private List<PaymentDTO> payments;
     private ContractDTO contract;
+    private LateReturnDTO lateReturn;
+    /** Set while a paid booking waits for its customer after the pickup time: when it will be cancelled. */
+    private OffsetDateTime pickupDeadline;
     private List<BookingFeeDTO> fees;
 
     private Long staffId;
@@ -118,6 +130,17 @@ public class BookingDetailDTO implements Serializable {
     public void setVehicleId(Long vehicleId) { this.vehicleId = vehicleId; }
     public String getLicensePlate() { return licensePlate; }
     public void setLicensePlate(String licensePlate) { this.licensePlate = licensePlate; }
+    public Integer getVehicleOdometer() { return vehicleOdometer; }
+    public void setVehicleOdometer(Integer vehicleOdometer) { this.vehicleOdometer = vehicleOdometer; }
+
+    public String getVehicleStatus() { return vehicleStatus; }
+    public void setVehicleStatus(String vehicleStatus) { this.vehicleStatus = vehicleStatus; }
+
+    /** The assigned car can be handed over now: the same check HandoverService.checkIn makes. */
+    public boolean isVehicleReadyForHandover() { return Vehicle.STATUS_AVAILABLE.equalsIgnoreCase(vehicleStatus); }
+
+    public boolean isVehicleRetired() { return vehicleRetired; }
+    public void setVehicleRetired(boolean vehicleRetired) { this.vehicleRetired = vehicleRetired; }
     public String getVehicleColor() { return vehicleColor; }
     public void setVehicleColor(String vehicleColor) { this.vehicleColor = vehicleColor; }
     public Long getSlotId() { return slotId; }
@@ -126,6 +149,9 @@ public class BookingDetailDTO implements Serializable {
     public void setPickupTime(OffsetDateTime pickupTime) { this.pickupTime = pickupTime; }
     public OffsetDateTime getScheduledEndTime() { return scheduledEndTime; }
     public void setScheduledEndTime(OffsetDateTime scheduledEndTime) { this.scheduledEndTime = scheduledEndTime; }
+    public OffsetDateTime getActualPickupTime() { return actualPickupTime; }
+    public void setActualPickupTime(OffsetDateTime actualPickupTime) { this.actualPickupTime = actualPickupTime; }
+
     public OffsetDateTime getActualReturnTime() { return actualReturnTime; }
     public void setActualReturnTime(OffsetDateTime actualReturnTime) { this.actualReturnTime = actualReturnTime; }
     public BigDecimal getPricePerHour() { return pricePerHour; }
@@ -146,6 +172,24 @@ public class BookingDetailDTO implements Serializable {
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
     public List<PaymentDTO> getPayments() { return payments; }
     public void setPayments(List<PaymentDTO> payments) { this.payments = payments; }
+
+    /** When the deposit was paid; null while it is unpaid. */
+    public OffsetDateTime getDepositPaidAt() {
+        if (payments == null) return null;
+        return payments.stream()
+                .filter(p -> "DEPOSIT".equalsIgnoreCase(p.getPaymentType()) && "paid".equalsIgnoreCase(p.getStatus()))
+                .map(PaymentDTO::getPaidAt)
+                .filter(Objects::nonNull)
+                .findFirst().orElse(null);
+    }
+
+    public OffsetDateTime getPickupDeadline() { return pickupDeadline; }
+    public void setPickupDeadline(OffsetDateTime pickupDeadline) { this.pickupDeadline = pickupDeadline; }
+
+    /** Set only while the rental is active, the car is not back and its return time has passed. */
+    public LateReturnDTO getLateReturn() { return lateReturn; }
+    public void setLateReturn(LateReturnDTO lateReturn) { this.lateReturn = lateReturn; }
+
     public ContractDTO getContract() { return contract; }
     public void setContract(ContractDTO contract) { this.contract = contract; }
     public List<BookingFeeDTO> getFees() { return fees; }

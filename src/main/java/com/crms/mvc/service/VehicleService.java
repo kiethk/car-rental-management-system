@@ -8,7 +8,6 @@ import com.crms.mvc.entity.Vehicle;
 
 import org.springframework.data.domain.Page;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,18 +27,21 @@ public interface VehicleService {
     /** Number of cars per status (available, rented, maintenance); statuses with no car are absent. */
     Map<String, Long> countByStatus();
 
-    Optional<Vehicle> findEntityById(Long id);
+    /** One car (never a vehicle type: the two have separate ids) for the admin pages; empty when there is none. */
+    Optional<VehicleDTO> findVehicleById(Long id);
 
-    Vehicle create(VehicleFormDTO dto);
+    /** The edit form of one car, filled with what it holds now. */
+    Optional<VehicleFormDTO> findFormById(Long id);
 
-    Vehicle update(Long id, VehicleFormDTO dto);
+    VehicleDTO create(VehicleFormDTO dto);
+
+    VehicleDTO update(Long id, VehicleFormDTO dto);
 
     void updateStatus(Long id, String newStatus);
 
     void updateOdometer(Long id, Integer newOdometer);
 
     /** Registration (inspection sticker) belongs to the vehicle, so it survives plate changes. */
-    void updateRegistrationExpiry(Long id, LocalDate registrationExpiry);
 
     List<Vehicle> findByVehicleTypeIdWithDetails(Long typeId);
 

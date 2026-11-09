@@ -7,14 +7,14 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public class BookingCreateDTO implements Serializable {
-    @NotNull(message = "Vehicle type is required")
+    @NotNull(message = "Vui lòng chọn dòng xe")
     private Long vehicleTypeId;
 
-    @NotNull(message = "Pickup time is required")
+    @NotNull(message = "Vui lòng chọn giờ nhận xe")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime startTime;
 
-    @NotNull(message = "Return time is required")
+    @NotNull(message = "Vui lòng chọn giờ trả xe")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime endTime;
 
@@ -22,10 +22,10 @@ public class BookingCreateDTO implements Serializable {
     private String promotionCode;
 
     // Clickwrap: the customer must accept exactly the template version shown on the checkout page.
-    @NotNull(message = "Rental terms version is missing")
+    @NotNull(message = "Thiếu phiên bản điều khoản thuê xe. Vui lòng tải lại trang.")
     private Long contractTemplateId;
 
-    @AssertTrue(message = "You must accept the rental terms to continue")
+    @AssertTrue(message = "Bạn cần đồng ý với điều khoản thuê xe để tiếp tục")
     private boolean acceptedTerms;
 
     public Long getVehicleTypeId() { return vehicleTypeId; }

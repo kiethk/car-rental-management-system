@@ -42,7 +42,7 @@ public class LicenseDocumentController {
 
         addCurrentLicense(customerId, model);
         model.addAttribute("licenseForm", new LicenseSubmitDTO());
-        return "licenses/upload";
+        return "screens/customer/licenses/upload/index";
     }
 
     @PostMapping("/licenses")
@@ -55,9 +55,13 @@ public class LicenseDocumentController {
             return "redirect:/login";
         }
 
+        if (form.getLicenseImage() == null || form.getLicenseImage().isEmpty()) {
+            result.rejectValue("licenseImage", "required", "Vui lòng chọn ảnh mặt trước bằng lái xe (License photo is required)");
+        }
+
         if (result.hasErrors()) {
             addCurrentLicense(customerId, model);
-            return "licenses/upload";
+            return "screens/customer/licenses/upload/index";
         }
 
         try {
@@ -68,11 +72,11 @@ public class LicenseDocumentController {
         } catch (IllegalArgumentException exception) {
             model.addAttribute("error", exception.getMessage());
             addCurrentLicense(customerId, model);
-            return "licenses/upload";
+            return "screens/customer/licenses/upload/index";
         } catch (IllegalStateException exception) {
-            model.addAttribute("error", "Could not save the license image.");
+            model.addAttribute("error", "Không thể lưu ảnh giấy phép lái xe.");
             addCurrentLicense(customerId, model);
-            return "licenses/upload";
+            return "screens/customer/licenses/upload/index";
         }
 
         return "redirect:/licenses/my-license?submitted";

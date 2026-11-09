@@ -45,7 +45,7 @@ class AccountControllerTest {
     void customerSeesSingleAccountForm() throws Exception {
         mvc.perform(get("/profile").session(TestSessions.customer(1L)))
                 .andExpect(status().isOk())
-                .andExpect(view().name("profile/index"))
+                .andExpect(view().name("screens/customer/profile/index/index"))
                 .andExpect(content().string(containsString("an@example.com")))
                 .andExpect(content().string(containsString("name=\"confirmPassword\"")));
     }
@@ -66,7 +66,7 @@ class AccountControllerTest {
     @Test
     void wrongCurrentPasswordIsShownOnTheField() throws Exception {
         when(accountService.update(any(), any()))
-                .thenThrow(new IllegalArgumentException("Current password is incorrect"));
+                .thenThrow(new IllegalArgumentException("Mật khẩu hiện tại không đúng"));
 
         mvc.perform(post("/profile").session(TestSessions.customer(1L))
                         .param("phone", "0901234567")
@@ -74,9 +74,9 @@ class AccountControllerTest {
                         .param("newPassword", "newSecret123")
                         .param("confirmPassword", "newSecret123"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("profile/index"))
+                .andExpect(view().name("screens/customer/profile/index/index"))
                 .andExpect(model().attributeHasFieldErrors("profileForm", "currentPassword"))
-                .andExpect(content().string(containsString("Current password is incorrect")));
+                .andExpect(content().string(containsString("Mật khẩu hiện tại không đúng")));
     }
 
     @Test
@@ -87,7 +87,7 @@ class AccountControllerTest {
                         .param("newPassword", "newSecret123")
                         .param("confirmPassword", "different123"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Passwords do not match")));
+                .andExpect(content().string(containsString("Mật khẩu xác nhận không khớp")));
 
         verify(accountService, never()).update(any(), any());
     }

@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -27,24 +28,15 @@ public class FileUploadServiceImpl implements FileUploadService {
     // Kept outside every public resource mapping; served only through ContractController.
     private static final Path CONTRACT_DIRECTORY =
             Path.of("uploads", "contracts").toAbsolutePath().normalize();
+    // Incident photos are evidence about customers: private, served only by controllers that check access.
+    private static final Path ISSUE_EVIDENCE_DIRECTORY =
+            Path.of("uploads", "issues").toAbsolutePath().normalize();
+    private static final Path TRAFFIC_FINE_DIRECTORY =
+            Path.of("uploads", "traffic-fines").toAbsolutePath().normalize();
 
     @Override
     public String saveLicenseImage(MultipartFile image) {
-        if (image == null || image.isEmpty()) {
-            throw new IllegalArgumentException("License image is required");
-        }
-
-        if (image.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("Image must be 5 MB or smaller");
-        }
-
-        String extension = switch (image.getContentType() == null ? "" : image.getContentType()) {
-            case "image/jpeg" -> ".jpg";
-            case "image/png" -> ".png";
-            case "image/webp" -> ".webp";
-            default -> throw new IllegalArgumentException("Only JPEG, PNG, and WebP images are allowed");
-        };
-
+        String extension = validatedImageExtension(image, "Ảnh giấy phép lái xe");
         String fileName = UUID.randomUUID() + extension;
         Path destination = LICENSE_UPLOAD_DIRECTORY.resolve(fileName);
 
@@ -53,7 +45,7 @@ public class FileUploadServiceImpl implements FileUploadService {
             Files.copy(image.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
             return fileName;
         } catch (IOException exception) {
-            throw new IllegalStateException("Could not save license image", exception);
+            throw new IllegalStateException("Không thể lưu ảnh giấy phép lái xe", exception);
         }
     }
 
@@ -64,21 +56,7 @@ public class FileUploadServiceImpl implements FileUploadService {
 
     @Override
     public String saveVehicleImage(MultipartFile image) {
-        if (image == null || image.isEmpty()) {
-            throw new IllegalArgumentException("Vehicle image is required");
-        }
-
-        if (image.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("Image must be 5 MB or smaller");
-        }
-
-        String extension = switch (image.getContentType() == null ? "" : image.getContentType()) {
-            case "image/jpeg" -> ".jpg";
-            case "image/png" -> ".png";
-            case "image/webp" -> ".webp";
-            default -> throw new IllegalArgumentException("Only JPEG, PNG, and WebP images are allowed");
-        };
-
+        String extension = validatedImageExtension(image, "Ảnh phương tiện");
         String fileName = "vehicle-" + UUID.randomUUID() + extension;
         Path destination = VEHICLE_UPLOAD_DIRECTORY.resolve(fileName);
 
@@ -87,7 +65,7 @@ public class FileUploadServiceImpl implements FileUploadService {
             Files.copy(image.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
             return "/uploads/vehicles/" + fileName;
         } catch (IOException exception) {
-            throw new IllegalStateException("Could not save vehicle image", exception);
+            throw new IllegalStateException("Không thể lưu ảnh phương tiện", exception);
         }
     }
 
@@ -99,18 +77,18 @@ public class FileUploadServiceImpl implements FileUploadService {
     @Override
     public String savePromotionImage(MultipartFile image) {
         if (image == null || image.isEmpty()) {
-            throw new IllegalArgumentException("Promotion image is required");
+            throw new IllegalArgumentException("Vui lòng chọn ảnh khuyến mãi");
         }
 
         if (image.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("Image must be 5 MB or smaller");
+            throw new IllegalArgumentException("Ảnh tối đa 5 MB");
         }
 
         String extension = switch (image.getContentType() == null ? "" : image.getContentType()) {
             case "image/jpeg" -> ".jpg";
             case "image/png" -> ".png";
             case "image/webp" -> ".webp";
-            default -> throw new IllegalArgumentException("Only JPEG, PNG, and WebP images are allowed");
+            default -> throw new IllegalArgumentException("Chỉ chấp nhận ảnh JPEG, PNG và WebP");
         };
 
         String fileName = "promotion-" + UUID.randomUUID() + extension;
@@ -119,25 +97,25 @@ public class FileUploadServiceImpl implements FileUploadService {
             Files.copy(image.getInputStream(), PROMOTION_UPLOAD_DIRECTORY.resolve(fileName));
             return "/uploads/promotions/" + fileName;
         } catch (IOException exception) {
-            throw new IllegalStateException("Could not save promotion image", exception);
+            throw new IllegalStateException("Không thể lưu ảnh khuyến mãi", exception);
         }
     }
 
     @Override
     public String saveHandoverImage(MultipartFile image) {
         if (image == null || image.isEmpty()) {
-            throw new IllegalArgumentException("Handover image is required");
+            throw new IllegalArgumentException("Vui lòng chọn ảnh bàn giao");
         }
 
         if (image.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("Image must be 5 MB or smaller");
+            throw new IllegalArgumentException("Ảnh tối đa 5 MB");
         }
 
         String extension = switch (image.getContentType() == null ? "" : image.getContentType()) {
             case "image/jpeg" -> ".jpg";
             case "image/png" -> ".png";
             case "image/webp" -> ".webp";
-            default -> throw new IllegalArgumentException("Only JPEG, PNG, and WebP images are allowed");
+            default -> throw new IllegalArgumentException("Chỉ chấp nhận ảnh JPEG, PNG và WebP");
         };
 
         String fileName = UUID.randomUUID() + extension;
@@ -146,7 +124,7 @@ public class FileUploadServiceImpl implements FileUploadService {
             Files.copy(image.getInputStream(), HANDOVER_UPLOAD_DIRECTORY.resolve(fileName));
             return fileName;
         } catch (IOException exception) {
-            throw new IllegalStateException("Could not save handover image", exception);
+            throw new IllegalStateException("Không thể lưu ảnh bàn giao", exception);
         }
     }
 
@@ -158,7 +136,7 @@ public class FileUploadServiceImpl implements FileUploadService {
     @Override
     public String saveContractPdf(String contractNumber, byte[] content) {
         if (content == null || content.length == 0) {
-            throw new IllegalArgumentException("Contract PDF is empty");
+            throw new IllegalArgumentException("Nội dung hợp đồng PDF không được để trống");
         }
 
         String fileName = contractNumber + "-" + UUID.randomUUID() + ".pdf";
@@ -168,13 +146,94 @@ public class FileUploadServiceImpl implements FileUploadService {
             Files.write(CONTRACT_DIRECTORY.resolve(fileName), content, StandardOpenOption.CREATE_NEW);
             return fileName;
         } catch (IOException exception) {
-            throw new IllegalStateException("Could not save contract PDF", exception);
+            throw new IllegalStateException("Không thể lưu tệp hợp đồng PDF", exception);
         }
     }
 
     @Override
     public Resource loadContractPdf(String fileName) {
         return loadFrom(CONTRACT_DIRECTORY, fileName);
+    }
+
+    @Override
+    public String saveIssueEvidence(MultipartFile image) {
+        String extension = validatedImageExtension(image, "Ảnh bằng chứng sự cố");
+        String fileName = "issue-" + UUID.randomUUID() + extension;
+        try {
+            Files.createDirectories(ISSUE_EVIDENCE_DIRECTORY);
+            Files.copy(image.getInputStream(), ISSUE_EVIDENCE_DIRECTORY.resolve(fileName));
+            return fileName;
+        } catch (IOException exception) {
+            throw new IllegalStateException("Không thể lưu ảnh bằng chứng sự cố", exception);
+        }
+    }
+
+    @Override
+    public String saveTrafficFineImage(MultipartFile image) {
+        String extension = validatedImageExtension(image, "Ảnh biên bản phạt nguội");
+        String fileName = "fine-" + UUID.randomUUID() + extension;
+        try {
+            Files.createDirectories(TRAFFIC_FINE_DIRECTORY);
+            Files.copy(image.getInputStream(), TRAFFIC_FINE_DIRECTORY.resolve(fileName));
+            return fileName;
+        } catch (IOException exception) {
+            throw new IllegalStateException("Không thể lưu ảnh biên bản phạt nguội", exception);
+        }
+    }
+
+    @Override
+    public Resource loadTrafficFineImage(String fileName) {
+        return loadFrom(TRAFFIC_FINE_DIRECTORY, fileName);
+    }
+
+    @Override
+    public void deleteTrafficFineImage(String fileName) {
+        try {
+            Files.deleteIfExists(TRAFFIC_FINE_DIRECTORY.resolve(fileName).normalize());
+        } catch (IOException exception) {
+            // The record is already gone; a leftover private file is harmless.
+        }
+    }
+
+    @Override
+    public Resource loadIssueEvidence(String fileName) {
+        return loadFrom(ISSUE_EVIDENCE_DIRECTORY, fileName);
+    }
+
+    @Override
+    public void deleteIssueEvidence(String fileName) {
+        Resource existing = loadFrom(ISSUE_EVIDENCE_DIRECTORY, fileName);
+        if (existing == null) {
+            return;
+        }
+        try {
+            Files.deleteIfExists(ISSUE_EVIDENCE_DIRECTORY.resolve(fileName).normalize());
+        } catch (IOException exception) {
+            throw new IllegalStateException("Không thể xoá ảnh bằng chứng sự cố", exception);
+        }
+    }
+
+    /** Chấp nhận định dạng ảnh JPEG, PNG hoặc WebP tối đa 5 MB và trả về phần mở rộng tệp tương ứng. */
+    private String validatedImageExtension(MultipartFile image, String label) {
+        if (image == null || image.isEmpty()) {
+            throw new IllegalArgumentException(label + " không được để trống");
+        }
+        if (image.getSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("Dung lượng ảnh phải từ 5 MB trở xuống");
+        }
+        String contentType = image.getContentType() == null ? "" : image.getContentType().toLowerCase(Locale.ROOT);
+        String originalFilename = image.getOriginalFilename() == null ? "" : image.getOriginalFilename().toLowerCase(Locale.ROOT);
+
+        if ("image/jpeg".equals(contentType) || originalFilename.endsWith(".jpg") || originalFilename.endsWith(".jpeg")) {
+            return ".jpg";
+        }
+        if ("image/png".equals(contentType) || originalFilename.endsWith(".png")) {
+            return ".png";
+        }
+        if ("image/webp".equals(contentType) || originalFilename.endsWith(".webp")) {
+            return ".webp";
+        }
+        throw new IllegalArgumentException("Chỉ chấp nhận định dạng ảnh JPEG, PNG hoặc WebP");
     }
 
     private Resource loadFrom(Path directory, String fileName) {

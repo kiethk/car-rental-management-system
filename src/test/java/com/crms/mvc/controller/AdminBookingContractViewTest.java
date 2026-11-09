@@ -7,15 +7,14 @@ import org.springframework.context.annotation.Import;
 import com.crms.mvc.support.PassThroughSessionAccountService;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.ContractDTO;
+import com.crms.mvc.dto.IssueDTO;
+import com.crms.mvc.entity.IssueStatus;
+import com.crms.mvc.entity.IssueType;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.entity.ContractTemplateStatus;
 import com.crms.mvc.dto.BookingSummaryDTO;
-import com.crms.mvc.entity.Booking;
-import com.crms.mvc.entity.Payment;
-import com.crms.mvc.entity.Slot;
-import com.crms.mvc.entity.VehicleType;
-import com.crms.mvc.entity.Customer;
 import com.crms.mvc.service.BookingService;
+import com.crms.mvc.service.IssueService;
 import com.crms.mvc.service.VehicleService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +28,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -38,23 +38,102 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AdminBookingContractViewTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private BookingService bookingService;
+    @MockitoBean private com.crms.mvc.service.BookingQueryService bookingQueryService;
+    @MockitoBean private com.crms.mvc.service.VehicleAvailabilityService vehicleAvailabilityService;
     @MockitoBean private VehicleService vehicleService;
     @MockitoBean private com.crms.mvc.service.PaymentService paymentService;
+    @MockitoBean private IssueService issueService;
     @MockitoBean private com.crms.mvc.service.HandoverService handoverService;
 
     @Test
     void confirmedBookingWithoutPdfOffersRetry() throws Exception {
-        when(bookingService.getBookingDetailForAdmin(42L)).thenReturn(confirmedBooking());
+        when(bookingQueryService.getBookingDetailForAdmin(42L)).thenReturn(confirmedBooking());
         when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
 
         MockHttpSession staff = TestSessions.staff(2L);
 
         mvc.perform(get("/admin/bookings/42").session(staff))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/bookings/manage"))
-                .andExpect(content().string(containsString("Terms v1")))
-                .andExpect(content().string(containsString("from IP 127.0.0.1")))
-                .andExpect(content().string(containsString("Issue PDF and email")));
+                .andExpect(view().name("screens/admin/bookings/manage/index"))
+                .andExpect(content().string(containsString("Điều khoản v1")))
+                .andExpect(content().string(containsString("từ IP 127.0.0.1")))
+                .andExpect(content().string(containsString("Phát hành PDF và gửi email")));
+    }
+
+    @Test
+    void confirmedBookingWithRetiredVehicleWarnsAndOffersReassignment() throws Exception {
+        BookingDetailDTO booking = confirmedBooking();
+        booking.setVehicleId(9L);
+        booking.setVehicleRetired(true);
+        when(bookingQueryService.getBookingDetailForAdmin(42L)).thenReturn(booking);
+        when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
+
+        mvc.perform(get("/admin/bookings/42").session(staffSession()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Xe đã ngừng khai thác, cần gán lại")))
+                .andExpect(content().string(containsString("Bước 1: Phân bổ xe vật lý")))
+                .andExpect(content().string(not(containsString("Bước 2: Bàn giao xe cho khách"))));
+    }
+
+    @Test
+    void confirmedBookingWithAWorkingVehicleShowsNoRetirementWarning() throws Exception {
+        BookingDetailDTO booking = confirmedBooking();
+        booking.setVehicleId(9L);
+        when(bookingQueryService.getBookingDetailForAdmin(42L)).thenReturn(booking);
+        when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
+
+        mvc.perform(get("/admin/bookings/42").session(staffSession()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("Xe đã ngừng khai thác"))))
+                .andExpect(content().string(containsString("Bước 2: Bàn giao xe cho khách")));
+    }
+
+    @Test
+    void anActiveBookingListsItsIssuesAndOffersToRecordOne() throws Exception {
+        BookingDetailDTO booking = confirmedBooking();
+        booking.setStatus("active");
+        booking.setVehicleId(9L);
+        when(bookingQueryService.getBookingDetailForAdmin(42L)).thenReturn(booking);
+        when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
+        IssueDTO issue = new IssueDTO();
+        issue.setId(7L);
+        issue.setIssueType(IssueType.DAMAGE);
+        issue.setStatus(IssueStatus.OPEN);
+        issue.setSubject("Scratch on the bumper");
+        when(issueService.findByBooking(42L)).thenReturn(List.of(issue));
+
+        mvc.perform(get("/admin/bookings/42").session(staffSession()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Scratch on the bumper")))
+                .andExpect(content().string(containsString("/admin/issues/new?bookingId=42")));
+    }
+
+    @Test
+    void theCheckOutFormHasNoHandTypedFineAndShowsTheConditionAtHandover() throws Exception {
+        BookingDetailDTO booking = confirmedBooking();
+        booking.setStatus("active");
+        booking.setVehicleId(9L);
+        when(bookingQueryService.getBookingDetailForAdmin(42L)).thenReturn(booking);
+        when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
+
+        mvc.perform(get("/admin/bookings/42").session(staffSession()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("additionalFine"))))
+                .andExpect(content().string(containsString("Tình trạng lúc bàn giao")));
+    }
+
+    @Test
+    void aBookingTheCustomerHasNotPickedUpHasNoIssueSection() throws Exception {
+        when(bookingQueryService.getBookingDetailForAdmin(42L)).thenReturn(confirmedBooking());
+        when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
+
+        mvc.perform(get("/admin/bookings/42").session(staffSession()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("/admin/issues/new?bookingId=42"))));
+    }
+
+    private static MockHttpSession staffSession() {
+        return TestSessions.employee(2L, "staff", "Staff Member");
     }
 
     private BookingDetailDTO confirmedBooking() {
@@ -94,6 +173,7 @@ class AdminBookingContractViewTest {
         booking.setDiscountAmount(BigDecimal.ZERO);
         booking.setLateFee(BigDecimal.ZERO);
         booking.setStatus("confirmed");
+        booking.setStaffId(2L);
         booking.setCreatedAt(now.minusHours(1));
         booking.setPayments(List.of());
         booking.setFees(List.of());
@@ -112,7 +192,7 @@ class AdminBookingContractViewTest {
         summary.setStatus("cancelled");
         summary.setHasPendingRefund(true);
         summary.setPickupTime(OffsetDateTime.now().plusDays(2));
-        when(bookingService.getAllBookings("all")).thenReturn(List.of(summary));
+        when(bookingQueryService.getAllBookings("all")).thenReturn(List.of(summary));
 
         MockHttpSession staff = new MockHttpSession();
         staff.setAttribute(CurrentAccount.SESSION_KEY,
@@ -120,7 +200,7 @@ class AdminBookingContractViewTest {
 
         mvc.perform(get("/admin/bookings").session(staff))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/bookings/list"))
+                .andExpect(view().name("screens/admin/bookings/list/index"))
                 .andExpect(content().string(containsString("Cần hoàn cọc")))
                 .andExpect(content().string(containsString("Hoàn cọc ngay →")));
     }
@@ -136,7 +216,7 @@ class AdminBookingContractViewTest {
         summary.setStatus("cancelled");
         summary.setHasPendingRefund(true);
         summary.setPickupTime(OffsetDateTime.now().plusDays(2));
-        when(bookingService.getAllBookings("refund")).thenReturn(List.of(summary));
+        when(bookingQueryService.getAllBookings("refund")).thenReturn(List.of(summary));
 
         MockHttpSession staff = new MockHttpSession();
         staff.setAttribute(CurrentAccount.SESSION_KEY,
@@ -144,7 +224,7 @@ class AdminBookingContractViewTest {
 
         mvc.perform(get("/admin/bookings?status=refund").session(staff))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/bookings/list"))
+                .andExpect(view().name("screens/admin/bookings/list/index"))
                 .andExpect(content().string(containsString("Danh sách đơn chờ chuyển khoản hoàn tiền cọc")))
                 .andExpect(content().string(containsString("Hoàn cọc ngay →")));
     }
@@ -162,7 +242,7 @@ class AdminBookingContractViewTest {
         summary.setHasPendingRefund(false);
         summary.setPickupTime(OffsetDateTime.now().plusDays(1));
         summary.setScheduledEndTime(OffsetDateTime.now().plusDays(2));
-        when(bookingService.getAllBookings("confirmed")).thenReturn(List.of(summary));
+        when(bookingQueryService.getAllBookings("confirmed")).thenReturn(List.of(summary));
 
         MockHttpSession staff = new MockHttpSession();
         staff.setAttribute(CurrentAccount.SESSION_KEY,
@@ -170,8 +250,8 @@ class AdminBookingContractViewTest {
 
         mvc.perform(get("/admin/bookings?status=confirmed").session(staff))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/bookings/list"))
+                .andExpect(view().name("screens/admin/bookings/list/index"))
                 .andExpect(content().string(containsString("Honda City")))
-                .andExpect(content().string(containsString("Confirmed")));
+                .andExpect(content().string(containsString("Đã xác nhận")));
     }
 }

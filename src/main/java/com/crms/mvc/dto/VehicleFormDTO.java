@@ -14,35 +14,35 @@ import java.time.LocalDate;
 public class VehicleFormDTO {
     private Long id;
 
-    @NotNull(message = "Please select a vehicle model")
+    @NotNull(message = "Vui lòng chọn dòng xe")
     private Long vehicleTypeId;
 
-    @NotBlank(message = "License plate cannot be blank")
-    @Size(max = 20, message = "License plate cannot exceed 20 characters")
+    @NotBlank(message = "Vui lòng nhập biển số")
+    @Size(max = 20, message = "Biển số tối đa 20 ký tự")
     private String plate;
 
-    @Size(max = 100, message = "Province cannot exceed 100 characters")
+    @Size(max = 100, message = "Tỉnh / thành phố tối đa 100 ký tự")
     private String province;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate registrationExpiry;
 
-    @NotBlank(message = "Color cannot be blank")
-    @Size(max = 50, message = "Color cannot exceed 50 characters")
+    @NotBlank(message = "Vui lòng nhập màu xe")
+    @Size(max = 50, message = "Màu xe tối đa 50 ký tự")
     private String color;
 
-    @NotNull(message = "Manufacturing year cannot be empty")
-    @Min(value = 1990, message = "Manufacturing year is invalid")
-    @Max(value = 2100, message = "Manufacturing year is invalid")
+    @NotNull(message = "Vui lòng nhập năm sản xuất")
+    @Min(value = 1990, message = "Năm sản xuất không hợp lệ")
+    @Max(value = 2100, message = "Năm sản xuất không hợp lệ")
     private Integer year = LocalDate.now().getYear();
 
-    @NotNull(message = "Odometer cannot be empty")
-    @Min(value = 0, message = "Odometer cannot be negative")
+    @NotNull(message = "Vui lòng nhập số km")
+    @Min(value = 0, message = "Số km không được âm")
     private Integer odometer = 0;
 
-    @NotBlank(message = "Vehicle status cannot be blank")
-    @Pattern(regexp = "^(available|maintenance)$", message = "Vehicle status must be 'available' or 'maintenance'")
-    private String status = "available";
+    @NotBlank(message = "Vui lòng chọn trạng thái xe")
+    @Pattern(regexp = "^(available|maintenance|retired)$", message = "Trạng thái xe phải là sẵn sàng, bảo dưỡng hoặc ngừng khai thác")
+    private String status = Vehicle.STATUS_AVAILABLE;
 
     public VehicleFormDTO() {}
 

@@ -13,38 +13,38 @@ import java.math.BigDecimal;
 public class VehicleTypeFormDTO {
     private Long id;
 
-    @NotBlank(message = "Model name cannot be blank")
-    @Size(max = 100, message = "Model name cannot exceed 100 characters")
+    @NotBlank(message = "Vui lòng nhập tên dòng xe")
+    @Size(max = 100, message = "Tên dòng xe tối đa 100 ký tự")
     private String name;
 
-    @NotBlank(message = "Brand cannot be blank")
-    @Size(max = 100, message = "Brand cannot exceed 100 characters")
+    @NotBlank(message = "Vui lòng nhập hãng xe")
+    @Size(max = 100, message = "Hãng xe tối đa 100 ký tự")
     private String brand;
 
-    @NotBlank(message = "Category cannot be blank")
-    @Size(max = 30, message = "Category cannot exceed 30 characters")
+    @NotBlank(message = "Vui lòng chọn loại xe")
+    @Size(max = 30, message = "Loại xe tối đa 30 ký tự")
     private String category;
 
-    @NotNull(message = "Seat capacity cannot be empty")
-    @Min(value = 1, message = "Seat capacity must be greater than 0")
+    @NotNull(message = "Vui lòng nhập số chỗ")
+    @Min(value = 1, message = "Số chỗ phải lớn hơn 0")
     private Integer seats;
 
-    @NotBlank(message = "Transmission cannot be blank")
-    @Size(max = 20, message = "Transmission cannot exceed 20 characters")
+    @NotBlank(message = "Vui lòng chọn hộp số")
+    @Size(max = 20, message = "Hộp số tối đa 20 ký tự")
     private String transmission;
 
-    @NotBlank(message = "Fuel type cannot be blank")
-    @Size(max = 20, message = "Fuel type cannot exceed 20 characters")
+    @NotBlank(message = "Vui lòng chọn nhiên liệu")
+    @Size(max = 20, message = "Nhiên liệu tối đa 20 ký tự")
     private String fuelType;
 
-    @NotNull(message = "Hourly price cannot be empty")
-    @DecimalMin(value = "0.00", message = "Hourly price cannot be negative")
+    @NotNull(message = "Vui lòng nhập giá thuê theo giờ")
+    @DecimalMin(value = "0.00", message = "Giá thuê theo giờ không được âm")
     private BigDecimal pricePerHour;
 
-    @Size(max = 2000, message = "Description cannot exceed 2000 characters")
+    @Size(max = 2000, message = "Mô tả tối đa 2000 ký tự")
     private String description;
 
-    @Size(max = 500, message = "Image URL cannot exceed 500 characters")
+    @Size(max = 500, message = "Đường dẫn ảnh tối đa 500 ký tự")
     private String imageUrl;
 
     private MultipartFile imageFile;

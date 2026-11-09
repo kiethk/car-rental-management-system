@@ -9,39 +9,39 @@ public class AccountProfileDTO {
     private String name;
     private String email;
 
-    @NotBlank(message = "Phone is required")
-    @Pattern(regexp = "^(0\\d{9}|\\+84\\d{9})$", message = "Phone number is invalid")
+    @NotBlank(message = "Vui lòng nhập số điện thoại")
+    @Pattern(regexp = "^(0\\d{9}|\\+84\\d{9})$", message = "Số điện thoại không hợp lệ")
     private String phone;
 
-    @Size(max = 255, message = "Password is too long")
+    @Size(max = 255, message = "Mật khẩu quá dài")
     private String currentPassword;
 
-    @Size(max = 255, message = "Password is too long")
+    @Size(max = 255, message = "Mật khẩu quá dài")
     private String newPassword;
 
-    @Size(max = 255, message = "Password is too long")
+    @Size(max = 255, message = "Mật khẩu quá dài")
     private String confirmPassword;
 
     public boolean isPasswordChangeRequested() {
         return newPassword != null && !newPassword.isBlank();
     }
 
-    @AssertTrue(message = "Current password is required")
+    @AssertTrue(message = "Vui lòng nhập mật khẩu hiện tại")
     public boolean isCurrentPasswordProvided() {
         return !isPasswordChangeRequested() || (currentPassword != null && !currentPassword.isBlank());
     }
 
-    @AssertTrue(message = "New password must be at least 8 characters")
+    @AssertTrue(message = "Mật khẩu mới phải có ít nhất 8 ký tự")
     public boolean isNewPasswordLongEnough() {
         return !isPasswordChangeRequested() || newPassword.length() >= 8;
     }
 
-    @AssertTrue(message = "Passwords do not match")
+    @AssertTrue(message = "Mật khẩu xác nhận không khớp")
     public boolean isPasswordConfirmed() {
         return !isPasswordChangeRequested() || newPassword.equals(confirmPassword);
     }
 
-    @AssertTrue(message = "New password must be different from the current password")
+    @AssertTrue(message = "Mật khẩu mới phải khác mật khẩu hiện tại")
     public boolean isNewPasswordDifferent() {
         return !isPasswordChangeRequested() || !newPassword.equals(currentPassword);
     }

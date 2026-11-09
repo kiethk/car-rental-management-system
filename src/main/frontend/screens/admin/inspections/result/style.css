@@ -1,0 +1,4 @@
+/* Screen-scoped DriveNow admin workspace */
+[data-screen="admin/inspections/result"] .inspections-result-failed-notice { display: none; }
+
+/* Shared screen behavior hooks */

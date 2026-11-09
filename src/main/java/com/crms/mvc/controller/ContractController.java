@@ -49,13 +49,13 @@ public class ContractController {
                     .map(contract -> contract.getEmailedAt() != null)
                     .orElse(false);
             if (emailed) {
-                ra.addFlashAttribute("success", "Contract PDF issued and emailed to the customer.");
+                ra.addFlashAttribute("success", "Đã phát hành hợp đồng PDF và gửi email cho khách hàng.");
             } else {
-                ra.addFlashAttribute("error", "Contract PDF issued, but the email was not sent. "
-                        + "Check that a Gmail account is configured in application-local.properties (see server log).");
+                ra.addFlashAttribute("error", "Đã phát hành hợp đồng PDF nhưng chưa gửi được email. "
+                        + "Hãy kiểm tra tài khoản Gmail đã được cấu hình trong application-local.properties (xem log máy chủ).");
             }
         } catch (Exception e) {
-            ra.addFlashAttribute("error", "Could not issue contract: " + e.getMessage());
+            ra.addFlashAttribute("error", "Không thể phát hành hợp đồng: " + e.getMessage());
         }
         return "redirect:/admin/bookings/" + bookingId;
     }

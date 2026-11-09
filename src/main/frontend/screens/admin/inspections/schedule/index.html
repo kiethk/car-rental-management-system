@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lên lịch đăng kiểm — Quản trị DriveNow</title>
+    <th:block th:replace="~{fragments/assets :: common}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/screens/admin/inspections/schedule/style.css}">
+    <script defer th:src="@{/js/screens/admin/inspections/schedule/script.js}"></script>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface" data-screen="admin/inspections/schedule">
+
+<th:block th:replace="~{layouts/admin :: shell(~{::screenContent}, 'inspections')}">
+    <th:block th:fragment="screenContent">
+<!-- Flash Error -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show border-0 rounded-lg shadow-sm" role="alert">
+                <span th:text="${error}"></span>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-xl p-4 p-md-5 bg-white max-w-4xl">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                    <div>
+                        <h1 class="h4 fw-bold text-navy mb-1">Lên lịch đăng kiểm & bảo dưỡng xe</h1>
+                        <p class="text-muted small mb-0">Đặt lịch hẹn đưa xe đến trạm đăng kiểm hoặc xưởng dịch vụ.</p>
+                    </div>
+                    <a th:href="@{/admin/inspections}" class="btn btn-outline-secondary btn-sm rounded-lg">
+                        Quay lại danh sách
+                    </a>
+                </div>
+
+                <form method="post" th:action="@{/admin/inspections}" th:object="${inspectionForm}">
+                    <div class="row g-3">
+                        <!-- Select vehicle -->
+                        <div class="col-md-12 form-group mb-3">
+                            <label for="vehicleId" class="fw-bold small text-navy mb-1">Chọn xe cần đăng kiểm / bảo dưỡng <span class="text-danger">*</span></label>
+                            <select th:field="*{vehicleId}" class="form-control rounded-lg" required>
+                                <option value="" disabled selected>-- Chọn một xe --</option>
+                                <option th:each="v : ${vehicles}" th:value="${v.id}"
+                                        th:text="'Xe #' + ${v.id} + ' — ' + ${v.vehicleType.displayName} + ' — Biển số: ' + (${v.licensePlate != null} ? ${v.licensePlate.plate} : 'Chưa có biển') + ' (Trạng thái: ' + (${v.status == 'available'} ? 'sẵn sàng' : (${v.status == 'rented'} ? 'đang thuê' : (${v.status == 'maintenance'} ? 'bảo dưỡng' : 'ngừng khai thác'))) + ')'"></option>
+                            </select>
+                            <small class="text-danger" th:if="${#fields.hasErrors('vehicleId')}" th:errors="*{vehicleId}"></small>
+                        </div>
+
+                        <!-- Appointment date -->
+                        <div class="col-md-12 form-group mb-3">
+                            <label for="scheduledDate" class="fw-bold small text-navy mb-1">Ngày hẹn <span class="text-danger">*</span></label>
+                            <input type="date" th:field="*{scheduledDate}" class="form-control rounded-lg" required>
+                            <small class="text-danger" th:if="${#fields.hasErrors('scheduledDate')}" th:errors="*{scheduledDate}"></small>
+                            <small class="form-text text-muted">Ngày dự kiến đưa xe đến trạm đăng kiểm. Cả ngày hẹn sẽ bị khóa, xe không nhận đơn thuê trong ngày đó.</small>
+                        </div>
+
+                        <!-- Notes / Checklist -->
+                        <div class="col-12 form-group mb-4">
+                            <label for="notes" class="fw-bold small text-navy mb-1">Ghi chú chuẩn bị & danh sách kiểm tra</label>
+                            <textarea th:field="*{notes}" rows="3" class="form-control rounded-lg"
+                                      placeholder="VD: Kiểm tra má phanh, thay nhớt, kiểm tra khí thải định kỳ..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a th:href="@{/admin/inspections}" class="btn btn-light px-4 rounded-lg">Hủy</a>
+                        <button type="submit" class="btn btn-navy fw-bold px-4 rounded-lg shadow-sm">
+                            Lưu lịch hẹn
+                        </button>
+                    </div>
+                </form>
+            </div>
+    </th:block>
+</th:block>
+
+</body>
+</html>

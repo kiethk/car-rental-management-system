@@ -3,6 +3,7 @@ package com.crms.mvc.service;
 import com.crms.mvc.dto.CheckInDTO;
 import com.crms.mvc.dto.CheckOutDTO;
 import com.crms.mvc.dto.HandoverSummaryDTO;
+import com.crms.mvc.dto.ReturnReceiptDTO;
 import com.crms.mvc.dto.SettlementDTO;
 import com.crms.mvc.entity.Employee;
 import org.springframework.core.io.Resource;
@@ -21,6 +22,8 @@ public interface HandoverService {
     List<Employee> findAssignableEmployees();
 
     HandoverSummaryDTO getSummary(Long bookingId);
+
+    ReturnReceiptDTO getReturnReceipt(Long bookingId);
 
     Resource loadEvidence(Long bookingId, Long issueId, boolean secondary);
 }

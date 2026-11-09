@@ -8,20 +8,26 @@ import jakarta.validation.constraints.Size;
 import org.springframework.web.multipart.MultipartFile;
 
 public class CheckInDTO {
-    @NotNull(message = "Odometer is required")
-    @Min(value = 0, message = "Odometer cannot be negative")
+    @NotNull(message = "Vui lòng nhập số km")
+    @Min(value = 0, message = "Số km không được âm")
     private Integer odometer;
 
-    @NotNull(message = "Fuel level is required")
-    @Min(value = 0, message = "Fuel level must be between 0 and 100")
-    @Max(value = 100, message = "Fuel level must be between 0 and 100")
+    @NotNull(message = "Vui lòng nhập mức nhiên liệu")
+    @Min(value = 0, message = "Mức nhiên liệu phải từ 0 đến 100")
+    @Max(value = 100, message = "Mức nhiên liệu phải từ 0 đến 100")
     private Integer fuelPercent;
 
-    @Size(max = 150, message = "Condition notes must be at most 150 characters")
+    @Size(max = 150, message = "Ghi chú tình trạng xe tối đa 150 ký tự")
     private String notes;
 
-    @AssertTrue(message = "Confirm that the original license and ID card were checked")
+    @AssertTrue(message = "Vui lòng xác nhận đã kiểm tra bản gốc GPLX và CCCD")
     private boolean documentsVerified;
+
+    /** CASH or BANK_TRANSFER: how the rest of the rent was paid at the counter. Not needed when nothing is left to pay. */
+    private String paymentMethod;
+
+    /** Staff confirm they received the rest of the rent. Required only when something is left to pay. */
+    private boolean paymentReceived;
 
     private MultipartFile licenseImage;
     private MultipartFile idCardImage;
@@ -37,6 +43,12 @@ public class CheckInDTO {
 
     public boolean isDocumentsVerified() { return documentsVerified; }
     public void setDocumentsVerified(boolean documentsVerified) { this.documentsVerified = documentsVerified; }
+
+    public boolean isPaymentReceived() { return paymentReceived; }
+    public void setPaymentReceived(boolean paymentReceived) { this.paymentReceived = paymentReceived; }
+
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
 
     public MultipartFile getLicenseImage() { return licenseImage; }
     public void setLicenseImage(MultipartFile licenseImage) { this.licenseImage = licenseImage; }

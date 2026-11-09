@@ -28,19 +28,18 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import com.crms.mvc.util.DateTimeUtils;
 
 @Service
 @Transactional
 public class ContractServiceImpl implements ContractService {
     private static final Logger log = LoggerFactory.getLogger(ContractServiceImpl.class);
-    private static final ZoneId VIETNAM_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
     // A contract is only issued once the deposit is paid.
-    private static final Set<String> ISSUABLE_BOOKING_STATUSES = Set.of("confirmed", "active", "completed");
+    private static final Set<String> ISSUABLE_BOOKING_STATUSES = Set.of(Booking.STATUS_CONFIRMED, Booking.STATUS_ACTIVE, Booking.STATUS_COMPLETED);
 
     private final ContractRepository contractRepository;
     private final ContractTemplateRepository contractTemplateRepository;
@@ -69,7 +68,7 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public void createContract(Booking booking, Long templateId, String acceptedIp) {
         ContractTemplate template = contractTemplateRepository.findById(templateId)
-                .orElseThrow(() -> new NoSuchElementException("Contract template not found: " + templateId));
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy mẫu hợp đồng: " + templateId));
 
         OffsetDateTime now = OffsetDateTime.now();
         Contract contract = new Contract();
@@ -97,9 +96,11 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public void issueContract(Long bookingId) {
-        Contract contract = findContract(bookingId);
+        // The second caller waits here, then sees the contract already issued and emailed, and does nothing.
+        Contract contract = contractRepository.findByBookingIdForUpdate(bookingId)
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy hợp đồng của đơn đặt xe: " + bookingId));
         if (!ISSUABLE_BOOKING_STATUSES.contains(contract.getBooking().getStatus())) {
-            throw new IllegalStateException("Contract can only be issued after the deposit is paid");
+            throw new IllegalStateException("Chỉ phát hành được hợp đồng sau khi khách đã đặt cọc");
         }
 
         ContractDocumentDTO document;
@@ -134,7 +135,7 @@ public class ContractServiceImpl implements ContractService {
         }
         Resource file = fileUploadService.loadContractPdf(contract.getFileName());
         if (file == null) {
-            throw new NoSuchElementException("Contract file is missing: " + contract.getContractNumber());
+            throw new NoSuchElementException("Thiếu tệp hợp đồng: " + contract.getContractNumber());
         }
         return file;
     }
@@ -144,14 +145,14 @@ public class ContractServiceImpl implements ContractService {
     public Resource loadContractPdfForCustomer(Long bookingId, Long customerId) {
         Contract contract = findContract(bookingId);
         if (!contract.getBooking().getCustomer().getId().equals(customerId)) {
-            throw new IllegalStateException("Unauthorized access to contract");
+            throw new IllegalStateException("Bạn không có quyền truy cập hợp đồng này");
         }
         return loadContractPdf(bookingId);
     }
 
     private Contract findContract(Long bookingId) {
         return contractRepository.findByBookingId(bookingId)
-                .orElseThrow(() -> new NoSuchElementException("Contract not found for booking: " + bookingId));
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy hợp đồng của đơn đặt xe: " + bookingId));
     }
 
 
@@ -160,7 +161,7 @@ public class ContractServiceImpl implements ContractService {
         try {
             return loadContractPdf(contract.getBooking().getId()).getContentAsByteArray();
         } catch (IOException exception) {
-            throw new IllegalStateException("Could not read contract file " + contract.getContractNumber(), exception);
+            throw new IllegalStateException("Không đọc được tệp hợp đồng " + contract.getContractNumber(), exception);
         }
     }
 
@@ -223,6 +224,6 @@ public class ContractServiceImpl implements ContractService {
     }
 
     private OffsetDateTime toVietnamTime(OffsetDateTime time) {
-        return time != null ? time.atZoneSameInstant(VIETNAM_ZONE).toOffsetDateTime() : null;
+        return time != null ? time.atZoneSameInstant(DateTimeUtils.VIETNAM_ZONE).toOffsetDateTime() : null;
     }
 }

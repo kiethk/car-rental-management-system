@@ -7,6 +7,9 @@ import java.time.OffsetDateTime;
 @Entity
 @Table(name = "booking_fees")
 public class BookingFee {
+    /** What a customer owes for an Issue (damage, collision, other); replaces the old DAMAGE_COMPENSATION. */
+    public static final String FEE_TYPE_ISSUE_COMPENSATION = "ISSUE_COMPENSATION";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "booking_fee_id")
@@ -29,6 +32,11 @@ public class BookingFee {
     @JoinColumn(name = "issue_id", nullable = true)
     private Issue issue;
 
+    /** The payment that settled this fee; null while the customer still owes it. */
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "payment_id", nullable = true)
+    private Payment payment;
+
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
 
@@ -49,6 +57,9 @@ public class BookingFee {
 
     public Issue getIssue() { return issue; }
     public void setIssue(Issue issue) { this.issue = issue; }
+
+    public Payment getPayment() { return payment; }
+    public void setPayment(Payment payment) { this.payment = payment; }
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }

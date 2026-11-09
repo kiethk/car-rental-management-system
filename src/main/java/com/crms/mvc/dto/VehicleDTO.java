@@ -4,6 +4,7 @@ import com.crms.mvc.entity.Vehicle;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import com.crms.mvc.entity.VehicleType;
 
 public class VehicleDTO {
     private Long id;
@@ -43,7 +44,7 @@ public class VehicleDTO {
         }
     }
 
-        public static VehicleDTO fromVehicleType(com.crms.mvc.entity.VehicleType vt) {
+        public static VehicleDTO fromVehicleType(VehicleType vt) {
         VehicleDTO dto = new VehicleDTO();
         dto.setId(vt.getId());
         dto.setVehicleTypeId(vt.getId());
@@ -56,7 +57,7 @@ public class VehicleDTO {
         dto.setPricePerHour(vt.getPricePerHour());
         dto.setDescription(vt.getDescription());
         dto.setImageUrl(vt.getImageUrl());
-        dto.setStatus("available");
+        dto.setStatus(Vehicle.STATUS_AVAILABLE);
         if (vt.getPricePerHour() != null) {
             dto.setEstimatedDeposit(vt.getPricePerHour().multiply(BigDecimal.valueOf(12)));
         }

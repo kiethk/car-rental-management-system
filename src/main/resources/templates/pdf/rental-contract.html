@@ -78,7 +78,7 @@
 <h2>BÊN CHO THUÊ (BÊN A)</h2>
 <table>
     <tr><td class="label">Tên đơn vị</td><td>Công ty TNHH DriveNow Mobility Việt Nam</td></tr>
-    <tr><td class="label">Địa chỉ</td><td>120 Trường Chinh, phường Tân Bình, TP. Hồ Chí Minh</td></tr>
+    <tr><td class="label">Địa chỉ</td><td th:text="${stationAddress}">Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM</td></tr>
     <tr><td class="label">Hotline</td><td>1800 6868</td></tr>
 </table>
 </div>
@@ -128,7 +128,7 @@
         </td>
     </tr>
     <tr>
-        <td class="label">Biển số</td>
+        <td class="label" th:text="${doc.licensePlate != null ? 'Biển số (dự kiến)' : 'Biển số'}">Biển số (dự kiến)</td>
         <td th:text="${doc.licensePlate != null ? doc.licensePlate : 'Được xác định và ghi trong biên bản bàn giao khi nhận xe'}">51A-123.45</td>
     </tr>
     <tr th:if="${doc.vehicleColor != null}">
@@ -136,7 +136,7 @@
         <td th:text="${doc.vehicleColor} + ' / ' + ${doc.vehicleYear}">Trắng / 2024</td>
     </tr>
 </table>
-<p>Tình trạng xe, số km và mức nhiên liệu được ghi nhận trong biên bản bàn giao do hai bên xác nhận khi giao và nhận lại xe.</p>
+<p>Xe thực tế giao cho Bên B là xe ghi trong biên bản bàn giao. Nếu xe dự kiến chưa sẵn sàng khi đến giờ nhận, Bên A đổi xe theo điều khoản đổi xe khi bàn giao. Tình trạng xe, số km và mức nhiên liệu được ghi nhận trong biên bản bàn giao do hai bên xác nhận khi giao và nhận lại xe.</p>
 </div>
 
 <div class="keep-together">
@@ -151,8 +151,8 @@
 <div class="keep-together">
 <h2>Điều 3. Giá thuê, đặt cọc và thanh toán</h2>
 <p data-policy="deposit" th:text="'Bên B đặt cọc ' + ${doc.terms.depositPercent}
-            + '% tổng giá trị hợp đồng khi đặt xe; số tiền còn lại được thanh toán khi trả xe.'">
-    Bên B đặt cọc 50% tổng giá trị hợp đồng khi đặt xe; số tiền còn lại được thanh toán khi trả xe.
+            + '% tổng giá trị hợp đồng khi đặt xe; số tiền còn lại được thanh toán khi nhận xe.'">
+    Bên B đặt cọc 50% tổng giá trị hợp đồng khi đặt xe; số tiền còn lại được thanh toán khi nhận xe.
 </p>
 <table>
     <tr>
@@ -176,7 +176,7 @@
         <td class="amount" th:text="${#numbers.formatDecimal(doc.depositAmount, 0, 'POINT', 0, 'COMMA')} + ' đ'">675.000 đ</td>
     </tr>
     <tr>
-        <td class="label">Còn lại thanh toán khi trả xe</td>
+        <td class="label">Còn lại thanh toán khi nhận xe</td>
         <td class="amount" th:text="${#numbers.formatDecimal(doc.remainingAmount, 0, 'POINT', 0, 'COMMA')} + ' đ'">675.000 đ</td>
     </tr>
 </table>
@@ -185,7 +185,7 @@
     <strong th:text="${doc.depositTransactionCode}">TXN-DEP-1</strong>,
     lúc <span th:text="${#temporals.format(doc.depositPaidAt, 'HH:mm, dd/MM/yyyy')}">09:05, 23/10/2026</span>.
 </p>
-<p>Phí trả xe trễ hạn, phí bồi thường hư hỏng và các chi phí phát sinh khác (nếu có) được thanh toán cùng số tiền còn lại khi trả xe.</p>
+<p>Phí trả xe trễ hạn và các khoản bồi thường (hư hỏng, vệ sinh, phát sinh khác) được lập biên bản và thanh toán khi quyết toán lúc trả xe; quyết toán xong thì hợp đồng được đóng.</p>
 </div>
 
 <div class="keep-together">
@@ -193,6 +193,19 @@
 <p data-policy="cancellation" th:text="'1. Bên B hủy đặt xe trước thời điểm nhận xe ít nhất ' + ${doc.terms.freeCancellationHours}
             + ' giờ được hoàn lại 100% tiền đặt cọc. Hủy sau mốc này, tiền đặt cọc không được hoàn lại.'">
     1. Hủy trước 72 giờ được hoàn 100% tiền cọc.
+</p>
+<p data-policy="cancelAfterDeposit" th:if="${doc.terms.freeCancelAfterDepositHours != null and doc.terms.freeCancelAfterDepositHours > 0}"
+   th:text="'Ngoài ra, Bên B hủy đặt xe trong vòng ' + ${doc.terms.freeCancelAfterDepositHours}
+            + ' giờ kể từ khi thanh toán tiền đặt cọc và trước thời điểm nhận xe cũng được hoàn lại 100% tiền đặt cọc.'">
+    Hủy trong 1 giờ sau khi cọc được hoàn 100% tiền cọc.
+</p>
+<p data-policy="pickupWait" th:if="${doc.terms.pickupWaitHours != null}"
+   th:text="'Bên B không nhận xe trong vòng ' + ${doc.terms.pickupWaitHours}
+            + ' giờ kể từ thời điểm nhận xe tại Điều 2 (và không quá thời điểm trả xe) thì việc đặt xe tự hủy, tiền đặt cọc không được hoàn lại.'">
+    Không nhận xe trong 2 giờ thì đơn tự hủy, không hoàn cọc.
+</p>
+<p data-policy="noCarRefund">
+    Trường hợp Bên A không còn xe cùng loại để giao, việc đặt xe được hủy và Bên B được hoàn 100% tiền đặt cọc.
 </p>
 <p data-policy="lateReturn" th:text="'2. Bên B trả xe sau thời điểm trả xe tại Điều 2 phải trả phí trễ hạn bằng ' + ${doc.terms.lateFeePercent}
             + '% đơn giá thuê cho mỗi giờ trễ, trừ trường hợp được Bên A đồng ý gia hạn trước.'">

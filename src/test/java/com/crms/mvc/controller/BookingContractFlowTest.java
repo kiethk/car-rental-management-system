@@ -52,12 +52,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class BookingContractFlowTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private BookingService bookingService;
+    @MockitoBean private com.crms.mvc.service.BookingQueryService bookingQueryService;
+    @MockitoBean private com.crms.mvc.service.VehicleAvailabilityService vehicleAvailabilityService;
     @MockitoBean private PaymentService paymentService;
     @MockitoBean private VehicleTypeService vehicleTypeService;
     @MockitoBean private PricingService pricingService;
     @MockitoBean private LicenseDocumentService licenseDocumentService;
     @MockitoBean private ContractTemplateService contractTemplateService;
+    @MockitoBean private com.crms.mvc.service.IssueService issueService;
+    @MockitoBean private com.crms.mvc.service.HandoverService handoverService;
     @MockitoBean private ReviewService reviewService;
+    @MockitoBean private com.crms.mvc.service.TrafficFineService trafficFineService;
 
     private MockHttpSession customerSession;
     private ContractTemplateDTO terms;
@@ -76,7 +81,6 @@ class BookingContractFlowTest {
         terms.setFreeCancellationHours(48);
         terms.setStatus(ContractTemplateStatus.ACTIVE);
         when(contractTemplateService.getActiveTemplate()).thenReturn(terms);
-        when(licenseDocumentService.hasValidLicense(eq(1L), any())).thenReturn(true);
         when(pricingService.calculatePrice(any(), any(), any(), any(), any())).thenAnswer(inv -> new PricingServiceImpl().calculatePrice(inv.getArgument(0), inv.getArgument(1), inv.getArgument(2), inv.getArgument(3), inv.getArgument(4)));
     }
 
@@ -99,14 +103,14 @@ class BookingContractFlowTest {
         car.setCurrentPlate(plate);
         car.setVehicleType(type);
         when(vehicleTypeService.findById(1L)).thenReturn(Optional.of(type));
-        when(bookingService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(car));
+        when(vehicleAvailabilityService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(car));
 
         String html = mvc.perform(get("/bookings/checkout").session(customerSession)
                         .param("vehicleTypeId", "1")
                         .param("startTime", "2026-10-24T09:00")
                         .param("endTime", "2026-10-24T19:00"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("bookings/checkout"))
+                .andExpect(view().name("screens/customer/bookings/checkout/index"))
                 // 10 hours x 100,000 = 1,000,000; deposit 30% from version 3
                 .andExpect(content().string(containsString("300,000")))
                 .andExpect(content().string(containsString("name=\"contractTemplateId\" value=\"3\"")))
@@ -130,7 +134,7 @@ class BookingContractFlowTest {
                         .param("contractTemplateId", "3"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern("/bookings/checkout?vehicleTypeId=1*"))
-                .andExpect(flash().attribute("error", "You must accept the rental terms to continue"));
+                .andExpect(flash().attribute("error", "Bạn cần đồng ý với điều khoản thuê xe để tiếp tục"));
 
         verify(bookingService, never()).createBooking(anyLong(), any(), any());
     }
@@ -152,8 +156,24 @@ class BookingContractFlowTest {
     }
 
     @Test
+    void bookingDoesNotRequireADrivingLicense() throws Exception {
+        // The customer has no license on file (mock default): the booking must still go through.
+        com.crms.mvc.entity.Booking booking = new com.crms.mvc.entity.Booking();
+        booking.setId(43L);
+        when(bookingService.createBooking(eq(1L), any(), any())).thenReturn(booking);
+
+        mvc.perform(post("/bookings").session(customerSession)
+                        .param("vehicleTypeId", "1")
+                        .param("startTime", "2026-10-24T09:00")
+                        .param("endTime", "2026-10-24T19:00")
+                        .param("contractTemplateId", "3")
+                        .param("acceptedTerms", "true"))
+                .andExpect(redirectedUrl("/bookings/43/pay-deposit"));
+    }
+
+    @Test
     void bookingDetailOffersPdfOnceIssued() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("confirmed", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("confirmed", true));
 
         mvc.perform(get("/bookings/42").session(customerSession))
                 .andExpect(status().isOk())
@@ -165,7 +185,7 @@ class BookingContractFlowTest {
 
     @Test
     void completedBookingShowsReviewFormBelowPaymentLedger() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
         when(reviewService.isEligibleForCustomer(42L, 1L)).thenReturn(true);
 
         mvc.perform(get("/bookings/42").session(customerSession))
@@ -179,7 +199,7 @@ class BookingContractFlowTest {
 
     @Test
     void unfinishedBookingDoesNotShowReviewForm() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
 
         mvc.perform(get("/bookings/42").session(customerSession))
                 .andExpect(status().isOk())
@@ -192,7 +212,7 @@ class BookingContractFlowTest {
 
     @Test
     void completedBookingWithPendingTransactionDoesNotShowReviewForm() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
         when(reviewService.isEligibleForCustomer(42L, 1L)).thenReturn(false);
 
         mvc.perform(get("/bookings/42").session(customerSession))
@@ -205,7 +225,7 @@ class BookingContractFlowTest {
 
     @Test
     void completedBookingDisplaysPreviouslySubmittedReview() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
         when(reviewService.isEligibleForCustomer(42L, 1L)).thenReturn(true);
         ReviewDTO review = new ReviewDTO();
         review.setRating(4);
@@ -248,7 +268,7 @@ class BookingContractFlowTest {
 
     @Test
     void depositPageUsesTermsVersionAcceptedAtCheckout() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("pending_payment", false));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("pending_payment", false));
 
         mvc.perform(get("/bookings/42/pay-deposit").session(customerSession))
                 .andExpect(status().isOk())
@@ -259,11 +279,227 @@ class BookingContractFlowTest {
 
     @Test
     void successPageShowsDepositPercentOfAcceptedTerms() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("confirmed", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("confirmed", true));
 
         mvc.perform(get("/bookings/42/success").session(customerSession))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("30%, VNPay")));
+    }
+
+    @Test
+    void customerSeesTheIssuesChargedOnTheirBooking() throws Exception {
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        com.crms.mvc.dto.IssueDTO issue = new com.crms.mvc.dto.IssueDTO();
+        issue.setId(7L);
+        issue.setBookingId(42L);
+        issue.setIssueType(com.crms.mvc.entity.IssueType.DAMAGE);
+        issue.setStatus(com.crms.mvc.entity.IssueStatus.RESOLVED);
+        issue.setSubject("Scratch on the bumper");
+        issue.setDescription("About 15 cm.");
+        issue.setFeeAmount(new BigDecimal("200000"));
+        issue.setOccurredAt(java.time.OffsetDateTime.now().minusDays(1));
+        issue.setEvidences(List.of(new com.crms.mvc.dto.IssueDTO.EvidenceDTO(3L, "issue-1.png", java.time.OffsetDateTime.now())));
+        when(issueService.findByBookingForCustomer(42L, 1L)).thenReturn(List.of(issue));
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Sự cố trong chuyến thuê")))
+                .andExpect(content().string(containsString("Scratch on the bumper")))
+                .andExpect(content().string(containsString("200,000")))
+                .andExpect(content().string(containsString("/bookings/42/issues/7/evidences/3")));
+    }
+
+    @Test
+    void customerSeesTheReturnAndSettlementOfTheirBooking() throws Exception {
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        com.crms.mvc.dto.ReturnReceiptDTO receipt = new com.crms.mvc.dto.ReturnReceiptDTO();
+        receipt.setReturnedAt(OffsetDateTime.now());
+        receipt.setOdometer(12500);
+        receipt.setRentalTotal(new BigDecimal("1500000"));
+        receipt.setDepositAmount(new BigDecimal("750000"));
+        receipt.setLines(List.of(
+                new com.crms.mvc.dto.ReturnReceiptLineDTO("Late return fee", new BigDecimal("300000"), false),
+                new com.crms.mvc.dto.ReturnReceiptLineDTO("Scratch", new BigDecimal("400000"), true)));
+        receipt.setSettled(true);
+        receipt.setAmountDue(new BigDecimal("1050000"));
+        receipt.setPaymentMethod("BANK_TRANSFER");
+        receipt.setPaidAt(OffsetDateTime.now());
+        when(handoverService.getReturnReceipt(42L)).thenReturn(receipt);
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Trả xe &amp; quyết toán")))
+                .andExpect(content().string(containsString("12500 km")))
+                .andExpect(content().string(containsString("Late return fee")))
+                .andExpect(content().string(containsString("Đã thanh toán trước")))
+                .andExpect(content().string(containsString("1,050,000")))
+                .andExpect(content().string(containsString("Chuyển khoản")));
+    }
+
+    @Test
+    void noReturnSectionBeforeTheVehicleIsReturned() throws Exception {
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
+        when(handoverService.getReturnReceipt(42L)).thenReturn(null);
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("Trả xe &amp; quyết toán"))));
+    }
+
+    @Test
+    void aBookingWithoutIssuesHasNoIssueSection() throws Exception {
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("confirmed", true));
+        when(issueService.findByBookingForCustomer(42L, 1L)).thenReturn(List.of());
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("Sự cố trong chuyến thuê"))));
+    }
+
+    @Test
+    void checkoutFromACarSchedulePreselectsThatPlateOnlyWhenItIsFree() throws Exception {
+        VehicleType type = new VehicleType();
+        type.setId(1L);
+        type.setName("Vios");
+        type.setBrand("Toyota");
+        type.setPricePerHour(new BigDecimal("100000"));
+        Vehicle car = new Vehicle();
+        car.setId(9L);
+        car.setVehicleType(type);
+        when(vehicleTypeService.findById(1L)).thenReturn(Optional.of(type));
+        when(vehicleAvailabilityService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(car));
+
+        String html = mvc.perform(get("/bookings/checkout").session(customerSession)
+                        .param("vehicleTypeId", "1").param("vehicleId", "9")
+                        .param("startTime", "2026-10-24T09:00").param("endTime", "2026-10-24T19:00"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        org.assertj.core.api.Assertions.assertThat(html).containsPattern("<input(?=[^>]*name=\"vehicleId\")(?=[^>]*value=\"9\")(?=[^>]*checked=\"checked\")[^>]*>");
+
+        mvc.perform(get("/bookings/checkout").session(customerSession)
+                        .param("vehicleTypeId", "1").param("vehicleId", "8")
+                        .param("startTime", "2026-10-24T09:00").param("endTime", "2026-10-24T19:00"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Xe bạn chọn không trống trong khung giờ này")));
+    }
+
+    @Test
+    void anOverdueRentalShowsHowLateItIsAndTheLateFeeSoFar() throws Exception {
+        BookingDetailDTO booking = bookingWithContract("active", true);
+        booking.setLateReturn(new com.crms.mvc.dto.LateReturnDTO(135, 2, new BigDecimal("400000"),
+                OffsetDateTime.of(2026, 11, 7, 17, 0, 0, 0, ZoneOffset.ofHours(7))));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(booking);
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Đã quá giờ trả xe <span>2 giờ 15 phút</span>")))
+                .andExpect(content().string(containsString("400,000 đ")))
+                .andExpect(content().string(containsString("17:00 07/11/2026")));
+    }
+
+    @Test
+    void refundEligibilityFollowsTheAcceptedTermsNotTheActiveVersion() throws Exception {
+        // Accepted 24h; the ACTIVE version (setUp) says 48h. Pickup is 30h away: free under the accepted terms only.
+        ContractTemplateDTO accepted = new ContractTemplateDTO();
+        accepted.setDepositRate(new BigDecimal("0.30"));
+        accepted.setLateFeeMultiplier(new BigDecimal("1.50"));
+        accepted.setFreeCancellationHours(24);
+        BookingDetailDTO booking = bookingWithContract("confirmed", true);
+        booking.getContract().setTerms(accepted);
+        booking.setPickupTime(OffsetDateTime.now().plusHours(30));
+        booking.setScheduledEndTime(booking.getPickupTime().plusHours(10));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(booking);
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Bạn còn được hủy miễn phí đến")));
+    }
+
+    @Test
+    void theOwnerCanOpenAPhotoOfTheirIssue() throws Exception {
+        when(issueService.loadEvidenceForCustomer(7L, 3L, 1L)).thenReturn(new org.springframework.core.io.ByteArrayResource(new byte[]{1, 2}) {
+            @Override
+            public String getFilename() {
+                return "issue-1.webp";
+            }
+        });
+
+        mvc.perform(get("/bookings/42/issues/7/evidences/3").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("image/webp"));
+    }
+
+    @Test
+    void aPhotoOfSomeoneElsesIssueIsNotFound() throws Exception {
+        when(issueService.loadEvidenceForCustomer(7L, 3L, 1L)).thenThrow(new java.util.NoSuchElementException("Issue not found: 7"));
+
+        mvc.perform(get("/bookings/42/issues/7/evidences/3").session(customerSession))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void aBookingOffersToPayOpenUnpaidIssueFees() throws Exception {
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
+        when(issueService.findByBookingForCustomer(42L, 1L)).thenReturn(List.of(
+                issueWith(7L, com.crms.mvc.entity.IssueStatus.OPEN, "200000", false),
+                issueWith(8L, com.crms.mvc.entity.IssueStatus.OPEN, "500000", false),
+                issueWith(9L, com.crms.mvc.entity.IssueStatus.RESOLVED, "999000", true),
+                issueWith(10L, com.crms.mvc.entity.IssueStatus.CANCELLED, "300000", false)));
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Phí sự cố chưa thanh toán")))
+                .andExpect(content().string(containsString("/bookings/42/pay-issue-fees")))
+                // only open and unpaid: 200,000 + 500,000; the resolved and cancelled ones are left out
+                .andExpect(content().string(containsString("700,000")));
+    }
+
+    @Test
+    void nothingIsOfferedToPayWhenEverythingIsPaidOrCancelled() throws Exception {
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        when(issueService.findByBookingForCustomer(42L, 1L)).thenReturn(List.of(
+                issueWith(9L, com.crms.mvc.entity.IssueStatus.CANCELLED, "999000", false),
+                issueWith(10L, com.crms.mvc.entity.IssueStatus.RESOLVED, "300000", true)));
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("/bookings/42/pay-issue-fees"))));
+    }
+
+    @Test
+    void feesArePayableOnlineDuringActiveRental() throws Exception {
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
+        when(issueService.findByBookingForCustomer(42L, 1L)).thenReturn(List.of(
+                issueWith(7L, com.crms.mvc.entity.IssueStatus.OPEN, "200000", false)));
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("/bookings/42/pay-issue-fees")));
+    }
+
+    @Test
+    void aPaymentLeftPendingCanBeRetried() throws Exception {
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
+        com.crms.mvc.dto.IssueDTO pending = issueWith(7L, com.crms.mvc.entity.IssueStatus.OPEN, "200000", false);
+        pending.setFeeLocked(true); // a payment has taken it but has not been paid yet
+        when(issueService.findByBookingForCustomer(42L, 1L)).thenReturn(List.of(pending));
+
+        mvc.perform(get("/bookings/42").session(customerSession))
+                .andExpect(content().string(containsString("/bookings/42/pay-issue-fees")));
+    }
+
+    private com.crms.mvc.dto.IssueDTO issueWith(Long id, com.crms.mvc.entity.IssueStatus status, String fee, boolean paid) {
+        com.crms.mvc.dto.IssueDTO issue = new com.crms.mvc.dto.IssueDTO();
+        issue.setId(id);
+        issue.setBookingId(42L);
+        issue.setIssueType(com.crms.mvc.entity.IssueType.DAMAGE);
+        issue.setStatus(status);
+        issue.setSubject("Fine " + id);
+        issue.setFeeAmount(new BigDecimal(fee));
+        issue.setFeePaid(paid);
+        issue.setFeeLocked(paid);
+        issue.setOccurredAt(java.time.OffsetDateTime.now().minusDays(3));
+        return issue;
     }
 
     private BookingDetailDTO bookingWithContract(String status, boolean issued) {

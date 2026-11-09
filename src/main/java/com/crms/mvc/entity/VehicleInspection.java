@@ -1,6 +1,7 @@
 package com.crms.mvc.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -15,8 +16,9 @@ public class VehicleInspection {
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle;
 
-    @Column(name = "scheduled_at", nullable = false)
-    private OffsetDateTime scheduledAt;
+    /** The day of the inspection (Vietnam calendar day); the whole day is blocked, so there is no time. */
+    @Column(name = "scheduled_date", nullable = false)
+    private LocalDate scheduledDate;
 
     @Column(name = "completed_at")
     private OffsetDateTime completedAt;
@@ -33,8 +35,8 @@ public class VehicleInspection {
     public Vehicle getVehicle() { return vehicle; }
     public void setVehicle(Vehicle vehicle) { this.vehicle = vehicle; }
 
-    public OffsetDateTime getScheduledAt() { return scheduledAt; }
-    public void setScheduledAt(OffsetDateTime scheduledAt) { this.scheduledAt = scheduledAt; }
+    public LocalDate getScheduledDate() { return scheduledDate; }
+    public void setScheduledDate(LocalDate scheduledDate) { this.scheduledDate = scheduledDate; }
 
     public OffsetDateTime getCompletedAt() { return completedAt; }
     public void setCompletedAt(OffsetDateTime completedAt) { this.completedAt = completedAt; }

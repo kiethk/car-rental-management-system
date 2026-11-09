@@ -22,8 +22,8 @@ import java.util.Optional;
 
 @Controller
 public class AccountController {
-    private static final String CUSTOMER_VIEW = "profile/index";
-    private static final String EMPLOYEE_VIEW = "admin/profile";
+    private static final String CUSTOMER_VIEW = "screens/customer/profile/index/index";
+    private static final String EMPLOYEE_VIEW = "screens/admin/profile/index";
 
     private final AccountService accountService;
 
@@ -117,7 +117,7 @@ public class AccountController {
             request.getSession().invalidate();
             return "redirect:/login";
         } catch (DataAccessException exception) {
-            model.addAttribute("error", "Could not update account. Please try again later.");
+            model.addAttribute("error", "Không thể cập nhật tài khoản. Vui lòng thử lại sau.");
             return view;
         }
     }

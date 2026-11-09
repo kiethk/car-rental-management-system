@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chuyến đi của tôi — DriveNow</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <th:block th:replace="~{fragments/assets :: common}">
+    </th:block>
+    <link rel="stylesheet" th:href="@{/css/screens/customer/bookings/my-bookings/style.css}">
+    <script defer th:src="@{/js/screens/customer/bookings/my-bookings/script.js}">
+    </script>
+  </head>
+  <body class="bg-surface text-navy min-vh-100 d-flex flex-column" data-screen="customer/bookings/my-bookings">
+<th:block th:replace="~{layouts/customer :: shell(~{::screenContent})}">
+    <th:block th:fragment="screenContent">
+    
+    <main class="flex-fill">
+      <!-- Header bar matching MyBookingsPage.tsx -->
+      <div class="bg-white border-bottom border py-4">
+        <div class="customer-full-width mx-auto px-4 customer-sm-px-6">
+          <h1 class="customer-heading fs-2 text-navy mb-1">Chuyến đi của tôi</h1>
+          <p class="text-secondary small">Tổng cộng <span th:text="${allCount != null ? allCount : bookings.size()}">0</span> đơn đặt xe</p>
+        </div>
+      </div>
+      <div class="customer-full-width mx-auto px-4 customer-sm-px-6 py-4">
+        <!-- Status Filter Tabs matching MyBookingsPage.tsx -->
+        <div class="d-flex gap-2 flex-wrap mb-5">
+          <a th:href="@{/bookings/my-bookings(status='all')}" th:class="'px-4 customer-py-1 rounded-2 small fw-medium border text-decoration-none ' + (${currentFilter == 'all' or currentFilter == null} ? 'bg-navy text-white border-navy' : 'bg-white text-secondary border border-secondary')"> Tất cả </a>
+          <a th:href="@{/bookings/my-bookings(status='pending_payment')}" th:class="'px-4 customer-py-1 rounded-2 small fw-medium border text-decoration-none ' + (${currentFilter == 'pending_payment'} ? 'bg-navy text-white border-navy' : 'bg-white text-secondary border border-secondary')"> Chờ thanh toán cọc </a>
+          <a th:href="@{/bookings/my-bookings(status='confirmed')}" th:class="'px-4 customer-py-1 rounded-2 small fw-medium border text-decoration-none ' + (${currentFilter == 'confirmed'} ? 'bg-navy text-white border-navy' : 'bg-white text-secondary border border-secondary')"> Đã xác nhận cọc </a>
+          <a th:href="@{/bookings/my-bookings(status='active')}" th:class="'px-4 customer-py-1 rounded-2 small fw-medium border text-decoration-none ' + (${currentFilter == 'active'} ? 'bg-navy text-white border-navy' : 'bg-white text-secondary border border-secondary')"> Đang diễn ra </a>
+          <a th:href="@{/bookings/my-bookings(status='completed')}" th:class="'px-4 customer-py-1 rounded-2 small fw-medium border text-decoration-none ' + (${currentFilter == 'completed'} ? 'bg-navy text-white border-navy' : 'bg-white text-secondary border border-secondary')"> Đã hoàn thành </a>
+          <a th:href="@{/bookings/my-bookings(status='cancelled')}" th:class="'px-4 customer-py-1 rounded-2 small fw-medium border text-decoration-none ' + (${currentFilter == 'cancelled'} ? 'bg-navy text-white border-navy' : 'bg-white text-secondary border border-secondary')"> Đã hủy </a>
+        </div>
+        <!-- Empty State -->
+        <div th:if="${bookings.isEmpty()}" class="bg-white rounded-4 border border customer-py-16 px-4 text-center text-secondary my-4 shadow-sm">
+          <p class="fs-6 fw-semibold text-navy mb-2">Không tìm thấy đơn đặt xe nào ở trạng thái này.</p>
+          <a th:href="@{/search}" class="customer-btn-accent"> Tìm xe ngay </a>
+        </div>
+        <!-- Bookings List matching MyBookingsPage.tsx -->
+        <div class="customer-stack-4" th:if="${!bookings.isEmpty()}">
+          <div th:each="b : ${bookings}" class="bg-white rounded-3 border border overflow-hidden shadow-sm">
+            <div class="d-flex flex-column customer-sm-flex-row">
+              <!-- Thumbnail -->
+              <div class="customer-sm-w-44 customer-vehicle-height customer-sm-h-auto bg-light flex-shrink-0 overflow-hidden">
+                <img th:src="${b.imageUrl}" th:alt="${b.vehicleTypeName}" class="w-100 h-100 object-cover" loading="lazy" decoding="async">
+              </div>
+              <!-- Details -->
+              <div class="flex-fill p-5 d-flex flex-column justify-content-between">
+                <div class="d-flex flex-column customer-sm-flex-row customer-sm-items-start justify-content-between gap-3">
+                  <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                      <h3 class="fw-bold text-navy fs-6" th:text="${b.vehicleTypeName}">Toyota Vios</h3>
+                      <!-- Status Pill -->
+                      <div th:replace="~{fragments/status-badge :: booking(status=${b.status})}">
+                      </div>
+                      <span th:if="${b.overdueMinutes != null}" class="customer-text-xs fw-semibold px-2 customer-py-0 rounded-pill bookings-my-bookings-span-detail" th:text="'Quá hạn ' + ${b.overdueText}">Quá hạn 2 giờ</span>
+                    </div>
+                    <div class="customer-text-xs text-secondary">
+                      <span>Biển số: <b class="text-navy" th:text="${b.licensePlate != null ? b.licensePlate : 'Chưa gán xe cụ thể'}">Chưa gán xe cụ thể</b>
+                      </span>
+                    </div>
+                    <div class="mt-3 d-flex flex-wrap customer-gap-x-6 customer-gap-y-1 customer-text-xs text-secondary">
+                      <div>Nhận xe: <span class="fw-medium text-navy" th:text="${#temporals.format(b.pickupTime, 'dd/MM/yyyy HH:mm')}">Date</span>
+                      </div>
+                      <div>Trả xe: <span class="fw-medium text-navy" th:text="${#temporals.format(b.scheduledEndTime, 'dd/MM/yyyy HH:mm')}">Date</span>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Right Pricing -->
+                  <div class="text-start customer-sm-text-end mt-2 customer-sm-mt-0">
+                    <div class="fs-5 fw-bold text-navy">
+                      <span th:text="${#numbers.formatDecimal(b.totalPrice, 0, 'COMMA', 0, 'POINT')}">1,200,000</span> đ </div>
+                    <div class="customer-text-xs text-secondary"> Cọc giữ xe: <span class="fw-medium text-amber" th:text="${#numbers.formatDecimal(b.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">5,000,000 đ</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Card Action Footer -->
+                <div class="mt-4 pt-3 border-top d-flex justify-content-end customer-text-xs">
+                  <div class="d-flex gap-2">
+                    <a th:if="${b.status == 'pending_payment'}" th:href="@{/bookings/{id}/pay-deposit(id=${b.id})}" class="customer-btn-accent"> Thanh toán cọc ngay → </a>
+                    <a th:href="@{/bookings/{id}(id=${b.id})}" class="customer-btn-ghost"> Xem chi tiết đơn </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    
+  
+    </th:block>
+</th:block>
+</body>
+</html>

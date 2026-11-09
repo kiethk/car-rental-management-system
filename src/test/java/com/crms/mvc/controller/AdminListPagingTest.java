@@ -61,12 +61,12 @@ class AdminListPagingTest {
         mvc.perform(get("/admin/vehicles").session(admin)
                         .param("keyword", "toyota").param("sort", "name_desc").param("status", "available").param("page", "2"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/vehicles/list"))
+                .andExpect(view().name("screens/admin/vehicles/list/index"))
                 // search box keeps the keyword, sort box keeps the choice
                 .andExpect(content().string(containsString("value=\"toyota\"")))
                 .andExpect(content().string(containsString("<option value=\"name_desc\" selected=\"selected\"")))
                 // status pills show how many cars each has
-                .andExpect(content().string(containsString("Available (")))
+                .andExpect(content().string(containsString("Sẵn sàng (")))
                 .andExpect(content().string(containsString(">37<")))
                 // pager: showing 11-20 of 37 and a link to page 3 that keeps the search
                 .andExpect(content().string(containsString("11")))
@@ -91,8 +91,8 @@ class AdminListPagingTest {
 
         mvc.perform(get("/admin/vehicles").session(admin).param("keyword", "zzz"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("No car matches your search.")))
-                .andExpect(content().string(containsString("Show all cars")))
+                .andExpect(content().string(containsString("Không có xe nào khớp với tìm kiếm.")))
+                .andExpect(content().string(containsString("Xem tất cả xe")))
                 .andExpect(content().string(not(containsString("pagination"))));
     }
 
@@ -121,7 +121,7 @@ class AdminListPagingTest {
 
         mvc.perform(get("/admin/vehicle-types").session(admin).param("keyword", "to").param("sort", "name_desc"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/vehicle-types/list"))
+                .andExpect(view().name("screens/admin/vehicle-types/list/index"))
                 .andExpect(content().string(containsString("value=\"to\"")))
                 .andExpect(content().string(containsString("<option value=\"name_desc\" selected=\"selected\"")))
                 .andExpect(content().string(containsString("Toyota Vios")))

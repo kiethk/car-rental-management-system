@@ -1,5 +1,6 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.config.StationProperties;
 import com.crms.mvc.dto.ContractDocumentDTO;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.entity.ContractTemplateStatus;
@@ -39,8 +40,9 @@ class ContractDocumentGeneratorTest {
         engine.setTemplateResolver(resolver);
 
         generator = new OpenHtmlToPdfContractGenerator(engine,
-                new ClassPathResource("fonts/NotoSans-Regular.ttf"),
-                new ClassPathResource("fonts/NotoSans-Bold.ttf"));
+                new ClassPathResource("fonts/LiberationSerif-Regular.ttf"),
+                new ClassPathResource("fonts/LiberationSerif-Bold.ttf"),
+                StationProperties.DEFAULT);
     }
 
     @Test

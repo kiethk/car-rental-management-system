@@ -1,0 +1,22 @@
+body[data-screen="admin/promotions/form"] .promotion-date-picker-icon {
+        position: absolute;
+        top: 50%;
+        right: 0.9rem;
+        transform: translateY(-50%);
+        color: #495057;
+        pointer-events: none;
+    }
+
+body[data-screen="admin/promotions/form"] .promotion-date-picker {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 3rem;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+/* Screen-scoped DriveNow admin workspace */
+[data-screen="admin/promotions/form"] .promotions-form-img-detail { max-height: 120px; max-width: 100%; }
+
+/* Shared screen behavior hooks */

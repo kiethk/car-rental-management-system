@@ -47,7 +47,7 @@ public class AdminAccountController {
         model.addAttribute("accounts", page.getContent());
         model.addAttribute("nav", PageNavDTO.of(page, number -> query.urlForPage(LIST_PATH, number)));
         model.addAttribute("currentAccountId", CurrentAccount.of(session).map(SessionAccount::getId).orElse(null));
-        return "admin/accounts/list";
+        return "screens/admin/accounts/list/index";
     }
 
     @PostMapping("/{type}/{id}/status")
@@ -59,7 +59,7 @@ public class AdminAccountController {
         SessionAccount actor = requireAdmin(session);
         try {
             accountManagementService.setActive(type, id, active, actor);
-            ra.addFlashAttribute("success", active ? "Account activated." : "Account locked.");
+            ra.addFlashAttribute("success", active ? "Đã kích hoạt tài khoản." : "Đã khóa tài khoản.");
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
@@ -71,7 +71,7 @@ public class AdminAccountController {
     public String employeeForm(HttpSession session, Model model) {
         requireAdmin(session);
         model.addAttribute("employeeForm", new EmployeeCreateDTO());
-        return "admin/accounts/form";
+        return "screens/admin/accounts/form/index";
     }
 
     @PostMapping("/employees")
@@ -82,15 +82,15 @@ public class AdminAccountController {
                                  RedirectAttributes ra) {
         requireAdmin(session);
         if (result.hasErrors()) {
-            return "admin/accounts/form";
+            return "screens/admin/accounts/form/index";
         }
         try {
             accountManagementService.createEmployee(form);
         } catch (IllegalArgumentException | DataIntegrityViolationException e) {
-            model.addAttribute("error", "Email is already in use");
-            return "admin/accounts/form";
+            model.addAttribute("error", "Email này đã được sử dụng");
+            return "screens/admin/accounts/form/index";
         }
-        ra.addFlashAttribute("success", "Employee account created.");
+        ra.addFlashAttribute("success", "Đã tạo tài khoản nhân viên.");
         ra.addAttribute("type", SessionAccount.EMPLOYEE);
         return "redirect:" + LIST_PATH;
     }
@@ -98,6 +98,6 @@ public class AdminAccountController {
     private SessionAccount requireAdmin(HttpSession session) {
         return CurrentAccount.of(session)
                 .filter(SessionAccount::isAdmin)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin access required"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Cần quyền quản trị viên"));
     }
 }

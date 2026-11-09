@@ -12,8 +12,9 @@ import java.util.List;
 public interface VehicleTypeRepository extends JpaRepository<VehicleType, Long> {
     List<VehicleType> findAllByOrderByIdAsc();
 
-    /** Keyword (already a lower-case LIKE pattern) matches model, brand or category. */
+    /** Keyword (already a lower-case LIKE pattern) matches model, brand, "brand model" together, or category. */
     @Query("SELECT vt FROM VehicleType vt WHERE LOWER(vt.name) LIKE :keyword ESCAPE '\\' "
+            + "OR LOWER(CONCAT(vt.brand, ' ', vt.name)) LIKE :keyword ESCAPE '\\' "
             + "OR LOWER(vt.brand) LIKE :keyword ESCAPE '\\' OR LOWER(vt.category) LIKE :keyword ESCAPE '\\'")
     Page<VehicleType> searchForAdmin(@Param("keyword") String keywordPattern, Pageable pageable);
 

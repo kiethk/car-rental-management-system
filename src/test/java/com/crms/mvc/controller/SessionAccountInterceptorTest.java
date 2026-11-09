@@ -43,8 +43,10 @@ class SessionAccountInterceptorTest {
         when(sessionAccountService.refresh(any())).thenReturn(Optional.empty());
         MockHttpSession session = TestSessions.staff(2L);
 
+        // The session is gone, so /admin sends them to log in again rather than a bare 403.
         mvc.perform(get("/admin/profile").session(session))
-                .andExpect(status().isForbidden());
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
 
         assertThat(session.isInvalid()).isTrue();
     }

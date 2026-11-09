@@ -41,7 +41,7 @@ public class AdminInspectionController {
         model.addAttribute("passedCount", passedCount);
         model.addAttribute("failedCount", failedCount);
         model.addAttribute("activeNav", "inspections");
-        return "admin/inspections/list";
+        return "screens/admin/inspections/list/index";
     }
 
     @GetMapping("/new")
@@ -56,7 +56,7 @@ public class AdminInspectionController {
         model.addAttribute("inspectionForm", form);
         model.addAttribute("vehicles", vehicles);
         model.addAttribute("activeNav", "inspections");
-        return "admin/inspections/schedule";
+        return "screens/admin/inspections/schedule/index";
     }
 
     @PostMapping
@@ -67,12 +67,12 @@ public class AdminInspectionController {
         if (result.hasErrors()) {
             model.addAttribute("vehicles", vehicleService.findAll());
             model.addAttribute("activeNav", "inspections");
-            return "admin/inspections/schedule";
+            return "screens/admin/inspections/schedule/index";
         }
 
         try {
             VehicleInspection scheduled = vehicleInspectionService.schedule(form);
-            ra.addFlashAttribute("success", "Inspection scheduled for car #" + scheduled.getVehicle().getId() + " (" + scheduled.getVehicle().getLicensePlate().getPlate() + ")");
+            ra.addFlashAttribute("success", "Đã lên lịch đăng kiểm cho xe #" + scheduled.getVehicle().getId() + " (" + scheduled.getVehicle().getLicensePlate().getPlate() + ")");
             return "redirect:/admin/inspections";
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
@@ -85,7 +85,7 @@ public class AdminInspectionController {
     public String startInspection(@PathVariable Long id, RedirectAttributes ra) {
         try {
             vehicleInspectionService.startInspection(id);
-            ra.addFlashAttribute("success", "Car moved to inspection workshop. Status updated to MAINTENANCE.");
+            ra.addFlashAttribute("success", "Đã đưa xe đi đăng kiểm. Trạng thái xe chuyển sang bảo dưỡng.");
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
         }
@@ -95,7 +95,7 @@ public class AdminInspectionController {
     @GetMapping("/{id}/result")
     public String resultForm(@PathVariable Long id, Model model) {
         VehicleInspection inspection = vehicleInspectionService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Inspection record not found for ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch đăng kiểm có mã: " + id));
 
         VehicleInspectionFormDTO form = VehicleInspectionFormDTO.fromEntity(inspection);
         if (form.getNewRegistrationExpiry() == null) {
@@ -105,7 +105,7 @@ public class AdminInspectionController {
         model.addAttribute("inspection", inspection);
         model.addAttribute("resultForm", form);
         model.addAttribute("activeNav", "inspections");
-        return "admin/inspections/result";
+        return "screens/admin/inspections/result/index";
     }
 
     @PostMapping("/{id}/result")
@@ -118,9 +118,9 @@ public class AdminInspectionController {
         try {
             vehicleInspectionService.recordResult(id, status, notes, newRegistrationExpiry);
             if ("passed".equalsIgnoreCase(status)) {
-                ra.addFlashAttribute("success", "Inspection recorded as PASSED! Car is now AVAILABLE and registration date renewed.");
+                ra.addFlashAttribute("success", "Đã ghi nhận đăng kiểm ĐẠT! Xe đã sẵn sàng và hạn đăng kiểm được gia hạn.");
             } else {
-                ra.addFlashAttribute("warning", "Inspection recorded as FAILED. Car remains in MAINTENANCE for repairs.");
+                ra.addFlashAttribute("warning", "Đã ghi nhận đăng kiểm KHÔNG ĐẠT. Xe vẫn ở trạng thái bảo dưỡng để sửa chữa.");
             }
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());

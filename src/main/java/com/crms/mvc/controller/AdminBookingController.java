@@ -18,8 +18,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.server.ResponseStatusException;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.service.BookingService;
-import com.crms.mvc.service.VehicleService;
 import com.crms.mvc.entity.Payment;
+import com.crms.mvc.service.IssueService;
 import com.crms.mvc.service.PaymentService;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -30,26 +30,29 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
-import java.math.BigDecimal;
-import java.util.Map;
-import java.util.stream.Collectors;
-import com.crms.mvc.entity.Booking;
-import com.crms.mvc.entity.VehicleType;
-import com.crms.mvc.util.DateTimeUtils;
+import com.crms.mvc.service.BookingQueryService;
+import com.crms.mvc.service.VehicleAvailabilityService;
 
 @Controller
 @RequestMapping("/admin/bookings")
 public class AdminBookingController {
     private final BookingService bookingService;
-    private final VehicleService vehicleService;
+    private final BookingQueryService bookingQueryService;
+    private final VehicleAvailabilityService vehicleAvailabilityService;
     private final PaymentService paymentService;
+    private final IssueService issueService;
     private final HandoverService handoverService;
 
-    public AdminBookingController(BookingService bookingService, VehicleService vehicleService,
-                                  PaymentService paymentService, HandoverService handoverService) {
+    public AdminBookingController(BookingService bookingService,
+                                  BookingQueryService bookingQueryService,
+                                  VehicleAvailabilityService vehicleAvailabilityService,
+                                  PaymentService paymentService, IssueService issueService,
+                                  HandoverService handoverService) {
         this.bookingService = bookingService;
-        this.vehicleService = vehicleService;
+        this.bookingQueryService = bookingQueryService;
+        this.vehicleAvailabilityService = vehicleAvailabilityService;
         this.paymentService = paymentService;
+        this.issueService = issueService;
         this.handoverService = handoverService;
     }
 
@@ -58,17 +61,18 @@ public class AdminBookingController {
                                HttpSession session, Model model, RedirectAttributes ra) {
         Long employeeId = CurrentAccount.employeeId(session).orElse(null);
         if (employeeId == null) {
-            ra.addFlashAttribute("error", "Admin / Staff authentication required.");
+            ra.addFlashAttribute("error", "Cần đăng nhập bằng tài khoản quản trị viên hoặc nhân viên.");
             return "redirect:/login";
         }
 
         long pendingRefundCount = paymentService.countPendingRefunds();
         model.addAttribute("pendingRefundCount", pendingRefundCount);
+        model.addAttribute("overdueRentalCount", bookingQueryService.countOverdueRentals());
 
-        List<BookingSummaryDTO> list = bookingService.getAllBookings(status);
+        List<BookingSummaryDTO> list = bookingQueryService.getAllBookings(status);
         model.addAttribute("bookings", list);
         model.addAttribute("currentStatus", status);
-        return "admin/bookings/list";
+        return "screens/admin/bookings/list/index";
     }
 
 
@@ -78,15 +82,24 @@ public class AdminBookingController {
         if (employeeId == null) return "redirect:/login";
 
         try {
-            BookingDetailDTO detail = bookingService.getBookingDetailForAdmin(bookingId);
-            List<Vehicle> availableVehicles = vehicleService.findByStatusWithDetails("available").stream()
-                    .filter(v -> v.getVehicleType().getId().equals(detail.getVehicleTypeId()))
-                    .toList();
+            BookingDetailDTO detail = bookingQueryService.getBookingDetailForAdmin(bookingId);
+            // Same-type cars free for this booking's rental window (with the 1-hour buffer), like checkout uses.
+            List<Vehicle> availableVehicles = detail.getPickupTime() != null && detail.getScheduledEndTime() != null
+                    ? vehicleAvailabilityService.findAvailableVehiclesInTimeRange(
+                            detail.getVehicleTypeId(), detail.getPickupTime(), detail.getScheduledEndTime())
+                    : List.of();
 
             model.addAttribute("booking", detail);
             model.addAttribute("availableVehicles", availableVehicles);
-            model.addAttribute("checkInForm", new CheckInDTO());
-            model.addAttribute("checkOutForm", new CheckOutDTO());
+            model.addAttribute("overdueRentalCount", bookingQueryService.countOverdueRentals());
+            // Start both forms at the last reading the system has; staff only change it if the dashboard differs.
+            CheckInDTO checkInForm = new CheckInDTO();
+            checkInForm.setOdometer(detail.getVehicleOdometer());
+            CheckOutDTO checkOutForm = new CheckOutDTO();
+            checkOutForm.setOdometer(detail.getVehicleOdometer());
+            model.addAttribute("checkInForm", checkInForm);
+            model.addAttribute("checkOutForm", checkOutForm);
+            model.addAttribute("issues", issueService.findByBooking(bookingId));
             model.addAttribute("settlementForm", new SettlementDTO());
             model.addAttribute("handover", handoverService.getSummary(bookingId));
             model.addAttribute("isAdminAccount", CurrentAccount.isAdmin(session));
@@ -130,7 +143,7 @@ public class AdminBookingController {
                 model.addAttribute("vietQrUrl", qrUrl);
             }
 
-            return "admin/bookings/manage";
+            return "screens/admin/bookings/manage/index";
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             return "redirect:/admin/bookings";
@@ -145,9 +158,26 @@ public class AdminBookingController {
 
         try {
             bookingService.assignVehicle(bookingId, vehicleId);
-            ra.addFlashAttribute("success", "Vehicle assigned successfully.");
+            ra.addFlashAttribute("success", "Đã gán xe cho đơn thuê.");
         } catch (Exception e) {
-            ra.addFlashAttribute("error", "Assignment failed: " + e.getMessage());
+            ra.addFlashAttribute("error", "Không đổi được xe: " + e.getMessage());
+        }
+        return "redirect:/admin/bookings/" + bookingId;
+    }
+
+    /** No car of the booked type is free: cancel and hand back the whole deposit at the counter. */
+    @PostMapping("/{id}/cancel-no-car")
+    public String cancelForUnavailableCar(@PathVariable("id") Long bookingId,
+                                          @RequestParam("refundMethod") String refundMethod,
+                                          HttpSession session, RedirectAttributes ra) {
+        Long employeeId = CurrentAccount.employeeId(session).orElse(null);
+        if (employeeId == null) return "redirect:/login";
+
+        try {
+            bookingService.cancelForUnavailableCar(bookingId, refundMethod);
+            ra.addFlashAttribute("success", "Đã huỷ đơn, hoàn 100% tiền cọc tại quầy.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Không huỷ được đơn: " + e.getMessage());
         }
         return "redirect:/admin/bookings/" + bookingId;
     }
@@ -156,15 +186,15 @@ public class AdminBookingController {
     public String assignStaff(@PathVariable("id") Long bookingId, @RequestParam("staffId") Long staffId,
                               HttpSession session, RedirectAttributes ra) {
         if (!CurrentAccount.isAdmin(session)) {
-            ra.addFlashAttribute("error", "Only an admin can change the assigned staff.");
+            ra.addFlashAttribute("error", "Chỉ quản trị viên mới được đổi nhân viên phụ trách.");
             return "redirect:/admin/bookings/" + bookingId;
         }
 
         try {
             handoverService.reassignStaff(bookingId, staffId);
-            ra.addFlashAttribute("success", "Assigned staff updated.");
+            ra.addFlashAttribute("success", "Đã cập nhật nhân viên phụ trách.");
         } catch (Exception e) {
-            ra.addFlashAttribute("error", "Could not change assigned staff: " + e.getMessage());
+            ra.addFlashAttribute("error", "Không thể đổi nhân viên phụ trách: " + e.getMessage());
         }
         return "redirect:/admin/bookings/" + bookingId;
     }
@@ -177,15 +207,15 @@ public class AdminBookingController {
         if (employeeId == null) return "redirect:/login";
 
         if (result.hasErrors()) {
-            ra.addFlashAttribute("error", "Check-in failed: " + result.getAllErrors().get(0).getDefaultMessage());
+            ra.addFlashAttribute("error", "Bàn giao xe thất bại: " + result.getAllErrors().get(0).getDefaultMessage());
             return "redirect:/admin/bookings/" + bookingId;
         }
 
         try {
             handoverService.checkIn(bookingId, employeeId, form);
-            ra.addFlashAttribute("success", "Check-in completed. Rental trip is now ACTIVE.");
+            ra.addFlashAttribute("success", "Đã bàn giao xe. Chuyến thuê bắt đầu.");
         } catch (Exception e) {
-            ra.addFlashAttribute("error", "Check-in failed: " + e.getMessage());
+            ra.addFlashAttribute("error", "Bàn giao xe thất bại: " + e.getMessage());
         }
         return "redirect:/admin/bookings/" + bookingId;
     }
@@ -198,15 +228,15 @@ public class AdminBookingController {
         if (employeeId == null) return "redirect:/login";
 
         if (result.hasErrors()) {
-            ra.addFlashAttribute("error", "Check-out failed: " + result.getAllErrors().get(0).getDefaultMessage());
+            ra.addFlashAttribute("error", "Ghi nhận trả xe thất bại: " + result.getAllErrors().get(0).getDefaultMessage());
             return "redirect:/admin/bookings/" + bookingId;
         }
 
         try {
             handoverService.checkOut(bookingId, employeeId, form);
-            ra.addFlashAttribute("success", "Vehicle return recorded. Complete the settlement to close this booking.");
+            ra.addFlashAttribute("success", "Đã ghi nhận trả xe. Hãy quyết toán để đóng đơn thuê.");
         } catch (Exception e) {
-            ra.addFlashAttribute("error", "Check-out failed: " + e.getMessage());
+            ra.addFlashAttribute("error", "Ghi nhận trả xe thất bại: " + e.getMessage());
         }
         return "redirect:/admin/bookings/" + bookingId;
     }
@@ -219,15 +249,15 @@ public class AdminBookingController {
         if (employeeId == null) return "redirect:/login";
 
         if (result.hasErrors()) {
-            ra.addFlashAttribute("error", "Settlement failed: " + result.getAllErrors().get(0).getDefaultMessage());
+            ra.addFlashAttribute("error", "Quyết toán thất bại: " + result.getAllErrors().get(0).getDefaultMessage());
             return "redirect:/admin/bookings/" + bookingId;
         }
 
         try {
             handoverService.settle(bookingId, employeeId, form);
-            ra.addFlashAttribute("success", "Settlement completed. This booking is now closed.");
+            ra.addFlashAttribute("success", "Đã quyết toán xong. Đơn thuê đã đóng.");
         } catch (Exception e) {
-            ra.addFlashAttribute("error", "Settlement failed: " + e.getMessage());
+            ra.addFlashAttribute("error", "Quyết toán thất bại: " + e.getMessage());
         }
         return "redirect:/admin/bookings/" + bookingId;
     }

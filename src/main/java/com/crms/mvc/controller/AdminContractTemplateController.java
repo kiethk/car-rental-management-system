@@ -22,7 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/admin/contract-templates")
 public class AdminContractTemplateController {
-    private static final String ADMIN_ONLY_MESSAGE = "Only administrators can change the rental terms.";
+    private static final String ADMIN_ONLY_MESSAGE = "Chỉ quản trị viên mới được thay đổi điều khoản thuê xe.";
 
     private final ContractTemplateService contractTemplateService;
 
@@ -34,7 +34,7 @@ public class AdminContractTemplateController {
     public String list(HttpSession session, Model model) {
         model.addAttribute("templates", contractTemplateService.getAllTemplates());
         model.addAttribute("isAdmin", isAdmin(session));
-        return "admin/contract-templates/list";
+        return "screens/admin/contract-templates/list/index";
     }
 
     @GetMapping("/{id}")
@@ -45,7 +45,7 @@ public class AdminContractTemplateController {
         }
         model.addAttribute("template", template);
         model.addAttribute("isAdmin", isAdmin(session));
-        return "admin/contract-templates/detail";
+        return "screens/admin/contract-templates/detail/index";
     }
 
     @PostMapping("/draft")
@@ -56,7 +56,7 @@ public class AdminContractTemplateController {
         }
         try {
             ContractTemplateDTO draft = contractTemplateService.createDraft(CurrentAccount.employeeId(session).orElse(null));
-            ra.addFlashAttribute("success", "Draft version " + draft.getVersionNo() + " created from the active terms.");
+            ra.addFlashAttribute("success", "Đã tạo bản nháp phiên bản " + draft.getVersionNo() + " từ điều khoản đang hiệu lực.");
             return "redirect:/admin/contract-templates/" + draft.getId();
         } catch (IllegalStateException e) {
             ra.addFlashAttribute("error", e.getMessage());
@@ -76,11 +76,11 @@ public class AdminContractTemplateController {
         if (result.hasErrors()) {
             model.addAttribute("template", contractTemplateService.getTemplate(id));
             model.addAttribute("isAdmin", true);
-            return "admin/contract-templates/detail";
+            return "screens/admin/contract-templates/detail/index";
         }
         try {
             contractTemplateService.updateDraft(id, form);
-            ra.addFlashAttribute("success", "Draft saved. Activate it when it is ready to apply to new bookings.");
+            ra.addFlashAttribute("success", "Đã lưu bản nháp. Hãy kích hoạt khi sẵn sàng áp dụng cho đơn thuê mới.");
         } catch (IllegalStateException e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
@@ -95,7 +95,7 @@ public class AdminContractTemplateController {
         }
         try {
             contractTemplateService.activate(id);
-            ra.addFlashAttribute("success", "New rental terms are now active. Existing bookings keep the version they accepted.");
+            ra.addFlashAttribute("success", "Điều khoản mới đã có hiệu lực. Các đơn đã đặt vẫn giữ phiên bản khách đã đồng ý.");
             return "redirect:/admin/contract-templates";
         } catch (IllegalStateException e) {
             ra.addFlashAttribute("error", e.getMessage());
@@ -111,7 +111,7 @@ public class AdminContractTemplateController {
         }
         try {
             contractTemplateService.deleteDraft(id);
-            ra.addFlashAttribute("success", "Draft deleted.");
+            ra.addFlashAttribute("success", "Đã xóa bản nháp.");
             return "redirect:/admin/contract-templates";
         } catch (IllegalStateException e) {
             ra.addFlashAttribute("error", e.getMessage());

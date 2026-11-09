@@ -25,4 +25,19 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             ORDER BY r.createdAt DESC
             """)
     List<ReviewDTO> findPublicReviewsByVehicleTypeId(@Param("vehicleTypeId") Long vehicleTypeId);
+
+    /** One row per vehicle type that has at least one public review: [vehicleTypeId, average rating, review count]. */
+    @Query("""
+            SELECT s.vehicleType.id, AVG(r.rating), COUNT(r)
+            FROM Review r
+            JOIN r.booking b
+            JOIN b.slot s
+            WHERE LOWER(b.status) = 'completed'
+              AND NOT EXISTS (
+                  SELECT p.id FROM Payment p
+                  WHERE p.booking = b AND LOWER(p.status) = 'pending'
+              )
+            GROUP BY s.vehicleType.id
+            """)
+    List<Object[]> summarizeRatingsByVehicleType();
 }

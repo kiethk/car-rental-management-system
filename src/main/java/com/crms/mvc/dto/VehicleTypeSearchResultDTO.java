@@ -16,14 +16,6 @@ public class VehicleTypeSearchResultDTO implements Serializable {
     private String imageUrl;
     private int availableCount;
     private BigDecimal estimatedTotal;
-    private double rating = 4.7;
-    private int reviewCount = 120;
-
-    public double getRating() { return rating; }
-    public void setRating(double rating) { this.rating = rating; }
-
-    public int getReviewCount() { return reviewCount; }
-    public void setReviewCount(int reviewCount) { this.reviewCount = reviewCount; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

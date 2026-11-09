@@ -43,9 +43,9 @@ class AdminContractTemplateControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("v2")))
                 .andExpect(content().string(containsString("50%")))
-                .andExpect(content().string(containsString("200% of rate")))
+                .andExpect(content().string(containsString("200% đơn giá")))
                 .andExpect(content().string(not(containsString("E+"))))
-                .andExpect(content().string(containsString("New draft from active")));
+                .andExpect(content().string(containsString("Cập nhật điều khoản")));
     }
 
     @Test
@@ -56,7 +56,7 @@ class AdminContractTemplateControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("name=\"depositPercent\"")))
                 .andExpect(content().string(containsString("value=\"50\"")))
-                .andExpect(content().string(containsString("Activate saved draft")));
+                .andExpect(content().string(containsString("Kích hoạt bản nháp đã lưu")));
     }
 
     @Test
@@ -66,14 +66,14 @@ class AdminContractTemplateControllerTest {
         mvc.perform(get("/admin/contract-templates/1").session(session("admin")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("name=\"depositPercent\""))))
-                .andExpect(content().string(containsString("can no longer be changed")));
+                .andExpect(content().string(containsString("không thể sửa nữa")));
     }
 
     @Test
     void staffCannotActivate() throws Exception {
         mvc.perform(post("/admin/contract-templates/2/activate").session(session("staff")))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(flash().attribute("error", "Only administrators can change the rental terms."));
+                .andExpect(flash().attribute("error", "Chỉ quản trị viên mới được thay đổi điều khoản thuê xe."));
 
         verify(contractTemplateService, never()).activate(anyLong());
     }
@@ -89,8 +89,8 @@ class AdminContractTemplateControllerTest {
                         .param("lateFeePercent", "200")
                         .param("freeCancellationHours", "72"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/contract-templates/detail"))
-                .andExpect(content().string(containsString("Deposit cannot exceed 100%")));
+                .andExpect(view().name("screens/admin/contract-templates/detail/index"))
+                .andExpect(content().string(containsString("Tiền cọc không được vượt quá 100%")));
 
         verify(contractTemplateService, never()).updateDraft(anyLong(), any());
     }

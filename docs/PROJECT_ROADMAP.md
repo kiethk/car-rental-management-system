@@ -201,7 +201,7 @@ Cột "Cỡ": **S** nhỏ (dưới 1 giờ), **M** vừa, **L** lớn. "Luồng"
 - Giao diện hiển thị trước khi xác nhận hủy: "Bạn sẽ được hoàn X đ" hoặc "Cọc không được hoàn".
 
 ### E6. Trả xe và thanh toán cuối — Kiệt (B8)
-- Tiền còn lại = tổng tiền − cọc + phí trễ + phí phát sinh (`booking_fees`); nếu cọc lớn hơn tổng thì **hoàn phần chênh** (`REFUND`).
+- Tiền còn lại = tổng tiền − cọc + phí trễ + phí phát sinh (`booking_fees`). Cọc tối đa 100% tiền thuê nên số này không bao giờ âm; quyết toán không hoàn tiền.
 - Ghi phương thức thu tiền tại quầy (tiền mặt/chuyển khoản) thay vì tự đặt `VIETQR`; ghi số km và ghi chú khi trả xe (cập nhật `vehicles.odometer`); nếu xe có sự cố thì cho chuyển sang `maintenance` thay vì tự `available`.
 - Phí trễ tính theo quy tắc ở B4 và hệ số trong điều khoản khách đã đồng ý.
 
@@ -232,7 +232,7 @@ Cột "Cỡ": **S** nhỏ (dưới 1 giờ), **M** vừa, **L** lớn. "Luồng"
 
 ## 8. Quyết định ĐÃ CHỐT (đừng đảo ngược nếu không được yêu cầu)
 
-- **Hợp đồng:** điều khoản có phiên bản trong `contract_templates` (mỗi dòng một phiên bản bất biến; chỉ bản `DRAFT` sửa được; tối đa một `ACTIVE`). Số liệu nghiệp vụ (`deposit_rate`, `late_fee_multiplier`, `free_cancellation_hours`) là **cột có kiểu**, đoạn quyền/nghĩa vụ là `terms_content`. Khách chấp thuận bằng checkbox (clickwrap): lưu `accepted_at`, `accepted_ip`, phiên bản. PDF chỉ sinh **sau khi cọc thành công**, lưu ở `uploads/contracts/` (không công khai, tải qua `ContractController` có kiểm tra quyền), gửi email nếu đã cấu hình. **Không** dùng chữ ký số hay mã băm. Bảng `contracts` không có cột trạng thái (hiệu lực theo `bookings.status`). Không hiển thị "phiên bản" cho khách, chỉ admin thấy.
+- **Hợp đồng:** điều khoản có phiên bản trong `contract_templates` (mỗi dòng một phiên bản bất biến; chỉ bản `DRAFT` sửa được; tối đa một `ACTIVE`). Số liệu nghiệp vụ (`deposit_rate`, `late_fee_multiplier`, `free_cancellation_hours`) là **cột có kiểu**, đoạn quyền/nghĩa vụ là `terms_content`. Khách chấp thuận bằng checkbox (clickwrap): lưu `accepted_at`, `accepted_ip`, phiên bản. PDF chỉ sinh **sau khi cọc thành công**, lưu ở `uploads/contracts/` (không công khai, tải qua `ContractController` có kiểm tra quyền), gửi email nếu đã cấu hình. Bảng `contracts` không có cột trạng thái (hiệu lực theo `bookings.status`).
 - **Chính sách:** câu chữ viết trực tiếp ở từng trang (không dùng `messages.properties`), con số lấy từ DB, có `data-policy`.
 - **Biển số:** một xe có nhiều biển theo thời gian (1-N), biển cũ giữ làm lịch sử và **không bao giờ cấp lại**; `registration_expiry` nằm ở `vehicles`; `bookings.license_plate` lưu chữ biển lúc phát hành hợp đồng và lúc giao xe; đổi biển bằng `LicensePlateService.changePlate` (không sửa trực tiếp ô biển trong form xe); không đổi biển khi xe đang `rented`.
 - **Không Docker**; PostgreSQL local; email Gmail SMTP tùy chọn; email khách trong seed dùng `@example.com`.

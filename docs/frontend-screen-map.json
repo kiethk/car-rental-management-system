@@ -1,0 +1,242 @@
+[
+  {
+    "oldView": "admin/accounts/form",
+    "view": "screens/admin/accounts/form/index",
+    "screen": "admin/accounts/form",
+    "source": "src/main/resources/templates/admin/accounts/form.html"
+  },
+  {
+    "oldView": "admin/accounts/list",
+    "view": "screens/admin/accounts/list/index",
+    "screen": "admin/accounts/list",
+    "source": "src/main/resources/templates/admin/accounts/list.html"
+  },
+  {
+    "oldView": "admin/bookings/list",
+    "view": "screens/admin/bookings/list/index",
+    "screen": "admin/bookings/list",
+    "source": "src/main/resources/templates/admin/bookings/list.html"
+  },
+  {
+    "oldView": "admin/bookings/manage",
+    "view": "screens/admin/bookings/manage/index",
+    "screen": "admin/bookings/manage",
+    "source": "src/main/resources/templates/admin/bookings/manage.html"
+  },
+  {
+    "oldView": "admin/contract-templates/detail",
+    "view": "screens/admin/contract-templates/detail/index",
+    "screen": "admin/contract-templates/detail",
+    "source": "src/main/resources/templates/admin/contract-templates/detail.html"
+  },
+  {
+    "oldView": "admin/contract-templates/list",
+    "view": "screens/admin/contract-templates/list/index",
+    "screen": "admin/contract-templates/list",
+    "source": "src/main/resources/templates/admin/contract-templates/list.html"
+  },
+  {
+    "oldView": "admin/dashboard",
+    "view": "screens/admin/dashboard/index",
+    "screen": "admin/dashboard",
+    "source": "src/main/resources/templates/admin/dashboard.html"
+  },
+  {
+    "oldView": "admin/inspections/list",
+    "view": "screens/admin/inspections/list/index",
+    "screen": "admin/inspections/list",
+    "source": "src/main/resources/templates/admin/inspections/list.html"
+  },
+  {
+    "oldView": "admin/inspections/result",
+    "view": "screens/admin/inspections/result/index",
+    "screen": "admin/inspections/result",
+    "source": "src/main/resources/templates/admin/inspections/result.html"
+  },
+  {
+    "oldView": "admin/inspections/schedule",
+    "view": "screens/admin/inspections/schedule/index",
+    "screen": "admin/inspections/schedule",
+    "source": "src/main/resources/templates/admin/inspections/schedule.html"
+  },
+  {
+    "oldView": "admin/issues/detail",
+    "view": "screens/admin/issues/detail/index",
+    "screen": "admin/issues/detail",
+    "source": "src/main/resources/templates/admin/issues/detail.html"
+  },
+  {
+    "oldView": "admin/issues/form",
+    "view": "screens/admin/issues/form/index",
+    "screen": "admin/issues/form",
+    "source": "src/main/resources/templates/admin/issues/form.html"
+  },
+  {
+    "oldView": "admin/issues/list",
+    "view": "screens/admin/issues/list/index",
+    "screen": "admin/issues/list",
+    "source": "src/main/resources/templates/admin/issues/list.html"
+  },
+  {
+    "oldView": "admin/license-plates/history",
+    "view": "screens/admin/license-plates/history/index",
+    "screen": "admin/license-plates/history",
+    "source": "src/main/resources/templates/admin/license-plates/history.html"
+  },
+  {
+    "oldView": "admin/profile",
+    "view": "screens/admin/profile/index",
+    "screen": "admin/profile",
+    "source": "src/main/resources/templates/admin/profile.html"
+  },
+  {
+    "oldView": "admin/promotions/form",
+    "view": "screens/admin/promotions/form/index",
+    "screen": "admin/promotions/form",
+    "source": "src/main/resources/templates/admin/promotions/form.html"
+  },
+  {
+    "oldView": "admin/promotions/list",
+    "view": "screens/admin/promotions/list/index",
+    "screen": "admin/promotions/list",
+    "source": "src/main/resources/templates/admin/promotions/list.html"
+  },
+  {
+    "oldView": "admin/starter-kit",
+    "view": "screens/admin/starter-kit/index",
+    "screen": "admin/starter-kit",
+    "source": "src/main/resources/templates/admin/starter-kit.html"
+  },
+  {
+    "oldView": "admin/traffic-fines/list",
+    "view": "screens/admin/traffic-fines/list/index",
+    "screen": "admin/traffic-fines/list",
+    "source": "src/main/resources/templates/admin/traffic-fines/list.html"
+  },
+  {
+    "oldView": "admin/vehicle-types/form",
+    "view": "screens/admin/vehicle-types/form/index",
+    "screen": "admin/vehicle-types/form",
+    "source": "src/main/resources/templates/admin/vehicle-types/form.html"
+  },
+  {
+    "oldView": "admin/vehicle-types/list",
+    "view": "screens/admin/vehicle-types/list/index",
+    "screen": "admin/vehicle-types/list",
+    "source": "src/main/resources/templates/admin/vehicle-types/list.html"
+  },
+  {
+    "oldView": "admin/vehicles/form",
+    "view": "screens/admin/vehicles/form/index",
+    "screen": "admin/vehicles/form",
+    "source": "src/main/resources/templates/admin/vehicles/form.html"
+  },
+  {
+    "oldView": "admin/vehicles/list",
+    "view": "screens/admin/vehicles/list/index",
+    "screen": "admin/vehicles/list",
+    "source": "src/main/resources/templates/admin/vehicles/list.html"
+  },
+  {
+    "oldView": "auth/login",
+    "view": "screens/customer/auth/login/index",
+    "screen": "customer/auth/login",
+    "source": "src/main/resources/templates/auth/login.html"
+  },
+  {
+    "oldView": "auth/register",
+    "view": "screens/customer/auth/register/index",
+    "screen": "customer/auth/register",
+    "source": "src/main/resources/templates/auth/register.html"
+  },
+  {
+    "oldView": "bookings/checkout",
+    "view": "screens/customer/bookings/checkout/index",
+    "screen": "customer/bookings/checkout",
+    "source": "src/main/resources/templates/bookings/checkout.html"
+  },
+  {
+    "oldView": "bookings/deposit",
+    "view": "screens/customer/bookings/deposit/index",
+    "screen": "customer/bookings/deposit",
+    "source": "src/main/resources/templates/bookings/deposit.html"
+  },
+  {
+    "oldView": "bookings/detail",
+    "view": "screens/customer/bookings/detail/index",
+    "screen": "customer/bookings/detail",
+    "source": "src/main/resources/templates/bookings/detail.html"
+  },
+  {
+    "oldView": "bookings/my-bookings",
+    "view": "screens/customer/bookings/my-bookings/index",
+    "screen": "customer/bookings/my-bookings",
+    "source": "src/main/resources/templates/bookings/my-bookings.html"
+  },
+  {
+    "oldView": "bookings/search",
+    "view": "screens/customer/bookings/search/index",
+    "screen": "customer/bookings/search",
+    "source": "src/main/resources/templates/bookings/search.html"
+  },
+  {
+    "oldView": "bookings/success",
+    "view": "screens/customer/bookings/success/index",
+    "screen": "customer/bookings/success",
+    "source": "src/main/resources/templates/bookings/success.html"
+  },
+  {
+    "oldView": "error/404",
+    "view": "screens/customer/error/404/index",
+    "screen": "customer/error/404",
+    "source": "src/main/resources/templates/error/404.html"
+  },
+  {
+    "oldView": "error/500",
+    "view": "screens/customer/error/500/index",
+    "screen": "customer/error/500",
+    "source": "src/main/resources/templates/error/500.html"
+  },
+  {
+    "oldView": "error/default",
+    "view": "screens/customer/error/default/index",
+    "screen": "customer/error/default",
+    "source": "src/main/resources/templates/error/default.html"
+  },
+  {
+    "oldView": "home",
+    "view": "screens/customer/home/index",
+    "screen": "customer/home",
+    "source": "src/main/resources/templates/home.html"
+  },
+  {
+    "oldView": "licenses/upload",
+    "view": "screens/customer/licenses/upload/index",
+    "screen": "customer/licenses/upload",
+    "source": "src/main/resources/templates/licenses/upload.html"
+  },
+  {
+    "oldView": "profile/index",
+    "view": "screens/customer/profile/index/index",
+    "screen": "customer/profile/index",
+    "source": "src/main/resources/templates/profile/index.html"
+  },
+  {
+    "oldView": "vehicles/detail",
+    "view": "screens/customer/vehicles/detail/index",
+    "screen": "customer/vehicles/detail",
+    "source": "src/main/resources/templates/vehicles/detail.html"
+  },
+  {
+    "oldView": "vehicles/list",
+    "view": "screens/customer/vehicles/list/index",
+    "screen": "customer/vehicles/list",
+    "source": "src/main/resources/templates/vehicles/list.html"
+  },
+  {
+    "oldView": "vehicles/schedule",
+    "view": "screens/customer/vehicles/schedule/index",
+    "screen": "customer/vehicles/schedule",
+    "source": "src/main/resources/templates/vehicles/schedule.html"
+  }
+]

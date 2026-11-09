@@ -3,6 +3,8 @@ package com.crms.mvc.service.impl;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Issue;
+import com.crms.mvc.entity.IssueStatus;
+import com.crms.mvc.entity.Payment;
 import com.crms.mvc.repository.BookingFeeRepository;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.IssueRepository;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -33,7 +36,7 @@ public class BookingFeeServiceImpl implements BookingFeeService {
     @Override
     public BookingFee recordFee(Long bookingId, String feeType, BigDecimal amount, String description, Long issueId) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NoSuchElementException("Booking not found: " + bookingId));
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy đơn đặt xe: " + bookingId));
 
         Issue issue = null;
         if (issueId != null) {
@@ -59,10 +62,65 @@ public class BookingFeeServiceImpl implements BookingFeeService {
 
     @Override
     @Transactional(readOnly = true)
-    public BigDecimal calculateTotalAdditionalFees(Long bookingId) {
-        return bookingFeeRepository.findByBookingIdOrderByCreatedAtAsc(bookingId)
-                .stream()
+    public List<BookingFee> getSettleableIssueFees(Long bookingId) {
+        return bookingFeeRepository.findByBookingIdOrderByCreatedAtAsc(bookingId).stream()
+                .filter(fee -> BookingFee.FEE_TYPE_ISSUE_COMPENSATION.equals(fee.getFeeType()))
+                .filter(fee -> fee.getPayment() == null || !Payment.STATUS_PAID.equalsIgnoreCase(fee.getPayment().getStatus()))
+                .filter(fee -> fee.getIssue() != null && fee.getIssue().getStatus() == IssueStatus.OPEN)
+                .toList();
+    }
+
+    @Override
+    public void attachPayment(Collection<BookingFee> fees, Payment payment) {
+        fees.forEach(fee -> {
+            fee.setPayment(payment);
+            if (Payment.STATUS_PAID.equalsIgnoreCase(payment.getStatus()) && fee.getIssue() != null) {
+                Issue issue = fee.getIssue();
+                if (issue.getStatus() == IssueStatus.OPEN) {
+                    issue.setStatus(IssueStatus.RESOLVED);
+                    issue.setResolutionNote(Payment.TYPE_FINAL.equalsIgnoreCase(payment.getPaymentType())
+                            ? "Đã thu cùng quyết toán khi trả xe"
+                            : "Đã thanh toán (" + payment.getPaymentMethod() + ")");
+                    issue.setResolvedAt(OffsetDateTime.now());
+                    issueRepository.save(issue);
+                }
+            }
+        });
+        bookingFeeRepository.saveAll(fees);
+    }
+
+    @Override
+    public void confirmPayment(Payment payment) {
+        List<BookingFee> taken = bookingFeeRepository.findByPaymentId(payment.getId());
+        attachPayment(taken, payment);
+    }
+
+    @Override
+    public void detachPayment(Payment payment) {
+        List<BookingFee> taken = bookingFeeRepository.findByPaymentId(payment.getId());
+        taken.forEach(fee -> fee.setPayment(null));
+        bookingFeeRepository.saveAll(taken);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BookingFee> getUnpaidFees(Long bookingId) {
+        return bookingFeeRepository.findByBookingIdOrderByCreatedAtAsc(bookingId).stream()
+                .filter(fee -> !isPaid(fee))
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BigDecimal calculatePrepaidIssueFees(Long bookingId) {
+        return bookingFeeRepository.findByBookingIdOrderByCreatedAtAsc(bookingId).stream()
+                .filter(fee -> BookingFee.FEE_TYPE_ISSUE_COMPENSATION.equals(fee.getFeeType()))
+                .filter(this::isPaid)
                 .map(BookingFee::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private boolean isPaid(BookingFee fee) {
+        return fee.getPayment() != null && Payment.STATUS_PAID.equalsIgnoreCase(fee.getPayment().getStatus());
     }
 }

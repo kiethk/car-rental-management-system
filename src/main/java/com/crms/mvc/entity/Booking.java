@@ -7,6 +7,16 @@ import java.time.OffsetDateTime;
 @Entity
 @Table(name = "bookings")
 public class Booking {
+    /** Created and waiting for the deposit; expires if it is not paid in time. */
+    public static final String STATUS_PENDING_PAYMENT = "pending_payment";
+    /** Deposit paid, car not handed over yet. */
+    public static final String STATUS_CONFIRMED = "confirmed";
+    /** Car handed over, rental in progress until settlement. */
+    public static final String STATUS_ACTIVE = "active";
+    /** Settled and closed. */
+    public static final String STATUS_COMPLETED = "completed";
+    public static final String STATUS_CANCELLED = "cancelled";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "booking_id")
@@ -34,6 +44,9 @@ public class Booking {
 
     @Column(name = "pickup_time", nullable = false)
     private OffsetDateTime pickupTime;
+
+    @Column(name = "actual_pickup_time")
+    private OffsetDateTime actualPickupTime;
 
     @Column(name = "scheduled_end_time", nullable = false)
     private OffsetDateTime scheduledEndTime;
@@ -84,6 +97,9 @@ public class Booking {
 
     public OffsetDateTime getPickupTime() { return pickupTime; }
     public void setPickupTime(OffsetDateTime pickupTime) { this.pickupTime = pickupTime; }
+
+    public OffsetDateTime getActualPickupTime() { return actualPickupTime; }
+    public void setActualPickupTime(OffsetDateTime actualPickupTime) { this.actualPickupTime = actualPickupTime; }
 
     public OffsetDateTime getScheduledEndTime() { return scheduledEndTime; }
     public void setScheduledEndTime(OffsetDateTime scheduledEndTime) { this.scheduledEndTime = scheduledEndTime; }

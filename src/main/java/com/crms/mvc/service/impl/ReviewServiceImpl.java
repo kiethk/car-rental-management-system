@@ -1,9 +1,11 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.dto.RatingSummaryDTO;
 import com.crms.mvc.dto.ReviewDTO;
 import com.crms.mvc.dto.ReviewFormDTO;
 import com.crms.mvc.dto.VehicleReviewSummaryDTO;
 import com.crms.mvc.entity.Booking;
+import com.crms.mvc.entity.Payment;
 import com.crms.mvc.entity.Review;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.PaymentRepository;
@@ -15,7 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.OffsetDateTime;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -65,6 +69,18 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Map<Long, RatingSummaryDTO> ratingsByVehicleType() {
+        Map<Long, RatingSummaryDTO> ratings = new HashMap<>();
+        for (Object[] row : reviewRepository.summarizeRatingsByVehicleType()) {
+            double average = BigDecimal.valueOf(((Number) row[1]).doubleValue())
+                    .setScale(1, RoundingMode.HALF_UP).doubleValue();
+            ratings.put(((Number) row[0]).longValue(), new RatingSummaryDTO(average, ((Number) row[2]).longValue()));
+        }
+        return ratings;
+    }
+
+    @Override
     public void submit(Long bookingId, Long customerId, ReviewFormDTO form) {
         Booking booking = findOwnedBooking(bookingId, customerId);
         if (!isFinanciallyComplete(booking)) {
@@ -101,8 +117,8 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     private boolean isFinanciallyComplete(Booking booking) {
-        return "completed".equalsIgnoreCase(booking.getStatus())
-                && !paymentRepository.existsByBookingIdAndStatus(booking.getId(), "pending");
+        return Booking.STATUS_COMPLETED.equalsIgnoreCase(booking.getStatus())
+                && !paymentRepository.existsByBookingIdAndStatus(booking.getId(), Payment.STATUS_PENDING);
     }
 
     private Booking findOwnedBooking(Long bookingId, Long customerId) {

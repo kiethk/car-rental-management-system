@@ -2,10 +2,12 @@ package com.crms.mvc.controller;
 
 import com.crms.mvc.util.CurrentAccount;
 import com.crms.mvc.dto.BookingCreateDTO;
+import com.crms.mvc.dto.BookingQuoteDTO;
+import java.time.LocalDateTime;
+import org.springframework.format.annotation.DateTimeFormat;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.BookingSummaryDTO;
 import com.crms.mvc.dto.BookingCancelDTO;
-import com.crms.mvc.util.DateTimeUtils;
 import com.crms.mvc.dto.VehicleTypeSearchResultDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Vehicle;
@@ -17,18 +19,24 @@ import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.PaymentService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import com.crms.mvc.entity.IssueStatus;
+import com.crms.mvc.dto.IssueDTO;
+import com.crms.mvc.service.IssueService;
+import com.crms.mvc.service.HandoverService;
+import com.crms.mvc.util.MediaUtils;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.CacheControl;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import com.crms.mvc.entity.LicenseDocument;
 import com.crms.mvc.service.LicenseDocumentService;
@@ -37,187 +45,137 @@ import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.dto.ReviewDTO;
 import com.crms.mvc.dto.ReviewFormDTO;
 import com.crms.mvc.service.ReviewService;
+import com.crms.mvc.service.TrafficFineService;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.NoSuchElementException;
+import com.crms.mvc.service.BookingQueryService;
+import com.crms.mvc.service.VehicleAvailabilityService;
+import com.crms.mvc.dto.RentalWindow;
+import com.crms.mvc.dto.RentalDuration;
+import com.crms.mvc.util.RentalWindowParser;
+import com.crms.mvc.util.VehicleImages;
 
 @Controller
 public class BookingController {
     private final BookingService bookingService;
+    private final BookingQueryService bookingQueryService;
+    private final VehicleAvailabilityService vehicleAvailabilityService;
     private final PaymentService paymentService;
     private final VehicleTypeService vehicleTypeService;
     private final PricingService pricingService;
     private final LicenseDocumentService licenseDocumentService;
     private final ContractTemplateService contractTemplateService;
+    private final IssueService issueService;
+    private final HandoverService handoverService;
     private final ReviewService reviewService;
+    private final TrafficFineService trafficFineService;
 
     public BookingController(
             BookingService bookingService,
+            BookingQueryService bookingQueryService,
+            VehicleAvailabilityService vehicleAvailabilityService,
             PaymentService paymentService,
             VehicleTypeService vehicleTypeService,
             LicenseDocumentService licenseDocumentService,
             ContractTemplateService contractTemplateService,
             PricingService pricingService,
-            ReviewService reviewService) {
+            IssueService issueService,
+            HandoverService handoverService,
+            ReviewService reviewService,
+            TrafficFineService trafficFineService) {
         this.bookingService = bookingService;
+        this.bookingQueryService = bookingQueryService;
+        this.vehicleAvailabilityService = vehicleAvailabilityService;
         this.paymentService = paymentService;
         this.vehicleTypeService = vehicleTypeService;
         this.licenseDocumentService = licenseDocumentService;
         this.contractTemplateService = contractTemplateService;
         this.pricingService = pricingService;
+        this.issueService = issueService;
+        this.handoverService = handoverService;
         this.reviewService = reviewService;
+        this.trafficFineService = trafficFineService;
     }
 
     // STEP 1 & 2: Choose rental schedule & filter available vehicle types
     @GetMapping({ "/search", "/vehicles/available" })
-    public String searchAvailableVehicles(
-            @RequestParam(value = "startDate", required = false) String startDateStr,
-            @RequestParam(value = "endDate", required = false) String endDateStr,
-            @RequestParam(value = "date", required = false) String dateStr,
-            @RequestParam(value = "startTime", required = false) String startStr,
-            @RequestParam(value = "endTime", required = false) String endStr,
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "brand", required = false, defaultValue = "all") String brand,
-            @RequestParam(value = "category", required = false, defaultValue = "all") String category,
-            @RequestParam(value = "seats", required = false, defaultValue = "0") Integer minSeats,
-            @RequestParam(value = "transmission", required = false, defaultValue = "all") String transmission,
-            @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
-            @RequestParam(value = "sortBy", required = false, defaultValue = "price") String sortBy,
-            Model model) {
+    public String searchAvailableVehicles(@ModelAttribute RentalSearchParams params, Model model) {
+        RentalWindow window = params.window();
 
-        LocalDate startDate = LocalDate.now().plusDays(1);
-        if (startDateStr != null && !startDateStr.isBlank()) {
-            try {
-                startDate = LocalDate.parse(startDateStr.trim());
-            } catch (Exception ignored) {
-            }
-        } else if (dateStr != null && !dateStr.isBlank()) {
-            try {
-                startDate = LocalDate.parse(dateStr.trim());
-            } catch (Exception ignored) {
-            }
-        }
+        // Invalid times are reported back to the customer, never silently moved to another slot.
+        String scheduleError = scheduleErrorOf(window);
+        List<VehicleTypeSearchResultDTO> results = scheduleError != null ? List.of()
+                : params.criteria().narrow(vehicleAvailabilityService.searchAvailableVehicleTypes(
+                        window.startAt(), window.endAt(), params.getCategory()));
+        RentalDuration duration = window.duration();
 
-        LocalDate endDate = startDate;
-        if (endDateStr != null && !endDateStr.isBlank()) {
-            try {
-                endDate = LocalDate.parse(endDateStr.trim());
-            } catch (Exception ignored) {
-            }
-        } else if (startDateStr != null && !startDateStr.isBlank()) {
-            endDate = startDate;
-        } else if (dateStr != null && !dateStr.isBlank()) {
-            try {
-                endDate = LocalDate.parse(dateStr.trim());
-            } catch (Exception ignored) {
-            }
-        }
-
-        LocalTime startTime = LocalTime.of(9, 0);
-        LocalTime endTime = LocalTime.of(18, 0);
-
-        LocalDateTime startDateTime = null;
-        LocalDateTime endDateTime = null;
-
-        if (startStr != null && startStr.contains("T")) {
-            try {
-                startDateTime = LocalDateTime.parse(startStr);
-            } catch (Exception ignored) {
-            }
-        } else if (startStr != null && !startStr.isBlank()) {
-            try {
-                startTime = LocalTime.parse(startStr.trim());
-            } catch (Exception ignored) {
-            }
-        }
-
-        if (endStr != null && endStr.contains("T")) {
-            try {
-                endDateTime = LocalDateTime.parse(endStr);
-            } catch (Exception ignored) {
-            }
-        } else if (endStr != null && !endStr.isBlank()) {
-            try {
-                endTime = LocalTime.parse(endStr.trim());
-            } catch (Exception ignored) {
-            }
-        }
-
-        if (startDateTime == null) {
-            startDateTime = LocalDateTime.of(startDate, startTime);
-        }
-        if (endDateTime == null) {
-            endDateTime = LocalDateTime.of(endDate, endTime);
-        }
-
-        if (endDateTime.isBefore(startDateTime) || endDateTime.isEqual(startDateTime)) {
-            endDateTime = startDateTime.plusHours(4);
-            endDate = endDateTime.toLocalDate();
-            endTime = endDateTime.toLocalTime();
-        } else {
-            startDate = startDateTime.toLocalDate();
-            startTime = startDateTime.toLocalTime();
-            endDate = endDateTime.toLocalDate();
-            endTime = endDateTime.toLocalTime();
-        }
-
-        ZoneOffset offset = ZoneOffset.ofHours(7);
-        List<VehicleTypeSearchResultDTO> rawResults = bookingService.searchAvailableVehicleTypes(
-                startDateTime.atOffset(offset), endDateTime.atOffset(offset), category);
-
-        // Filter by keyword, brand, transmission, seats, max price
-        List<VehicleTypeSearchResultDTO> results = rawResults.stream()
-                .filter(v -> minSeats == null || minSeats == 0 || (v.getSeats() != null && v.getSeats() >= minSeats))
-                .filter(v -> maxPrice == null || v.getPricePerHour().compareTo(maxPrice) <= 0)
-                .filter(v -> {
-                    if (keyword == null || keyword.isBlank())
-                        return true;
-                    String kw = keyword.trim().toLowerCase();
-                    String name = v.getName() != null ? v.getName().toLowerCase() : "";
-                    String b = v.getBrand() != null ? v.getBrand().toLowerCase() : "";
-                    String display = v.getDisplayName() != null ? v.getDisplayName().toLowerCase() : "";
-                    return name.contains(kw) || b.contains(kw) || display.contains(kw);
-                })
-                .filter(v -> {
-                    if (brand == null || brand.isBlank() || brand.equalsIgnoreCase("all"))
-                        return true;
-                    return v.getBrand() != null && v.getBrand().equalsIgnoreCase(brand.trim());
-                })
-                .filter(v -> {
-                    if (transmission == null || transmission.isBlank() || transmission.equalsIgnoreCase("all"))
-                        return true;
-                    return v.getTransmission() != null && v.getTransmission().equalsIgnoreCase(transmission.trim());
-                })
-                .toList();
-
-        long rentalHours = Math.max(1, Duration.between(startDateTime, endDateTime).toHours());
-        long rentalDays = rentalHours / 24;
-        long remainingHours = rentalHours % 24;
-        String durationDisplay = (rentalDays > 0 ? (rentalDays + "d ") : "")
-                + (remainingHours > 0 ? (remainingHours + "h") : (rentalDays == 0 ? "1h" : ""));
-
+        model.addAttribute("scheduleError", scheduleError);
         model.addAttribute("today", LocalDate.now().toString());
-        model.addAttribute("selectedStartDate", startDate.toString());
-        model.addAttribute("selectedEndDate", endDate.toString());
-        model.addAttribute("selectedDate", startDate.toString());
-        model.addAttribute("selectedStart", startTime.toString().substring(0, 5));
-        model.addAttribute("selectedEnd", endTime.toString().substring(0, 5));
-        model.addAttribute("startTime", startDateTime);
-        model.addAttribute("endTime", endDateTime);
-        model.addAttribute("keyword", keyword != null ? keyword.trim() : "");
-        model.addAttribute("brand", brand);
-        model.addAttribute("category", category);
-        model.addAttribute("minSeats", minSeats);
-        model.addAttribute("transmission", transmission);
-        model.addAttribute("maxPrice", maxPrice != null ? maxPrice : BigDecimal.valueOf(500000));
-        model.addAttribute("sortBy", sortBy);
-        model.addAttribute("rentalHours", rentalHours);
-        model.addAttribute("rentalDays", rentalDays);
-        model.addAttribute("remainingHours", remainingHours);
-        model.addAttribute("durationDisplay", durationDisplay);
+        model.addAttribute("selectedStartDate", window.startDate().toString());
+        model.addAttribute("selectedEndDate", window.endDate().toString());
+        model.addAttribute("selectedDate", window.startDate().toString());
+        model.addAttribute("selectedStart", window.startTime().toString().substring(0, 5));
+        model.addAttribute("selectedEnd", window.endTime().toString().substring(0, 5));
+        model.addAttribute("startTime", window.start());
+        model.addAttribute("endTime", window.end());
+        model.addAttribute("keyword", params.getKeyword() != null ? params.getKeyword().trim() : "");
+        model.addAttribute("brand", params.getBrand());
+        model.addAttribute("category", params.getCategory());
+        model.addAttribute("minSeats", params.getSeats());
+        model.addAttribute("transmission", params.getTransmission());
+        model.addAttribute("maxPrice", params.getMaxPrice() != null ? params.getMaxPrice() : BigDecimal.valueOf(500000));
+        model.addAttribute("sortBy", params.getSortBy());
+        addDuration(model, duration);
         model.addAttribute("results", results);
+        model.addAttribute("ratings", reviewService.ratingsByVehicleType());
         model.addAttribute("allCount", results.size());
         model.addAttribute("brands", vehicleTypeService.getDistinctBrands());
         model.addAttribute("categories", vehicleTypeService.getDistinctCategories());
-        return "bookings/search";
+        return "screens/customer/bookings/search/index";
+    }
+
+    /** Why the window cannot be rented, or null when it can. */
+    private String scheduleErrorOf(RentalWindow window) {
+        try {
+            bookingService.validateRentalSchedule(window.start(), window.end());
+            return null;
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
+        }
+    }
+
+    private static void addDuration(Model model, RentalDuration duration) {
+        model.addAttribute("rentalHours", duration.hours());
+        model.addAttribute("rentalDays", duration.days());
+        model.addAttribute("remainingHours", duration.remainingHours());
+        model.addAttribute("durationDisplay", duration.display());
+    }
+
+    @GetMapping(value = "/bookings/quote", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<BookingQuoteDTO> previewQuote(
+            @RequestParam Long vehicleTypeId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+            @RequestParam Long contractTemplateId,
+            @RequestParam(required = false) String promoCode,
+            HttpSession session) {
+        if (CurrentAccount.customerId(session).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(BookingQuoteDTO.invalid("Vui lòng đăng nhập bằng tài khoản khách hàng."));
+        }
+        BookingCreateDTO request = new BookingCreateDTO();
+        request.setVehicleTypeId(vehicleTypeId);
+        request.setStartTime(startTime);
+        request.setEndTime(endTime);
+        request.setContractTemplateId(contractTemplateId);
+        request.setPromotionCode(promoCode);
+        try {
+            return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                    .body(BookingQuoteDTO.from(bookingService.previewPrice(request)));
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            return ResponseEntity.badRequest().cacheControl(CacheControl.noStore()).body(BookingQuoteDTO.invalid(ex.getMessage()));
+        }
     }
 
     // BƯỚC 3: Màn hình Checkout / Xác nhận đơn đặt xe
@@ -229,87 +187,55 @@ public class BookingController {
             @RequestParam(value = "startTime", required = false) String startStr,
             @RequestParam(value = "endTime", required = false) String endStr,
             @RequestParam(value = "date", required = false) String dateStr,
+            @RequestParam(value = "vehicleId", required = false) Long vehicleId,
             HttpSession session, Model model, RedirectAttributes ra) {
 
         Long customerId = CurrentAccount.customerId(session).orElse(null);
         if (customerId == null) {
-            ra.addFlashAttribute("error", "Please sign in to proceed with your booking.");
+            ra.addFlashAttribute("error", "Vui lòng đăng nhập để tiếp tục đặt xe.");
             return "redirect:/login";
         }
 
         VehicleType vt = vehicleTypeService.findById(vehicleTypeId).orElse(null);
         if (vt == null) {
-            ra.addFlashAttribute("error", "Vehicle type not found.");
+            ra.addFlashAttribute("error", "Không tìm thấy dòng xe.");
             return "redirect:/search";
         }
 
-        LocalDateTime startTime = null;
-        LocalDateTime endTime = null;
-
-        if (startStr != null && startStr.contains("T")) {
-            try {
-                startTime = LocalDateTime.parse(startStr);
-            } catch (Exception ignored) {
-            }
-        }
-        if (endStr != null && endStr.contains("T")) {
-            try {
-                endTime = LocalDateTime.parse(endStr);
-            } catch (Exception ignored) {
-            }
+        RentalWindow window = RentalWindowParser.parse(startDateStr, endDateStr, dateStr, startStr, endStr);
+        String scheduleError = scheduleErrorOf(window);
+        if (scheduleError != null) {
+            ra.addFlashAttribute("error", scheduleError);
+            return "redirect:/search";
         }
 
-        if (startTime == null || endTime == null) {
-            LocalDate sDate = (startDateStr != null && !startDateStr.isBlank())
-                    ? LocalDate.parse(startDateStr.trim())
-                    : ((dateStr != null && !dateStr.isBlank()) ? LocalDate.parse(dateStr.trim())
-                            : LocalDate.now().plusDays(1));
-            LocalDate eDate = (endDateStr != null && !endDateStr.isBlank())
-                    ? LocalDate.parse(endDateStr.trim())
-                    : sDate;
-            LocalTime s = (startStr != null && !startStr.isBlank() && !startStr.contains("T"))
-                    ? LocalTime.parse(startStr.trim())
-                    : LocalTime.of(9, 0);
-            LocalTime e = (endStr != null && !endStr.isBlank() && !endStr.contains("T"))
-                    ? LocalTime.parse(endStr.trim())
-                    : LocalTime.of(18, 0);
-            startTime = LocalDateTime.of(sDate, s);
-            endTime = LocalDateTime.of(eDate, e);
-        }
-
-        if (endTime.isBefore(startTime) || endTime.isEqual(startTime)) {
-            endTime = startTime.plusHours(4);
-        }
-
-        ZoneOffset offset = ZoneOffset.ofHours(7);
-        List<Vehicle> availableCars = bookingService.findAvailableVehiclesInTimeRange(
-                vehicleTypeId, startTime.atOffset(offset), endTime.atOffset(offset));
-
+        List<Vehicle> availableCars = vehicleAvailabilityService.findAvailableVehiclesInTimeRange(
+                vehicleTypeId, window.startAt(), window.endAt());
         if (availableCars.isEmpty()) {
             ra.addFlashAttribute("error", "Sorry, no cars of this type are available for the selected timeframe.");
             return "redirect:/search";
         }
 
         ContractTemplateDTO contractTerms = contractTemplateService.getActiveTemplate();
-        PriceQuoteDTO quote = pricingService.calculatePrice(startTime, endTime, vt.getPricePerHour(),
+        PriceQuoteDTO quote = pricingService.calculatePrice(window.start(), window.end(), vt.getPricePerHour(),
                 contractTerms.getDepositRate(), BigDecimal.ZERO);
-        long rentalHours = quote.getRentalHours();
-        long rentalDays = rentalHours / 24;
-        long remainingHours = rentalHours % 24;
-        String durationDisplay = (rentalDays > 0 ? (rentalDays + "d ") : "")
-                + (remainingHours > 0 ? (remainingHours + "h") : (rentalDays == 0 ? "1h" : ""));
-        BigDecimal estimatedTotal = quote.getTotalPrice();
-        BigDecimal depositAmount = quote.getDepositAmount();
-        BigDecimal remainingAmount = quote.getRemainingAmount();
 
         BookingCreateDTO form = new BookingCreateDTO();
         form.setVehicleTypeId(vehicleTypeId);
-        form.setStartTime(startTime);
-        form.setEndTime(endTime);
+        form.setStartTime(window.start());
+        form.setEndTime(window.end());
         form.setContractTemplateId(contractTerms.getId());
+        // Coming from a car's schedule page: pre-select that plate if it is free for these hours.
+        if (vehicleId != null) {
+            if (availableCars.stream().anyMatch(car -> car.getId().equals(vehicleId))) {
+                form.setVehicleId(vehicleId);
+            } else {
+                model.addAttribute("error", "Xe bạn chọn không trống trong khung giờ này. Hãy chọn xe khác bên dưới hoặc đổi giờ thuê.");
+            }
+        }
 
         LicenseDocument license = licenseDocumentService.getCustomerLicense(customerId);
-        boolean hasValidLicense = licenseDocumentService.hasValidLicense(customerId, endTime.toLocalDate());
+        boolean hasValidLicense = licenseDocumentService.hasValidLicense(customerId, window.endDate());
 
         model.addAttribute("vehicleType", vt);
         model.addAttribute("bookingForm", form);
@@ -317,16 +243,13 @@ public class BookingController {
         model.addAttribute("customerLicense", license);
         model.addAttribute("hasValidLicense", hasValidLicense);
         model.addAttribute("licenseExpired", license != null && !hasValidLicense);
-        model.addAttribute("rentalHours", rentalHours);
-        model.addAttribute("rentalDays", rentalDays);
-        model.addAttribute("remainingHours", remainingHours);
-        model.addAttribute("durationDisplay", durationDisplay);
-        model.addAttribute("estimatedTotal", estimatedTotal);
-        model.addAttribute("depositAmount", depositAmount);
-        model.addAttribute("remainingAmount", remainingAmount);
-        model.addAttribute("vehicleImage", resolveVehicleImage(vt));
+        addDuration(model, new RentalDuration(quote.getRentalHours()));
+        model.addAttribute("estimatedTotal", quote.getTotalPrice());
+        model.addAttribute("depositAmount", quote.getDepositAmount());
+        model.addAttribute("remainingAmount", quote.getRemainingAmount());
+        model.addAttribute("vehicleImage", VehicleImages.urlOf(vt));
         model.addAttribute("contractTerms", contractTerms);
-        return "bookings/checkout";
+        return "screens/customer/bookings/checkout/index";
     }
 
     // TẠO ĐƠN: POST /bookings -> Lưu Booking (pending_payment) -> Sang trang cọc
@@ -336,14 +259,6 @@ public class BookingController {
                                 HttpSession session, RedirectAttributes ra) {
         Long customerId = CurrentAccount.customerId(session).orElse(null);
         if (customerId == null) return "redirect:/login";
-
-        LocalDate rentalEndDate = form.getEndTime() != null ? form.getEndTime().toLocalDate() : LocalDate.now();
-        if (!licenseDocumentService.hasValidLicense(customerId, rentalEndDate)) {
-            ra.addFlashAttribute("error", licenseDocumentService.getCustomerLicense(customerId) == null
-                    ? "Please upload your driving license before booking."
-                    : "Your driving license expires before the rental ends.");
-            return "redirect:/licenses/my-license";
-        }
 
         if (result.hasErrors()) {
             ra.addFlashAttribute("error", result.getAllErrors().get(0).getDefaultMessage());
@@ -375,9 +290,9 @@ public class BookingController {
         if (customerId == null) return "redirect:/login";
 
         try {
-            BookingDetailDTO detail = bookingService.getBookingDetail(bookingId, customerId);
-            if (!"pending_payment".equalsIgnoreCase(detail.getStatus())) {
-                if ("confirmed".equalsIgnoreCase(detail.getStatus())) {
+            BookingDetailDTO detail = bookingQueryService.getBookingDetail(bookingId, customerId);
+            if (!Booking.STATUS_PENDING_PAYMENT.equalsIgnoreCase(detail.getStatus())) {
+                if (Booking.STATUS_CONFIRMED.equalsIgnoreCase(detail.getStatus())) {
                     return "redirect:/bookings/" + bookingId + "/success";
                 }
                 ra.addFlashAttribute("error",
@@ -385,7 +300,7 @@ public class BookingController {
                 return "redirect:/bookings/" + bookingId;
             }
             model.addAttribute("booking", detail);
-            return "bookings/deposit";
+            return "screens/customer/bookings/deposit/index";
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             return "redirect:/bookings/my-bookings";
@@ -399,9 +314,9 @@ public class BookingController {
         if (customerId == null) return "redirect:/login";
 
         try {
-            BookingDetailDTO detail = bookingService.getBookingDetail(bookingId, customerId);
+            BookingDetailDTO detail = bookingQueryService.getBookingDetail(bookingId, customerId);
             model.addAttribute("booking", detail);
-            return "bookings/success";
+            return "screens/customer/bookings/success/index";
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             return "redirect:/bookings/my-bookings";
@@ -414,11 +329,11 @@ public class BookingController {
                              HttpSession session, Model model, RedirectAttributes ra) {
         Long customerId = CurrentAccount.customerId(session).orElse(null);
         if (customerId == null) {
-            ra.addFlashAttribute("error", "Please sign in to view your bookings.");
+            ra.addFlashAttribute("error", "Vui lòng đăng nhập để xem chuyến đi của bạn.");
             return "redirect:/login";
         }
 
-        List<BookingSummaryDTO> all = bookingService.getMyBookings(customerId);
+        List<BookingSummaryDTO> all = bookingQueryService.getMyBookings(customerId);
         List<BookingSummaryDTO> filtered = "all".equalsIgnoreCase(filterStatus)
                 ? all
                 : all.stream().filter(b -> filterStatus.equalsIgnoreCase(b.getStatus())).toList();
@@ -426,7 +341,7 @@ public class BookingController {
         model.addAttribute("bookings", filtered);
         model.addAttribute("allCount", all.size());
         model.addAttribute("currentFilter", filterStatus);
-        return "bookings/my-bookings";
+        return "screens/customer/bookings/my-bookings/index";
     }
 
     // Chi tiết đơn
@@ -436,30 +351,40 @@ public class BookingController {
         if (customerId == null) return "redirect:/login";
 
         try {
-            BookingDetailDTO detail = bookingService.getBookingDetail(bookingId, customerId);
+            BookingDetailDTO detail = bookingQueryService.getBookingDetail(bookingId, customerId);
             model.addAttribute("booking", detail);
 
-            int freeCancellationHours = 72;
-            try {
-                ContractTemplateDTO terms = contractTemplateService.getActiveTemplate();
-                if (terms != null && terms.getFreeCancellationHours() > 0) {
-                    freeCancellationHours = terms.getFreeCancellationHours();
-                }
-            } catch (Exception ignored) {
-            }
-
-            OffsetDateTime nowVn = OffsetDateTime.now(ZoneOffset.ofHours(7));
-            OffsetDateTime cancelDeadline = detail.getPickupTime() != null
-                    ? detail.getPickupTime().minusHours(freeCancellationHours)
+            // Same rule as BookingService.cancelBooking: the terms the customer accepted, never the ACTIVE version.
+            ContractTemplateDTO acceptedTerms = detail.getContract() != null ? detail.getContract().getTerms() : null;
+            OffsetDateTime cancelDeadline = acceptedTerms != null && detail.getPickupTime() != null
+                    ? acceptedTerms.freeCancellationUntil(detail.getPickupTime(), detail.getDepositPaidAt())
                     : null;
-            boolean refundEligible = "confirmed".equalsIgnoreCase(detail.getStatus()) && cancelDeadline != null
-                    && !nowVn.isAfter(cancelDeadline);
+            boolean refundEligible = Booking.STATUS_CONFIRMED.equalsIgnoreCase(detail.getStatus()) && cancelDeadline != null
+                    && !OffsetDateTime.now().isAfter(cancelDeadline);
 
             model.addAttribute("refundEligible", refundEligible);
-            model.addAttribute("freeCancellationHours", freeCancellationHours);
+            model.addAttribute("freeCancellationHours", acceptedTerms != null ? acceptedTerms.getFreeCancellationHours() : null);
             model.addAttribute("cancelDeadline", cancelDeadline);
             model.addAttribute("cancelForm", new BookingCancelDTO());
-            if ("completed".equalsIgnoreCase(detail.getStatus())) {
+
+            List<IssueDTO> issues = issueService.findByBookingForCustomer(bookingId, customerId);
+            model.addAttribute("issues", issues);
+            model.addAttribute("trafficFines", trafficFineService.findByBookingForCustomer(bookingId, customerId));
+
+            boolean canPay = Booking.STATUS_ACTIVE.equalsIgnoreCase(detail.getStatus());
+            List<IssueDTO> payableIssues = issues.stream()
+                    .filter(i -> canPay && i.getStatus() == IssueStatus.OPEN && !i.isFeePaid()
+                            && i.getFeeAmount() != null && i.getFeeAmount().compareTo(BigDecimal.ZERO) > 0)
+                    .toList();
+            BigDecimal payableTotal = payableIssues.stream()
+                    .map(IssueDTO::getFeeAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            model.addAttribute("payableIssues", payableIssues);
+            model.addAttribute("payableTotal", payableTotal);
+            model.addAttribute("returnReceipt", handoverService.getReturnReceipt(bookingId));
+
+            if (Booking.STATUS_COMPLETED.equalsIgnoreCase(detail.getStatus())) {
                 boolean reviewEligible = reviewService.isEligibleForCustomer(bookingId, customerId);
                 model.addAttribute("reviewEligible", reviewEligible);
                 if (reviewEligible) {
@@ -473,7 +398,7 @@ public class BookingController {
                     model.addAttribute("reviewForm", reviewForm);
                 }
             }
-            return "bookings/detail";
+            return "screens/customer/bookings/detail/index";
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             return "redirect:/bookings/my-bookings";
@@ -532,8 +457,8 @@ public class BookingController {
             return "redirect:/login";
 
         try {
-            BookingDetailDTO detail = bookingService.getBookingDetail(bookingId, customerId);
-            boolean wasConfirmed = "confirmed".equalsIgnoreCase(detail.getStatus());
+            BookingDetailDTO detail = bookingQueryService.getBookingDetail(bookingId, customerId);
+            boolean wasConfirmed = Booking.STATUS_CONFIRMED.equalsIgnoreCase(detail.getStatus());
             boolean refundCreated = bookingService.cancelBooking(bookingId, customerId, form);
 
             if (refundCreated) {
@@ -554,10 +479,24 @@ public class BookingController {
         return "redirect:/bookings/" + bookingId;
     }
 
-    private String resolveVehicleImage(VehicleType vt) {
-        if (vt == null || vt.getImageUrl() == null || vt.getImageUrl().isBlank()) {
-            return "https://images.unsplash.com/photo-1619682817481-e994891cd1f5?auto=format&fit=crop&w=800&q=80";
+    @GetMapping("/bookings/{bookingId}/issues/{issueId}/evidences/{evidenceId}")
+    public ResponseEntity<Resource> getIssueEvidence(
+            @PathVariable("bookingId") Long bookingId,
+            @PathVariable("issueId") Long issueId,
+            @PathVariable("evidenceId") Long evidenceId,
+            HttpSession session) {
+        Long customerId = CurrentAccount.customerId(session).orElse(null);
+        if (customerId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return vt.getImageUrl();
+        try {
+            Resource file = issueService.loadEvidenceForCustomer(issueId, evidenceId, customerId);
+            MediaType mediaType = MediaUtils.resolveMediaType(file.getFilename());
+            return ResponseEntity.ok()
+                    .contentType(mediaType)
+                    .body(file);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

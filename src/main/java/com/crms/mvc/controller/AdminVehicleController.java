@@ -5,9 +5,10 @@ import com.crms.mvc.dto.PageNavDTO;
 import com.crms.mvc.dto.VehicleDTO;
 import com.crms.mvc.dto.VehicleFormDTO;
 import com.crms.mvc.entity.Vehicle;
-import com.crms.mvc.service.LicensePlateService;
 import com.crms.mvc.service.VehicleService;
 import com.crms.mvc.service.VehicleTypeService;
+import com.crms.mvc.util.CurrentAccount;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -23,6 +24,7 @@ import java.util.Map;
 public class AdminVehicleController {
 
     private static final String LIST_PATH = "/admin/vehicles";
+    private static final String RETIRE_ADMIN_ONLY_MESSAGE = "Chỉ quản trị viên mới được chuyển xe sang trạng thái ngừng khai thác.";
 
     private final VehicleService vehicleService;
     private final VehicleTypeService vehicleTypeService;
@@ -48,7 +50,7 @@ public class AdminVehicleController {
         model.addAttribute("statusCounts", statusCounts);
         model.addAttribute("totalCars", statusCounts.values().stream().mapToLong(Long::longValue).sum());
         model.addAttribute("activeNav", "vehicles");
-        return "admin/vehicles/list";
+        return "screens/admin/vehicles/list/index";
     }
 
     @GetMapping("/new")
@@ -58,7 +60,7 @@ public class AdminVehicleController {
         }
         model.addAttribute("vehicleTypes", vehicleTypeService.findAll());
         model.addAttribute("activeNav", "vehicles");
-        return "admin/vehicles/form";
+        return "screens/admin/vehicles/form/index";
     }
 
     @PostMapping
@@ -69,12 +71,12 @@ public class AdminVehicleController {
         if (result.hasErrors()) {
             model.addAttribute("vehicleTypes", vehicleTypeService.findAll());
             model.addAttribute("activeNav", "vehicles");
-            return "admin/vehicles/form";
+            return "screens/admin/vehicles/form/index";
         }
 
         try {
-            Vehicle created = vehicleService.create(form);
-            ra.addFlashAttribute("success", "Car created successfully! ID: #" + created.getId() + " - Plate: " + created.getLicensePlate().getPlate());
+            VehicleDTO created = vehicleService.create(form);
+            ra.addFlashAttribute("success", "Đã tạo xe thành công! Mã: #" + created.getId() + " - Biển số: " + created.getLicensePlate());
             return "redirect:/admin/vehicles";
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
@@ -85,35 +87,38 @@ public class AdminVehicleController {
 
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
-        Vehicle vehicle = vehicleService.findEntityById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Car not found with ID: " + id));
+        VehicleFormDTO current = vehicleService.findFormById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + id));
 
         if (!model.containsAttribute("vehicleForm")) {
-            model.addAttribute("vehicleForm", VehicleFormDTO.fromEntity(vehicle));
+            model.addAttribute("vehicleForm", current);
         }
-        model.addAttribute("vehicle", vehicle);
         model.addAttribute("vehicleTypes", vehicleTypeService.findAll());
         model.addAttribute("activeNav", "vehicles");
-        return "admin/vehicles/form";
+        return "screens/admin/vehicles/form/index";
     }
 
     @PostMapping("/{id}")
     public String update(@PathVariable Long id,
                          @Valid @ModelAttribute("vehicleForm") VehicleFormDTO form,
                          BindingResult result,
+                         HttpSession session,
                          RedirectAttributes ra,
                          Model model) {
         if (result.hasErrors()) {
-            Vehicle vehicle = vehicleService.findEntityById(id).orElse(null);
-            model.addAttribute("vehicle", vehicle);
             model.addAttribute("vehicleTypes", vehicleTypeService.findAll());
             model.addAttribute("activeNav", "vehicles");
-            return "admin/vehicles/form";
+            return "screens/admin/vehicles/form/index";
+        }
+
+        if (isNewRetirement(id, form.getStatus()) && !CurrentAccount.isAdmin(session)) {
+            ra.addFlashAttribute("error", RETIRE_ADMIN_ONLY_MESSAGE);
+            return "redirect:/admin/vehicles/" + id + "/edit";
         }
 
         try {
-            Vehicle updated = vehicleService.update(id, form);
-            ra.addFlashAttribute("success", "Car #" + updated.getId() + " updated successfully!");
+            VehicleDTO updated = vehicleService.update(id, form);
+            ra.addFlashAttribute("success", "Đã cập nhật xe #" + updated.getId() + ".");
             return "redirect:/admin/vehicles";
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
@@ -122,13 +127,18 @@ public class AdminVehicleController {
     }
 
     @PostMapping("/{id}/status")
-    public String toggleStatus(@PathVariable Long id,
+    public String changeStatus(@PathVariable Long id,
                                @RequestParam("status") String status,
                                @RequestParam(value = "returnTo", required = false) String returnTo,
+                               HttpSession session,
                                RedirectAttributes ra) {
+        if (isNewRetirement(id, status) && !CurrentAccount.isAdmin(session)) {
+            ra.addFlashAttribute("error", RETIRE_ADMIN_ONLY_MESSAGE);
+            return redirectToList(returnTo);
+        }
         try {
             vehicleService.updateStatus(id, status);
-            ra.addFlashAttribute("success", "Car #" + id + " status updated to " + status.toUpperCase());
+            ra.addFlashAttribute("success", "Đã đổi trạng thái xe #" + id + " thành " + status.toUpperCase());
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
         }
@@ -142,7 +152,7 @@ public class AdminVehicleController {
                                  RedirectAttributes ra) {
         try {
             vehicleService.updateOdometer(id, odometer);
-            ra.addFlashAttribute("success", "Odometer reading updated for car #" + id + ": " + odometer + " km");
+            ra.addFlashAttribute("success", "Đã cập nhật số km của xe #" + id + ": " + odometer + " km");
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
         }
@@ -155,11 +165,17 @@ public class AdminVehicleController {
                          RedirectAttributes ra) {
         try {
             vehicleService.delete(id);
-            ra.addFlashAttribute("success", "Car #" + id + " deleted successfully!");
+            ra.addFlashAttribute("success", "Đã xóa xe #" + id + ".");
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
         }
         return redirectToList(returnTo);
+    }
+
+    /** True when the request would move a vehicle that is not retired yet into the retired status. */
+    private boolean isNewRetirement(Long id, String requestedStatus) {
+        return Vehicle.STATUS_RETIRED.equalsIgnoreCase(requestedStatus)
+                && vehicleService.findVehicleById(id).map(v -> !Vehicle.STATUS_RETIRED.equalsIgnoreCase(v.getStatus())).orElse(true);
     }
 
     /**
