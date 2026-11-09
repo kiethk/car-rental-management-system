@@ -36,7 +36,7 @@
         <!-- Empty State -->
         <div th:if="${bookings.isEmpty()}" class="bg-white rounded-4 border border customer-py-16 px-4 text-center text-secondary my-4 shadow-sm">
           <p class="fs-6 fw-semibold text-navy mb-2">Không tìm thấy đơn đặt xe nào ở trạng thái này.</p>
-          <a th:href="@{/search}" class="bg-warning text-white fw-semibold px-4 customer-py-2 rounded-2 small text-decoration-none d-inline-block"> Tìm xe ngay </a>
+          <a th:href="@{/search}" class="customer-btn-accent"> Tìm xe ngay </a>
         </div>
         <!-- Bookings List matching MyBookingsPage.tsx -->
         <div class="customer-stack-4" th:if="${!bookings.isEmpty()}">
@@ -44,7 +44,7 @@
             <div class="d-flex flex-column customer-sm-flex-row">
               <!-- Thumbnail -->
               <div class="customer-sm-w-44 customer-vehicle-height customer-sm-h-auto bg-light flex-shrink-0 overflow-hidden">
-                <img th:src="${b.imageUrl}" th:alt="${b.vehicleTypeName}" class="w-100 h-100 object-cover">
+                <img th:src="${b.imageUrl}" th:alt="${b.vehicleTypeName}" class="w-100 h-100 object-cover" loading="lazy" decoding="async">
               </div>
               <!-- Details -->
               <div class="flex-fill p-5 d-flex flex-column justify-content-between">
@@ -77,10 +77,10 @@
                   </div>
                 </div>
                 <!-- Card Action Footer -->
-                <div class="mt-4 pt-3 border-top border d-flex justify-content-end customer-text-xs">
+                <div class="mt-4 pt-3 border-top d-flex justify-content-end customer-text-xs">
                   <div class="d-flex gap-2">
-                    <a th:if="${b.status == 'pending_payment'}" th:href="@{/bookings/{id}/pay-deposit(id=${b.id})}" class="bg-warning text-white fw-semibold px-4 customer-py-1 rounded-2 text-decoration-none"> Thanh toán cọc ngay → </a>
-                    <a th:href="@{/bookings/{id}(id=${b.id})}" class="bg-surface border border text-navy fw-semibold px-4 customer-py-1 rounded-2 text-decoration-none"> Xem chi tiết đơn </a>
+                    <a th:if="${b.status == 'pending_payment'}" th:href="@{/bookings/{id}/pay-deposit(id=${b.id})}" class="customer-btn-accent"> Thanh toán cọc ngay → </a>
+                    <a th:href="@{/bookings/{id}(id=${b.id})}" class="customer-btn-ghost"> Xem chi tiết đơn </a>
                   </div>
                 </div>
               </div>

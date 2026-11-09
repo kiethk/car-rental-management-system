@@ -67,7 +67,7 @@
               <div class="checkout-section customer-stack-5">
                 <!-- Vehicle Summary Row -->
                 <div class="d-flex align-items-center gap-4 pb-4 border-bottom border">
-                  <img th:src="${vehicleImage}" th:alt="${vehicleType.name}" class="customer-vehicle-width customer-vehicle-height rounded-4 object-cover bg-light flex-shrink-0 border border shadow-sm" />
+                  <img th:src="${vehicleImage}" th:alt="${vehicleType.name}" class="customer-vehicle-width customer-vehicle-height rounded-4 object-cover bg-light flex-shrink-0 border border shadow-sm" loading="lazy" decoding="async" />
                   <div class="flex-fill customer-min-w-0">
                     <!-- Name on top, subtle category badge inline -->
                     <div class="d-flex align-items-center gap-2">
@@ -298,9 +298,9 @@
                       <span class="customer-text-xs fw-bold text-dark">đ</span>
                     </div>
                   </div>
-                  <div class="customer-pt-2 border-top border d-flex justify-content-between align-items-center customer-text-xs text-secondary" >
+                  <div class="checkout-remaining-row customer-pt-2 border-top border d-flex justify-content-between align-items-center" >
                     <span>Tiền thuê còn lại (thanh toán khi nhận xe)</span>
-                    <span class="fw-bold text-dark text-nowrap" >
+                    <span class="checkout-remaining-val fw-bold text-dark text-nowrap" >
                       <span id="remainingBalanceDisplay" th:text="${#numbers.formatDecimal(remainingAmount, 0, 'COMMA', 0, 'POINT')}" >675,000</span > đ</span >
                   </div>
                 </div>

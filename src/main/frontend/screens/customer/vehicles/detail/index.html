@@ -33,7 +33,7 @@
         <div class="col-lg-7 mb-4">
           <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
             <div class="vehicles-detail-div-detail">
-              <img th:src="${vehicle.imageUrl != null and !vehicle.imageUrl.isBlank() ? vehicle.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${vehicle.displayName}" class="w-100 h-100 object-cover" data-fallback-src="/images/car-rental-logo.svg">
+              <img th:src="${vehicle.imageUrl != null and !vehicle.imageUrl.isBlank() ? vehicle.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${vehicle.displayName}" class="w-100 h-100 object-cover" data-fallback-src="/images/car-rental-logo.svg" fetchpriority="high" decoding="async">
               <div class="position-absolute vehicles-detail-div-detail-f706">
                 <span class="badge badge-dark text-uppercase px-3 py-2 shadow-sm fw-bold vehicles-detail-span-detail" th:text="${vehicle.category}">Sedan</span>
               </div>
@@ -112,7 +112,7 @@
         </div>
         <!-- Right: Specifications & Booking Box -->
         <div class="col-lg-5">
-          <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+          <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4 vd-booking-card">
             <div class="mb-3 pb-3 border-bottom">
               <h1 class="h3 fw-bold text-navy mb-1" th:text="${vehicle.displayName}">Toyota Vios 2023</h1>
               <div class="d-flex align-items-center customer-gap-1 small text-amber fw-semibold">
@@ -122,11 +122,11 @@
               </div>
             </div>
             <!-- Price Box -->
-            <div class="bg-surface rounded-4 p-3 mb-4">
+            <div class="bg-surface rounded-4 p-3 mb-4 vd-price-box">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
                   <span class="small text-muted d-block">Giá thuê theo giờ</span>
-                  <div class="h3 fw-bold text-navy mb-0">
+                  <div class="h3 fw-bold text-navy mb-0 vd-price">
                     <span th:text="${#numbers.formatDecimal(vehicle.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span>
                     <span class="small text-muted fw-normal">đ / giờ</span>
                   </div>
@@ -173,7 +173,7 @@
             </div>
             <!-- Single Primary Rent Button for the Type -->
             <div class="customer-stack-2">
-              <a th:href="@{/search(keyword=${vehicle.displayName})}" class="btn btn-navy w-100 customer-py-2 fw-bold rounded-3 shadow-sm text-decoration-none"> Thuê dòng xe này ngay </a>
+              <a th:href="@{/search(keyword=${vehicle.displayName})}" class="btn btn-primary w-100 customer-py-2 fw-bold rounded-3 shadow-sm text-decoration-none vd-cta"> Thuê dòng xe này ngay </a>
               <a th:href="@{/vehicles}" class="btn btn-outline-secondary w-100 py-2 rounded-3 text-decoration-none"> ← Khám phá các dòng xe khác </a>
             </div>
           </div>

@@ -45,7 +45,7 @@
                         <tr th:each="promotion : ${promotions}"
                             th:with="promotionStatus=${promotion.quantity == 0 ? 'HẾT HÀNG' : (today.isBefore(promotion.startDate) ? 'SẮP DIỄN RA' : (today.isAfter(promotion.endDate) ? 'ĐÃ HẾT HẠN' : 'HOẠT ĐỘNG'))}">
                             <td>
-                                <img th:if="${promotion.urlImagePromotion != null and !promotion.urlImagePromotion.isBlank()}"
+                                <img th:if="${promotion.urlImagePromotion != null and !promotion.urlImagePromotion.isBlank()}" data-image-zoom loading="lazy" decoding="async"
                                      th:src="${promotion.urlImagePromotion}" th:alt="${promotion.code}"
                                      class="rounded border promotions-list-img-detail">
                                 <span th:unless="${promotion.urlImagePromotion != null and !promotion.urlImagePromotion.isBlank()}" class="text-muted">—</span>

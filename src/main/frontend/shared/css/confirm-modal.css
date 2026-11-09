@@ -7,7 +7,7 @@
     align-items: center;
     justify-content: center;
     padding: 16px;
-    background: rgba(15, 23, 42, 0.45);
+    background: rgba(12, 16, 22, 0.5);
     opacity: 0;
     transition: opacity 0.15s ease;
 }
@@ -22,7 +22,7 @@
     padding: 24px;
     border-radius: 16px;
     background: #ffffff;
-    box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.35);
+    box-shadow: 0 24px 48px -12px rgba(12, 16, 22, 0.35);
     transform: translateY(8px) scale(0.98);
     transition: transform 0.15s ease;
     font-family: inherit;
@@ -37,14 +37,14 @@
     font-size: 17px;
     font-weight: 700;
     line-height: 1.35;
-    color: #0f172a;
+    color: var(--color-obsidian, #0f172a);
 }
 
 .crms-confirm__detail {
     margin: 8px 0 0;
     font-size: 14px;
     line-height: 1.5;
-    color: #64748b;
+    color: var(--color-muted, #64748b);
 }
 
 .crms-confirm__actions {
@@ -67,27 +67,27 @@
 }
 
 .crms-confirm__btn:focus-visible {
-    outline: 2px solid #0f172a;
+    outline: 2px solid var(--color-obsidian, #0f172a);
     outline-offset: 2px;
 }
 
 .crms-confirm__btn--ghost {
     background: #ffffff;
-    border-color: #e2e8f0;
-    color: #0f172a;
+    border-color: var(--color-border, #e2e8f0);
+    color: var(--color-obsidian, #0f172a);
 }
 
 .crms-confirm__btn--ghost:hover {
-    background: #f1f5f9;
+    background: var(--color-surface-2, #f1f5f9);
 }
 
 .crms-confirm__btn--primary {
-    background: #0f172a;
+    background: var(--color-obsidian, #0f172a);
     color: #ffffff;
 }
 
 .crms-confirm__btn--primary:hover {
-    background: #1e293b;
+    background: var(--color-obsidian-2, #1e293b);
 }
 
 .crms-confirm__btn--danger {

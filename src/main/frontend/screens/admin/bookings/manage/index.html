@@ -178,6 +178,7 @@
                                        th:text="'Điều khoản v' + ${booking.contract.terms.versionNo}">Điều khoản v1</a>
                                 </div>
                                 <div class="admin-card-body p-0">
+                                    <div class="table-responsive">
                                     <table class="admin-table">
                                         <tbody>
                                             <tr>
@@ -205,6 +206,7 @@
                                             </tr>
                                         </tbody>
                                     </table>
+                                    </div>
                                 </div>
                                 <div class="admin-card-footer">
                                     <div class="d-flex gap-2">
@@ -299,7 +301,7 @@
                                             <span th:text="${#numbers.formatDecimal(pendingRefund.amount, 0, 'COMMA', 0, 'POINT')}">500,000</span> đ
                                         </div>
 
-                                        <img th:if="${vietQrUrl != null}" th:src="${vietQrUrl}"
+                                        <img th:if="${vietQrUrl != null}" th:src="${vietQrUrl}" loading="lazy" decoding="async" data-image-zoom
                                              alt="Mã VietQR hoàn tiền"
                                              class="img-fluid rounded border my-2 shadow-xs mx-auto bookings-manage-img-detail"
                                              />

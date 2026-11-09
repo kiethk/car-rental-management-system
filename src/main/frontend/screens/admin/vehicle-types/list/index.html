@@ -80,7 +80,7 @@
                         <tbody>
                             <tr th:each="vt : ${vehicleTypes}">
                                 <td class="vehicle-types-list-td-detail">
-                                    <img th:src="${vt.imageUrl != null and !vt.imageUrl.isBlank() ? vt.imageUrl : '/images/car-rental-logo.svg'}"
+                                    <img th:src="${vt.imageUrl != null and !vt.imageUrl.isBlank() ? vt.imageUrl : '/images/car-rental-logo.svg'}" data-image-zoom loading="lazy" decoding="async"
                                          th:alt="${vt.name}"
                                          class="rounded object-cover vehicle-types-list-img-detail"
                                         

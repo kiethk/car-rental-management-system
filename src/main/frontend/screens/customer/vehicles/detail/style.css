@@ -1,12 +1,65 @@
-body[data-screen="customer/vehicles/detail"] .vehicles-detail-div-detail {height: 380px; background-color: #f1f5f9; position: relative;}
-body[data-screen="customer/vehicles/detail"] .vehicles-detail-div-detail-f706 {top: 15px; left: 15px;}
-body[data-screen="customer/vehicles/detail"] .vehicles-detail-span-detail {background-color: rgba(30, 41, 59, 0.9);}
-body[data-screen="customer/vehicles/detail"] .vehicles-detail-thead-detail {font-size: 11px;}
-body[data-screen="customer/vehicles/detail"] .vehicles-detail-p-detail {white-space: pre-wrap;}
-
-
-
+/* DriveNow — Customer vehicle detail (Obsidian & Champagne) */
+body[data-screen="customer/vehicles/detail"] .vehicles-detail-div-detail {
+    height: auto;
+    aspect-ratio: 16 / 10;
+    min-height: 320px;
+    background: linear-gradient(160deg, #EFECE4, #E5E0D4);
+    position: relative;
+    overflow: hidden;
+}
+body[data-screen="customer/vehicles/detail"] .vehicles-detail-div-detail img { width: 100%; height: 100%; object-fit: cover; }
+body[data-screen="customer/vehicles/detail"] .vehicles-detail-div-detail-f706 { top: 15px; left: 15px; }
+body[data-screen="customer/vehicles/detail"] .vehicles-detail-span-detail {
+    background: rgba(12, 16, 22, .82);
+    color: #fff;
+    letter-spacing: .1em;
+    backdrop-filter: blur(8px);
+}
+body[data-screen="customer/vehicles/detail"] .vehicles-detail-thead-detail { font-size: 11px; }
+body[data-screen="customer/vehicles/detail"] .vehicles-detail-p-detail { white-space: pre-wrap; }
 body[data-screen="customer/vehicles/detail"] .vehicle-gallery { min-height: 20rem; }
-
 body[data-screen="customer/vehicles/detail"] pre,
 body[data-screen="customer/vehicles/detail"] .vehicle-description { white-space: pre-wrap; }
+
+body[data-screen="customer/vehicles/detail"] .vd-booking-card {
+    position: sticky;
+    top: 84px;
+    border: 1px solid var(--color-border) !important;
+    box-shadow: 0 14px 34px -18px rgba(12, 16, 22, .22), 0 4px 10px -2px rgba(12, 16, 22, .05) !important;
+}
+body[data-screen="customer/vehicles/detail"] .vd-price-box {
+    background: linear-gradient(160deg, #FBFAF7, #F1EEE7) !important;
+    border: 1px solid var(--color-border);
+    border-radius: 14px !important;
+}
+body[data-screen="customer/vehicles/detail"] .vd-price {
+    font-family: var(--font-mono);
+    color: var(--color-obsidian);
+    letter-spacing: -.03em;
+}
+body[data-screen="customer/vehicles/detail"] .vd-cta {
+    color: var(--color-accent-ink) !important;
+    background: linear-gradient(135deg, #D3B274 0%, var(--color-accent) 55%, var(--color-accent-strong) 100%) !important;
+    border-color: transparent !important;
+    box-shadow: 0 10px 24px -10px rgba(198, 161, 91, .75) !important;
+}
+body[data-screen="customer/vehicles/detail"] .vd-cta:hover {
+    color: var(--color-accent-ink) !important;
+    background: linear-gradient(135deg, #C6A15B 0%, #A9823F 100%) !important;
+    transform: translateY(-1px);
+}
+body[data-screen="customer/vehicles/detail"] .card {
+    border: 1px solid var(--color-border) !important;
+    border-radius: 16px !important;
+}
+body[data-screen="customer/vehicles/detail"] .badge.badge-light {
+    background: #fff !important;
+    border: 1.5px solid var(--color-obsidian) !important;
+    color: var(--color-obsidian) !important;
+    font-family: var(--font-mono);
+    box-shadow: inset 0 0 0 2px #fff;
+}
+
+@media (max-width: 991.98px) {
+    body[data-screen="customer/vehicles/detail"] .vd-booking-card { position: static; }
+}
