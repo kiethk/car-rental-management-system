@@ -1,6 +1,8 @@
 package com.crms.mvc.util;
 
-/** Roles an employee can have, as stored in {@code employees.role} and in {@link com.crms.mvc.dto.SessionAccount}. */
+import com.crms.mvc.dto.SessionAccount;
+
+/** Roles an employee can have, as stored in {@code employees.role} and in {@link SessionAccount}. */
 public final class EmployeeRole {
     public static final String ADMIN = "admin";
     public static final String STAFF = "staff";

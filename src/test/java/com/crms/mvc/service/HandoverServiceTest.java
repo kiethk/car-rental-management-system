@@ -383,8 +383,8 @@ class HandoverServiceTest {
         assertFalse(receipt.isSettled());
         assertEquals(1300, receipt.getOdometer());
         assertEquals(2, receipt.getLines().size());
-        assertFalse(receipt.getLines().get(0).isPaidEarlier());
-        assertTrue(receipt.getLines().get(1).isPaidEarlier());
+        assertFalse(receipt.getLines().get(0).paidEarlier());
+        assertTrue(receipt.getLines().get(1).paidEarlier());
         assertEquals(new BigDecimal("150000"), receipt.getAmountDue());
     }
 
@@ -402,7 +402,7 @@ class HandoverServiceTest {
         ReturnReceiptDTO receipt = handoverService.getReturnReceipt(10L);
 
         assertTrue(receipt.isSettled());
-        assertFalse(receipt.getLines().get(0).isPaidEarlier());
+        assertFalse(receipt.getLines().get(0).paidEarlier());
         assertEquals(new BigDecimal("850000"), receipt.getAmountDue());
         assertEquals("Tiền mặt", receipt.getPaymentMethodLabel());
         assertNotNull(receipt.getPaidAt());

@@ -56,7 +56,7 @@ class IssueServiceTest {
         employeeRepository = mock(EmployeeRepository.class);
         bookingFeeRepository = mock(BookingFeeRepository.class);
         service = new IssueServiceImpl(issueRepository, bookingRepository, employeeRepository, bookingFeeRepository,
-                mock(IssueEvidenceRepository.class), mock(FileUploadService.class), mock(LicensePlateRepository.class),
+                mock(IssueEvidenceRepository.class), mock(FileUploadService.class), mock(LicensePlateRepository.class), mock(com.crms.mvc.repository.PaymentRepository.class),
                 mock(ApplicationEventPublisher.class));
 
         Employee employee = new Employee();

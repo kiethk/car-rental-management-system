@@ -38,7 +38,6 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -87,7 +86,7 @@ public class HandoverServiceImpl implements HandoverService {
         Booking booking = findBooking(bookingId);
         Employee actor = requireHandler(booking, employeeId);
 
-        if (!"confirmed".equalsIgnoreCase(booking.getStatus())) {
+        if (!Booking.STATUS_CONFIRMED.equalsIgnoreCase(booking.getStatus())) {
             throw new IllegalStateException("Đơn thuê phải được xác nhận trước khi bàn giao xe");
         }
         Vehicle vehicle = booking.getVehicle();
@@ -130,11 +129,11 @@ public class HandoverServiceImpl implements HandoverService {
         }
 
         vehicle.setOdometer(form.getOdometer());
-        vehicle.setStatus("rented");
+        vehicle.setStatus(Vehicle.STATUS_RENTED);
         vehicleRepository.save(vehicle);
 
         booking.setActualPickupTime(OffsetDateTime.now());
-        booking.setStatus("active");
+        booking.setStatus(Booking.STATUS_ACTIVE);
         bookingRepository.save(booking);
     }
 
@@ -143,7 +142,7 @@ public class HandoverServiceImpl implements HandoverService {
         Booking booking = findBooking(bookingId);
         Employee actor = requireHandler(booking, employeeId);
 
-        if (!"active".equalsIgnoreCase(booking.getStatus())) {
+        if (!Booking.STATUS_ACTIVE.equalsIgnoreCase(booking.getStatus())) {
             throw new IllegalStateException("Đơn thuê không ở trạng thái đang thuê");
         }
         if (handoverRepository.existsByBookingIdAndType(bookingId, HandoverType.CHECK_OUT)) {
@@ -170,7 +169,7 @@ public class HandoverServiceImpl implements HandoverService {
         }
 
         vehicle.setOdometer(form.getOdometer());
-        vehicle.setStatus(form.isMoveToMaintenance() ? "maintenance" : "available");
+        vehicle.setStatus(form.isMoveToMaintenance() ? Vehicle.STATUS_MAINTENANCE : Vehicle.STATUS_AVAILABLE);
         vehicleRepository.save(vehicle);
         bookingRepository.save(booking);
     }
@@ -180,7 +179,7 @@ public class HandoverServiceImpl implements HandoverService {
         Booking booking = findBooking(bookingId);
         requireHandler(booking, employeeId);
 
-        if (!"active".equalsIgnoreCase(booking.getStatus())) {
+        if (!Booking.STATUS_ACTIVE.equalsIgnoreCase(booking.getStatus())) {
             throw new IllegalStateException("Đơn thuê không ở bước chờ quyết toán");
         }
         Handover record = handoverRepository.findByBookingIdAndType(bookingId, HandoverType.CHECK_OUT)
@@ -210,14 +209,14 @@ public class HandoverServiceImpl implements HandoverService {
         record.setSettledAt(OffsetDateTime.now());
         handoverRepository.save(record);
 
-        booking.setStatus("completed");
+        booking.setStatus(Booking.STATUS_COMPLETED);
         bookingRepository.save(booking);
     }
 
     @Override
     public void reassignStaff(Long bookingId, Long staffId) {
         Booking booking = findBooking(bookingId);
-        if ("completed".equalsIgnoreCase(booking.getStatus()) || "cancelled".equalsIgnoreCase(booking.getStatus())) {
+        if (Booking.STATUS_COMPLETED.equalsIgnoreCase(booking.getStatus()) || Booking.STATUS_CANCELLED.equalsIgnoreCase(booking.getStatus())) {
             throw new IllegalStateException("Đơn thuê này đã đóng");
         }
         Employee staff = employeeRepository.findById(staffId)

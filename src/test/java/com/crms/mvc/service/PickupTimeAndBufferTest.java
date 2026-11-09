@@ -7,7 +7,7 @@ import com.crms.mvc.dto.SettlementDTO;
 import com.crms.mvc.entity.*;
 import com.crms.mvc.repository.*;
 import com.crms.mvc.util.DateTimeUtils;
-import com.crms.mvc.service.impl.BookingServiceImpl;
+import com.crms.mvc.service.impl.VehicleAvailabilityServiceImpl;
 import com.crms.mvc.service.impl.HandoverServiceImpl;
 import com.crms.mvc.service.impl.IssueServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +22,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -211,11 +210,8 @@ class PickupTimeAndBufferTest {
     @Test
     @DisplayName("Symmetrical 1-hour buffer: booking at 17:00 requires preceding booking to end by 16:00")
     void testPrecedingBookingMustEndOneHourBeforeNextBooking() {
-        BookingServiceImpl bookingService = new BookingServiceImpl(
-                bookingRepository, mock(CustomerRepository.class), mock(SlotRepository.class),
-                mock(VehicleTypeRepository.class), vehicleRepository, employeeRepository,
-                mock(PromotionRepository.class), paymentService, contractService,
-                mock(ContractTemplateService.class), bookingFeeService, pricingService);
+        VehicleAvailabilityServiceImpl availability = new VehicleAvailabilityServiceImpl(bookingRepository, vehicleRepository,
+                mock(VehicleTypeRepository.class), mock(ContractTemplateService.class), pricingService);
 
         Vehicle car = new Vehicle();
         car.setId(100L);
@@ -234,7 +230,7 @@ class PickupTimeAndBufferTest {
                 eq(morningStart.minusHours(1)), eq(invalidEnd.plusHours(1)), any(), any()))
                 .thenReturn(List.of(100L));
 
-        List<Vehicle> availableInvalid = bookingService.findAvailableVehiclesInTimeRange(1L, morningStart, invalidEnd);
+        List<Vehicle> availableInvalid = availability.findAvailableVehiclesInTimeRange(1L, morningStart, invalidEnd);
         assertThat(availableInvalid).isEmpty(); // Blocked! Cannot book ending at 16:30
 
         // Case 2: Candidate wants 09:00 - 16:00 (ends exactly 1 hour before 17:00)
@@ -244,7 +240,7 @@ class PickupTimeAndBufferTest {
                 eq(morningStart.minusHours(1)), eq(validEnd.plusHours(1)), any(), any()))
                 .thenReturn(List.of()); // No conflict
 
-        List<Vehicle> availableValid = bookingService.findAvailableVehiclesInTimeRange(1L, morningStart, validEnd);
+        List<Vehicle> availableValid = availability.findAvailableVehiclesInTimeRange(1L, morningStart, validEnd);
         assertThat(availableValid).containsExactly(car); // Allowed!
     }
 }

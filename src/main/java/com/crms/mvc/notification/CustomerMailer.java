@@ -1,4 +1,4 @@
-package com.crms.mvc.event;
+package com.crms.mvc.notification;
 
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.ObjectProvider;

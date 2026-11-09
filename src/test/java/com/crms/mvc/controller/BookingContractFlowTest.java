@@ -52,6 +52,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class BookingContractFlowTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private BookingService bookingService;
+    @MockitoBean private com.crms.mvc.service.BookingQueryService bookingQueryService;
+    @MockitoBean private com.crms.mvc.service.VehicleAvailabilityService vehicleAvailabilityService;
     @MockitoBean private PaymentService paymentService;
     @MockitoBean private VehicleTypeService vehicleTypeService;
     @MockitoBean private PricingService pricingService;
@@ -101,7 +103,7 @@ class BookingContractFlowTest {
         car.setCurrentPlate(plate);
         car.setVehicleType(type);
         when(vehicleTypeService.findById(1L)).thenReturn(Optional.of(type));
-        when(bookingService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(car));
+        when(vehicleAvailabilityService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(car));
 
         String html = mvc.perform(get("/bookings/checkout").session(customerSession)
                         .param("vehicleTypeId", "1")
@@ -171,7 +173,7 @@ class BookingContractFlowTest {
 
     @Test
     void bookingDetailOffersPdfOnceIssued() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("confirmed", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("confirmed", true));
 
         mvc.perform(get("/bookings/42").session(customerSession))
                 .andExpect(status().isOk())
@@ -183,7 +185,7 @@ class BookingContractFlowTest {
 
     @Test
     void completedBookingShowsReviewFormBelowPaymentLedger() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
         when(reviewService.isEligibleForCustomer(42L, 1L)).thenReturn(true);
 
         mvc.perform(get("/bookings/42").session(customerSession))
@@ -197,7 +199,7 @@ class BookingContractFlowTest {
 
     @Test
     void unfinishedBookingDoesNotShowReviewForm() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
 
         mvc.perform(get("/bookings/42").session(customerSession))
                 .andExpect(status().isOk())
@@ -210,7 +212,7 @@ class BookingContractFlowTest {
 
     @Test
     void completedBookingWithPendingTransactionDoesNotShowReviewForm() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
         when(reviewService.isEligibleForCustomer(42L, 1L)).thenReturn(false);
 
         mvc.perform(get("/bookings/42").session(customerSession))
@@ -223,7 +225,7 @@ class BookingContractFlowTest {
 
     @Test
     void completedBookingDisplaysPreviouslySubmittedReview() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
         when(reviewService.isEligibleForCustomer(42L, 1L)).thenReturn(true);
         ReviewDTO review = new ReviewDTO();
         review.setRating(4);
@@ -251,7 +253,7 @@ class BookingContractFlowTest {
 
     @Test
     void depositPageUsesTermsVersionAcceptedAtCheckout() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("pending_payment", false));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("pending_payment", false));
 
         mvc.perform(get("/bookings/42/pay-deposit").session(customerSession))
                 .andExpect(status().isOk())
@@ -262,7 +264,7 @@ class BookingContractFlowTest {
 
     @Test
     void successPageShowsDepositPercentOfAcceptedTerms() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("confirmed", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("confirmed", true));
 
         mvc.perform(get("/bookings/42/success").session(customerSession))
                 .andExpect(status().isOk())
@@ -271,7 +273,7 @@ class BookingContractFlowTest {
 
     @Test
     void customerSeesTheIssuesChargedOnTheirBooking() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
         com.crms.mvc.dto.IssueDTO issue = new com.crms.mvc.dto.IssueDTO();
         issue.setId(7L);
         issue.setBookingId(42L);
@@ -294,7 +296,7 @@ class BookingContractFlowTest {
 
     @Test
     void customerSeesTheReturnAndSettlementOfTheirBooking() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
         com.crms.mvc.dto.ReturnReceiptDTO receipt = new com.crms.mvc.dto.ReturnReceiptDTO();
         receipt.setReturnedAt(OffsetDateTime.now());
         receipt.setOdometer(12500);
@@ -321,7 +323,7 @@ class BookingContractFlowTest {
 
     @Test
     void noReturnSectionBeforeTheVehicleIsReturned() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
         when(handoverService.getReturnReceipt(42L)).thenReturn(null);
 
         mvc.perform(get("/bookings/42").session(customerSession))
@@ -331,7 +333,7 @@ class BookingContractFlowTest {
 
     @Test
     void aBookingWithoutIssuesHasNoIssueSection() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("confirmed", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("confirmed", true));
         when(issueService.findByBookingForCustomer(42L, 1L)).thenReturn(List.of());
 
         mvc.perform(get("/bookings/42").session(customerSession))
@@ -350,7 +352,7 @@ class BookingContractFlowTest {
         car.setId(9L);
         car.setVehicleType(type);
         when(vehicleTypeService.findById(1L)).thenReturn(Optional.of(type));
-        when(bookingService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(car));
+        when(vehicleAvailabilityService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(car));
 
         String html = mvc.perform(get("/bookings/checkout").session(customerSession)
                         .param("vehicleTypeId", "1").param("vehicleId", "9")
@@ -371,7 +373,7 @@ class BookingContractFlowTest {
         BookingDetailDTO booking = bookingWithContract("active", true);
         booking.setLateReturn(new com.crms.mvc.dto.LateReturnDTO(135, 2, new BigDecimal("400000"),
                 OffsetDateTime.of(2026, 11, 7, 17, 0, 0, 0, ZoneOffset.ofHours(7))));
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(booking);
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(booking);
 
         mvc.perform(get("/bookings/42").session(customerSession))
                 .andExpect(status().isOk())
@@ -391,7 +393,7 @@ class BookingContractFlowTest {
         booking.getContract().setTerms(accepted);
         booking.setPickupTime(OffsetDateTime.now().plusHours(30));
         booking.setScheduledEndTime(booking.getPickupTime().plusHours(10));
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(booking);
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(booking);
 
         mvc.perform(get("/bookings/42").session(customerSession))
                 .andExpect(status().isOk())
@@ -422,7 +424,7 @@ class BookingContractFlowTest {
 
     @Test
     void aBookingOffersToPayOpenUnpaidIssueFees() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
         when(issueService.findByBookingForCustomer(42L, 1L)).thenReturn(List.of(
                 issueWith(7L, com.crms.mvc.entity.IssueStatus.OPEN, "200000", false),
                 issueWith(8L, com.crms.mvc.entity.IssueStatus.OPEN, "500000", false),
@@ -439,7 +441,7 @@ class BookingContractFlowTest {
 
     @Test
     void nothingIsOfferedToPayWhenEverythingIsPaidOrCancelled() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
         when(issueService.findByBookingForCustomer(42L, 1L)).thenReturn(List.of(
                 issueWith(9L, com.crms.mvc.entity.IssueStatus.CANCELLED, "999000", false),
                 issueWith(10L, com.crms.mvc.entity.IssueStatus.RESOLVED, "300000", true)));
@@ -451,7 +453,7 @@ class BookingContractFlowTest {
 
     @Test
     void feesArePayableOnlineDuringActiveRental() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
         when(issueService.findByBookingForCustomer(42L, 1L)).thenReturn(List.of(
                 issueWith(7L, com.crms.mvc.entity.IssueStatus.OPEN, "200000", false)));
 
@@ -462,7 +464,7 @@ class BookingContractFlowTest {
 
     @Test
     void aPaymentLeftPendingCanBeRetried() throws Exception {
-        when(bookingService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
+        when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
         com.crms.mvc.dto.IssueDTO pending = issueWith(7L, com.crms.mvc.entity.IssueStatus.OPEN, "200000", false);
         pending.setFeeLocked(true); // a payment has taken it but has not been paid yet
         when(issueService.findByBookingForCustomer(42L, 1L)).thenReturn(List.of(pending));

@@ -3,7 +3,7 @@ package com.crms.mvc.controller;
 import com.crms.mvc.dto.LicensePlateOverviewDTO;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleInspection;
-import com.crms.mvc.service.BookingService;
+import com.crms.mvc.service.BookingQueryService;
 import com.crms.mvc.service.LicensePlateService;
 import com.crms.mvc.service.VehicleInspectionService;
 import com.crms.mvc.service.VehicleService;
@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
+import java.util.Comparator;
 
 @Controller
 public class AdminDashboardController {
@@ -19,16 +20,16 @@ public class AdminDashboardController {
     private final VehicleService vehicleService;
     private final VehicleInspectionService vehicleInspectionService;
     private final LicensePlateService licensePlateService;
-    private final BookingService bookingService;
+    private final BookingQueryService bookingQueryService;
 
     public AdminDashboardController(VehicleService vehicleService,
                                     VehicleInspectionService vehicleInspectionService,
                                     LicensePlateService licensePlateService,
-                                    BookingService bookingService) {
+                                    BookingQueryService bookingQueryService) {
         this.vehicleService = vehicleService;
         this.vehicleInspectionService = vehicleInspectionService;
         this.licensePlateService = licensePlateService;
-        this.bookingService = bookingService;
+        this.bookingQueryService = bookingQueryService;
     }
 
     @GetMapping({"/admin", "/admin/dashboard"})
@@ -45,7 +46,7 @@ public class AdminDashboardController {
         long passedInspections = inspections.stream().filter(i -> "passed".equalsIgnoreCase(i.getStatus())).count();
         long failedInspections = inspections.stream().filter(i -> "failed".equalsIgnoreCase(i.getStatus())).count();
 
-        long totalBookings = bookingService.countTotalBookings();
+        long totalBookings = bookingQueryService.countTotalBookings();
 
         List<LicensePlateOverviewDTO> plates = licensePlateService.findAllOverviews();
         // Retired cars are out of service for good, so their registration no longer matters. Soonest expiry first.
@@ -81,8 +82,8 @@ public class AdminDashboardController {
     private static List<LicensePlateOverviewDTO> registrationAlerts(List<LicensePlateOverviewDTO> plates, String status) {
         return plates.stream()
                 .filter(p -> status.equals(p.getExpiryStatus()))
-                .filter(p -> !"retired".equalsIgnoreCase(p.getVehicleStatus()))
-                .sorted(java.util.Comparator.comparing(LicensePlateOverviewDTO::getRegistrationExpiry))
+                .filter(p -> !Vehicle.STATUS_RETIRED.equalsIgnoreCase(p.getVehicleStatus()))
+                .sorted(Comparator.comparing(LicensePlateOverviewDTO::getRegistrationExpiry))
                 .toList();
     }
 }

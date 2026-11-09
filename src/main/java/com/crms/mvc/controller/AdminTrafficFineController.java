@@ -4,7 +4,7 @@ import com.crms.mvc.dto.IssueActor;
 import com.crms.mvc.dto.SessionAccount;
 import com.crms.mvc.dto.TrafficFineFormDTO;
 import com.crms.mvc.entity.Booking;
-import com.crms.mvc.service.BookingService;
+import com.crms.mvc.service.BookingQueryService;
 import com.crms.mvc.service.TrafficFineService;
 import com.crms.mvc.util.CurrentAccount;
 import com.crms.mvc.util.MediaUtils;
@@ -39,11 +39,11 @@ public class AdminTrafficFineController {
     private static final String LIST_PATH = "/admin/traffic-fines";
 
     private final TrafficFineService trafficFineService;
-    private final BookingService bookingService;
+    private final BookingQueryService bookingQueryService;
 
-    public AdminTrafficFineController(TrafficFineService trafficFineService, BookingService bookingService) {
+    public AdminTrafficFineController(TrafficFineService trafficFineService, BookingQueryService bookingQueryService) {
         this.trafficFineService = trafficFineService;
-        this.bookingService = bookingService;
+        this.bookingQueryService = bookingQueryService;
     }
 
     /** The list, plus the lookup. A lookup that finds a rental shows it with the form to record the fine. */
@@ -60,7 +60,7 @@ public class AdminTrafficFineController {
                 form.setPlate(plate.trim().toUpperCase());
                 form.setViolationAt(violationAt);
                 model.addAttribute("fineForm", form);
-                model.addAttribute("found", bookingService.getBookingDetailForAdmin(rental.getId()));
+                model.addAttribute("found", bookingQueryService.getBookingDetailForAdmin(rental.getId()));
             } catch (NoSuchElementException ex) {
                 model.addAttribute("lookupError", ex.getMessage());
             }
@@ -118,7 +118,7 @@ public class AdminTrafficFineController {
     private void showFound(Model model, Long bookingId) {
         if (bookingId != null) {
             try {
-                model.addAttribute("found", bookingService.getBookingDetailForAdmin(bookingId));
+                model.addAttribute("found", bookingQueryService.getBookingDetailForAdmin(bookingId));
             } catch (RuntimeException ignored) {
                 // the form is shown without the rental card; the error above already explains
             }

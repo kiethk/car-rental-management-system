@@ -5,7 +5,6 @@ import com.crms.mvc.dto.BookingCreateDTO;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.BookingSummaryDTO;
 import com.crms.mvc.dto.BookingCancelDTO;
-import com.crms.mvc.util.DateTimeUtils;
 import com.crms.mvc.dto.VehicleTypeSearchResultDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Vehicle;
@@ -32,12 +31,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import com.crms.mvc.entity.LicenseDocument;
 import com.crms.mvc.service.LicenseDocumentService;
@@ -48,10 +43,19 @@ import com.crms.mvc.dto.ReviewFormDTO;
 import com.crms.mvc.service.ReviewService;
 import com.crms.mvc.service.TrafficFineService;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.NoSuchElementException;
+import com.crms.mvc.service.BookingQueryService;
+import com.crms.mvc.service.VehicleAvailabilityService;
+import com.crms.mvc.dto.RentalWindow;
+import com.crms.mvc.dto.RentalDuration;
+import com.crms.mvc.util.RentalWindowParser;
+import com.crms.mvc.util.VehicleImages;
 
 @Controller
 public class BookingController {
     private final BookingService bookingService;
+    private final BookingQueryService bookingQueryService;
+    private final VehicleAvailabilityService vehicleAvailabilityService;
     private final PaymentService paymentService;
     private final VehicleTypeService vehicleTypeService;
     private final PricingService pricingService;
@@ -64,6 +68,8 @@ public class BookingController {
 
     public BookingController(
             BookingService bookingService,
+            BookingQueryService bookingQueryService,
+            VehicleAvailabilityService vehicleAvailabilityService,
             PaymentService paymentService,
             VehicleTypeService vehicleTypeService,
             LicenseDocumentService licenseDocumentService,
@@ -74,6 +80,8 @@ public class BookingController {
             ReviewService reviewService,
             TrafficFineService trafficFineService) {
         this.bookingService = bookingService;
+        this.bookingQueryService = bookingQueryService;
+        this.vehicleAvailabilityService = vehicleAvailabilityService;
         this.paymentService = paymentService;
         this.vehicleTypeService = vehicleTypeService;
         this.licenseDocumentService = licenseDocumentService;
@@ -87,161 +95,56 @@ public class BookingController {
 
     // STEP 1 & 2: Choose rental schedule & filter available vehicle types
     @GetMapping({ "/search", "/vehicles/available" })
-    public String searchAvailableVehicles(
-            @RequestParam(value = "startDate", required = false) String startDateStr,
-            @RequestParam(value = "endDate", required = false) String endDateStr,
-            @RequestParam(value = "date", required = false) String dateStr,
-            @RequestParam(value = "startTime", required = false) String startStr,
-            @RequestParam(value = "endTime", required = false) String endStr,
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "brand", required = false, defaultValue = "all") String brand,
-            @RequestParam(value = "category", required = false, defaultValue = "all") String category,
-            @RequestParam(value = "seats", required = false, defaultValue = "0") Integer minSeats,
-            @RequestParam(value = "transmission", required = false, defaultValue = "all") String transmission,
-            @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice,
-            @RequestParam(value = "sortBy", required = false, defaultValue = "price") String sortBy,
-            Model model) {
-
-        LocalDate startDate = LocalDate.now().plusDays(1);
-        if (startDateStr != null && !startDateStr.isBlank()) {
-            try {
-                startDate = LocalDate.parse(startDateStr.trim());
-            } catch (Exception ignored) {
-            }
-        } else if (dateStr != null && !dateStr.isBlank()) {
-            try {
-                startDate = LocalDate.parse(dateStr.trim());
-            } catch (Exception ignored) {
-            }
-        }
-
-        LocalDate endDate = startDate;
-        if (endDateStr != null && !endDateStr.isBlank()) {
-            try {
-                endDate = LocalDate.parse(endDateStr.trim());
-            } catch (Exception ignored) {
-            }
-        } else if (startDateStr != null && !startDateStr.isBlank()) {
-            endDate = startDate;
-        } else if (dateStr != null && !dateStr.isBlank()) {
-            try {
-                endDate = LocalDate.parse(dateStr.trim());
-            } catch (Exception ignored) {
-            }
-        }
-
-        LocalTime startTime = LocalTime.of(9, 0);
-        LocalTime endTime = LocalTime.of(18, 0);
-
-        LocalDateTime startDateTime = null;
-        LocalDateTime endDateTime = null;
-
-        if (startStr != null && startStr.contains("T")) {
-            try {
-                startDateTime = LocalDateTime.parse(startStr);
-            } catch (Exception ignored) {
-            }
-        } else if (startStr != null && !startStr.isBlank()) {
-            try {
-                startTime = LocalTime.parse(startStr.trim());
-            } catch (Exception ignored) {
-            }
-        }
-
-        if (endStr != null && endStr.contains("T")) {
-            try {
-                endDateTime = LocalDateTime.parse(endStr);
-            } catch (Exception ignored) {
-            }
-        } else if (endStr != null && !endStr.isBlank()) {
-            try {
-                endTime = LocalTime.parse(endStr.trim());
-            } catch (Exception ignored) {
-            }
-        }
-
-        if (startDateTime == null) {
-            startDateTime = LocalDateTime.of(startDate, startTime);
-        }
-        if (endDateTime == null) {
-            endDateTime = LocalDateTime.of(endDate, endTime);
-        }
-
-        startDate = startDateTime.toLocalDate();
-        startTime = startDateTime.toLocalTime();
-        endDate = endDateTime.toLocalDate();
-        endTime = endDateTime.toLocalTime();
+    public String searchAvailableVehicles(@ModelAttribute RentalSearchParams params, Model model) {
+        RentalWindow window = params.window();
 
         // Invalid times are reported back to the customer, never silently moved to another slot.
-        String scheduleError = null;
-        try {
-            bookingService.validateRentalSchedule(startDateTime, endDateTime);
-        } catch (IllegalArgumentException e) {
-            scheduleError = e.getMessage();
-        }
-
-        ZoneOffset offset = ZoneOffset.ofHours(7);
-        List<VehicleTypeSearchResultDTO> rawResults = scheduleError != null ? List.of()
-                : bookingService.searchAvailableVehicleTypes(
-                        startDateTime.atOffset(offset), endDateTime.atOffset(offset), category);
-
-        // Filter by keyword, brand, transmission, seats, max price
-        List<VehicleTypeSearchResultDTO> results = rawResults.stream()
-                .filter(v -> minSeats == null || minSeats == 0 || (v.getSeats() != null && v.getSeats() >= minSeats))
-                .filter(v -> maxPrice == null || v.getPricePerHour().compareTo(maxPrice) <= 0)
-                .filter(v -> {
-                    if (keyword == null || keyword.isBlank())
-                        return true;
-                    String kw = keyword.trim().toLowerCase();
-                    String name = v.getName() != null ? v.getName().toLowerCase() : "";
-                    String b = v.getBrand() != null ? v.getBrand().toLowerCase() : "";
-                    String display = v.getDisplayName() != null ? v.getDisplayName().toLowerCase() : "";
-                    return name.contains(kw) || b.contains(kw) || display.contains(kw);
-                })
-                .filter(v -> {
-                    if (brand == null || brand.isBlank() || brand.equalsIgnoreCase("all"))
-                        return true;
-                    return v.getBrand() != null && v.getBrand().equalsIgnoreCase(brand.trim());
-                })
-                .filter(v -> {
-                    if (transmission == null || transmission.isBlank() || transmission.equalsIgnoreCase("all"))
-                        return true;
-                    return v.getTransmission() != null && v.getTransmission().equalsIgnoreCase(transmission.trim());
-                })
-                .toList();
-
-        long rentalHours = Math.max(1, Duration.between(startDateTime, endDateTime).toHours());
-        long rentalDays = rentalHours / 24;
-        long remainingHours = rentalHours % 24;
-        String durationDisplay = (rentalDays > 0 ? (rentalDays + "d ") : "")
-                + (remainingHours > 0 ? (remainingHours + "h") : (rentalDays == 0 ? "1h" : ""));
+        String scheduleError = scheduleErrorOf(window);
+        List<VehicleTypeSearchResultDTO> results = scheduleError != null ? List.of()
+                : params.criteria().narrow(vehicleAvailabilityService.searchAvailableVehicleTypes(
+                        window.startAt(), window.endAt(), params.getCategory()));
+        RentalDuration duration = window.duration();
 
         model.addAttribute("scheduleError", scheduleError);
         model.addAttribute("today", LocalDate.now().toString());
-        model.addAttribute("selectedStartDate", startDate.toString());
-        model.addAttribute("selectedEndDate", endDate.toString());
-        model.addAttribute("selectedDate", startDate.toString());
-        model.addAttribute("selectedStart", startTime.toString().substring(0, 5));
-        model.addAttribute("selectedEnd", endTime.toString().substring(0, 5));
-        model.addAttribute("startTime", startDateTime);
-        model.addAttribute("endTime", endDateTime);
-        model.addAttribute("keyword", keyword != null ? keyword.trim() : "");
-        model.addAttribute("brand", brand);
-        model.addAttribute("category", category);
-        model.addAttribute("minSeats", minSeats);
-        model.addAttribute("transmission", transmission);
-        model.addAttribute("maxPrice", maxPrice != null ? maxPrice : BigDecimal.valueOf(500000));
-        model.addAttribute("sortBy", sortBy);
-        model.addAttribute("rentalHours", rentalHours);
-        model.addAttribute("rentalDays", rentalDays);
-        model.addAttribute("remainingHours", remainingHours);
-        model.addAttribute("durationDisplay", durationDisplay);
+        model.addAttribute("selectedStartDate", window.startDate().toString());
+        model.addAttribute("selectedEndDate", window.endDate().toString());
+        model.addAttribute("selectedDate", window.startDate().toString());
+        model.addAttribute("selectedStart", window.startTime().toString().substring(0, 5));
+        model.addAttribute("selectedEnd", window.endTime().toString().substring(0, 5));
+        model.addAttribute("startTime", window.start());
+        model.addAttribute("endTime", window.end());
+        model.addAttribute("keyword", params.getKeyword() != null ? params.getKeyword().trim() : "");
+        model.addAttribute("brand", params.getBrand());
+        model.addAttribute("category", params.getCategory());
+        model.addAttribute("minSeats", params.getSeats());
+        model.addAttribute("transmission", params.getTransmission());
+        model.addAttribute("maxPrice", params.getMaxPrice() != null ? params.getMaxPrice() : BigDecimal.valueOf(500000));
+        model.addAttribute("sortBy", params.getSortBy());
+        addDuration(model, duration);
         model.addAttribute("results", results);
         model.addAttribute("ratings", reviewService.ratingsByVehicleType());
         model.addAttribute("allCount", results.size());
         model.addAttribute("brands", vehicleTypeService.getDistinctBrands());
         model.addAttribute("categories", vehicleTypeService.getDistinctCategories());
         return "bookings/search";
+    }
+
+    /** Why the window cannot be rented, or null when it can. */
+    private String scheduleErrorOf(RentalWindow window) {
+        try {
+            bookingService.validateRentalSchedule(window.start(), window.end());
+            return null;
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
+        }
+    }
+
+    private static void addDuration(Model model, RentalDuration duration) {
+        model.addAttribute("rentalHours", duration.hours());
+        model.addAttribute("rentalDays", duration.days());
+        model.addAttribute("remainingHours", duration.remainingHours());
+        model.addAttribute("durationDisplay", duration.display());
     }
 
     // BƯỚC 3: Màn hình Checkout / Xác nhận đơn đặt xe
@@ -268,72 +171,28 @@ public class BookingController {
             return "redirect:/search";
         }
 
-        LocalDateTime startTime = null;
-        LocalDateTime endTime = null;
-
-        if (startStr != null && startStr.contains("T")) {
-            try {
-                startTime = LocalDateTime.parse(startStr);
-            } catch (Exception ignored) {
-            }
-        }
-        if (endStr != null && endStr.contains("T")) {
-            try {
-                endTime = LocalDateTime.parse(endStr);
-            } catch (Exception ignored) {
-            }
-        }
-
-        if (startTime == null || endTime == null) {
-            LocalDate sDate = (startDateStr != null && !startDateStr.isBlank())
-                    ? LocalDate.parse(startDateStr.trim())
-                    : ((dateStr != null && !dateStr.isBlank()) ? LocalDate.parse(dateStr.trim())
-                            : LocalDate.now().plusDays(1));
-            LocalDate eDate = (endDateStr != null && !endDateStr.isBlank())
-                    ? LocalDate.parse(endDateStr.trim())
-                    : sDate;
-            LocalTime s = (startStr != null && !startStr.isBlank() && !startStr.contains("T"))
-                    ? LocalTime.parse(startStr.trim())
-                    : LocalTime.of(9, 0);
-            LocalTime e = (endStr != null && !endStr.isBlank() && !endStr.contains("T"))
-                    ? LocalTime.parse(endStr.trim())
-                    : LocalTime.of(18, 0);
-            startTime = LocalDateTime.of(sDate, s);
-            endTime = LocalDateTime.of(eDate, e);
-        }
-
-        try {
-            bookingService.validateRentalSchedule(startTime, endTime);
-        } catch (IllegalArgumentException e) {
-            ra.addFlashAttribute("error", e.getMessage());
+        RentalWindow window = RentalWindowParser.parse(startDateStr, endDateStr, dateStr, startStr, endStr);
+        String scheduleError = scheduleErrorOf(window);
+        if (scheduleError != null) {
+            ra.addFlashAttribute("error", scheduleError);
             return "redirect:/search";
         }
 
-        ZoneOffset offset = ZoneOffset.ofHours(7);
-        List<Vehicle> availableCars = bookingService.findAvailableVehiclesInTimeRange(
-                vehicleTypeId, startTime.atOffset(offset), endTime.atOffset(offset));
-
+        List<Vehicle> availableCars = vehicleAvailabilityService.findAvailableVehiclesInTimeRange(
+                vehicleTypeId, window.startAt(), window.endAt());
         if (availableCars.isEmpty()) {
             ra.addFlashAttribute("error", "Sorry, no cars of this type are available for the selected timeframe.");
             return "redirect:/search";
         }
 
         ContractTemplateDTO contractTerms = contractTemplateService.getActiveTemplate();
-        PriceQuoteDTO quote = pricingService.calculatePrice(startTime, endTime, vt.getPricePerHour(),
+        PriceQuoteDTO quote = pricingService.calculatePrice(window.start(), window.end(), vt.getPricePerHour(),
                 contractTerms.getDepositRate(), BigDecimal.ZERO);
-        long rentalHours = quote.getRentalHours();
-        long rentalDays = rentalHours / 24;
-        long remainingHours = rentalHours % 24;
-        String durationDisplay = (rentalDays > 0 ? (rentalDays + "d ") : "")
-                + (remainingHours > 0 ? (remainingHours + "h") : (rentalDays == 0 ? "1h" : ""));
-        BigDecimal estimatedTotal = quote.getTotalPrice();
-        BigDecimal depositAmount = quote.getDepositAmount();
-        BigDecimal remainingAmount = quote.getRemainingAmount();
 
         BookingCreateDTO form = new BookingCreateDTO();
         form.setVehicleTypeId(vehicleTypeId);
-        form.setStartTime(startTime);
-        form.setEndTime(endTime);
+        form.setStartTime(window.start());
+        form.setEndTime(window.end());
         form.setContractTemplateId(contractTerms.getId());
         // Coming from a car's schedule page: pre-select that plate if it is free for these hours.
         if (vehicleId != null) {
@@ -345,7 +204,7 @@ public class BookingController {
         }
 
         LicenseDocument license = licenseDocumentService.getCustomerLicense(customerId);
-        boolean hasValidLicense = licenseDocumentService.hasValidLicense(customerId, endTime.toLocalDate());
+        boolean hasValidLicense = licenseDocumentService.hasValidLicense(customerId, window.endDate());
 
         model.addAttribute("vehicleType", vt);
         model.addAttribute("bookingForm", form);
@@ -353,14 +212,11 @@ public class BookingController {
         model.addAttribute("customerLicense", license);
         model.addAttribute("hasValidLicense", hasValidLicense);
         model.addAttribute("licenseExpired", license != null && !hasValidLicense);
-        model.addAttribute("rentalHours", rentalHours);
-        model.addAttribute("rentalDays", rentalDays);
-        model.addAttribute("remainingHours", remainingHours);
-        model.addAttribute("durationDisplay", durationDisplay);
-        model.addAttribute("estimatedTotal", estimatedTotal);
-        model.addAttribute("depositAmount", depositAmount);
-        model.addAttribute("remainingAmount", remainingAmount);
-        model.addAttribute("vehicleImage", resolveVehicleImage(vt));
+        addDuration(model, new RentalDuration(quote.getRentalHours()));
+        model.addAttribute("estimatedTotal", quote.getTotalPrice());
+        model.addAttribute("depositAmount", quote.getDepositAmount());
+        model.addAttribute("remainingAmount", quote.getRemainingAmount());
+        model.addAttribute("vehicleImage", VehicleImages.urlOf(vt));
         model.addAttribute("contractTerms", contractTerms);
         return "bookings/checkout";
     }
@@ -403,9 +259,9 @@ public class BookingController {
         if (customerId == null) return "redirect:/login";
 
         try {
-            BookingDetailDTO detail = bookingService.getBookingDetail(bookingId, customerId);
-            if (!"pending_payment".equalsIgnoreCase(detail.getStatus())) {
-                if ("confirmed".equalsIgnoreCase(detail.getStatus())) {
+            BookingDetailDTO detail = bookingQueryService.getBookingDetail(bookingId, customerId);
+            if (!Booking.STATUS_PENDING_PAYMENT.equalsIgnoreCase(detail.getStatus())) {
+                if (Booking.STATUS_CONFIRMED.equalsIgnoreCase(detail.getStatus())) {
                     return "redirect:/bookings/" + bookingId + "/success";
                 }
                 ra.addFlashAttribute("error",
@@ -427,7 +283,7 @@ public class BookingController {
         if (customerId == null) return "redirect:/login";
 
         try {
-            BookingDetailDTO detail = bookingService.getBookingDetail(bookingId, customerId);
+            BookingDetailDTO detail = bookingQueryService.getBookingDetail(bookingId, customerId);
             model.addAttribute("booking", detail);
             return "bookings/success";
         } catch (Exception e) {
@@ -446,7 +302,7 @@ public class BookingController {
             return "redirect:/login";
         }
 
-        List<BookingSummaryDTO> all = bookingService.getMyBookings(customerId);
+        List<BookingSummaryDTO> all = bookingQueryService.getMyBookings(customerId);
         List<BookingSummaryDTO> filtered = "all".equalsIgnoreCase(filterStatus)
                 ? all
                 : all.stream().filter(b -> filterStatus.equalsIgnoreCase(b.getStatus())).toList();
@@ -464,7 +320,7 @@ public class BookingController {
         if (customerId == null) return "redirect:/login";
 
         try {
-            BookingDetailDTO detail = bookingService.getBookingDetail(bookingId, customerId);
+            BookingDetailDTO detail = bookingQueryService.getBookingDetail(bookingId, customerId);
             model.addAttribute("booking", detail);
 
             // Same rule as BookingService.cancelBooking: the terms the customer accepted, never the ACTIVE version.
@@ -472,7 +328,7 @@ public class BookingController {
             OffsetDateTime cancelDeadline = acceptedTerms != null && detail.getPickupTime() != null
                     ? acceptedTerms.freeCancellationUntil(detail.getPickupTime(), detail.getDepositPaidAt())
                     : null;
-            boolean refundEligible = "confirmed".equalsIgnoreCase(detail.getStatus()) && cancelDeadline != null
+            boolean refundEligible = Booking.STATUS_CONFIRMED.equalsIgnoreCase(detail.getStatus()) && cancelDeadline != null
                     && !OffsetDateTime.now().isAfter(cancelDeadline);
 
             model.addAttribute("refundEligible", refundEligible);
@@ -497,7 +353,7 @@ public class BookingController {
             model.addAttribute("payableTotal", payableTotal);
             model.addAttribute("returnReceipt", handoverService.getReturnReceipt(bookingId));
 
-            if ("completed".equalsIgnoreCase(detail.getStatus())) {
+            if (Booking.STATUS_COMPLETED.equalsIgnoreCase(detail.getStatus())) {
                 boolean reviewEligible = reviewService.isEligibleForCustomer(bookingId, customerId);
                 model.addAttribute("reviewEligible", reviewEligible);
                 if (reviewEligible) {
@@ -544,8 +400,8 @@ public class BookingController {
             return "redirect:/login";
 
         try {
-            BookingDetailDTO detail = bookingService.getBookingDetail(bookingId, customerId);
-            boolean wasConfirmed = "confirmed".equalsIgnoreCase(detail.getStatus());
+            BookingDetailDTO detail = bookingQueryService.getBookingDetail(bookingId, customerId);
+            boolean wasConfirmed = Booking.STATUS_CONFIRMED.equalsIgnoreCase(detail.getStatus());
             boolean refundCreated = bookingService.cancelBooking(bookingId, customerId, form);
 
             if (refundCreated) {
@@ -566,13 +422,6 @@ public class BookingController {
         return "redirect:/bookings/" + bookingId;
     }
 
-    private String resolveVehicleImage(VehicleType vt) {
-        if (vt == null || vt.getImageUrl() == null || vt.getImageUrl().isBlank()) {
-            return "https://images.unsplash.com/photo-1619682817481-e994891cd1f5?auto=format&fit=crop&w=800&q=80";
-        }
-        return vt.getImageUrl();
-    }
-
     @GetMapping("/bookings/{bookingId}/issues/{issueId}/evidences/{evidenceId}")
     public ResponseEntity<Resource> getIssueEvidence(
             @PathVariable("bookingId") Long bookingId,
@@ -589,7 +438,7 @@ public class BookingController {
             return ResponseEntity.ok()
                     .contentType(mediaType)
                     .body(file);
-        } catch (java.util.NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
         }
     }

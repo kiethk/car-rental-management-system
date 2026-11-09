@@ -7,6 +7,7 @@ import com.crms.mvc.entity.Customer;
 import com.crms.mvc.entity.VehicleType;
 import com.crms.mvc.repository.*;
 import com.crms.mvc.service.impl.BookingServiceImpl;
+import com.crms.mvc.service.impl.VehicleAvailabilityServiceImpl;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -28,10 +29,7 @@ class CustomerOverlapTest {
         CustomerRepository customers = mock(CustomerRepository.class);
         VehicleTypeRepository types = mock(VehicleTypeRepository.class);
         ContractTemplateService templates = mock(ContractTemplateService.class);
-        BookingServiceImpl service = new BookingServiceImpl(bookings, customers, mock(SlotRepository.class), types,
-                mock(VehicleRepository.class), mock(EmployeeRepository.class), mock(PromotionRepository.class),
-                mock(PaymentService.class), mock(ContractService.class), templates, mock(BookingFeeService.class),
-                mock(PricingService.class));
+        BookingServiceImpl service = new BookingServiceImpl(bookings, customers, mock(SlotRepository.class), types, mock(VehicleRepository.class), mock(EmployeeRepository.class), mock(PromotionRepository.class), mock(PaymentService.class), mock(ContractService.class), templates, mock(PricingService.class), new VehicleAvailabilityServiceImpl(bookings, mock(VehicleRepository.class), types, templates, mock(PricingService.class)));
 
         when(customers.findById(1L)).thenReturn(Optional.of(new Customer()));
         VehicleType type = new VehicleType();

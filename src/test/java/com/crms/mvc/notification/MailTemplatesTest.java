@@ -1,4 +1,4 @@
-package com.crms.mvc.event;
+package com.crms.mvc.notification;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

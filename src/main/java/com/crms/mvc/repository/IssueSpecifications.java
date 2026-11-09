@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.time.OffsetDateTime;
 
 /** Turns the filters of the admin issue list into a query; a filter that is not set adds no condition. */
 public final class IssueSpecifications {
@@ -40,9 +41,9 @@ public final class IssueSpecifications {
                 carried.select(plate.get("id")).where(
                         cb.equal(plate.get("vehicle"), root.get("vehicle")),
                         cb.like(cb.lower(plate.get("plate")), query.getPlatePattern(), '\\'),
-                        cb.lessThanOrEqualTo(plate.get("validFrom"), root.<java.time.OffsetDateTime>get("occurredAt")),
+                        cb.lessThanOrEqualTo(plate.get("validFrom"), root.<OffsetDateTime>get("occurredAt")),
                         cb.or(cb.isNull(plate.get("validTo")),
-                                cb.greaterThan(plate.<java.time.OffsetDateTime>get("validTo"), root.<java.time.OffsetDateTime>get("occurredAt"))));
+                                cb.greaterThan(plate.<OffsetDateTime>get("validTo"), root.<OffsetDateTime>get("occurredAt"))));
                 conditions.add(cb.exists(carried));
             }
             return cb.and(conditions.toArray(new Predicate[0]));

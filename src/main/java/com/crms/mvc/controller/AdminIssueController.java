@@ -7,11 +7,9 @@ import com.crms.mvc.dto.IssueFormDTO;
 import com.crms.mvc.dto.IssueQueryDTO;
 import com.crms.mvc.dto.PageNavDTO;
 import com.crms.mvc.dto.SessionAccount;
-import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Issue;
-import com.crms.mvc.entity.IssueStatus;
 import com.crms.mvc.entity.IssueType;
-import com.crms.mvc.service.BookingService;
+import com.crms.mvc.service.BookingQueryService;
 import com.crms.mvc.service.IssueService;
 import com.crms.mvc.util.DateTimeUtils;
 import com.crms.mvc.util.CurrentAccount;
@@ -37,6 +35,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.NoSuchElementException;
+import java.util.ArrayList;
 
 @Controller
 @RequestMapping("/admin/issues")
@@ -45,11 +44,11 @@ public class AdminIssueController {
     private static final String LIST_PATH = "/admin/issues";
 
     private final IssueService issueService;
-    private final BookingService bookingService;
+    private final BookingQueryService bookingQueryService;
 
-    public AdminIssueController(IssueService issueService, BookingService bookingService) {
+    public AdminIssueController(IssueService issueService, BookingQueryService bookingQueryService) {
         this.issueService = issueService;
-        this.bookingService = bookingService;
+        this.bookingQueryService = bookingQueryService;
     }
 
     @GetMapping
@@ -100,7 +99,7 @@ public class AdminIssueController {
         } catch (IllegalStateException | IllegalArgumentException | NoSuchElementException ex) {
             ra.addFlashAttribute("error", ex.getMessage());
             // The uploaded files belong to this request only; staff pick the photos again.
-            form.setImages(new java.util.ArrayList<>());
+            form.setImages(new ArrayList<>());
             ra.addFlashAttribute("issueForm", form);
             return "redirect:" + LIST_PATH + "/new?bookingId=" + form.getBookingId();
         }
@@ -205,7 +204,7 @@ public class AdminIssueController {
     }
 
     private String formPage(Model model, Long bookingId, Long issueId) {
-        BookingDetailDTO booking = bookingService.getBookingDetailForAdmin(bookingId);
+        BookingDetailDTO booking = bookingQueryService.getBookingDetailForAdmin(bookingId);
         model.addAttribute("booking", booking);
         model.addAttribute("issueId", issueId);
         model.addAttribute("issueTypes", IssueType.values());

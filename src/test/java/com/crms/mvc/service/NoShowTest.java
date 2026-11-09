@@ -1,13 +1,14 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.config.StationProperties;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Customer;
 import com.crms.mvc.entity.Slot;
 import com.crms.mvc.entity.VehicleType;
-import com.crms.mvc.event.CustomerMailer;
+import com.crms.mvc.notification.CustomerMailer;
 import com.crms.mvc.event.NoShowCancelledEvent;
-import com.crms.mvc.event.PickupNotifier;
+import com.crms.mvc.notification.PickupNotifier;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.service.impl.NoShowServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -80,7 +81,7 @@ class NoShowTest {
         CustomerMailer mailer = mock(CustomerMailer.class);
         when(mailer.isConfigured()).thenReturn(true);
         when(mailer.url(anyString())).thenAnswer(inv -> "http://localhost:8081" + inv.getArgument(0));
-        PickupNotifier notifier = new PickupNotifier(bookings, contracts, mailer, "Kho xe DriveNow");
+        PickupNotifier notifier = new PickupNotifier(bookings, contracts, mailer, StationProperties.DEFAULT);
         Booking booking = paidBooking(NOW, NOW.plusHours(8));
         when(bookings.findConfirmedPickupsBetween(NOW.minusMinutes(1), NOW)).thenReturn(List.of(booking));
 

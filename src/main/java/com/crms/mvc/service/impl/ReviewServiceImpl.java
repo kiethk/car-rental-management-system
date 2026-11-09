@@ -5,6 +5,7 @@ import com.crms.mvc.dto.ReviewDTO;
 import com.crms.mvc.dto.ReviewFormDTO;
 import com.crms.mvc.dto.VehicleReviewSummaryDTO;
 import com.crms.mvc.entity.Booking;
+import com.crms.mvc.entity.Payment;
 import com.crms.mvc.entity.Review;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.PaymentRepository;
@@ -100,8 +101,8 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     private boolean isFinanciallyComplete(Booking booking) {
-        return "completed".equalsIgnoreCase(booking.getStatus())
-                && !paymentRepository.existsByBookingIdAndStatus(booking.getId(), "pending");
+        return Booking.STATUS_COMPLETED.equalsIgnoreCase(booking.getStatus())
+                && !paymentRepository.existsByBookingIdAndStatus(booking.getId(), Payment.STATUS_PENDING);
     }
 
     private Booking findOwnedBooking(Long bookingId, Long customerId) {

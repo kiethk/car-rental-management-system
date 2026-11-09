@@ -1,12 +1,12 @@
-package com.crms.mvc.event;
+package com.crms.mvc.notification;
 
+import com.crms.mvc.config.StationProperties;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.service.ContractService;
 import com.crms.mvc.util.DateTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -18,6 +18,7 @@ import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.crms.mvc.event.NoShowCancelledEvent;
 
 /**
  * The two emails around picking up the car: "your rental time has started" the moment the pickup time arrives on a
@@ -32,15 +33,15 @@ public class PickupNotifier {
     private final BookingRepository bookingRepository;
     private final ContractService contractService;
     private final CustomerMailer mailer;
-    private final String stationAddress;
+    private final StationProperties station;
     private OffsetDateTime lastRun = OffsetDateTime.now();
 
     public PickupNotifier(BookingRepository bookingRepository, ContractService contractService, CustomerMailer mailer,
-                          @Value("${crms.station.address:Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM}") String stationAddress) {
+                          StationProperties station) {
         this.bookingRepository = bookingRepository;
         this.contractService = contractService;
         this.mailer = mailer;
-        this.stationAddress = stationAddress;
+        this.station = station;
     }
 
     @Scheduled(fixedRate = 60_000)
@@ -73,7 +74,7 @@ public class PickupNotifier {
                         ? booking.getVehicle().getLicensePlate().getPlate() : null);
                 vars.put("pickupTime", DateTimeUtils.toVietnamTime(booking.getPickupTime()));
                 vars.put("scheduledEndTime", DateTimeUtils.toVietnamTime(booking.getScheduledEndTime()));
-                vars.put("stationAddress", stationAddress);
+                vars.put("stationAddress", station.address());
                 vars.put("pickupWaitHours", contractService.getTermsOfBooking(booking.getId()).getPickupWaitHours());
                 vars.put("bookingUrl", mailer.url("/bookings/" + booking.getId()));
                 mailer.send(booking.getCustomer().getEmail(),

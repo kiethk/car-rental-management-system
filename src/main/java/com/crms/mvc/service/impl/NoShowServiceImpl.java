@@ -47,7 +47,7 @@ public class NoShowServiceImpl implements NoShowService {
             if (now.isBefore(deadline)) {
                 continue;
             }
-            booking.setStatus("cancelled");
+            booking.setStatus(Booking.STATUS_CANCELLED);
             booking.setCancelledAt(now);
             bookingRepository.save(booking);
             cancelled++;

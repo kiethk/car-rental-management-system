@@ -1,5 +1,6 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.config.StationProperties;
 import com.crms.mvc.dto.ContractDocumentDTO;
 import com.crms.mvc.service.ContractDocumentGenerator;
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
@@ -29,23 +30,23 @@ public class OpenHtmlToPdfContractGenerator implements ContractDocumentGenerator
     private final ITemplateEngine templateEngine;
     private final Resource regularFont;
     private final Resource boldFont;
-    private final String stationAddress;
+    private final StationProperties station;
 
     public OpenHtmlToPdfContractGenerator(ITemplateEngine templateEngine,
                                           @Value("${crms.contract.font.regular}") Resource regularFont,
                                           @Value("${crms.contract.font.bold}") Resource boldFont,
-                                          @Value("${crms.station.address:Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM}") String stationAddress) {
+                                          StationProperties station) {
         this.templateEngine = templateEngine;
         this.regularFont = regularFont;
         this.boldFont = boldFont;
-        this.stationAddress = stationAddress;
+        this.station = station;
     }
 
     @Override
     public byte[] generatePdf(ContractDocumentDTO document) {
         Context context = new Context(VIETNAMESE);
         context.setVariable("doc", document);
-        context.setVariable("stationAddress", stationAddress);
+        context.setVariable("stationAddress", station.address());
         String xhtml = templateEngine.process(TEMPLATE, context);
 
         try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {

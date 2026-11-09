@@ -35,7 +35,7 @@ class IssueVehicleDamageTest {
         issueRepository = mock(IssueRepository.class);
         service = new IssueServiceImpl(issueRepository, mock(BookingRepository.class), mock(EmployeeRepository.class),
                 mock(BookingFeeRepository.class), mock(IssueEvidenceRepository.class), mock(FileUploadService.class),
-                mock(LicensePlateRepository.class), mock(ApplicationEventPublisher.class));
+                mock(LicensePlateRepository.class), mock(com.crms.mvc.repository.PaymentRepository.class), mock(ApplicationEventPublisher.class));
     }
 
     @Test

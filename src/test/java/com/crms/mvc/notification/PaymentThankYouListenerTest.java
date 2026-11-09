@@ -1,4 +1,4 @@
-package com.crms.mvc.event;
+package com.crms.mvc.notification;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +15,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import com.crms.mvc.event.PaymentReceivedEvent;
 
 /** The customer is thanked after paying; a mail problem must never break the payment. */
 class PaymentThankYouListenerTest {

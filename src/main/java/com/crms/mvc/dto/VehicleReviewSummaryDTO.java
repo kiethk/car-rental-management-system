@@ -3,18 +3,14 @@ package com.crms.mvc.dto;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class VehicleReviewSummaryDTO {
-    private final BigDecimal averageRating;
-    private final int reviewCount;
-    private final List<ReviewDTO> reviews;
+/** The reviews of one vehicle type with their average, for its detail page. */
+public record VehicleReviewSummaryDTO(BigDecimal averageRating, List<ReviewDTO> reviews) {
 
-    public VehicleReviewSummaryDTO(BigDecimal averageRating, List<ReviewDTO> reviews) {
-        this.averageRating = averageRating;
-        this.reviewCount = reviews.size();
-        this.reviews = List.copyOf(reviews);
+    public VehicleReviewSummaryDTO {
+        reviews = List.copyOf(reviews);
     }
 
-    public BigDecimal getAverageRating() { return averageRating; }
-    public int getReviewCount() { return reviewCount; }
-    public List<ReviewDTO> getReviews() { return reviews; }
+    public int reviewCount() {
+        return reviews.size();
+    }
 }

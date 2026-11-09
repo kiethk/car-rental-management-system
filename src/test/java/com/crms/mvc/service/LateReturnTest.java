@@ -6,15 +6,11 @@ import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Customer;
 import com.crms.mvc.entity.Slot;
 import com.crms.mvc.entity.VehicleType;
-import com.crms.mvc.event.LateReturnNotifier;
+import com.crms.mvc.notification.CustomerMailer;
+import com.crms.mvc.notification.LateReturnNotifier;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.service.impl.PricingServiceImpl;
-import jakarta.mail.Session;
-import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.thymeleaf.ITemplateEngine;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -23,7 +19,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /** An overdue rental shows its live late time and fee, and the customer is mailed once when charging starts. */
@@ -71,11 +69,10 @@ class LateReturnTest {
     }
 
     @Test
-    void theCustomerIsMailedOnceWhenTheFirstLateHourStartsToBeCharged() {
+    void theCustomerIsMailedOnceWhenTheFirstLateHourStartsToBeCharged() throws Exception {
         BookingRepository bookings = mock(BookingRepository.class);
-        JavaMailSender sender = mock(JavaMailSender.class);
-        when(sender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
-        LateReturnNotifier notifier = notifier(bookings, sender, "shop@example.com");
+        CustomerMailer mailer = configuredMailer();
+        LateReturnNotifier notifier = notifier(bookings, mailer);
 
         // Run covering 14:59 → 15:00: charging of a rental due back at 14:00 starts at 15:00.
         OffsetDateTime from = END.plusMinutes(59);
@@ -83,48 +80,60 @@ class LateReturnTest {
         when(bookings.findRentalsDueBetween(from.minusHours(1), to.minusHours(1))).thenReturn(List.of(overdueBooking()));
 
         assertThat(notifier.notifyFirstChargedLateHourBetween(from, to)).isEqualTo(1);
-        verify(sender).send(any(MimeMessage.class));
+        verify(mailer).send(eq("an@example.com"), anyString(), eq("mail/late-return"), anyMap());
     }
 
     @Test
     void theCustomerIsRemindedOnceAsSoonAsTheReturnTimePasses() throws Exception {
         BookingRepository bookings = mock(BookingRepository.class);
-        JavaMailSender sender = mock(JavaMailSender.class);
-        when(sender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
-        LateReturnNotifier notifier = notifier(bookings, sender, "shop@example.com");
+        CustomerMailer mailer = configuredMailer();
+        LateReturnNotifier notifier = notifier(bookings, mailer);
 
         // Run covering 13:59 → 14:00: the rental due back at 14:00 has just become overdue.
         OffsetDateTime from = END.minusMinutes(1);
         when(bookings.findRentalsDueBetween(from, END)).thenReturn(List.of(overdueBooking()));
 
         assertThat(notifier.notifyReturnTimePassedBetween(from, END)).isEqualTo(1);
-        org.mockito.ArgumentCaptor<MimeMessage> mail = org.mockito.ArgumentCaptor.forClass(MimeMessage.class);
-        verify(sender).send(mail.capture());
-        assertThat(mail.getValue().getSubject()).contains("#42").contains("phí trễ sẽ bắt đầu tính sau 1 giờ");
+        org.mockito.ArgumentCaptor<String> subject = org.mockito.ArgumentCaptor.forClass(String.class);
+        verify(mailer).send(eq("an@example.com"), subject.capture(), eq("mail/late-return-reminder"), anyMap());
+        assertThat(subject.getValue()).contains("#42").contains("phí trễ sẽ bắt đầu tính sau 1 giờ");
     }
 
     @Test
-    void withoutMailConfiguredNothingIsSent() {
+    void withoutMailConfiguredNothingIsSent() throws Exception {
         BookingRepository bookings = mock(BookingRepository.class);
-        JavaMailSender sender = mock(JavaMailSender.class);
+        CustomerMailer mailer = mock(CustomerMailer.class);
+        when(mailer.isConfigured()).thenReturn(false);
         when(bookings.findRentalsDueBetween(any(), any())).thenReturn(List.of(overdueBooking()));
 
-        assertThat(notifier(bookings, sender, "").notifyFirstChargedLateHourBetween(END, END.plusMinutes(1))).isZero();
-        verify(sender, never()).send(any(MimeMessage.class));
+        assertThat(notifier(bookings, mailer).notifyFirstChargedLateHourBetween(END, END.plusMinutes(1))).isZero();
+        verify(mailer, never()).send(any(), any(), any(), anyMap());
     }
 
-    @SuppressWarnings("unchecked")
-    private LateReturnNotifier notifier(BookingRepository bookings, JavaMailSender sender, String username) {
+    @Test
+    void aFailingSendDoesNotStopTheOthersFromBeingMailed() throws Exception {
+        BookingRepository bookings = mock(BookingRepository.class);
+        CustomerMailer mailer = configuredMailer();
+        org.mockito.Mockito.doThrow(new IllegalStateException("smtp down")).doNothing()
+                .when(mailer).send(any(), any(), any(), anyMap());
+        when(bookings.findRentalsDueBetween(any(), any())).thenReturn(List.of(overdueBooking(), overdueBooking()));
+
+        assertThat(notifier(bookings, mailer).notifyReturnTimePassedBetween(END.minusMinutes(1), END)).isEqualTo(1);
+    }
+
+    private static CustomerMailer configuredMailer() {
+        CustomerMailer mailer = mock(CustomerMailer.class);
+        when(mailer.isConfigured()).thenReturn(true);
+        when(mailer.url(any())).thenAnswer(inv -> "http://localhost:8081" + inv.getArgument(0));
+        return mailer;
+    }
+
+    private LateReturnNotifier notifier(BookingRepository bookings, CustomerMailer mailer) {
         ContractService contracts = mock(ContractService.class);
         ContractTemplateDTO terms = new ContractTemplateDTO();
         terms.setLateFeeMultiplier(TWO_HUNDRED_PERCENT);
         when(contracts.getTermsOfBooking(any())).thenReturn(terms);
-        ObjectProvider<JavaMailSender> provider = mock(ObjectProvider.class);
-        when(provider.getIfAvailable()).thenReturn(sender);
-        ITemplateEngine engine = mock(ITemplateEngine.class);
-        when(engine.process(anyString(), any(org.thymeleaf.context.IContext.class))).thenReturn("<p>body</p>");
-        return new LateReturnNotifier(bookings, contracts, pricing, provider, engine,
-                username, "secret", "DriveNow <shop@example.com>", "http://localhost:8081");
+        return new LateReturnNotifier(bookings, contracts, pricing, mailer);
     }
 
     private static Booking overdueBooking() {

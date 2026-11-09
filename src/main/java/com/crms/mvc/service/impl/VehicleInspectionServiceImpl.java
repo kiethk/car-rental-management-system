@@ -12,11 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import com.crms.mvc.util.DateTimeUtils;
 
 @Service
 @Transactional
@@ -52,7 +51,7 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + dto.getVehicleId()));
         requireNotRetired(vehicle);
 
-        LocalDate today = LocalDate.now(ZoneOffset.ofHours(7));
+        LocalDate today = LocalDate.now(DateTimeUtils.VIETNAM_ZONE);
         if (dto.getScheduledDate() != null && dto.getScheduledDate().isBefore(today)) {
             throw new IllegalArgumentException("Ngày lên lịch đăng kiểm không được ở trong quá khứ");
         }
@@ -99,7 +98,7 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
         }
 
         inspection.setStatus(status.toLowerCase());
-        inspection.setCompletedAt(OffsetDateTime.now(ZoneOffset.ofHours(7)));
+        inspection.setCompletedAt(OffsetDateTime.now(DateTimeUtils.VIETNAM_ZONE));
         if (notes != null && !notes.isBlank()) {
             inspection.setNotes(notes.trim());
         }
@@ -124,8 +123,8 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
 
     /** The whole day is reserved for the inspection, so the car must not already be promised to a customer that day. */
     private void requireNoRentalOnThatDay(Vehicle vehicle, LocalDate scheduledDate) {
-        OffsetDateTime dayStart = scheduledDate.atStartOfDay().atOffset(ZoneOffset.ofHours(7));
-        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.ofHours(7));
+        OffsetDateTime dayStart = scheduledDate.atStartOfDay().atOffset(DateTimeUtils.VIETNAM_OFFSET);
+        OffsetDateTime now = OffsetDateTime.now(DateTimeUtils.VIETNAM_ZONE);
         List<Long> bookedVehicleIds = bookingRepository.findBookedVehicleIdsInTimeRange(
                 dayStart, dayStart.plusDays(1), now.minusMinutes(Payment.PAYMENT_TIMEOUT_MINUTES), now);
         if (bookedVehicleIds.contains(vehicle.getId())) {

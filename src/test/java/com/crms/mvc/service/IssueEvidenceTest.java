@@ -56,7 +56,7 @@ class IssueEvidenceTest {
         fileUploadService = mock(FileUploadService.class);
         bookingFeeRepository = mock(BookingFeeRepository.class);
         service = new IssueServiceImpl(issueRepository, mock(BookingRepository.class), mock(EmployeeRepository.class),
-                bookingFeeRepository, evidenceRepository, fileUploadService, mock(LicensePlateRepository.class),
+                bookingFeeRepository, evidenceRepository, fileUploadService, mock(LicensePlateRepository.class), mock(com.crms.mvc.repository.PaymentRepository.class),
                 mock(ApplicationEventPublisher.class));
 
         when(fileUploadService.saveIssueEvidence(photo)).thenReturn("issue-abc.jpg");

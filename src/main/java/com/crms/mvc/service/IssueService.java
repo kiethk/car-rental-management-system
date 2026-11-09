@@ -5,16 +5,15 @@ import com.crms.mvc.dto.IssueDTO;
 import com.crms.mvc.dto.IssueQueryDTO;
 import com.crms.mvc.dto.IssueFormDTO;
 import com.crms.mvc.dto.IssueNoticeDTO;
-import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Issue;
 import com.crms.mvc.entity.IssueEvidence;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.NoSuchElementException;
 
 /**
  * Records and settles what a customer owes for an incident during a rental (see GLOSSARY.md: Sự cố).
@@ -63,7 +62,7 @@ public interface IssueService {
     /**
      * What a customer may see of their own booking: its issues except cancelled ones, newest first.
      *
-     * @throws java.util.NoSuchElementException when the booking is not theirs
+     * @throws NoSuchElementException when the booking is not theirs
      */
     List<IssueDTO> findByBookingForCustomer(Long bookingId, Long customerId);
 

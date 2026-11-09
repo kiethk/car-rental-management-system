@@ -7,6 +7,7 @@ import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.PaymentService;
+import com.crms.mvc.service.VnPayGateway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PaymentControllerIssueTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private PaymentService paymentService;
+    @MockitoBean private VnPayGateway gateway;
     @MockitoBean private BookingService bookingService;
 
     private MockHttpSession customer;
@@ -41,7 +43,7 @@ class PaymentControllerIssueTest {
     @BeforeEach
     void setUp() {
         customer = TestSessions.customer(1L, "John Doe");
-        when(paymentService.verifyPaymentSignature(any())).thenReturn(true);
+        when(gateway.verifySignature(any())).thenReturn(true);
     }
 
     @Test
@@ -75,7 +77,7 @@ class PaymentControllerIssueTest {
                 .andExpect(redirectedUrl("/bookings/42"))
                 .andExpect(flash().attributeExists("success"));
 
-        verify(paymentService, never()).processDeposit(anyLong(), any(), any());
+        verify(paymentService, never()).confirmDeposit(anyLong(), any(), any());
     }
 
     @Test
@@ -93,7 +95,7 @@ class PaymentControllerIssueTest {
 
     @Test
     void aReturnWithABadSignatureChangesNothing() throws Exception {
-        when(paymentService.verifyPaymentSignature(any())).thenReturn(false);
+        when(gateway.verifySignature(any())).thenReturn(false);
 
         mvc.perform(get("/payment/vnpay/return")
                         .param("vnp_TxnRef", "I77_1700000000000").param("vnp_ResponseCode", "00")
@@ -118,7 +120,7 @@ class PaymentControllerIssueTest {
 
     @Test
     void depositReturnsStillGoToTheDepositFlow() throws Exception {
-        when(paymentService.verifyPaymentSignature(any())).thenReturn(false);
+        when(gateway.verifySignature(any())).thenReturn(false);
 
         mvc.perform(get("/payment/vnpay/return").param("vnp_TxnRef", "5_1700000000000").param("vnp_ResponseCode", "00"))
                 .andExpect(status().is3xxRedirection())

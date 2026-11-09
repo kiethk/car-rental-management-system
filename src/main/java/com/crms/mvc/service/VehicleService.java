@@ -27,11 +27,15 @@ public interface VehicleService {
     /** Number of cars per status (available, rented, maintenance); statuses with no car are absent. */
     Map<String, Long> countByStatus();
 
-    Optional<Vehicle> findEntityById(Long id);
+    /** One car (never a vehicle type: the two have separate ids) for the admin pages; empty when there is none. */
+    Optional<VehicleDTO> findVehicleById(Long id);
 
-    Vehicle create(VehicleFormDTO dto);
+    /** The edit form of one car, filled with what it holds now. */
+    Optional<VehicleFormDTO> findFormById(Long id);
 
-    Vehicle update(Long id, VehicleFormDTO dto);
+    VehicleDTO create(VehicleFormDTO dto);
+
+    VehicleDTO update(Long id, VehicleFormDTO dto);
 
     void updateStatus(Long id, String newStatus);
 

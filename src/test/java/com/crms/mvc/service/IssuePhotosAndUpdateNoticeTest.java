@@ -67,7 +67,7 @@ class IssuePhotosAndUpdateNoticeTest {
         eventPublisher = mock(ApplicationEventPublisher.class);
         EmployeeRepository employeeRepository = mock(EmployeeRepository.class);
         service = new IssueServiceImpl(issueRepository, bookingRepository, employeeRepository, bookingFeeRepository,
-                evidenceRepository, fileUploadService, mock(LicensePlateRepository.class), eventPublisher);
+                evidenceRepository, fileUploadService, mock(LicensePlateRepository.class), mock(com.crms.mvc.repository.PaymentRepository.class), eventPublisher);
 
         Employee employee = new Employee();
         employee.setId(2L);

@@ -6,16 +6,14 @@ import com.crms.mvc.entity.VehicleInspection;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.VehicleInspectionRepository;
 import com.crms.mvc.repository.VehicleRepository;
-import com.crms.mvc.service.impl.BookingServiceImpl;
+import com.crms.mvc.service.impl.VehicleAvailabilityServiceImpl;
 import com.crms.mvc.service.impl.VehicleInspectionServiceImpl;
 import com.crms.mvc.entity.VehicleType;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,8 +72,7 @@ class InspectionRulesTest {
     void availabilityHidesACarWhoseRegistrationWouldExpireMidRental() {
         BookingRepository bookings = mock(BookingRepository.class);
         VehicleRepository vehicles = mock(VehicleRepository.class);
-        BookingServiceImpl service = new BookingServiceImpl(bookings, null, null, null, vehicles, null, null,
-                null, null, null, null, null);
+        VehicleAvailabilityService service = new VehicleAvailabilityServiceImpl(bookings, vehicles, null, null, null);
         LocalDate today = LocalDate.now();
         Vehicle expiring = car(1L, today.plusDays(1));
         Vehicle fine = car(2L, today.plusYears(1));
@@ -91,8 +88,7 @@ class InspectionRulesTest {
     void aRentalEndingAtMidnightDoesNotDriveOnTheDayThatStartsThen() {
         BookingRepository bookings = mock(BookingRepository.class);
         VehicleRepository vehicles = mock(VehicleRepository.class);
-        BookingServiceImpl service = new BookingServiceImpl(bookings, null, null, null, vehicles, null, null,
-                null, null, null, null, null);
+        VehicleAvailabilityService service = new VehicleAvailabilityServiceImpl(bookings, vehicles, null, null, null);
         LocalDate today = LocalDate.now();
         // registration valid through day 3; the rental ends at 00:00 on day 4, so it is driven only on days 1-3
         Vehicle car = car(1L, today.plusDays(3));

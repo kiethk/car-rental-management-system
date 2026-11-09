@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.NoSuchElementException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -30,9 +31,9 @@ public class GlobalExceptionHandler {
         return "error/404";
     }
 
-    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    @ExceptionHandler(NoResourceFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String handleNoResourceFound(org.springframework.web.servlet.resource.NoResourceFoundException ex, Model model) {
+    public String handleNoResourceFound(NoResourceFoundException ex, Model model) {
         model.addAttribute("errorCode", "404");
         model.addAttribute("errorMessage", "Không tìm thấy: " + ex.getResourcePath());
         return "error/404";

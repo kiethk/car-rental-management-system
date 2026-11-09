@@ -47,9 +47,6 @@ public class Issue {
     @Column(name = "occurred_at", nullable = false)
     private OffsetDateTime occurredAt;
 
-    @Column(name = "evidence_url", length = 500)
-    private String evidenceUrl;
-
     /** When the customer was emailed about this issue; null for issues recorded before emails went out at once. */
     @Column(name = "notified_at")
     private OffsetDateTime notifiedAt;
@@ -116,9 +113,6 @@ public class Issue {
 
     public Slot getSlot() { return slot; }
     public void setSlot(Slot slot) { this.slot = slot; }
-
-    public String getEvidenceUrl() { return evidenceUrl; }
-    public void setEvidenceUrl(String evidenceUrl) { this.evidenceUrl = evidenceUrl; }
 
     public void setIssueType(String typeStr) {
         if (typeStr == null) {

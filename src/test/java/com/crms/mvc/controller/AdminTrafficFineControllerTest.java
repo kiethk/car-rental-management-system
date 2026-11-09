@@ -45,6 +45,8 @@ class AdminTrafficFineControllerTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private TrafficFineService trafficFineService;
     @MockitoBean private BookingService bookingService;
+    @MockitoBean private com.crms.mvc.service.BookingQueryService bookingQueryService;
+    @MockitoBean private com.crms.mvc.service.VehicleAvailabilityService vehicleAvailabilityService;
 
     private MockHttpSession staff;
 
@@ -79,7 +81,7 @@ class AdminTrafficFineControllerTest {
         detail.setVehicleTypeName("Toyota Vios");
         detail.setLicensePlate("51A-123.45");
         detail.setPickupTime(OffsetDateTime.parse("2026-10-20T09:00+07:00"));
-        when(bookingService.getBookingDetailForAdmin(42L)).thenReturn(detail);
+        when(bookingQueryService.getBookingDetailForAdmin(42L)).thenReturn(detail);
 
         mvc.perform(get("/admin/traffic-fines").session(staff)
                         .param("plate", "51A-123.45").param("violationAt", "2026-10-20T14:30"))

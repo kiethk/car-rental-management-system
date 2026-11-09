@@ -1,4 +1,4 @@
-package com.crms.mvc.event;
+package com.crms.mvc.notification;
 
 import com.crms.mvc.dto.LateReturnDTO;
 import com.crms.mvc.entity.Booking;
@@ -6,23 +6,17 @@ import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.service.ContractService;
 import com.crms.mvc.service.PricingService;
 import com.crms.mvc.util.DateTimeUtils;
-import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.thymeleaf.ITemplateEngine;
-import org.thymeleaf.context.Context;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 
 /**
  * Emails a customer whose car is not back at most twice: a reminder as soon as the scheduled return time passes
@@ -36,37 +30,21 @@ public class LateReturnNotifier {
     private static final Logger log = LoggerFactory.getLogger(LateReturnNotifier.class);
     private static final String TEMPLATE = "mail/late-return";
     private static final String REMINDER_TEMPLATE = "mail/late-return-reminder";
-    private static final Locale VIETNAMESE = Locale.of("vi", "VN");
 
     private final BookingRepository bookingRepository;
     private final ContractService contractService;
     private final PricingService pricingService;
-    private final ObjectProvider<JavaMailSender> mailSender;
-    private final ITemplateEngine templateEngine;
-    private final String username;
-    private final String password;
-    private final String fromAddress;
-    private final String baseUrl;
+    private final CustomerMailer mailer;
     private OffsetDateTime lastRun = OffsetDateTime.now();
 
     public LateReturnNotifier(BookingRepository bookingRepository,
                               ContractService contractService,
                               PricingService pricingService,
-                              ObjectProvider<JavaMailSender> mailSender,
-                              ITemplateEngine templateEngine,
-                              @Value("${spring.mail.username:}") String username,
-                              @Value("${spring.mail.password:}") String password,
-                              @Value("${crms.mail.from:}") String fromAddress,
-                              @Value("${crms.base-url:http://localhost:8081}") String baseUrl) {
+                              CustomerMailer mailer) {
         this.bookingRepository = bookingRepository;
         this.contractService = contractService;
         this.pricingService = pricingService;
-        this.mailSender = mailSender;
-        this.templateEngine = templateEngine;
-        this.username = username;
-        this.password = password;
-        this.fromAddress = fromAddress;
-        this.baseUrl = baseUrl;
+        this.mailer = mailer;
     }
 
     @Scheduled(fixedRate = 60_000)
@@ -97,16 +75,16 @@ public class LateReturnNotifier {
     private int sendAll(List<Booking> due, String template, String subject) {
         if (due.isEmpty()) return 0;
 
-        JavaMailSender sender = mailSender.getIfAvailable();
-        if (sender == null || username == null || username.isBlank() || password == null || password.isBlank()) {
+        if (!mailer.isConfigured()) {
             log.info("Email service not configured; skipping {} for {} booking(s)", template, due.size());
             return 0;
         }
         int sent = 0;
         for (Booking booking : due) {
             try {
-                send(sender, booking, template, String.format(subject, booking.getId()));
-                sent++;
+                if (send(booking, template, String.format(subject, booking.getId()))) {
+                    sent++;
+                }
             } catch (Exception e) {
                 log.error("Failed to send late-return notice for booking #{}: {}", booking.getId(), e.getMessage(), e);
             }
@@ -114,10 +92,10 @@ public class LateReturnNotifier {
         return sent;
     }
 
-    private void send(JavaMailSender sender, Booking booking, String template, String subject) throws Exception {
+    private boolean send(Booking booking, String template, String subject) throws Exception {
         if (booking.getCustomer() == null || booking.getCustomer().getEmail() == null) {
             log.warn("Cannot send late-return notice: no customer email for booking #{}", booking.getId());
-            return;
+            return false;
         }
         BigDecimal multiplier = contractService.getTermsOfBooking(booking.getId()).getLateFeeMultiplier();
         BigDecimal rate = booking.getPricePerHour() != null ? booking.getPricePerHour()
@@ -125,26 +103,19 @@ public class LateReturnNotifier {
         OffsetDateTime firstCharge = booking.getScheduledEndTime().plusHours(1);
         LateReturnDTO late = pricingService.describeLateReturn(booking.getScheduledEndTime(), firstCharge, rate, multiplier);
 
-        Context context = new Context(VIETNAMESE);
-        context.setVariable("customerName", booking.getCustomer().getName());
-        context.setVariable("bookingId", booking.getId());
-        context.setVariable("vehicleName", booking.getSlot().getVehicleType().getDisplayName());
-        context.setVariable("licensePlate", booking.getVehicle() != null && booking.getVehicle().getLicensePlate() != null
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("customerName", booking.getCustomer().getName());
+        vars.put("bookingId", booking.getId());
+        vars.put("vehicleName", booking.getSlot().getVehicleType().getDisplayName());
+        vars.put("licensePlate", booking.getVehicle() != null && booking.getVehicle().getLicensePlate() != null
                 ? booking.getVehicle().getLicensePlate().getPlate() : null);
-        context.setVariable("scheduledEndTime", DateTimeUtils.toVietnamTime(booking.getScheduledEndTime()));
-        context.setVariable("hourFee", late.currentFee());
-        context.setVariable("firstChargeAt", DateTimeUtils.toVietnamTime(firstCharge));
-        context.setVariable("nextChargeAt", DateTimeUtils.toVietnamTime(late.nextChargeAt()));
-        context.setVariable("bookingUrl", baseUrl + "/bookings/" + booking.getId());
-        String body = templateEngine.process(template, context);
-
-        MimeMessage message = sender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-        helper.setFrom(fromAddress == null || fromAddress.isBlank() ? "DriveNow <" + username + ">" : fromAddress);
-        helper.setTo(booking.getCustomer().getEmail());
-        helper.setSubject(subject);
-        helper.setText(body, true);
-        sender.send(message);
+        vars.put("scheduledEndTime", DateTimeUtils.toVietnamTime(booking.getScheduledEndTime()));
+        vars.put("hourFee", late.currentFee());
+        vars.put("firstChargeAt", DateTimeUtils.toVietnamTime(firstCharge));
+        vars.put("nextChargeAt", DateTimeUtils.toVietnamTime(late.nextChargeAt()));
+        vars.put("bookingUrl", mailer.url("/bookings/" + booking.getId()));
+        mailer.send(booking.getCustomer().getEmail(), subject, template, vars);
         log.info("Sent {} for booking #{}", template, booking.getId());
+        return true;
     }
 }

@@ -3,7 +3,6 @@ package com.crms.mvc.service.impl;
 import com.crms.mvc.service.FileUploadService;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -212,18 +211,6 @@ public class FileUploadServiceImpl implements FileUploadService {
         } catch (IOException exception) {
             throw new IllegalStateException("Không thể xoá ảnh bằng chứng sự cố", exception);
         }
-    }
-
-    @Override
-    public MediaType resolveMediaType(String fileName) {
-        String name = fileName == null ? "" : fileName.toLowerCase(Locale.ROOT);
-        if (name.endsWith(".png")) {
-            return MediaType.IMAGE_PNG;
-        }
-        if (name.endsWith(".webp")) {
-            return MediaType.parseMediaType("image/webp");
-        }
-        return MediaType.IMAGE_JPEG;
     }
 
     /** Chấp nhận định dạng ảnh JPEG, PNG hoặc WebP tối đa 5 MB và trả về phần mở rộng tệp tương ứng. */

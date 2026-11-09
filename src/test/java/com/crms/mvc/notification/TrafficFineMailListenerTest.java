@@ -1,4 +1,4 @@
-package com.crms.mvc.event;
+package com.crms.mvc.notification;
 
 import com.crms.mvc.dto.TrafficFineNoticeDTO;
 import com.crms.mvc.service.FileUploadService;
@@ -19,6 +19,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import com.crms.mvc.event.TrafficFineRecordedEvent;
+import com.crms.mvc.event.TrafficFineRemovedEvent;
 
 /** The customer gets the police notice photo as an attachment; a removal email carries nothing. */
 class TrafficFineMailListenerTest {

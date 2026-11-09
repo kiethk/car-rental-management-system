@@ -76,7 +76,7 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     @Transactional(readOnly = true)
     public List<VehicleDTO> searchWithFilter(VehicleSearchFilterDTO filter) {
-        List<com.crms.mvc.entity.VehicleType> raw = vehicleTypeRepository.findAll();
+        List<VehicleType> raw = vehicleTypeRepository.findAll();
 
         if (filter != null) {
             String keyword = (filter.getKeyword() != null && !filter.getKeyword().isBlank()) ? filter.getKeyword().trim().toLowerCase() : null;
@@ -104,13 +104,13 @@ public class VehicleServiceImpl implements VehicleService {
 
         // Sorting. Names are compared the way customers read them on the card: brand + model.
         String sortBy = (filter != null && filter.getSortBy() != null) ? filter.getSortBy() : "price_asc";
-        Comparator<com.crms.mvc.entity.VehicleType> byName =
-                Comparator.comparing(com.crms.mvc.entity.VehicleType::getDisplayName, String.CASE_INSENSITIVE_ORDER);
-        Comparator<com.crms.mvc.entity.VehicleType> comparator = switch (sortBy) {
-            case "price_desc" -> Comparator.comparing(com.crms.mvc.entity.VehicleType::getPricePerHour, Comparator.nullsLast(Comparator.reverseOrder()));
+        Comparator<VehicleType> byName =
+                Comparator.comparing(VehicleType::getDisplayName, String.CASE_INSENSITIVE_ORDER);
+        Comparator<VehicleType> comparator = switch (sortBy) {
+            case "price_desc" -> Comparator.comparing(VehicleType::getPricePerHour, Comparator.nullsLast(Comparator.reverseOrder()));
             case "name_asc" -> byName;
             case "name_desc" -> byName.reversed();
-            default -> Comparator.comparing(com.crms.mvc.entity.VehicleType::getPricePerHour, Comparator.nullsLast(Comparator.naturalOrder()));
+            default -> Comparator.comparing(VehicleType::getPricePerHour, Comparator.nullsLast(Comparator.naturalOrder()));
         };
 
         return raw.stream().sorted(comparator).map(VehicleDTO::fromVehicleType).toList();
@@ -119,7 +119,7 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     @Transactional(readOnly = true)
     public Optional<VehicleDTO> findById(Long id) {
-        Optional<com.crms.mvc.entity.VehicleType> vt = vehicleTypeRepository.findById(id);
+        Optional<VehicleType> vt = vehicleTypeRepository.findById(id);
         if (vt.isPresent()) {
             return vt.map(VehicleDTO::fromVehicleType);
         }
@@ -169,12 +169,18 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Vehicle> findEntityById(Long id) {
-        return vehicleRepository.findByIdWithDetails(id);
+    public Optional<VehicleDTO> findVehicleById(Long id) {
+        return vehicleRepository.findByIdWithDetails(id).map(VehicleDTO::fromEntity);
     }
 
     @Override
-    public Vehicle create(VehicleFormDTO dto) {
+    @Transactional(readOnly = true)
+    public Optional<VehicleFormDTO> findFormById(Long id) {
+        return vehicleRepository.findByIdWithDetails(id).map(VehicleFormDTO::fromEntity);
+    }
+
+    @Override
+    public VehicleDTO create(VehicleFormDTO dto) {
         VehicleType vt = vehicleTypeRepository.findById(dto.getVehicleTypeId())
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dòng xe có mã: " + dto.getVehicleTypeId()));
 
@@ -202,11 +208,11 @@ public class VehicleServiceImpl implements VehicleService {
         firstPlate.setPlate(cleanPlate);
         firstPlate.setProvince(dto.getProvince());
         licensePlateService.changePlate(saved.getId(), firstPlate);
-        return saved;
+        return VehicleDTO.fromEntity(saved);
     }
 
     @Override
-    public Vehicle update(Long id, VehicleFormDTO dto) {
+    public VehicleDTO update(Long id, VehicleFormDTO dto) {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + id));
 
@@ -235,7 +241,7 @@ public class VehicleServiceImpl implements VehicleService {
         // The plate is not edited here: changing it creates a new plate record (LicensePlateService.changePlate).
         vehicle.setRegistrationExpiry(dto.getRegistrationExpiry());
 
-        return vehicleRepository.save(vehicle);
+        return VehicleDTO.fromEntity(vehicleRepository.save(vehicle));
     }
 
     @Override

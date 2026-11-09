@@ -6,6 +6,7 @@ import com.crms.mvc.entity.Customer;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.repository.*;
 import com.crms.mvc.service.impl.BookingServiceImpl;
+import com.crms.mvc.service.impl.VehicleAvailabilityServiceImpl;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -61,10 +62,7 @@ class FreeCancellationTest {
         BookingRepository bookings = mock(BookingRepository.class);
         PaymentService payments = mock(PaymentService.class);
         ContractService contracts = mock(ContractService.class);
-        BookingServiceImpl service = new BookingServiceImpl(bookings, mock(CustomerRepository.class),
-                mock(SlotRepository.class), mock(VehicleTypeRepository.class), mock(VehicleRepository.class),
-                mock(EmployeeRepository.class), mock(PromotionRepository.class), payments, contracts,
-                mock(ContractTemplateService.class), mock(BookingFeeService.class), mock(PricingService.class));
+        BookingServiceImpl service = new BookingServiceImpl(bookings, mock(CustomerRepository.class), mock(SlotRepository.class), mock(VehicleTypeRepository.class), mock(VehicleRepository.class), mock(EmployeeRepository.class), mock(PromotionRepository.class), payments, contracts, mock(ContractTemplateService.class), mock(PricingService.class), new VehicleAvailabilityServiceImpl(bookings, mock(VehicleRepository.class), mock(VehicleTypeRepository.class), mock(ContractTemplateService.class), mock(PricingService.class)));
 
         Customer customer = new Customer();
         customer.setId(1L);
