@@ -44,10 +44,10 @@ class AdminAccountControllerTest {
         mvc.perform(get("/admin/accounts").param("type", "employee").session(TestSessions.admin(1L)))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/accounts/list"))
-                .andExpect(content().string(containsString("Account Management")))
+                .andExpect(content().string(containsString("Quản lý tài khoản")))
                 .andExpect(content().string(containsString("Locked Staff")))
-                .andExpect(content().string(containsString("Your account")))
-                .andExpect(content().string(containsString("Activate")))
+                .andExpect(content().string(containsString("Tài khoản của bạn")))
+                .andExpect(content().string(containsString("Kích hoạt")))
                 .andExpect(content().string(not(containsString("/admin/accounts/employee/1/status"))));
     }
 
@@ -77,15 +77,15 @@ class AdminAccountControllerTest {
                         .param("password", "short").param("role", "root"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/accounts/form"))
-                .andExpect(content().string(containsString("Name is required")))
-                .andExpect(content().string(containsString("Role must be staff or admin")));
+                .andExpect(content().string(containsString("Vui lòng nhập họ tên")))
+                .andExpect(content().string(containsString("Vai trò phải là nhân viên hoặc quản trị viên")));
     }
 
     @Test
     void employeeFormRendersAndDuplicateEmailIsShown() throws Exception {
         mvc.perform(get("/admin/accounts/employees/new").session(TestSessions.admin(1L)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Temporary Password")));
+                .andExpect(content().string(containsString("Mật khẩu tạm thời")));
 
         org.mockito.Mockito.doThrow(new IllegalArgumentException("Email is already in use"))
                 .when(accountManagementService).createEmployee(any());
@@ -93,6 +93,6 @@ class AdminAccountControllerTest {
                         .param("name", "New Staff").param("phone", "0900000000").param("email", "new@crms.test")
                         .param("password", "temporary1").param("role", "staff"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Email is already in use")));
+                .andExpect(content().string(containsString("Email này đã được sử dụng")));
     }
 }

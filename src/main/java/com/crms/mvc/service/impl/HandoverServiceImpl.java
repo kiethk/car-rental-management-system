@@ -146,7 +146,7 @@ public class HandoverServiceImpl implements HandoverService {
         booking.setActualReturnTime(returnedAt);
 
         handoverRepository.save(newHandover(booking, actor, HandoverType.CHECK_OUT,
-                form.getOdometer(), form.getFuelPercent(), form.getNotes()));
+                form.getOdometer(), form.getFuelPercent(), null));
 
         // Late fee and Return charges belong to the booking, not to any Issue.
         BigDecimal multiplier = contractService.getTermsOfBooking(bookingId).getLateFeeMultiplier();
@@ -190,8 +190,8 @@ public class HandoverServiceImpl implements HandoverService {
         List<BookingFee> unpaid = bookingFeeService.getUnpaidFees(bookingId);
         BigDecimal finalAmount = finalAmount(booking, unpaid);
         if (finalAmount.signum() < 0) {
-            throw new IllegalStateException("The deposit is larger than the rental total and fees. "
-                    + "Check the booking amounts before settling.");
+            throw new IllegalStateException("Tiền cọc lớn hơn tổng tiền thuê và các khoản phí. "
+                    + "Hãy kiểm tra lại số tiền của đơn trước khi quyết toán.");
         }
         if (finalAmount.signum() > 0) {
             if (form.getPaymentMethod() == null || !PAYMENT_METHODS.contains(form.getPaymentMethod())) {
@@ -274,7 +274,6 @@ public class HandoverServiceImpl implements HandoverService {
         receipt.setReturnedAt(DateTimeUtils.toVietnamTime(returnedAt));
         receipt.setOdometer(record.getOdometer());
         receipt.setFuelPercent(record.getFuelPercent());
-        receipt.setNotes(record.getNotes());
         receipt.setRentalTotal(booking.getTotalPrice());
         receipt.setDepositAmount(booking.getDepositAmount());
         for (BookingFee fee : bookingFeeService.getFeesByBooking(bookingId)) {

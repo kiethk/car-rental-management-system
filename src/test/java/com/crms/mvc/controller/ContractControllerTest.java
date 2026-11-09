@@ -62,7 +62,7 @@ class ContractControllerTest {
 
         mvc.perform(post("/admin/bookings/42/contract/issue").session(staff()))
                 .andExpect(redirectedUrl("/admin/bookings/42"))
-                .andExpect(flash().attribute("success", "Contract PDF issued and emailed to the customer."));
+                .andExpect(flash().attribute("success", "Đã phát hành hợp đồng PDF và gửi email cho khách hàng."));
         verify(contractService).issueContract(42L);
     }
 
@@ -72,7 +72,7 @@ class ContractControllerTest {
 
         mvc.perform(post("/admin/bookings/42/contract/issue").session(staff()))
                 .andExpect(redirectedUrl("/admin/bookings/42"))
-                .andExpect(flash().attribute("error", org.hamcrest.Matchers.containsString("email was not sent")));
+                .andExpect(flash().attribute("error", org.hamcrest.Matchers.containsString("chưa gửi được email")));
     }
 
     private MockHttpSession staff() {

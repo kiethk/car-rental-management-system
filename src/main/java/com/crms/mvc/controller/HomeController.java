@@ -1,6 +1,7 @@
 package com.crms.mvc.controller;
 
 import com.crms.mvc.service.PromotionService;
+import com.crms.mvc.service.ReviewService;
 import com.crms.mvc.service.VehicleTypeService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,10 +19,13 @@ public class HomeController {
 
     private final VehicleTypeService vehicleTypeService;
     private final PromotionService promotionService;
+    private final ReviewService reviewService;
 
-    public HomeController(VehicleTypeService vehicleTypeService, PromotionService promotionService) {
+    public HomeController(VehicleTypeService vehicleTypeService, PromotionService promotionService,
+                          ReviewService reviewService) {
         this.vehicleTypeService = vehicleTypeService;
         this.promotionService = promotionService;
+        this.reviewService = reviewService;
     }
 
     @GetMapping("/")
@@ -29,6 +33,7 @@ public class HomeController {
         model.addAttribute("today", LocalDate.now().toString());
         model.addAttribute("tomorrow", LocalDate.now().plusDays(1).toString());
         model.addAttribute("featuredVehicles", vehicleTypeService.findAll());
+        model.addAttribute("ratings", reviewService.ratingsByVehicleType());
         var promotions = promotionService.findActiveWithImages();
         model.addAttribute("promotions", promotions);
         model.addAttribute("hasPromotionImages", !promotions.isEmpty());

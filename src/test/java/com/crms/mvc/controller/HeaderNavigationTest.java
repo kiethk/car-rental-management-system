@@ -4,6 +4,7 @@ import com.crms.mvc.dto.SessionAccount;
 import com.crms.mvc.support.PassThroughSessionAccountService;
 import com.crms.mvc.util.CurrentAccount;
 import com.crms.mvc.service.PromotionService;
+import com.crms.mvc.service.ReviewService;
 import org.springframework.context.annotation.Import;
 import com.crms.mvc.service.VehicleTypeService;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ class HeaderNavigationTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private VehicleTypeService vehicleTypeService;
     @MockitoBean private PromotionService promotionService;
+    @MockitoBean private ReviewService reviewService;
 
     @Test
     void whenEmployeeViewsCustomerHome_showsBackToAdminAndHidesViewCustomerPage() throws Exception {
@@ -44,7 +46,7 @@ class HeaderNavigationTest {
                 .andExpect(content().string(containsString("/admin/dashboard")))
                 .andExpect(content().string(containsString("Xem trước (Nhân viên)")))
                 .andExpect(content().string(not(containsString("Xem trang khách"))))
-                .andExpect(content().string(containsString("Browse Cars")));
+                .andExpect(content().string(containsString("Danh sách xe")));
     }
 
     @Test

@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${vehicle.displayName + ' — DriveNow'}">Vehicle Details — DriveNow</title>
+    <title th:text="${vehicle.displayName + ' — DriveNow'}">Chi tiết xe — DriveNow</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,8 +21,8 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb bg-transparent p-0 mb-0">
-            <li class="breadcrumb-item"><a th:href="@{/}" class="text-muted text-decoration-none">Home</a></li>
-            <li class="breadcrumb-item"><a th:href="@{/vehicles}" class="text-muted text-decoration-none">Browse Cars</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/}" class="text-muted text-decoration-none">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/vehicles}" class="text-muted text-decoration-none">Danh sách xe</a></li>
             <li class="breadcrumb-item active text-navy font-weight-bold" th:text="${vehicle.displayName}">Toyota Vios</li>
         </ol>
     </nav>
@@ -44,10 +44,10 @@
                 </div>
 
                 <div class="p-4">
-                    <h3 class="h5 font-weight-bold text-navy mb-2">Model Overview</h3>
+                    <h3 class="h5 font-weight-bold text-navy mb-2">Giới thiệu mẫu xe</h3>
                     <p class="text-muted mb-0 leading-relaxed"
-                       th:text="${vehicle.description != null and !vehicle.description.isBlank() ? vehicle.description : 'Modern, comfortable and fuel-efficient vehicle, maintained and sanitized thoroughly before every departure.'}">
-                        Model overview...
+                       th:text="${vehicle.description != null and !vehicle.description.isBlank() ? vehicle.description : 'Xe đời mới, thoải mái và tiết kiệm nhiên liệu, được bảo dưỡng và vệ sinh kỹ trước mỗi chuyến đi.'}">
+                        Giới thiệu mẫu xe...
                     </p>
                 </div>
             </div>
@@ -55,17 +55,17 @@
             <!-- Physical Cars in Fleet of this Model -->
             <div class="card border-0 shadow-sm rounded-2xl p-4 bg-white mb-4" th:if="${physicalCars != null and not #lists.isEmpty(physicalCars)}">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="h6 font-weight-bold text-navy mb-0">Available Cars of this Model (<span th:text="${physicalCars.size()}">0</span>)</h4>
-                    <span class="text-xs text-muted">Physical cars of this model in inventory</span>
+                    <h4 class="h6 font-weight-bold text-navy mb-0">Các xe thuộc mẫu này (<span th:text="${physicalCars.size()}">0</span>)</h4>
+                    <span class="text-xs text-muted">Các xe thực tế của mẫu này trong đội xe</span>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-sm table-hover mb-0 align-middle">
                         <thead class="bg-surface-2 text-muted text-uppercase" style="font-size: 11px;">
                             <tr>
-                                <th class="border-top-0 py-2">License Plate</th>
-                                <th class="border-top-0 py-2">Color</th>
-                                <th class="border-top-0 py-2">Year</th>
-                                <th class="border-top-0 py-2 text-center">Status</th>
+                                <th class="border-top-0 py-2">Biển số</th>
+                                <th class="border-top-0 py-2">Màu</th>
+                                <th class="border-top-0 py-2">Năm SX</th>
+                                <th class="border-top-0 py-2 text-center">Trạng thái</th>
                                 <th class="border-top-0 py-2 text-right">Lịch</th>
                             </tr>
                         </thead>
@@ -78,9 +78,9 @@
                                 <td th:text="${car.color}">White</td>
                                 <td th:text="${car.year}">2023</td>
                                 <td class="text-center">
-                                    <span th:if="${car.status == 'available'}" class="badge badge-success px-2 py-1 font-weight-semibold">Available</span>
-                                    <span th:if="${car.status == 'rented'}" class="badge badge-warning text-dark px-2 py-1 font-weight-semibold">Rented</span>
-                                    <span th:if="${car.status == 'maintenance'}" class="badge badge-secondary px-2 py-1 font-weight-semibold">Maintenance</span>
+                                    <span th:if="${car.status == 'available'}" class="badge badge-success px-2 py-1 font-weight-semibold">Sẵn sàng</span>
+                                    <span th:if="${car.status == 'rented'}" class="badge badge-warning text-dark px-2 py-1 font-weight-semibold">Đang cho thuê</span>
+                                    <span th:if="${car.status == 'maintenance'}" class="badge badge-secondary px-2 py-1 font-weight-semibold">Bảo dưỡng</span>
                                 </td>
                                 <td class="text-right">
                                     <a th:unless="${car.status == 'retired'}" th:href="@{/vehicles/cars/{id}/schedule(id=${car.id})}"
@@ -95,14 +95,14 @@
             <section class="card border-0 shadow-sm rounded-2xl p-4 bg-white mb-4"
                      th:if="${reviewSummary != null}">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-                    <h4 class="h6 font-weight-bold text-navy mb-0">Customer Reviews</h4>
+                    <h4 class="h6 font-weight-bold text-navy mb-0">Đánh giá của khách hàng</h4>
                     <span class="small text-muted"
-                          th:text="${reviewSummary.reviewCount > 0 ? #numbers.formatDecimal(reviewSummary.averageRating, 1, 1) + ' / 5 · ' + reviewSummary.reviewCount + ' reviews' : 'No reviews yet'}">
-                        No reviews yet
+                          th:text="${reviewSummary.reviewCount > 0 ? #numbers.formatDecimal(reviewSummary.averageRating, 1, 1) + ' / 5 · ' + reviewSummary.reviewCount + ' đánh giá' : 'Chưa có đánh giá'}">
+                        Chưa có đánh giá
                     </span>
                 </div>
                 <div th:if="${reviewSummary.reviews.isEmpty()}" class="text-muted small">
-                    This model does not have any completed-trip reviews yet.
+                    Mẫu xe này chưa có đánh giá nào từ các chuyến đi đã hoàn thành.
                 </div>
                 <article th:each="review : ${reviewSummary.reviews}" class="py-3 border-top">
                     <div class="d-flex justify-content-between align-items-center gap-3">
@@ -115,21 +115,21 @@
                     <p th:if="${review.comment != null and !review.comment.isBlank()}"
                        class="small text-navy mb-0 mt-2"
                        style="white-space: pre-wrap;"
-                       th:text="${review.comment}">Review comment</p>
+                       th:text="${review.comment}">Nội dung đánh giá</p>
                     <p th:if="${review.comment == null or review.comment.isBlank()}"
-                       class="small text-muted mb-0 mt-2">Rating only</p>
+                       class="small text-muted mb-0 mt-2">Chỉ chấm sao</p>
                 </article>
             </section>
 
             <!-- Features & Safety Commitments -->
             <div class="card border-0 shadow-sm rounded-2xl p-4 bg-white">
-                <h4 class="h6 font-weight-bold text-navy mb-3">Service Standards</h4>
+                <h4 class="h6 font-weight-bold text-navy mb-3">Tiêu chuẩn dịch vụ</h4>
                 <div class="row g-3">
                     <div class="col-sm-6 d-flex align-items-center gap-2 text-muted small">
-                        <span class="badge badge-success-light text-success p-1 rounded">✓</span> Depot pickup & return at central warehouse
+                        <span class="badge badge-success-light text-success p-1 rounded">✓</span> Nhận và trả xe tại bãi xe trung tâm
                     </div>
                     <div class="col-sm-6 d-flex align-items-center gap-2 text-muted small">
-                        <span class="badge badge-success-light text-success p-1 rounded">✓</span> Comprehensive safety inspection certified
+                        <span class="badge badge-success-light text-success p-1 rounded">✓</span> Xe được kiểm tra an toàn toàn diện
                     </div>
                 </div>
             </div>
@@ -144,7 +144,7 @@
                         <span>★</span>
                         <span th:text="${reviewSummary != null and reviewSummary.reviewCount > 0 ? #numbers.formatDecimal(reviewSummary.averageRating, 1, 1) : '—'}">—</span>
                         <span class="text-muted font-weight-normal"
-                              th:text="${'(' + (reviewSummary != null ? reviewSummary.reviewCount : 0) + ' customer reviews)'}">(0 customer reviews)</span>
+                              th:text="${'(' + (reviewSummary != null ? reviewSummary.reviewCount : 0) + ' đánh giá)'}">(0 đánh giá)</span>
                     </div>
                 </div>
 
@@ -152,35 +152,35 @@
                 <div class="bg-surface rounded-xl p-3 mb-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="small text-muted d-block">Hourly rental rate</span>
+                            <span class="small text-muted d-block">Giá thuê theo giờ</span>
                             <div class="h3 font-weight-bold text-navy mb-0">
                                 <span th:text="${#numbers.formatDecimal(vehicle.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span>
-                                <span class="small text-muted font-weight-normal">VND / hr</span>
+                                <span class="small text-muted font-weight-normal">đ / giờ</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Technical Specs Table -->
-                <h4 class="h6 font-weight-bold text-navy mb-3">Model Specifications</h4>
+                <h4 class="h6 font-weight-bold text-navy mb-3">Thông số mẫu xe</h4>
                 <div class="table-responsive mb-4">
                     <table class="table table-sm table-borderless mb-0">
                         <tbody>
                             <tr class="border-bottom">
-                                <td class="text-muted py-2">Category</td>
+                                <td class="text-muted py-2">Loại xe</td>
                                 <td class="font-weight-bold text-navy text-right py-2 text-capitalize" th:text="${vehicle.category}">Sedan</td>
                             </tr>
                             <tr class="border-bottom">
-                                <td class="text-muted py-2">Seating Capacity</td>
-                                <td class="font-weight-bold text-navy text-right py-2" th:text="${vehicle.seats + ' Seats'}">5 Seats</td>
+                                <td class="text-muted py-2">Số chỗ ngồi</td>
+                                <td class="font-weight-bold text-navy text-right py-2" th:text="${vehicle.seats + ' chỗ'}">5 chỗ</td>
                             </tr>
                             <tr class="border-bottom">
-                                <td class="text-muted py-2">Transmission</td>
-                                <td class="font-weight-bold text-navy text-right py-2 text-capitalize" th:text="${vehicle.transmission}">Automatic</td>
+                                <td class="text-muted py-2">Hộp số</td>
+                                <td class="font-weight-bold text-navy text-right py-2"><span th:replace="~{fragments/labels :: transmission(${vehicle.transmission})}">Số tự động</span></td>
                             </tr>
                             <tr class="border-bottom">
-                                <td class="text-muted py-2">Fuel Type</td>
-                                <td class="font-weight-bold text-navy text-right py-2 text-capitalize" th:text="${vehicle.fuelType}">Gasoline</td>
+                                <td class="text-muted py-2">Nhiên liệu</td>
+                                <td class="font-weight-bold text-navy text-right py-2"><span th:replace="~{fragments/labels :: fuel(${vehicle.fuelType})}">Xăng</span></td>
                             </tr>
                         </tbody>
                     </table>
@@ -201,10 +201,10 @@
                 <div class="space-y-2">
                     <a th:href="@{/search(keyword=${vehicle.displayName})}"
                        class="btn btn-navy btn-block py-2.5 font-weight-bold rounded-lg shadow-sm text-decoration-none">
-                        Rent This Car Model
+                        Thuê mẫu xe này
                     </a>
                     <a th:href="@{/vehicles}" class="btn btn-outline-secondary btn-block py-2 rounded-lg text-decoration-none">
-                        ← Explore Other Cars
+                        ← Xem các xe khác
                     </a>
                 </div>
             </div>

@@ -30,7 +30,8 @@ class VehicleInspectionRetiredTest {
     void setUp() {
         inspectionRepository = mock(VehicleInspectionRepository.class);
         vehicleRepository = mock(VehicleRepository.class);
-        service = new VehicleInspectionServiceImpl(inspectionRepository, vehicleRepository);
+        service = new VehicleInspectionServiceImpl(inspectionRepository, vehicleRepository,
+                mock(com.crms.mvc.repository.BookingRepository.class));
 
         retired = new Vehicle();
         retired.setId(7L);

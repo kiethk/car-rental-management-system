@@ -176,7 +176,7 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public Vehicle create(VehicleFormDTO dto) {
         VehicleType vt = vehicleTypeRepository.findById(dto.getVehicleTypeId())
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle model not found with ID: " + dto.getVehicleTypeId()));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dòng xe có mã: " + dto.getVehicleTypeId()));
 
         String cleanPlate = dto.getPlate().trim().toUpperCase();
         if (licensePlateService.isPlateExists(cleanPlate)) {
@@ -192,7 +192,7 @@ public class VehicleServiceImpl implements VehicleService {
         vehicle.setRegistrationExpiry(dto.getRegistrationExpiry());
         String status = dto.getStatus() != null ? dto.getStatus().trim().toLowerCase() : Vehicle.STATUS_AVAILABLE;
         if (!Vehicle.STATUS_AVAILABLE.equals(status) && !Vehicle.STATUS_MAINTENANCE.equals(status)) {
-            throw new IllegalArgumentException("Invalid vehicle status: " + status + ". Allowed: 'available', 'maintenance'");
+            throw new IllegalArgumentException("Trạng thái xe không hợp lệ: " + status + ". Chỉ chấp nhận: sẵn sàng, bảo dưỡng");
         }
         vehicle.setStatus(status);
         Vehicle saved = vehicleRepository.save(vehicle);
@@ -208,10 +208,10 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public Vehicle update(Long id, VehicleFormDTO dto) {
         Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + id));
 
         VehicleType vt = vehicleTypeRepository.findById(dto.getVehicleTypeId())
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle model not found with ID: " + dto.getVehicleTypeId()));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dòng xe có mã: " + dto.getVehicleTypeId()));
 
         vehicle.setVehicleType(vt);
         vehicle.setColor(dto.getColor().trim());
@@ -220,14 +220,14 @@ public class VehicleServiceImpl implements VehicleService {
 
         // Don't allow changing status to maintenance/available if vehicle is currently rented
         if (Vehicle.STATUS_RENTED.equalsIgnoreCase(vehicle.getStatus()) && !vehicle.getStatus().equalsIgnoreCase(dto.getStatus())) {
-            throw new IllegalStateException("Cannot change status of vehicle while currently rented!");
+            throw new IllegalStateException("Không đổi được trạng thái khi xe đang cho thuê!");
         }
         // The form has no "retired" option, so it must not bring a retired vehicle back into service
         if (dto.getStatus() != null && !vehicle.isRetired()) {
             String newStatus = dto.getStatus().trim().toLowerCase();
             if (!Vehicle.STATUS_AVAILABLE.equals(newStatus) && !Vehicle.STATUS_MAINTENANCE.equals(newStatus)
                     && !Vehicle.STATUS_RETIRED.equals(newStatus)) {
-                throw new IllegalArgumentException("Invalid vehicle status: " + newStatus + ". Allowed: 'available', 'maintenance', 'retired'");
+                throw new IllegalArgumentException("Trạng thái xe không hợp lệ: " + newStatus + ". Chỉ chấp nhận: sẵn sàng, bảo dưỡng, ngừng khai thác");
             }
             vehicle.setStatus(newStatus);
         }
@@ -241,10 +241,10 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public void updateStatus(Long id, String newStatus) {
         Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + id));
 
         if (Vehicle.STATUS_RENTED.equalsIgnoreCase(vehicle.getStatus())) {
-            throw new IllegalStateException("Cannot change status of vehicle while currently rented!");
+            throw new IllegalStateException("Không đổi được trạng thái khi xe đang cho thuê!");
         }
 
         if (vehicle.isRetired()) {
@@ -254,7 +254,7 @@ public class VehicleServiceImpl implements VehicleService {
         if (newStatus == null || (!Vehicle.STATUS_AVAILABLE.equalsIgnoreCase(newStatus.trim())
                 && !Vehicle.STATUS_MAINTENANCE.equalsIgnoreCase(newStatus.trim())
                 && !Vehicle.STATUS_RETIRED.equalsIgnoreCase(newStatus.trim()))) {
-            throw new IllegalArgumentException("Invalid vehicle status: " + newStatus + ". Only 'available', 'maintenance' and 'retired' are allowed.");
+            throw new IllegalArgumentException("Trạng thái xe không hợp lệ: " + newStatus + ". Chỉ chấp nhận: sẵn sàng, bảo dưỡng, ngừng khai thác.");
         }
 
         vehicle.setStatus(newStatus.trim().toLowerCase());
@@ -264,7 +264,7 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public void updateOdometer(Long id, Integer newOdometer) {
         Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + id));
 
         if (newOdometer != null && newOdometer >= 0) {
             vehicle.setOdometer(newOdometer);
@@ -288,21 +288,21 @@ public class VehicleServiceImpl implements VehicleService {
     public void delete(Long id) {
         long bookingCount = bookingRepository.countByVehicleId(id);
         if (bookingCount > 0) {
-            throw new IllegalStateException("Cannot delete vehicle because " + bookingCount + " bookings are linked to it!");
+            throw new IllegalStateException("Không xóa được xe vì có " + bookingCount + " đơn đặt xe liên quan!");
         }
 
         long inspectionCount = vehicleInspectionRepository.countByVehicleId(id);
         if (inspectionCount > 0) {
-            throw new IllegalStateException("Cannot delete vehicle because " + inspectionCount + " inspections are linked to it!");
+            throw new IllegalStateException("Không xóa được xe vì có " + inspectionCount + " lịch đăng kiểm liên quan!");
         }
 
         long issueCount = issueRepository.countByVehicleId(id);
         if (issueCount > 0) {
-            throw new IllegalStateException("Cannot delete vehicle because " + issueCount + " issues are linked to it!");
+            throw new IllegalStateException("Không xóa được xe vì có " + issueCount + " sự cố liên quan!");
         }
 
         Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + id));
 
         vehicleRepository.delete(vehicle);
     }

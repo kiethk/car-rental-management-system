@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Admin Bookings — DriveNow</title>
+        <title>Quản lý đơn thuê — DriveNow</title>
         <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -32,7 +32,7 @@
                             class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-2 border-bottom"
                         >
                             <div>
-                                <h1 class="h4 font-weight-bold text-navy mb-1">Rental Bookings Dispatcher</h1>
+                                <h1 class="h4 font-weight-bold text-navy mb-1">Điều phối đơn thuê xe</h1>
                             </div>
 
                             <!-- Status Filter Tabs -->
@@ -40,7 +40,7 @@
                                 <a
                                     th:href="@{/admin/bookings(status='all')}"
                                     th:class="'btn ' + (${currentStatus == 'all' or currentStatus == null} ? 'btn-navy' : 'btn-outline-secondary')"
-                                    >All</a
+                                    >Tất cả</a
                                 >
                                 <a
                                     th:href="@{/admin/bookings(status='refund')}"
@@ -58,27 +58,27 @@
                                 <a
                                     th:href="@{/admin/bookings(status='pending_payment')}"
                                     th:class="'btn ' + (${currentStatus == 'pending_payment'} ? 'btn-navy' : 'btn-outline-secondary')"
-                                    >Pending Deposit</a
+                                    >Chờ đặt cọc</a
                                 >
                                 <a
                                     th:href="@{/admin/bookings(status='confirmed')}"
                                     th:class="'btn ' + (${currentStatus == 'confirmed'} ? 'btn-navy' : 'btn-outline-secondary')"
-                                    >Confirmed</a
+                                    >Đã xác nhận</a
                                 >
                                 <a
                                     th:href="@{/admin/bookings(status='active')}"
                                     th:class="'btn ' + (${currentStatus == 'active'} ? 'btn-navy' : 'btn-outline-secondary')"
-                                    >Active Trips</a
+                                    >Đang thuê</a
                                 >
                                 <a
                                     th:href="@{/admin/bookings(status='completed')}"
                                     th:class="'btn ' + (${currentStatus == 'completed'} ? 'btn-navy' : 'btn-outline-secondary')"
-                                    >Completed</a
+                                    >Hoàn thành</a
                                 >
                                 <a
                                     th:href="@{/admin/bookings(status='cancelled')}"
                                     th:class="'btn ' + (${currentStatus == 'cancelled'} ? 'btn-navy' : 'btn-outline-secondary')"
-                                    >Cancelled</a
+                                    >Đã hủy</a
                                 >
                             </div>
                         </div>
@@ -151,19 +151,19 @@
                                 <thead class="thead-light">
                                     <tr>
                                         <th>#ID</th>
-                                        <th>Customer</th>
-                                        <th>Vehicle Type</th>
-                                        <th>Assigned Plate</th>
-                                        <th>Pickup Schedule</th>
-                                        <th class="text-center">Status</th>
-                                        <th class="text-center">Action</th>
+                                        <th>Khách hàng</th>
+                                        <th>Dòng xe</th>
+                                        <th>Biển số được gán</th>
+                                        <th>Lịch nhận xe</th>
+                                        <th class="text-center">Trạng thái</th>
+                                        <th class="text-center">Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr th:each="b : ${bookings}">
                                         <td class="font-weight-bold text-navy">#<span th:text="${b.id}">1</span></td>
                                         <td>
-                                            <strong class="d-block" th:text="${b.customerName}">Customer Name</strong>
+                                            <strong class="d-block" th:text="${b.customerName}">Tên khách hàng</strong>
                                         </td>
                                         <td th:text="${b.vehicleTypeName}">Toyota Vios</td>
                                         <td>
@@ -175,7 +175,7 @@
                                             class="small"
                                             th:text="${#temporals.format(b.pickupTime, 'dd/MM/yyyy HH:mm')}"
                                         >
-                                            Date
+                                            Ngày giờ
                                         </td>
                                         <td class="text-center">
                                             <span
@@ -188,17 +188,17 @@
                                             <span
                                                 th:if="${not b.hasPendingRefund and b.status == 'pending_payment'}"
                                                 class="admin-status-badge badge-warning text-dark"
-                                                >Pending Deposit</span
+                                                >Chờ đặt cọc</span
                                             >
                                             <span
                                                 th:if="${not b.hasPendingRefund and b.status == 'confirmed'}"
                                                 class="admin-status-badge badge-info"
-                                                >Confirmed</span
+                                                >Đã xác nhận</span
                                             >
                                             <span
                                                 th:if="${not b.hasPendingRefund and b.status == 'active'}"
                                                 class="admin-status-badge badge-primary"
-                                                >Active</span
+                                                >Đang thuê</span
                                             >
                                             <span
                                                 th:if="${b.pickupDeadline != null}"
@@ -215,12 +215,12 @@
                                             <span
                                                 th:if="${not b.hasPendingRefund and b.status == 'completed'}"
                                                 class="admin-status-badge badge-success"
-                                                >Completed</span
+                                                >Hoàn thành</span
                                             >
                                             <span
                                                 th:if="${not b.hasPendingRefund and b.status == 'cancelled'}"
                                                 class="admin-status-badge badge-secondary"
-                                                >Cancelled</span
+                                                >Đã hủy</span
                                             >
                                         </td>
                                         <td class="text-center">
@@ -242,7 +242,7 @@
                                                 th:href="@{/admin/bookings/{id}(id=${b.id})}"
                                                 class="admin-btn btn-soft-primary"
                                             >
-                                                Manage
+                                                Xử lý
                                             </a>
                                         </td>
                                     </tr>
@@ -260,7 +260,7 @@
                                 >
                             </div>
                             <div th:unless="${currentStatus == 'refund'}">
-                                No bookings found matching current filter.
+                                Không có đơn thuê nào khớp với bộ lọc hiện tại.
                             </div>
                         </div>
                     </div>

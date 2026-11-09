@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>DriveNow — Self-Drive Car Rental in Ho Chi Minh City</title>
+    <title>DriveNow — Thuê xe tự lái tại TP. Hồ Chí Minh</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -48,6 +48,33 @@
         .car-card:hover .car-img-wrapper img {
             transform: scale(1.05);
         }
+
+        /* Hero carousel styles live in <head> so slides are positioned before first paint
+           (otherwise every slide image flashes stacked vertically on reload). */
+        /* Soft frame: a faint 1px ring and a diffuse shadow instead of a hard border; isolation keeps the
+           rounded corners clipping cleanly while slides move. */
+        .promotion-carousel { position: relative; min-height: 240px; aspect-ratio: 11 / 7;
+            border-radius: 1.75rem; isolation: isolate;
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, .05), 0 18px 40px -18px rgba(15, 23, 42, .35); }
+        /* Slides sit side by side off-screen; the script slides the next one in and the current one out. */
+        .promotion-slide { position: absolute; inset: 0; transform: translateX(100%); visibility: hidden;
+            transition: transform .6s cubic-bezier(.4, 0, .2, 1); }
+        .promotion-slide.active { transform: translateX(0); visibility: visible; }
+        .promotion-slide img { width: 100%; height: 100%; object-fit: cover; }
+        .promotion-controls { position: absolute; inset: 50% .75rem auto; display: flex; justify-content: space-between;
+            transform: translateY(-50%); pointer-events: none; z-index: 2; }
+        .promotion-controls button { pointer-events: auto; width: 2.5rem; height: 2.5rem; border: 0; border-radius: 50%;
+            color: #0a192f; background: rgba(255, 255, 255, .45); font-size: 1.5rem; line-height: 1; opacity: .55;
+            backdrop-filter: blur(4px); cursor: pointer;
+            transition: opacity .25s ease, background-color .25s ease, transform .25s ease, box-shadow .25s ease; }
+        .promotion-carousel:hover .promotion-controls button { opacity: .8; }
+        .promotion-controls button:hover,
+        .promotion-controls button:focus-visible { opacity: 1; background: #fff; transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(10, 25, 47, .25); outline: none; }
+        .promotion-controls button:active { transform: scale(.95); }
+        @media (prefers-reduced-motion: reduce) {
+            .promotion-slide, .promotion-controls button { transition: none; }
+        }
     </style>
 </head>
 <body class="bg-surface text-navy min-h-screen flex flex-col">
@@ -62,50 +89,50 @@
             <div class="grid items-center gap-8 lg:grid-cols-2 lg:gap-16">
                 <div>
                     <p class="mb-4 text-xs font-semibold uppercase tracking-widest text-amber">
-                        Car Rental / Ho Chi Minh City
+                        Thuê xe tự lái / TP. Hồ Chí Minh
                     </p>
                     <h1 class="font-heading text-4xl leading-[1.12] text-navy sm:text-5xl lg:text-[54px]">
-                        Your next journey.
+                        Hành trình tiếp theo.
                         <br />
-                        <span class="text-muted-foreground">On your terms.</span>
+                        <span class="text-muted-foreground">Theo cách của bạn.</span>
                     </h1>
                     <p class="mt-5 max-w-md text-base leading-7 text-muted-foreground">
-                        A modern car for every plan, for as long as you need. Pick your hours, collect at our central station, and hit the open road.
+                        Xe đời mới cho mọi kế hoạch, thuê bao lâu tùy bạn. Chọn giờ thuê, nhận xe tại trạm trung tâm và lên đường.
                     </p>
                     <div class="mt-6 flex flex-wrap gap-x-6 gap-y-3 text-sm text-navy">
                         <span class="inline-flex items-center gap-2">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>
-                            Hourly rentals
+                            Thuê theo giờ
                         </span>
                         <span class="inline-flex items-center gap-2">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>
-                            Transparent rates
+                            Giá minh bạch
                         </span>
                         <span class="inline-flex items-center gap-2">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"/></svg>
-                            Immediate pickup
+                            Nhận xe ngay
                         </span>
                     </div>
 
-                    <!-- Dual CTAs: Choose a car to rent & Explore our cars -->
+                    <!-- Dual CTAs: rent a car & browse cars -->
                     <div class="mt-8 flex flex-wrap items-center gap-4">
                         <a th:href="@{/search}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-navy px-6 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-navy-light transition-all text-decoration-none">
-                            <span>Rent a Car</span>
+                            <span>Thuê xe ngay</span>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
                         </a>
                         <a th:href="@{/vehicles}" class="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-white px-6 py-3.5 text-sm font-semibold text-navy hover:bg-surface hover:border-gray-300 transition-all text-decoration-none">
-                            <span>Explore Cars</span>
+                            <span>Xem các mẫu xe</span>
                         </a>
                     </div>
                 </div>
 
                 <div id="hero-carousel"
                      class="promotion-carousel overflow-hidden bg-surface"
-                     th:attr="aria-label=${hasPromotionImages ? 'Current promotions' : 'Featured rental cars'}">
+                     th:attr="aria-label=${hasPromotionImages ? 'Khuyến mãi hiện có' : 'Xe cho thuê nổi bật'}">
                     <article th:if="${hasPromotionImages}" th:each="promotion, iter : ${promotions}"
                              class="promotion-slide" th:classappend="${iter.index == 0 ? ' active' : ''}"
                              th:attr="aria-hidden=${iter.index != 0}">
-                        <img th:src="${promotion.urlImagePromotion}" th:alt="${'Promotion ' + promotion.code}">
+                        <img th:src="${promotion.urlImagePromotion}" th:alt="${'Khuyến mãi ' + promotion.code}">
                     </article>
                     <article th:unless="${hasPromotionImages}" th:each="car, iter : ${fallbackVehicleImages}"
                              class="promotion-slide" th:classappend="${iter.index == 0 ? ' active' : ''}"
@@ -115,9 +142,9 @@
                     <div class="promotion-controls"
                          th:if="${hasPromotionImages ? #lists.size(promotions) > 1 : fallbackVehicleImages.size() > 1}">
                         <button type="button" data-promotion-direction="-1"
-                                th:attr="aria-label=${hasPromotionImages ? 'Previous promotion' : 'Previous car'}">‹</button>
+                                th:attr="aria-label=${hasPromotionImages ? 'Khuyến mãi trước' : 'Xe trước'}">‹</button>
                         <button type="button" data-promotion-direction="1"
-                                th:attr="aria-label=${hasPromotionImages ? 'Next promotion' : 'Next car'}">›</button>
+                                th:attr="aria-label=${hasPromotionImages ? 'Khuyến mãi tiếp theo' : 'Xe tiếp theo'}">›</button>
                     </div>
                 </div>
             </div>
@@ -127,27 +154,27 @@
     <!-- How It Works Section -->
     <section class="border-b border-border py-12 sm:py-16">
         <div class="crms-container">
-            <h2 class="font-heading text-2xl text-navy sm:text-3xl mb-8">How it works</h2>
+            <h2 class="font-heading text-2xl text-navy sm:text-3xl mb-8">Cách thức thuê xe</h2>
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <div class="rounded-xl border border-border bg-white p-6 shadow-2xs">
                     <span class="font-mono text-2xl font-bold text-amber">01</span>
-                    <h3 class="mt-3 text-base font-semibold text-navy">Pick your car model</h3>
-                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Browse vehicle models and select the exact rental hours that suit your itinerary.</p>
+                    <h3 class="mt-3 text-base font-semibold text-navy">Chọn mẫu xe</h3>
+                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Xem các mẫu xe và chọn khung giờ thuê phù hợp với lịch trình của bạn.</p>
                 </div>
                 <div class="rounded-xl border border-border bg-white p-6 shadow-2xs">
                     <span class="font-mono text-2xl font-bold text-amber">02</span>
-                    <h3 class="mt-3 text-base font-semibold text-navy">Reserve & deposit</h3>
-                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Confirm your reservation, review digital contract, and place a 50% deposit.</p>
+                    <h3 class="mt-3 text-base font-semibold text-navy">Đặt xe & đặt cọc</h3>
+                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Xác nhận đặt xe, xem hợp đồng điện tử và đặt cọc 50%.</p>
                 </div>
                 <div class="rounded-xl border border-border bg-white p-6 shadow-2xs">
                     <span class="font-mono text-2xl font-bold text-amber">03</span>
-                    <h3 class="mt-3 text-base font-semibold text-navy">Collect vehicle</h3>
-                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Complete quick identity verification and collect your sanitized car keys.</p>
+                    <h3 class="mt-3 text-base font-semibold text-navy">Nhận xe</h3>
+                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Xác minh danh tính nhanh chóng và nhận chìa khóa xe đã được vệ sinh.</p>
                 </div>
                 <div class="rounded-xl border border-border bg-white p-6 shadow-2xs">
                     <span class="font-mono text-2xl font-bold text-amber">04</span>
-                    <h3 class="mt-3 text-base font-semibold text-navy">Return & settle</h3>
-                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Drop off car at the warehouse, finalize payments, and receive automatic deposit release.</p>
+                    <h3 class="mt-3 text-base font-semibold text-navy">Trả xe & thanh toán</h3>
+                    <p class="mt-2 text-sm text-muted-foreground leading-relaxed">Trả xe tại bãi, hoàn tất thanh toán và nhận lại tiền cọc tự động.</p>
                 </div>
             </div>
         </div>
@@ -158,10 +185,10 @@
         <div class="crms-container">
             <div class="flex justify-between items-end mb-8">
                 <div>
-                    <h2 class="font-heading text-2xl text-navy sm:text-3xl">Featured Cars</h2>
-                    <p class="text-sm text-muted-foreground mt-1">Explore popular vehicle models available in Ho Chi Minh City</p>
+                    <h2 class="font-heading text-2xl text-navy sm:text-3xl">Xe nổi bật</h2>
+                    <p class="text-sm text-muted-foreground mt-1">Các mẫu xe được thuê nhiều tại TP. Hồ Chí Minh</p>
                 </div>
-                <a th:href="@{/vehicles}" class="text-sm font-semibold text-amber hover:underline text-decoration-none">Explore our cars →</a>
+                <a th:href="@{/vehicles}" class="text-sm font-semibold text-amber hover:underline text-decoration-none">Xem tất cả xe →</a>
             </div>
 
             <!-- Unified Rectangle Card Grid -->
@@ -179,33 +206,29 @@
                         <!-- Title & Rating -->
                         <div class="mb-2">
                             <h3 class="text-lg font-bold text-navy mb-1" th:text="${vt.displayName}">Toyota Vios 2023</h3>
-                            <div class="flex items-center gap-1.5 text-xs text-amber font-semibold">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                <span>4.8</span>
-                                <span class="text-muted-foreground font-normal">(124 reviews)</span>
-                            </div>
+                            <div class="text-xs text-muted-foreground"><span th:replace="~{fragments/labels :: rating(${ratings[vt.id]})}">★ 4.8 (12 đánh giá)</span></div>
                         </div>
 
                         <!-- Specs in Description: Category, Seats, Transmission, Fuel Type -->
                         <div class="text-xs text-muted-foreground font-medium mb-2">
                             <span class="text-navy font-semibold uppercase" th:text="${vt.category}">Sedan</span>
                             <span class="mx-1">·</span>
-                            <span th:text="${vt.seats + ' seats'}">5 seats</span>
+                            <span th:text="${vt.seats + ' chỗ'}">5 chỗ</span>
                             <span class="mx-1">·</span>
-                            <span class="capitalize" th:text="${vt.transmission}">Automatic</span>
+                            <span th:replace="~{fragments/labels :: transmission(${vt.transmission})}">Số tự động</span>
                             <span class="mx-1">·</span>
-                            <span class="capitalize" th:text="${vt.fuelType}">Gasoline</span>
+                            <span th:replace="~{fragments/labels :: fuel(${vt.fuelType})}">Xăng</span>
                         </div>
 
                         <p class="text-xs text-muted-foreground line-clamp-2 mb-4 leading-relaxed flex-grow"
-                           th:text="${vt.description != null ? vt.description : 'Clean, dependable, and efficient drive for city travel and weekend getaways.'}">
+                           th:text="${vt.description != null ? vt.description : 'Xe sạch sẽ, bền bỉ và tiết kiệm, phù hợp cho di chuyển trong phố lẫn những chuyến đi cuối tuần.'}">
                             Car description...
                         </p>
 
                         <!-- Footer: Hourly Rate + Action Buttons -->
                         <div class="pt-3 border-t border-border flex justify-between items-center mt-auto">
                             <div>
-                                <span class="text-[11px] text-muted-foreground block">Hourly rate</span>
+                                <span class="text-[11px] text-muted-foreground block">Giá theo giờ</span>
                                 <div class="font-bold text-navy text-base">
                                     <span th:text="${#numbers.formatDecimal(vt.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span>
                                     <span class="text-xs font-normal text-muted-foreground">đ/h</span>
@@ -215,11 +238,11 @@
                             <div class="flex items-center gap-2">
                                 <a th:href="@{/vehicles/{id}(id=${vt.id})}"
                                    class="car-action-btn-secondary">
-                                    Details
+                                    Chi tiết
                                 </a>
                                 <a th:href="@{/search(keyword=${vt.displayName})}"
                                    class="car-action-btn-primary">
-                                    Rent Now
+                                    Thuê ngay
                                 </a>
                             </div>
                         </div>
@@ -232,32 +255,6 @@
 </main>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
-<style>
-    /* Soft frame: a faint 1px ring and a diffuse shadow instead of a hard border; isolation keeps the
-       rounded corners clipping cleanly while slides move. */
-    .promotion-carousel { position: relative; min-height: 240px; aspect-ratio: 11 / 7;
-        border-radius: 1.75rem; isolation: isolate;
-        box-shadow: 0 0 0 1px rgba(15, 23, 42, .05), 0 18px 40px -18px rgba(15, 23, 42, .35); }
-    /* Slides sit side by side off-screen; the script slides the next one in and the current one out. */
-    .promotion-slide { position: absolute; inset: 0; transform: translateX(100%); visibility: hidden;
-        transition: transform .6s cubic-bezier(.4, 0, .2, 1); }
-    .promotion-slide.active { transform: translateX(0); visibility: visible; }
-    .promotion-slide img { width: 100%; height: 100%; object-fit: cover; }
-    .promotion-controls { position: absolute; inset: 50% .75rem auto; display: flex; justify-content: space-between;
-        transform: translateY(-50%); pointer-events: none; z-index: 2; }
-    .promotion-controls button { pointer-events: auto; width: 2.5rem; height: 2.5rem; border: 0; border-radius: 50%;
-        color: #0a192f; background: rgba(255, 255, 255, .45); font-size: 1.5rem; line-height: 1; opacity: .55;
-        backdrop-filter: blur(4px); cursor: pointer;
-        transition: opacity .25s ease, background-color .25s ease, transform .25s ease, box-shadow .25s ease; }
-    .promotion-carousel:hover .promotion-controls button { opacity: .8; }
-    .promotion-controls button:hover,
-    .promotion-controls button:focus-visible { opacity: 1; background: #fff; transform: scale(1.1);
-        box-shadow: 0 6px 16px rgba(10, 25, 47, .25); outline: none; }
-    .promotion-controls button:active { transform: scale(.95); }
-    @media (prefers-reduced-motion: reduce) {
-        .promotion-slide, .promotion-controls button { transition: none; }
-    }
-</style>
 <script>
     (() => {
         const carousel = document.getElementById('hero-carousel');

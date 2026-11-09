@@ -78,7 +78,6 @@ class BookingContractFlowTest {
         terms.setFreeCancellationHours(48);
         terms.setStatus(ContractTemplateStatus.ACTIVE);
         when(contractTemplateService.getActiveTemplate()).thenReturn(terms);
-        when(licenseDocumentService.hasValidLicense(eq(1L), any())).thenReturn(true);
         when(pricingService.calculatePrice(any(), any(), any(), any(), any())).thenAnswer(inv -> new PricingServiceImpl().calculatePrice(inv.getArgument(0), inv.getArgument(1), inv.getArgument(2), inv.getArgument(3), inv.getArgument(4)));
     }
 
@@ -151,6 +150,22 @@ class BookingContractFlowTest {
                         .param("contractTemplateId", "3")
                         .param("acceptedTerms", "true"))
                 .andExpect(redirectedUrl("/bookings/42/pay-deposit"));
+    }
+
+    @Test
+    void bookingDoesNotRequireADrivingLicense() throws Exception {
+        // The customer has no license on file (mock default): the booking must still go through.
+        com.crms.mvc.entity.Booking booking = new com.crms.mvc.entity.Booking();
+        booking.setId(43L);
+        when(bookingService.createBooking(eq(1L), any(), any())).thenReturn(booking);
+
+        mvc.perform(post("/bookings").session(customerSession)
+                        .param("vehicleTypeId", "1")
+                        .param("startTime", "2026-10-24T09:00")
+                        .param("endTime", "2026-10-24T19:00")
+                        .param("contractTemplateId", "3")
+                        .param("acceptedTerms", "true"))
+                .andExpect(redirectedUrl("/bookings/43/pay-deposit"));
     }
 
     @Test
@@ -296,12 +311,12 @@ class BookingContractFlowTest {
 
         mvc.perform(get("/bookings/42").session(customerSession))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Return &amp; settlement")))
+                .andExpect(content().string(containsString("Trả xe &amp; quyết toán")))
                 .andExpect(content().string(containsString("12500 km · 70%")))
                 .andExpect(content().string(containsString("Late return fee")))
-                .andExpect(content().string(containsString("Paid earlier")))
+                .andExpect(content().string(containsString("Đã thanh toán trước")))
                 .andExpect(content().string(containsString("1,050,000")))
-                .andExpect(content().string(containsString("Bank transfer")));
+                .andExpect(content().string(containsString("Chuyển khoản")));
     }
 
     @Test
@@ -311,7 +326,7 @@ class BookingContractFlowTest {
 
         mvc.perform(get("/bookings/42").session(customerSession))
                 .andExpect(status().isOk())
-                .andExpect(content().string(not(containsString("Return &amp; settlement"))));
+                .andExpect(content().string(not(containsString("Trả xe &amp; quyết toán"))));
     }
 
     @Test

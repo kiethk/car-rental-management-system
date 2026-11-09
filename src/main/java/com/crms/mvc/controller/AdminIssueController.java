@@ -231,7 +231,7 @@ public class AdminIssueController {
         return CurrentAccount.of(session)
                 .filter(SessionAccount::isEmployee)
                 .map(IssueActor::of)
-                .orElseThrow(() -> new IllegalStateException("Employee session required"));
+                .orElseThrow(() -> new IllegalStateException("Cần đăng nhập bằng tài khoản nhân viên"));
     }
 
     private IssueFormDTO toForm(IssueDTO issue) {

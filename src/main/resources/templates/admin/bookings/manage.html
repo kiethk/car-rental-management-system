@@ -52,7 +52,7 @@
                             </div>
                             <p class="admin-page-subtitle">
                                 Tạo lúc: <span th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}">23/10/2026 09:00</span>
-                                &bull; Nhân viên phụ trách: <strong th:text="${booking.staffName != null ? booking.staffName : 'Chưa phân công'}">Support Staff</strong>
+                                &bull; Nhân viên phụ trách: <strong th:text="${booking.staffName != null ? booking.staffName : 'Chưa phân công'}">Nhân viên hỗ trợ</strong>
                             </p>
                         </div>
                         <div class="admin-page-actions">
@@ -144,14 +144,14 @@
                                     </div>
                                 </div>
                                 <div class="admin-card-body">
-                                    <div class="row g-3">
+                                    <div class="row g-4">
                                         <div class="col-sm-6">
-                                            <span class="text-xs text-slate-500 d-block mb-1">Dòng xe yêu cầu</span>
-                                            <strong class="text-slate-900 font-bold" th:text="${booking.vehicleTypeName}">Toyota Vios</strong>
-                                            <span class="text-xs text-slate-400 d-block" th:text="${booking.vehicleCategory + ' &bull; ' + booking.seats + ' chỗ'}">Sedan &bull; 5 chỗ</span>
+                                            <span class="text-xs font-semibold text-slate-600 d-block mb-2">Dòng xe yêu cầu</span>
+                                            <strong class="text-sm text-slate-900 font-bold" th:text="${booking.vehicleTypeName}">Toyota Vios</strong>
+                                            <span class="text-xs text-slate-500 d-block mt-1" th:text="${booking.vehicleCategory + ' &bull; ' + booking.seats + ' chỗ'}">Sedan &bull; 5 chỗ</span>
                                         </div>
                                         <div class="col-sm-6">
-                                            <span class="text-xs text-slate-500 d-block mb-1">Xe vật lý được gán</span>
+                                            <span class="text-xs font-semibold text-slate-600 d-block mb-2">Xe vật lý được gán</span>
                                             <span th:if="${booking.licensePlate != null and booking.licensePlate != 'Unassigned'}" 
                                                   class="badge badge-light border text-navy font-mono font-bold text-xs px-2.5 py-1.5"
                                                   th:text="${booking.licensePlate}">51A-123.45</span>
@@ -161,18 +161,18 @@
                                             </span>
                                         </div>
                                         <div class="col-sm-6">
-                                            <span class="text-xs text-slate-500 d-block mb-1">Thời gian nhận xe</span>
-                                            <div class="text-xs font-bold text-slate-800" th:text="${#temporals.format(booking.pickupTime, 'dd/MM/yyyy HH:mm')}">Time</div>
-                                            <span class="text-[11px] text-slate-400 d-block" th:text="${booking.stationAddress}">Kho xe DriveNow</span>
+                                            <span class="text-xs font-semibold text-slate-600 d-block mb-2">Thời gian nhận xe</span>
+                                            <div class="text-sm font-bold text-slate-800" th:text="${#temporals.format(booking.pickupTime, 'dd/MM/yyyy HH:mm')}">Time</div>
+                                            <span class="text-xs text-slate-500 d-block mt-1" th:text="${booking.stationAddress}">Kho xe DriveNow</span>
                                         </div>
                                         <div class="col-sm-6">
-                                            <span class="text-xs text-slate-500 d-block mb-1">Thời gian trả dự kiến</span>
-                                            <div class="text-xs font-bold text-slate-800" th:text="${#temporals.format(booking.scheduledEndTime, 'dd/MM/yyyy HH:mm')}">Time</div>
-                                            <span class="text-[11px] text-slate-400 d-block">Theo thỏa thuận hợp đồng</span>
+                                            <span class="text-xs font-semibold text-slate-600 d-block mb-2">Thời gian trả dự kiến</span>
+                                            <div class="text-sm font-bold text-slate-800" th:text="${#temporals.format(booking.scheduledEndTime, 'dd/MM/yyyy HH:mm')}">Time</div>
+                                            <span class="text-xs text-slate-500 d-block mt-1">Theo thỏa thuận hợp đồng</span>
                                         </div>
                                         <div class="col-sm-12" th:if="${booking.actualReturnTime != null}">
-                                            <span class="text-xs text-slate-500 d-block mb-1">Thời gian trả thực tế</span>
-                                            <div class="text-xs font-bold text-emerald-700" th:text="${#temporals.format(booking.actualReturnTime, 'dd/MM/yyyy HH:mm')}">Time</div>
+                                            <span class="text-xs font-semibold text-slate-600 d-block mb-2">Thời gian trả thực tế</span>
+                                            <div class="text-sm font-bold text-emerald-700" th:text="${#temporals.format(booking.actualReturnTime, 'dd/MM/yyyy HH:mm')}">Time</div>
                                         </div>
                                     </div>
                                 </div>
@@ -390,7 +390,7 @@
                                     <details class="no-car-refund mt-1" th:if="${#lists.isEmpty(availableVehicles)}">
                                         <summary>Không còn xe cùng loại?</summary>
                                         <form th:action="@{/admin/bookings/{id}/cancel-no-car(id=${booking.id})}" method="post" class="no-car-refund-body"
-                                              onsubmit="return confirm('Huỷ đơn này và hoàn toàn bộ tiền cọc cho khách tại quầy?');">
+                                              data-confirm="Hủy đơn và hoàn toàn bộ tiền cọc?" data-confirm-detail="Hoàn tiền cho khách tại quầy." data-confirm-ok="Hủy đơn" data-confirm-cancel="Quay lại" data-confirm-tone="danger">
                                             <p class="mb-2">
                                                 Huỷ đơn và hoàn lại toàn bộ
                                                 <strong th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">500,000 đ</strong>
@@ -425,7 +425,7 @@
                                         <select name="staffId" class="admin-form-select" required aria-label="Nhân viên phụ trách">
                                             <option th:each="employee : ${assignableEmployees}" th:value="${employee.id}"
                                                     th:selected="${employee.id == booking.staffId}"
-                                                    th:text="${employee.name + ' (' + employee.role + ')'}">Support Staff (staff)</option>
+                                                    th:text="${employee.name + ' (' + (#strings.toLowerCase(employee.role) == 'admin' ? 'Quản trị viên' : 'Nhân viên') + ')'}">Nhân viên hỗ trợ (Nhân viên)</option>
                                         </select>
                                         <button type="submit" class="admin-btn admin-btn-secondary font-bold">Lưu</button>
                                     </form>
@@ -447,7 +447,7 @@
                                             <span th:if="${record.notes != null}" th:text="${' · ' + record.notes}"></span>
                                         </div>
                                         <div class="text-slate-500 mt-1">
-                                            <span th:text="${record.employeeName}">Staff</span>
+                                            <span th:text="${record.employeeName}">Nhân viên</span>
                                             <span th:if="${record.recordedAt != null}" th:text="${' · ' + #temporals.format(record.recordedAt, 'dd/MM/yyyy HH:mm')}"></span>
                                         </div>
                                         <div class="mt-1" th:if="${record.licenseImage or record.idCardImage}">
@@ -542,7 +542,7 @@
                                 <div class="admin-card-header">
                                     <div class="admin-card-title-group">
                                         <h3 class="admin-card-title">Sự cố trong chuyến thuê</h3>
-                                        <p class="admin-card-subtitle">Va chạm, hư hỏng, phạt nguội. Phí của sự cố đã chốt được cộng vào quyết toán.</p>
+                                        <p class="admin-card-subtitle">Va chạm, hư hỏng, phạt nguội.</p>
                                     </div>
                                     <div class="admin-card-actions">
                                         <a th:href="@{/admin/issues/new(bookingId=${booking.id})}" class="admin-btn admin-btn-primary admin-btn-sm">+ Ghi nhận sự cố</a>
@@ -600,9 +600,16 @@
                                             <label class="admin-form-label" for="checkOutFuel">Mức nhiên liệu / pin (%)</label>
                                             <input id="checkOutFuel" type="number" th:field="*{fuelPercent}" class="admin-form-input font-mono" min="0" max="100" required />
                                         </div>
-                                        <div class="admin-form-group">
-                                            <label class="admin-form-label" for="checkOutNotes">Tình trạng xe</label>
-                                            <input id="checkOutNotes" type="text" th:field="*{notes}" class="admin-form-input" maxlength="150" placeholder="Ví dụ: sạch sẽ, không có hư hỏng mới" />
+                                        <div class="admin-form-group"
+                                             th:with="checkIn=${handover != null ? handover.records.^[type == 'CHECK_IN'] : null}">
+                                            <div class="admin-form-label">Tình trạng xe lúc bàn giao</div>
+                                            <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800">
+                                                <span th:if="${checkIn != null and checkIn.notes != null}" th:text="${checkIn.notes}">Trầy nhẹ cửa trái</span>
+                                                <span th:unless="${checkIn != null and checkIn.notes != null}" class="text-slate-500">Không ghi nhận hư hỏng sẵn có khi bàn giao.</span>
+                                                <div th:if="${checkIn != null}" class="text-xs text-slate-500 mt-1"
+                                                     th:text="${'ODO ' + checkIn.odometer + ' km · nhiên liệu ' + checkIn.fuelPercent + '%'}">ODO 12000 km · nhiên liệu 80%</div>
+                                            </div>
+                                            <div class="admin-form-hint">Đối chiếu với tình trạng xe hiện tại để lập sự cố nếu có hư hỏng mới.</div>
                                         </div>
 
                                         <div class="admin-form-group">
@@ -629,7 +636,7 @@
                                             </label>
                                         </div>
                                         <button type="submit" class="admin-btn admin-btn-primary w-100 py-2 font-bold"
-                                                onclick="return confirm('Xác nhận ghi nhận trả xe?');">
+                                                data-confirm="Ghi nhận trả xe?" data-confirm-ok="Ghi nhận">
                                             Ghi nhận trả xe
                                         </button>
                                     </form>
@@ -668,7 +675,7 @@
                                             </select>
                                         </div>
                                         <button type="submit" class="admin-btn admin-btn-success w-100 py-2 font-bold"
-                                                onclick="return confirm('Hoàn tất quyết toán và đóng đơn thuê này?');">
+                                                data-confirm="Hoàn tất quyết toán?" data-confirm-detail="Đơn thuê sẽ được đóng." data-confirm-ok="Hoàn tất">
                                             Hoàn tất quyết toán
                                         </button>
                                     </form>

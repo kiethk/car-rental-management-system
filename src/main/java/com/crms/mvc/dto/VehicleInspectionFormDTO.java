@@ -13,13 +13,13 @@ import java.time.ZoneOffset;
 public class VehicleInspectionFormDTO {
     private Long id;
 
-    @NotNull(message = "Please select a vehicle to inspect")
+    @NotNull(message = "Vui lòng chọn xe cần đăng kiểm")
     private Long vehicleId;
 
     private String vehiclePlate;
     private String vehicleName;
 
-    @NotNull(message = "Please select scheduled inspection time")
+    @NotNull(message = "Vui lòng chọn thời gian đăng kiểm")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime scheduledAt = LocalDateTime.now();
 
@@ -28,7 +28,7 @@ public class VehicleInspectionFormDTO {
 
     private String status = "scheduled"; // scheduled, passed, failed
 
-    @Size(max = 1000, message = "Notes cannot exceed 1000 characters")
+    @Size(max = 1000, message = "Ghi chú tối đa 1000 ký tự")
     private String notes;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

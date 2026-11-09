@@ -71,21 +71,21 @@ public class AccountServiceImpl implements AccountService {
 
     private String newPasswordHash(String currentHash, AccountProfileDTO form) {
         if (!passwordEncoder.matches(form.getCurrentPassword(), currentHash)) {
-            throw new IllegalArgumentException("Current password is incorrect");
+            throw new IllegalArgumentException("Mật khẩu hiện tại không đúng");
         }
         return passwordEncoder.encode(form.getNewPassword());
     }
 
     private Customer findCustomer(SessionAccount account) {
         return customerRepository.findById(account.getId())
-                .orElseThrow(() -> new NoSuchElementException("Account not found"));
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy tài khoản"));
     }
 
     private Employee findEmployee(SessionAccount account) {
         if (!account.isEmployee()) {
-            throw new NoSuchElementException("Account not found");
+            throw new NoSuchElementException("Không tìm thấy tài khoản");
         }
         return employeeRepository.findById(account.getId())
-                .orElseThrow(() -> new NoSuchElementException("Account not found"));
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy tài khoản"));
     }
 }

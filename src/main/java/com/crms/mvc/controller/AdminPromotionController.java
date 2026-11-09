@@ -68,7 +68,7 @@ public class AdminPromotionController {
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         Promotion promotion = promotionService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Promotion not found with ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khuyến mãi có mã: " + id));
         if (!model.containsAttribute("promotionForm")) {
             model.addAttribute("promotionForm", PromotionFormDTO.fromEntity(promotion));
         }
@@ -108,7 +108,7 @@ public class AdminPromotionController {
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             promotionService.delete(id);
-            redirectAttributes.addFlashAttribute("success", "Promotion deleted successfully.");
+            redirectAttributes.addFlashAttribute("success", "Đã xóa khuyến mãi.");
         } catch (IllegalArgumentException | IllegalStateException ex) {
             redirectAttributes.addFlashAttribute("error", ex.getMessage());
         }

@@ -9,7 +9,6 @@ public class ReturnReceiptDTO {
     private OffsetDateTime returnedAt;
     private Integer odometer;
     private Integer fuelPercent;
-    private String notes;
     private BigDecimal rentalTotal = BigDecimal.ZERO;
     private BigDecimal depositAmount = BigDecimal.ZERO;
     private List<ReturnReceiptLineDTO> lines = new ArrayList<>();
@@ -25,8 +24,8 @@ public class ReturnReceiptDTO {
             return null;
         }
         return switch (paymentMethod) {
-            case "CASH" -> "Cash";
-            case "BANK_TRANSFER" -> "Bank transfer";
+            case "CASH" -> "Tiền mặt";
+            case "BANK_TRANSFER" -> "Chuyển khoản";
             default -> paymentMethod;
         };
     }
@@ -40,8 +39,6 @@ public class ReturnReceiptDTO {
     public Integer getFuelPercent() { return fuelPercent; }
     public void setFuelPercent(Integer fuelPercent) { this.fuelPercent = fuelPercent; }
 
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
 
     public BigDecimal getRentalTotal() { return rentalTotal; }
     public void setRentalTotal(BigDecimal rentalTotal) { this.rentalTotal = rentalTotal; }

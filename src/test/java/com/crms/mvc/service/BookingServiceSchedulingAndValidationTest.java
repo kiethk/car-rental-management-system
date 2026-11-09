@@ -151,7 +151,7 @@ class BookingServiceSchedulingAndValidationTest {
 
         assertThatThrownBy(() -> vehicleService.updateStatus(10L, "rented"))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Only 'available', 'maintenance' and 'retired' are allowed");
+                .hasMessageContaining("Chỉ chấp nhận: sẵn sàng, bảo dưỡng, ngừng khai thác");
 
         assertThatThrownBy(() -> vehicleService.updateStatus(10L, "invalid_status"))
                 .isInstanceOf(IllegalArgumentException.class);

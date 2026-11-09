@@ -109,7 +109,7 @@ public class VnPayServiceImpl implements PaymentService {
             return paymentUrl;
         } catch (Exception e) {
             log.error("Failed to generate VNPay payment URL for reference: {}", txnRef, e);
-            throw new RuntimeException("Could not initiate VNPay payment: " + e.getMessage(), e);
+            throw new RuntimeException("Không thể khởi tạo thanh toán VNPay: " + e.getMessage(), e);
         }
     }
 
@@ -272,7 +272,7 @@ public class VnPayServiceImpl implements PaymentService {
             }
         }
         if (payment.getAmount().multiply(new BigDecimal(100)).longValue() != amountInCents) {
-            throw new IllegalArgumentException("Payment amount mismatch");
+            throw new IllegalArgumentException("Số tiền thanh toán không khớp");
         }
 
         payment.setStatus(Payment.STATUS_PAID);

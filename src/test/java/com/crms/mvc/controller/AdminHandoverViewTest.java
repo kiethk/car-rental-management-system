@@ -178,7 +178,7 @@ class AdminHandoverViewTest {
 
         mvc.perform(get("/admin/bookings/42").session(TestSessions.admin(1L)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Support Staff (staff)")))
+                .andExpect(content().string(containsString("Support Staff (Nhân viên)")))
                 .andExpect(content().string(containsString("name=\"licenseImage\"")));
     }
 

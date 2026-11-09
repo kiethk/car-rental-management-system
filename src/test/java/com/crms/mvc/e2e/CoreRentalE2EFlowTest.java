@@ -215,7 +215,6 @@ class CoreRentalE2EFlowTest {
         CheckOutDTO checkOutForm = new CheckOutDTO();
         checkOutForm.setOdometer(5200);
         checkOutForm.setFuelPercent(90);
-        checkOutForm.setNotes("Xe trả đúng hiện trạng");
 
         handoverService.checkOut(503L, 2L, checkOutForm);
 

@@ -131,6 +131,8 @@ ON CONFLICT (slot_id) DO NOTHING;
 
 -- 9. BOOKINGS
 -- pickup_time and scheduled_end_time are whole hours (minute :00), the same rule the booking form enforces.
+-- Past and future bookings sit at fixed daytime hours (CURRENT_DATE + N hours) so they stay inside opening hours
+-- whatever time the seed runs; only the active rental is relative to now, because it must cover the current hour.
 -- status: 'pending_payment' | 'confirmed' | 'active' | 'completed' | 'cancelled'
 INSERT INTO bookings (
     booking_id, customer_id, slot_id, vehicle_id, employee_id, promotion_id,
@@ -143,7 +145,7 @@ VALUES
     -- Booking 1: Completed
     (
         1, 1, 1, 1, 2, 1,
-        date_trunc('hour', CURRENT_TIMESTAMP) - INTERVAL '3 days', date_trunc('hour', CURRENT_TIMESTAMP) - INTERVAL '2 days', date_trunc('hour', CURRENT_TIMESTAMP) - INTERVAL '2 days',
+        CURRENT_DATE - INTERVAL '3 days' + INTERVAL '9 hours', CURRENT_DATE - INTERVAL '2 days' + INTERVAL '9 hours', CURRENT_DATE - INTERVAL '2 days' + INTERVAL '9 hours',
         1350000.00,
         'completed', CURRENT_TIMESTAMP - INTERVAL '5 days',
         150000.00, 675000.00, 150000.00
@@ -159,7 +161,7 @@ VALUES
     -- Booking 3: Confirmed
     (
         3, 1, 3, 3, 2, 2,
-        date_trunc('hour', CURRENT_TIMESTAMP) + INTERVAL '1 day', date_trunc('hour', CURRENT_TIMESTAMP) + INTERVAL '1 day 10 hours', NULL,
+        CURRENT_DATE + INTERVAL '1 day' + INTERVAL '8 hours', CURRENT_DATE + INTERVAL '1 day' + INTERVAL '18 hours', NULL,
         2900000.00,
         'confirmed', CURRENT_TIMESTAMP - INTERVAL '2 hours',
         300000.00, 1450000.00, 100000.00

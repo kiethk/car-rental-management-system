@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -20,9 +19,6 @@ public class CheckOutDTO implements Serializable {
     @Max(value = 100, message = "Mức nhiên liệu phải từ 0 đến 100")
     private Integer fuelPercent;
 
-    @Size(max = 150, message = "Ghi chú tình trạng xe tối đa 150 ký tự")
-    private String notes;
-
     private boolean moveToMaintenance;
 
     @Valid
@@ -33,12 +29,6 @@ public class CheckOutDTO implements Serializable {
 
     public Integer getFuelPercent() { return fuelPercent; }
     public void setFuelPercent(Integer fuelPercent) { this.fuelPercent = fuelPercent; }
-
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
-
-    public String getReturnNotes() { return notes; }
-    public void setReturnNotes(String returnNotes) { this.notes = returnNotes; }
 
     public boolean isMoveToMaintenance() { return moveToMaintenance; }
     public void setMoveToMaintenance(boolean moveToMaintenance) { this.moveToMaintenance = moveToMaintenance; }

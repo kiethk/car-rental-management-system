@@ -63,7 +63,7 @@ class VehicleControllerTest {
     @Test void emptySearchRendersEmptyState() throws Exception {
         when(vehicleService.searchWithFilter(any())).thenReturn(List.of());
         mvc.perform(get("/vehicles").param("keyword", "missing"))
-                .andExpect(status().isOk()).andExpect(content().string(containsString("No cars match your criteria")));
+                .andExpect(status().isOk()).andExpect(content().string(containsString("Không có xe phù hợp")));
     }
     @Test void searchInputIsEscaped() throws Exception {
         String input = "<script>alert(1)</script>";
@@ -77,8 +77,8 @@ class VehicleControllerTest {
                 .thenReturn(new VehicleReviewSummaryDTO(BigDecimal.ZERO, List.of()));
         mvc.perform(get("/vehicles/1")).andExpect(status().isOk())
                 .andExpect(content().string(containsString("Toyota Vios")))
-                .andExpect(content().string(containsString("Customer Reviews")))
-                .andExpect(content().string(containsString("No reviews yet")))
+                .andExpect(content().string(containsString("Đánh giá của khách hàng")))
+                .andExpect(content().string(containsString("Chưa có đánh giá")))
                 .andExpect(content().string(containsString("ít nhất 48 giờ")));
     }
     @Test void scheduleShowsBookedAndBufferHoursAndBooksThatCar() throws Exception {
@@ -120,7 +120,7 @@ class VehicleControllerTest {
 
         mvc.perform(get("/vehicles/1"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("4.5 / 5 · 2 reviews")))
+                .andExpect(content().string(containsString("4.5 / 5 · 2 đánh giá")))
                 .andExpect(content().string(containsString("Excellent service")))
                 .andExpect(content().string(containsString("Clean car")));
     }

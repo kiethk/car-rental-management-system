@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Account Management — DriveNow Admin</title>
+    <title>Quản lý tài khoản — DriveNow Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -28,30 +28,30 @@
 
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4" style="gap: 8px;">
                 <div>
-                    <h1 class="h3 font-weight-bold text-navy mb-1">Account Management</h1>
-                    <p class="text-muted small mb-0">View customer and employee accounts, lock or activate them, and create employees.</p>
+                    <h1 class="h3 font-weight-bold text-navy mb-1">Quản lý tài khoản</h1>
+                    <p class="text-muted small mb-0">Xem tài khoản khách hàng và nhân viên, khóa hoặc kích hoạt tài khoản, và tạo tài khoản nhân viên.</p>
                 </div>
-                <a th:href="@{/admin/accounts/employees/new}" class="btn btn-navy font-weight-bold rounded-lg">Create Employee</a>
+                <a th:href="@{/admin/accounts/employees/new}" class="btn btn-navy font-weight-bold rounded-lg">Tạo nhân viên</a>
             </div>
 
             <ul class="nav nav-pills mb-4 bg-white p-2 rounded-xl border">
                 <li class="nav-item">
                     <a class="nav-link font-weight-bold"
                        th:classappend="${query.type == 'customer'} ? 'active bg-navy text-white' : 'text-navy'"
-                       th:href="@{/admin/accounts(type='customer')}">Customers</a>
+                       th:href="@{/admin/accounts(type='customer')}">Khách hàng</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link font-weight-bold"
                        th:classappend="${query.type == 'employee'} ? 'active bg-navy text-white' : 'text-navy'"
-                       th:href="@{/admin/accounts(type='employee')}">Employees</a>
+                       th:href="@{/admin/accounts(type='employee')}">Nhân viên</a>
                 </li>
             </ul>
 
             <form method="get" th:action="@{/admin/accounts}" class="d-flex mb-3" style="gap: 8px;">
                 <input type="hidden" name="type" th:value="${query.type}">
                 <input type="search" name="keyword" th:value="${query.keyword}" class="form-control" maxlength="100"
-                       placeholder="Search by name or email" aria-label="Search by name or email">
-                <button type="submit" class="btn btn-navy font-weight-bold rounded-lg">Search</button>
+                       placeholder="Tìm theo tên hoặc email" aria-label="Tìm theo tên hoặc email">
+                <button type="submit" class="btn btn-navy font-weight-bold rounded-lg">Tìm</button>
             </form>
 
             <div class="card border-0 shadow-sm rounded-xl overflow-hidden bg-white">
@@ -59,38 +59,38 @@
                     <table class="table table-hover mb-0 align-middle admin-table">
                         <thead class="bg-surface-2 text-navy small font-weight-bold">
                             <tr>
-                                <th class="border-top-0 py-3">Name</th>
+                                <th class="border-top-0 py-3">Họ tên</th>
                                 <th class="border-top-0 py-3">Email</th>
-                                <th class="border-top-0 py-3">Phone</th>
-                                <th class="border-top-0 py-3" th:if="${query.type == 'employee'}">Role</th>
-                                <th class="border-top-0 py-3 text-center">Status</th>
-                                <th class="border-top-0 py-3 text-center">Actions</th>
+                                <th class="border-top-0 py-3">Số điện thoại</th>
+                                <th class="border-top-0 py-3" th:if="${query.type == 'employee'}">Vai trò</th>
+                                <th class="border-top-0 py-3 text-center">Trạng thái</th>
+                                <th class="border-top-0 py-3 text-center">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:each="account : ${accounts}">
-                                <td class="font-weight-bold text-navy" th:text="${account.name}">Name</td>
+                                <td class="font-weight-bold text-navy" th:text="${account.name}">Họ tên</td>
                                 <td th:text="${account.email}">name@example.com</td>
                                 <td th:text="${account.phone}">0900000000</td>
-                                <td th:if="${query.type == 'employee'}" class="text-capitalize" th:text="${account.role}">staff</td>
+                                <td th:if="${query.type == 'employee'}" ><span th:replace="~{fragments/labels :: role(${account.role})}">Nhân viên</span></td>
                                 <td class="text-center">
-                                    <span th:if="${account.active}" class="admin-status-badge badge-success">Active</span>
-                                    <span th:unless="${account.active}" class="admin-status-badge badge-danger">Locked</span>
+                                    <span th:if="${account.active}" class="admin-status-badge badge-success">Hoạt động</span>
+                                    <span th:unless="${account.active}" class="admin-status-badge badge-danger">Đã khóa</span>
                                 </td>
                                 <td class="text-center">
-                                    <span th:if="${account.type == 'employee' and account.id == currentAccountId}" class="small text-muted">Your account</span>
+                                    <span th:if="${account.type == 'employee' and account.id == currentAccountId}" class="small text-muted">Tài khoản của bạn</span>
                                     <form th:unless="${account.type == 'employee' and account.id == currentAccountId}" method="post"
                                           th:action="@{/admin/accounts/{type}/{id}/status(type=${account.type}, id=${account.id})}">
                                         <input type="hidden" name="active" th:value="${!account.active}">
                                         <button type="submit" class="btn btn-sm font-weight-bold rounded-lg"
                                                 th:classappend="${account.active} ? 'btn-outline-danger' : 'btn-outline-success'"
-                                                th:text="${account.active} ? 'Lock' : 'Activate'"
-                                                th:onclick="${account.active} ? 'return confirm(\'Lock this account? The user will be signed out.\');' : null">Lock</button>
+                                                th:text="${account.active} ? 'Khóa' : 'Kích hoạt'"
+                                                th:attr="data-confirm=${account.active} ? 'Khóa tài khoản này?' : null" data-confirm-detail="Người dùng sẽ bị đăng xuất." data-confirm-ok="Khóa" data-confirm-tone="danger">Khóa</button>
                                     </form>
                                 </td>
                             </tr>
                             <tr th:if="${#lists.isEmpty(accounts)}">
-                                <td colspan="6" class="text-center text-muted py-4">No accounts found.</td>
+                                <td colspan="6" class="text-center text-muted py-4">Không tìm thấy tài khoản nào.</td>
                             </tr>
                         </tbody>
                     </table>

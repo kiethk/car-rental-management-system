@@ -77,7 +77,7 @@ public class AdminVehicleController {
 
         try {
             Vehicle created = vehicleService.create(form);
-            ra.addFlashAttribute("success", "Car created successfully! ID: #" + created.getId() + " - Plate: " + created.getLicensePlate().getPlate());
+            ra.addFlashAttribute("success", "Đã tạo xe thành công! Mã: #" + created.getId() + " - Biển số: " + created.getLicensePlate().getPlate());
             return "redirect:/admin/vehicles";
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
@@ -89,7 +89,7 @@ public class AdminVehicleController {
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         Vehicle vehicle = vehicleService.findEntityById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Car not found with ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + id));
 
         if (!model.containsAttribute("vehicleForm")) {
             model.addAttribute("vehicleForm", VehicleFormDTO.fromEntity(vehicle));
@@ -122,7 +122,7 @@ public class AdminVehicleController {
 
         try {
             Vehicle updated = vehicleService.update(id, form);
-            ra.addFlashAttribute("success", "Car #" + updated.getId() + " updated successfully!");
+            ra.addFlashAttribute("success", "Đã cập nhật xe #" + updated.getId() + ".");
             return "redirect:/admin/vehicles";
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
@@ -142,7 +142,7 @@ public class AdminVehicleController {
         }
         try {
             vehicleService.updateStatus(id, status);
-            ra.addFlashAttribute("success", "Car #" + id + " status updated to " + status.toUpperCase());
+            ra.addFlashAttribute("success", "Đã đổi trạng thái xe #" + id + " thành " + status.toUpperCase());
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
         }
@@ -156,7 +156,7 @@ public class AdminVehicleController {
                                  RedirectAttributes ra) {
         try {
             vehicleService.updateOdometer(id, odometer);
-            ra.addFlashAttribute("success", "Odometer reading updated for car #" + id + ": " + odometer + " km");
+            ra.addFlashAttribute("success", "Đã cập nhật số km của xe #" + id + ": " + odometer + " km");
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
         }
@@ -169,7 +169,7 @@ public class AdminVehicleController {
                          RedirectAttributes ra) {
         try {
             vehicleService.delete(id);
-            ra.addFlashAttribute("success", "Car #" + id + " deleted successfully!");
+            ra.addFlashAttribute("success", "Đã xóa xe #" + id + ".");
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
         }

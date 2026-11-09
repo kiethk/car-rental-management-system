@@ -4,7 +4,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Create Employee — DriveNow Admin</title>
+    <title>Tạo nhân viên — DriveNow Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,21 +23,21 @@
         </div>
 
         <div class="col-md-9 col-lg-6">
-            <h1 class="h3 font-weight-bold text-navy mb-1">Create Employee</h1>
-            <p class="text-muted small mb-4">The employee can change this temporary password in Account Settings.</p>
+            <h1 class="h3 font-weight-bold text-navy mb-1">Tạo nhân viên</h1>
+            <p class="text-muted small mb-4">Nhân viên có thể đổi mật khẩu tạm này trong mục Cài đặt tài khoản.</p>
 
             <div th:if="${error}" class="alert alert-danger border-0 rounded-lg shadow-sm" role="alert" th:text="${error}"></div>
 
             <div class="card border-0 shadow-sm rounded-xl bg-white p-4">
                 <form method="post" th:action="@{/admin/accounts/employees}" th:object="${employeeForm}" novalidate>
                     <div class="form-group mb-3">
-                        <label for="name" class="small font-weight-bold text-navy mb-1">Full Name</label>
+                        <label for="name" class="small font-weight-bold text-navy mb-1">Họ và tên</label>
                         <input id="name" type="text" th:field="*{name}" class="form-control rounded-lg" maxlength="100"
                                th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'">
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="phone" class="small font-weight-bold text-navy mb-1">Phone</label>
+                        <label for="phone" class="small font-weight-bold text-navy mb-1">Số điện thoại</label>
                         <input id="phone" type="tel" th:field="*{phone}" class="form-control rounded-lg" maxlength="20"
                                th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'">
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
@@ -49,23 +49,23 @@
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="password" class="small font-weight-bold text-navy mb-1">Temporary Password</label>
+                        <label for="password" class="small font-weight-bold text-navy mb-1">Mật khẩu tạm thời</label>
                         <input id="password" type="password" name="password" class="form-control rounded-lg" maxlength="255" autocomplete="new-password"
                                th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'">
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
                     </div>
                     <div class="form-group mb-4">
-                        <label for="role" class="small font-weight-bold text-navy mb-1">Role</label>
+                        <label for="role" class="small font-weight-bold text-navy mb-1">Vai trò</label>
                         <select id="role" th:field="*{role}" class="form-control rounded-lg"
                                 th:classappend="${#fields.hasErrors('role')} ? 'is-invalid'">
-                            <option value="staff">Staff</option>
-                            <option value="admin">Admin</option>
+                            <option value="staff">Nhân viên</option>
+                            <option value="admin">Quản trị viên</option>
                         </select>
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('role')}" th:errors="*{role}"></div>
                     </div>
                     <div class="d-flex" style="gap: 8px;">
-                        <button type="submit" class="btn btn-navy font-weight-bold rounded-lg">Create Employee</button>
-                        <a th:href="@{/admin/accounts(type='employee')}" class="btn btn-outline-secondary font-weight-bold rounded-lg">Cancel</a>
+                        <button type="submit" class="btn btn-navy font-weight-bold rounded-lg">Tạo nhân viên</button>
+                        <a th:href="@{/admin/accounts(type='employee')}" class="btn btn-outline-secondary font-weight-bold rounded-lg">Hủy</a>
                     </div>
                 </form>
             </div>

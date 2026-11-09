@@ -75,9 +75,9 @@
 
                         <!-- Category filter -->
                         <div>
-                            <label class="block text-xs font-semibold text-muted-foreground mb-1">Phân khúc xe</label>
+                            <label class="block text-xs font-semibold text-muted-foreground mb-1">Loại xe</label>
                             <select name="category" class="w-full text-xs px-3 py-2 border border-border rounded-lg focus:outline-none focus:border-navy bg-white">
-                                <option value="all" th:selected="${category == null or category == 'all'}">Tất cả phân khúc</option>
+                                <option value="all" th:selected="${category == null or category == 'all'}">Tất cả loại xe</option>
                                 <option th:each="c : ${categories}" th:value="${c}" th:text="${#strings.capitalize(c)}"
                                         th:selected="${category != null and category.equalsIgnoreCase(c)}"></option>
                             </select>
@@ -88,9 +88,9 @@
                             <label class="block text-xs font-semibold text-muted-foreground mb-1">Số chỗ ngồi</label>
                             <select name="seats" class="w-full text-xs px-3 py-2 border border-border rounded-lg focus:outline-none focus:border-navy bg-white">
                                 <option value="0" th:selected="${minSeats == null or minSeats == 0}">Tất cả số chỗ</option>
-                                <option value="4" th:selected="${minSeats == 4}">4 chỗ</option>
-                                <option value="5" th:selected="${minSeats == 5}">5 chỗ</option>
-                                <option value="7" th:selected="${minSeats == 7}">7+ chỗ</option>
+                                <option value="4" th:selected="${minSeats == 4}">4 chỗ trở lên</option>
+                                <option value="5" th:selected="${minSeats == 5}">5 chỗ trở lên</option>
+                                <option value="7" th:selected="${minSeats == 7}">7 chỗ trở lên</option>
                             </select>
                         </div>
 
@@ -116,8 +116,7 @@
                 <!-- Result Counter -->
                 <div class="flex items-center justify-between mb-4 pb-2 border-b border-border">
                     <p class="text-sm text-muted-foreground">
-                        Hiển thị <span class="font-bold text-navy" th:text="${results.size()}">3</span> mẫu xe sẵn sàng cho
-                        <span class="font-semibold text-navy"><span th:text="${durationDisplay}">9h</span></span>
+                        Hiển thị <span class="font-bold text-navy" th:text="${results.size()}">3</span> mẫu xe sẵn sàng trong khung giờ bạn chọn
                     </p>
                 </div>
 
@@ -150,22 +149,18 @@
                                 <div>
                                     <h3 class="font-bold text-navy text-lg leading-tight"
                                         th:text="${v.displayName}">Toyota Vios 2023</h3>
-                                    <div class="flex items-center gap-1.5 text-xs text-amber font-semibold mt-1">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                        <span th:text="${v.rating}">4.8</span>
-                                        <span class="text-muted-foreground font-normal">(<span th:text="${v.reviewCount}">124</span> đánh giá)</span>
-                                    </div>
+                                    <div class="text-xs text-muted-foreground mt-1"><span th:replace="~{fragments/labels :: rating(${ratings[v.id]})}">★ 4.8 (12 đánh giá)</span></div>
                                 </div>
 
                                 <!-- Specs Micro-Badges: Category, Seats, Transmission, Fuel -->
                                 <div class="text-xs text-muted-foreground font-medium my-2">
                                     <span class="text-navy font-bold uppercase" th:text="${v.category}">Sedan</span>
                                     <span class="mx-1">·</span>
-                                    <span th:text="${v.seats + ' Chỗ'}">5 Chỗ</span>
+                                    <span th:text="${v.seats + ' chỗ'}">5 chỗ</span>
                                     <span class="mx-1">·</span>
-                                    <span class="capitalize" th:text="${v.transmission == 'automatic' ? 'Số tự động' : (v.transmission == 'manual' ? 'Số sàn' : v.transmission)}">Số tự động</span>
+                                    <span th:replace="~{fragments/labels :: transmission(${v.transmission})}">Số tự động</span>
                                     <span class="mx-1">·</span>
-                                    <span class="capitalize" th:text="${v.fuelType == 'gasoline' ? 'Xăng' : (v.fuelType == 'diesel' ? 'Dầu' : (v.fuelType == 'electric' ? 'Điện' : v.fuelType))}">Xăng</span>
+                                    <span th:replace="~{fragments/labels :: fuel(${v.fuelType})}">Xăng</span>
                                 </div>
 
                             </div>

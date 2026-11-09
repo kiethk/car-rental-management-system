@@ -233,6 +233,7 @@ public class BookingController {
         model.addAttribute("remainingHours", remainingHours);
         model.addAttribute("durationDisplay", durationDisplay);
         model.addAttribute("results", results);
+        model.addAttribute("ratings", reviewService.ratingsByVehicleType());
         model.addAttribute("allCount", results.size());
         model.addAttribute("brands", vehicleTypeService.getDistinctBrands());
         model.addAttribute("categories", vehicleTypeService.getDistinctCategories());
@@ -253,13 +254,13 @@ public class BookingController {
 
         Long customerId = CurrentAccount.customerId(session).orElse(null);
         if (customerId == null) {
-            ra.addFlashAttribute("error", "Please sign in to proceed with your booking.");
+            ra.addFlashAttribute("error", "Vui lòng đăng nhập để tiếp tục đặt xe.");
             return "redirect:/login";
         }
 
         VehicleType vt = vehicleTypeService.findById(vehicleTypeId).orElse(null);
         if (vt == null) {
-            ra.addFlashAttribute("error", "Vehicle type not found.");
+            ra.addFlashAttribute("error", "Không tìm thấy mẫu xe.");
             return "redirect:/search";
         }
 
@@ -368,14 +369,6 @@ public class BookingController {
         Long customerId = CurrentAccount.customerId(session).orElse(null);
         if (customerId == null) return "redirect:/login";
 
-        LocalDate rentalEndDate = form.getEndTime() != null ? form.getEndTime().toLocalDate() : LocalDate.now();
-        if (!licenseDocumentService.hasValidLicense(customerId, rentalEndDate)) {
-            ra.addFlashAttribute("error", licenseDocumentService.getCustomerLicense(customerId) == null
-                    ? "Please upload your driving license before booking."
-                    : "Your driving license expires before the rental ends.");
-            return "redirect:/licenses/my-license";
-        }
-
         if (result.hasErrors()) {
             ra.addFlashAttribute("error", result.getAllErrors().get(0).getDefaultMessage());
             boolean canReturnToCheckout = form.getVehicleTypeId() != null
@@ -445,7 +438,7 @@ public class BookingController {
                              HttpSession session, Model model, RedirectAttributes ra) {
         Long customerId = CurrentAccount.customerId(session).orElse(null);
         if (customerId == null) {
-            ra.addFlashAttribute("error", "Please sign in to view your bookings.");
+            ra.addFlashAttribute("error", "Vui lòng đăng nhập để xem chuyến đi của bạn.");
             return "redirect:/login";
         }
 

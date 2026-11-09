@@ -89,7 +89,7 @@
                                         </a>
                                         <form th:if="${issue.open}" method="post"
                                               th:action="@{/admin/issues/{id}/evidences/{eid}/delete(id=${issue.id},eid=${photo.id})}"
-                                              class="mt-1 text-end" onsubmit="return confirm('Xoá ảnh này?');">
+                                              class="mt-1 text-end" data-confirm="Xóa ảnh này?" data-confirm-ok="Xóa" data-confirm-tone="danger">
                                             <button type="submit" class="admin-btn admin-btn-danger admin-btn-sm">Xoá</button>
                                         </form>
                                     </div>

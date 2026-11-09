@@ -1,8 +1,10 @@
 package com.crms.mvc.service.impl;
 
 import com.crms.mvc.dto.VehicleInspectionFormDTO;
+import com.crms.mvc.entity.Payment;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleInspection;
+import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.VehicleInspectionRepository;
 import com.crms.mvc.repository.VehicleRepository;
 import com.crms.mvc.service.VehicleInspectionService;
@@ -22,11 +24,14 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
 
     private final VehicleInspectionRepository vehicleInspectionRepository;
     private final VehicleRepository vehicleRepository;
+    private final BookingRepository bookingRepository;
 
     public VehicleInspectionServiceImpl(VehicleInspectionRepository vehicleInspectionRepository,
-                                       VehicleRepository vehicleRepository) {
+                                       VehicleRepository vehicleRepository,
+                                       BookingRepository bookingRepository) {
         this.vehicleInspectionRepository = vehicleInspectionRepository;
         this.vehicleRepository = vehicleRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     @Override
@@ -44,7 +49,7 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     @Override
     public VehicleInspection schedule(VehicleInspectionFormDTO dto) {
         Vehicle vehicle = vehicleRepository.findByIdWithDetails(dto.getVehicleId())
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found with ID: " + dto.getVehicleId()));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + dto.getVehicleId()));
         requireNotRetired(vehicle);
 
         if (dto.getScheduledAt() != null && dto.getScheduledAt().isBefore(LocalDateTime.now().minusMinutes(5))) {
@@ -57,6 +62,7 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
         OffsetDateTime scheduledAt = dto.getScheduledAt() != null
                 ? dto.getScheduledAt().atOffset(ZoneOffset.ofHours(7))
                 : OffsetDateTime.now(ZoneOffset.ofHours(7));
+        requireNoRentalOnThatDay(vehicle, scheduledAt);
         inspection.setScheduledAt(scheduledAt);
         inspection.setStatus("scheduled");
         inspection.setNotes(dto.getNotes());
@@ -67,12 +73,12 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     @Override
     public void startInspection(Long inspectionId) {
         VehicleInspection inspection = vehicleInspectionRepository.findById(inspectionId)
-                .orElseThrow(() -> new IllegalArgumentException("Inspection schedule not found with ID: " + inspectionId));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch đăng kiểm có mã: " + inspectionId));
 
         Vehicle vehicle = inspection.getVehicle();
         requireNotRetired(vehicle);
         if (Vehicle.STATUS_RENTED.equalsIgnoreCase(vehicle.getStatus())) {
-            throw new IllegalStateException("Cannot inspect vehicle while it is currently rented!");
+            throw new IllegalStateException("Không đăng kiểm được khi xe đang cho thuê!");
         }
 
         vehicle.setStatus(Vehicle.STATUS_MAINTENANCE);
@@ -82,10 +88,10 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
     @Override
     public void recordResult(Long inspectionId, String status, String notes, LocalDate newRegistrationExpiry) {
         VehicleInspection inspection = vehicleInspectionRepository.findById(inspectionId)
-                .orElseThrow(() -> new IllegalArgumentException("Inspection schedule not found with ID: " + inspectionId));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch đăng kiểm có mã: " + inspectionId));
 
         if (!"passed".equalsIgnoreCase(status) && !"failed".equalsIgnoreCase(status)) {
-            throw new IllegalArgumentException("Inspection result must be either 'passed' or 'failed'");
+            throw new IllegalArgumentException("Kết quả đăng kiểm phải là đạt hoặc không đạt");
         }
         requireNotRetired(inspection.getVehicle());
 
@@ -117,10 +123,22 @@ public class VehicleInspectionServiceImpl implements VehicleInspectionService {
         vehicleInspectionRepository.save(inspection);
     }
 
+    /** The whole day is reserved for the inspection, so the car must not already be promised to a customer that day. */
+    private void requireNoRentalOnThatDay(Vehicle vehicle, OffsetDateTime scheduledAt) {
+        OffsetDateTime dayStart = scheduledAt.toLocalDate().atStartOfDay().atOffset(scheduledAt.getOffset());
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.ofHours(7));
+        List<Long> bookedVehicleIds = bookingRepository.findBookedVehicleIdsInTimeRange(
+                dayStart, dayStart.plusDays(1), now.minusMinutes(Payment.PAYMENT_TIMEOUT_MINUTES), now);
+        if (bookedVehicleIds.contains(vehicle.getId())) {
+            throw new IllegalStateException("Xe này đã có đơn thuê trong ngày " + scheduledAt.toLocalDate()
+                    + ", không thể lên lịch đăng kiểm vào ngày này. Hãy chọn ngày khác.");
+        }
+    }
+
     /** A retired vehicle is out of service for good; inspections must not bring it back. */
     private void requireNotRetired(Vehicle vehicle) {
         if (vehicle.isRetired()) {
-            throw new IllegalStateException("Vehicle has been retired; it can no longer be inspected");
+            throw new IllegalStateException("Xe đã ngừng khai thác nên không thể đăng kiểm nữa");
         }
     }
 

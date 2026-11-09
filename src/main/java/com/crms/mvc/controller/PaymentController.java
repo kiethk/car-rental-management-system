@@ -49,12 +49,12 @@ public class PaymentController {
 
         Booking booking = bookingService.findEntityById(bookingId).orElse(null);
         if (booking == null) {
-            ra.addFlashAttribute("error", "Booking not found.");
+            ra.addFlashAttribute("error", "Không tìm thấy đơn đặt xe.");
             return "redirect:/bookings/my-bookings";
         }
 
         if (booking.getCustomer() == null || !booking.getCustomer().getId().equals(customerId)) {
-            ra.addFlashAttribute("error", "You do not have permission to pay for this booking.");
+            ra.addFlashAttribute("error", "Bạn không có quyền thanh toán đơn đặt xe này.");
             return "redirect:/bookings/my-bookings";
         }
 
@@ -80,7 +80,7 @@ public class PaymentController {
             return "redirect:" + paymentUrl;
         } catch (Exception e) {
             log.error("Failed to initiate payment for booking {}", bookingId, e);
-            ra.addFlashAttribute("error", "Could not connect to payment gateway: " + e.getMessage());
+            ra.addFlashAttribute("error", "Không thể kết nối cổng thanh toán: " + e.getMessage());
             return "redirect:/bookings/" + bookingId + "/pay-deposit";
         }
     }
@@ -118,7 +118,7 @@ public class PaymentController {
         log.info("Received {} callback: TxnRef={}, ResponseCode={}, TxnNo={}", gateway, vnp_TxnRef, responseCode, transactionNo);
 
         if (vnp_TxnRef == null || vnp_TxnRef.isEmpty()) {
-            ra.addFlashAttribute("error", "Invalid payment response: missing transaction reference.");
+            ra.addFlashAttribute("error", "Phản hồi thanh toán không hợp lệ: thiếu mã giao dịch.");
             return "redirect:/";
         }
 
@@ -132,14 +132,14 @@ public class PaymentController {
             bookingId = Long.parseLong(parts[0]);
         } catch (Exception e) {
             log.error("Invalid vnp_TxnRef format: {}", vnp_TxnRef, e);
-            ra.addFlashAttribute("error", "Invalid transaction reference format.");
+            ra.addFlashAttribute("error", "Mã giao dịch không đúng định dạng.");
             return "redirect:/";
         }
 
         boolean isValidSignature = paymentService.verifyPaymentSignature(allParams);
         if (!isValidSignature) {
             log.error("{} signature verification failed for TxnRef: {}", gateway, vnp_TxnRef);
-            ra.addFlashAttribute("error", "Payment verification failed: invalid digital signature.");
+            ra.addFlashAttribute("error", "Xác minh thanh toán thất bại: chữ ký số không hợp lệ.");
             return "redirect:/bookings/" + bookingId + "/pay-deposit";
         }
 
@@ -147,12 +147,12 @@ public class PaymentController {
             try {
                 Booking booking = bookingService.findEntityById(bookingId).orElse(null);
                 if (booking == null) {
-                    ra.addFlashAttribute("error", "Booking not found: " + bookingId);
+                    ra.addFlashAttribute("error", "Không tìm thấy đơn đặt xe: " + bookingId);
                     return "redirect:/";
                 }
 
                 if (!"pending_payment".equalsIgnoreCase(booking.getStatus()) && !"confirmed".equalsIgnoreCase(booking.getStatus())) {
-                    ra.addFlashAttribute("error", "Booking is not in pending_payment status (status: " + booking.getStatus() + ").");
+                    ra.addFlashAttribute("error", "Đơn đặt xe không ở trạng thái chờ thanh toán (trạng thái: " + booking.getStatus() + ").");
                     return "redirect:/bookings/" + bookingId;
                 }
 
@@ -162,7 +162,7 @@ public class PaymentController {
                     long expectedAmount = booking.getDepositAmount().multiply(BigDecimal.valueOf(100)).longValue();
                     if (returnedAmount != expectedAmount) {
                         log.error("Payment amount mismatch for booking {}: expected={}, received={}", bookingId, expectedAmount, returnedAmount);
-                        ra.addFlashAttribute("error", "Payment amount mismatch.");
+                        ra.addFlashAttribute("error", "Số tiền thanh toán không khớp.");
                         return "redirect:/bookings/" + bookingId + "/pay-deposit";
                     }
                 }
@@ -173,11 +173,11 @@ public class PaymentController {
                         (transactionNo != null ? "&vnp_TransactionNo=" + transactionNo : "");
             } catch (Exception e) {
                 log.error("Error finalizing deposit for booking {}", bookingId, e);
-                ra.addFlashAttribute("error", "Payment succeeded on gateway but failed to update booking: " + e.getMessage());
+                ra.addFlashAttribute("error", "Cổng thanh toán đã ghi nhận nhưng không cập nhật được đơn đặt xe: " + e.getMessage());
                 return "redirect:/bookings/" + bookingId + "/pay-deposit";
             }
         } else if ("24".equals(responseCode)) {
-            ra.addFlashAttribute("error", "Payment was cancelled. You can try again or select another payment method.");
+            ra.addFlashAttribute("error", "Bạn đã hủy thanh toán. Bạn có thể thử lại hoặc chọn phương thức thanh toán khác.");
             return "redirect:/bookings/" + bookingId + "/pay-deposit";
         } else {
             ra.addFlashAttribute("error", "Payment failed (Code " + responseCode + "). Please try again.");
@@ -189,7 +189,7 @@ public class PaymentController {
     private String handleIssuePaymentReturn(String txnRef, Map<String, String> params, RedirectAttributes ra) {
         if (!paymentService.verifyPaymentSignature(params)) {
             log.error("Signature verification failed for issue payment reference {}", txnRef);
-            ra.addFlashAttribute("error", "Payment verification failed: invalid digital signature.");
+            ra.addFlashAttribute("error", "Xác minh thanh toán thất bại: chữ ký số không hợp lệ.");
             return "redirect:/bookings/my-bookings";
         }
         try {

@@ -31,7 +31,7 @@ public class SessionAccountServiceImpl implements SessionAccountService {
     public SessionAccount create(LoginIdentityDTO identity) {
         SessionAccount probe = new SessionAccount(identity.accountId(), identity.accountType(),
                 identity.name(), null, identity.role(), null);
-        return load(probe).orElseThrow(() -> new NoSuchElementException("Account not found"));
+        return load(probe).orElseThrow(() -> new NoSuchElementException("Không tìm thấy tài khoản"));
     }
 
     @Override

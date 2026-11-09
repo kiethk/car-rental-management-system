@@ -17,30 +17,30 @@ import java.time.LocalDate;
 public class PromotionFormDTO {
     private Long id;
 
-    @NotBlank(message = "Promotion code cannot be blank")
-    @Size(max = 50, message = "Promotion code cannot exceed 50 characters")
-    @Pattern(regexp = "[A-Za-z0-9_-]+", message = "Use only letters, numbers, hyphens, and underscores")
+    @NotBlank(message = "Vui lòng nhập mã khuyến mãi")
+    @Size(max = 50, message = "Mã khuyến mãi tối đa 50 ký tự")
+    @Pattern(regexp = "[A-Za-z0-9_-]+", message = "Chỉ dùng chữ cái, chữ số, dấu gạch ngang và gạch dưới")
     private String code;
 
-    @NotBlank(message = "Please select a discount type")
-    @Pattern(regexp = "percent|fixed", message = "Discount type must be percent or fixed")
+    @NotBlank(message = "Vui lòng chọn loại giảm giá")
+    @Pattern(regexp = "percent|fixed", message = "Loại giảm giá phải là phần trăm hoặc số tiền cố định")
     private String discountType;
 
-    @NotNull(message = "Discount value cannot be empty")
-    @DecimalMin(value = "0.00", message = "Discount value cannot be negative")
-    @Digits(integer = 12, fraction = 2, message = "Discount value supports up to 12 integer digits and 2 decimals")
+    @NotNull(message = "Vui lòng nhập giá trị giảm")
+    @DecimalMin(value = "0.00", message = "Giá trị giảm không được âm")
+    @Digits(integer = 12, fraction = 2, message = "Giá trị giảm tối đa 12 chữ số phần nguyên và 2 chữ số thập phân")
     private BigDecimal discountValue;
 
-    @NotNull(message = "Start date is required")
+    @NotNull(message = "Vui lòng nhập ngày bắt đầu")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate startDate;
 
-    @NotNull(message = "End date is required")
+    @NotNull(message = "Vui lòng nhập ngày kết thúc")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate endDate;
 
-    @NotNull(message = "Quantity cannot be empty")
-    @Min(value = 0, message = "Quantity cannot be negative")
+    @NotNull(message = "Vui lòng nhập số lượng")
+    @Min(value = 0, message = "Số lượng không được âm")
     private Integer quantity;
 
     private String urlImagePromotion;

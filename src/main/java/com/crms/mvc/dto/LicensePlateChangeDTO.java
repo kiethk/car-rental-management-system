@@ -6,12 +6,12 @@ import jakarta.validation.constraints.Size;
 
 /** Admin form: put a new plate on a vehicle. */
 public class LicensePlateChangeDTO {
-    @NotBlank(message = "New license plate cannot be blank")
-    @Size(max = 20, message = "License plate cannot exceed 20 characters")
-    @Pattern(regexp = "^[A-Za-z0-9 .\\-]*$", message = "License plate may only contain letters, digits, spaces, dots and dashes")
+    @NotBlank(message = "Vui lòng nhập biển số mới")
+    @Size(max = 20, message = "Biển số tối đa 20 ký tự")
+    @Pattern(regexp = "^[A-Za-z0-9 .\\-]*$", message = "Biển số chỉ được chứa chữ cái, chữ số, khoảng trắng, dấu chấm và dấu gạch ngang")
     private String plate;
 
-    @Size(max = 100, message = "Province cannot exceed 100 characters")
+    @Size(max = 100, message = "Tỉnh / thành phố tối đa 100 ký tự")
     private String province;
 
     public String getPlate() { return plate; }

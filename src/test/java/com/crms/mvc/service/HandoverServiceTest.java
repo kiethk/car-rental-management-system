@@ -200,23 +200,11 @@ class HandoverServiceTest {
     void maintenanceIsWhateverStaffTicked() {
         booking.setStatus("active");
         CheckOutDTO form = checkOutForm(1300);
-        form.setNotes("hỏng nhẹ");
         form.setMoveToMaintenance(true);
 
         handoverService.checkOut(10L, 2L, form);
 
         assertEquals("maintenance", vehicle.getStatus());
-    }
-
-    @Test
-    void notesAloneDoNotMoveVehicleToMaintenance() {
-        booking.setStatus("active");
-        CheckOutDTO form = checkOutForm(1300);
-        form.setNotes("hỏng nhẹ");
-
-        handoverService.checkOut(10L, 2L, form);
-
-        assertEquals("available", vehicle.getStatus());
     }
 
     @Test
@@ -404,7 +392,7 @@ class HandoverServiceTest {
         assertTrue(receipt.isSettled());
         assertFalse(receipt.getLines().get(0).isPaidEarlier());
         assertEquals(new BigDecimal("850000"), receipt.getAmountDue());
-        assertEquals("Cash", receipt.getPaymentMethodLabel());
+        assertEquals("Tiền mặt", receipt.getPaymentMethodLabel());
         assertNotNull(receipt.getPaidAt());
     }
 
