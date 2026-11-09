@@ -17,7 +17,7 @@ body[data-screen="admin/dashboard"] .reg-alert-days { font-size: 0.8rem; font-we
 body[data-screen="admin/dashboard"] .reg-alert-warning .reg-alert-days { color: #d97706; }
 body[data-screen="admin/dashboard"] .reg-alert-danger .reg-alert-days { color: #dc2626; }
 body[data-screen="admin/dashboard"] .reg-alert-meta { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
-body[data-screen="admin/dashboard"] .reg-alert-meta a { color: #ea580c; font-weight: 600; white-space: nowrap; text-decoration: none; }
+body[data-screen="admin/dashboard"] .reg-alert-meta a { color: #2563eb; font-weight: 600; white-space: nowrap; text-decoration: none; }
 body[data-screen="admin/dashboard"] .reg-alert-meta a:hover { text-decoration: underline; }
 body[data-screen="admin/dashboard"] .reg-alert-empty { padding: 0 16px 12px; font-size: 0.8rem; color: #94a3b8; }
 /* Screen-scoped DriveNow admin workspace */

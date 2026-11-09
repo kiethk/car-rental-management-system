@@ -1,0 +1,395 @@
+/*
+ * DriveNow Elevate layer — desktop SaaS / mobility polish (1280–1920px).
+ * Loaded after theme.css. Pure CSS on existing class names; no markup contract changes.
+ */
+:root {
+    --ev-canvas: #f4f6f9;
+    --ev-surface: #ffffff;
+    --ev-obsidian: #0b0f19;
+    --ev-glass-dark: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    --ev-cobalt: #3b82f6;
+    --ev-indigo: #4f46e5;
+    --ev-accent-grad: linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%);
+    --ev-border: rgba(226, 232, 240, 0.8);
+    --ev-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    --ev-shadow-hover: 0 14px 34px -8px rgba(15, 23, 42, 0.14), 0 4px 10px -2px rgba(15, 23, 42, 0.06);
+    --ev-radius: 16px;
+    --ev-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --ev-ring: 0 0 0 4px rgba(59, 130, 246, 0.18);
+    --ev-font-ui: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --ev-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --fleet-canvas: var(--ev-canvas);
+    --fleet-primary: var(--ev-cobalt);
+    --fleet-primary-hover: #2563eb;
+    --fleet-ring: rgba(59, 130, 246, 0.18);
+    --fleet-radius: var(--ev-radius);
+    --fleet-shadow: var(--ev-shadow);
+    --fleet-shadow-raised: var(--ev-shadow-hover);
+    --bs-primary-rgb: 59, 130, 246;
+    --bs-body-font-family: var(--ev-font-ui);
+    --bs-font-monospace: var(--ev-font-mono);
+}
+
+/* ---------- Canvas & type ---------- */
+html body, html body[data-screen], body[data-screen] input, body[data-screen] button,
+body[data-screen] select, body[data-screen] textarea {
+    font-family: var(--ev-font-ui);
+}
+html body {
+    background-color: var(--ev-canvas);
+    background-image:
+        radial-gradient(1200px 600px at 100% -10%, rgba(79, 70, 229, 0.06), transparent 60%),
+        radial-gradient(900px 500px at -10% 0%, rgba(59, 130, 246, 0.05), transparent 60%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.005em;
+}
+body h1, body h2, body h3, body .h1, body .h2, body .h3,
+body .admin-page-title, body .admin-card-title {
+    font-family: var(--ev-font-ui);
+    letter-spacing: -0.025em;
+    font-weight: 800;
+}
+body .font-mono, body code, body kbd,
+body .admin-stat-value, body .h2.fw-bold,
+body .price-box, body [class*="price"] strong, body .booking-code {
+    font-family: var(--ev-font-mono);
+    font-feature-settings: "tnum" 1, "zero" 1;
+    letter-spacing: -0.02em;
+}
+
+/* ---------- Motion baseline ---------- */
+body a, body button, body .btn, body .admin-btn, body .card, body .admin-card,
+body .form-control, body .form-select, body .admin-form-input, body .nav-link,
+body .admin-sidebar-link, body tr, body img {
+    transition-timing-function: var(--ev-ease);
+    transition-duration: 0.35s;
+}
+body .btn, body .admin-btn {
+    transition-property: transform, box-shadow, background-color, border-color, color;
+}
+body .btn:hover:not(:disabled), body .admin-btn:hover:not(:disabled) { transform: translateY(-1px); }
+body .btn:active:not(:disabled), body .admin-btn:active:not(:disabled) { transform: translateY(0) scale(0.98); }
+body .btn i[data-lucide], body .btn svg.lucide, body .admin-btn svg.lucide { width: 16px; height: 16px; flex-shrink: 0; }
+body .btn:has(svg.lucide), body .admin-btn:has(svg.lucide) { display: inline-flex; align-items: center; gap: 0.45rem; }
+
+body .btn-primary, body .admin-btn-primary {
+    background: var(--ev-accent-grad);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 6px 16px -6px rgba(79, 70, 229, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+body .btn-primary:hover, body .admin-btn-primary:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #4338ca 100%);
+    color: #fff;
+    box-shadow: 0 10px 22px -8px rgba(79, 70, 229, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+body .btn:focus-visible, body .admin-btn:focus-visible,
+body .form-control:focus, body .form-select:focus, body .admin-form-input:focus {
+    box-shadow: var(--ev-ring);
+    border-color: var(--ev-cobalt);
+    outline: none;
+}
+
+/* ---------- Header (frosted) ---------- */
+body .crms-site-header {
+    background: rgba(255, 255, 255, 0.78) !important;
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--ev-border);
+}
+
+/* ---------- Admin sidebar (obsidian glass) ---------- */
+body .admin-sidebar-column {
+    background: var(--ev-glass-dark);
+    border-right: 1px solid rgba(148, 163, 184, 0.12);
+    position: relative;
+}
+body .admin-sidebar-column::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(400px 260px at 0% 0%, rgba(79, 70, 229, 0.22), transparent 70%);
+}
+body .admin-sidebar-nav { background: transparent; position: relative; }
+body .admin-sidebar-heading {
+    color: #64748b;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+body .admin-sidebar-link {
+    color: #cbd5e1;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition-property: background-color, color, border-color, transform;
+}
+body .admin-sidebar-link .admin-nav-icon { color: #94a3b8; transition: color 0.35s var(--ev-ease); }
+body .admin-sidebar-link:hover {
+    color: #fff;
+    background: rgba(148, 163, 184, 0.1);
+    transform: translateX(2px);
+}
+body .admin-sidebar-link:hover .admin-nav-icon { color: #fff; }
+body .admin-sidebar-link.active {
+    color: #fff;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.22), rgba(79, 70, 229, 0.18));
+    border-color: rgba(99, 102, 241, 0.35);
+    box-shadow: inset 3px 0 0 var(--ev-cobalt), 0 8px 20px -10px rgba(79, 70, 229, 0.7);
+}
+body .admin-sidebar-link.active .admin-nav-icon { color: #93c5fd; }
+
+/* ---------- Cards / bento ---------- */
+body .card, body .admin-card, body .admin-stat-card, body .customer-card,
+body .bg-white.rounded-xl, body .bg-white.rounded-2xl {
+    border: 1px solid var(--ev-border) !important;
+    border-radius: var(--ev-radius) !important;
+    box-shadow: var(--ev-shadow) !important;
+    background-color: var(--ev-surface);
+}
+body .admin-stat-card, body .row.g-3 > [class*="col"] > .card {
+    position: relative;
+    overflow: hidden;
+    transition-property: transform, box-shadow;
+}
+body .admin-stat-card:hover, body .row.g-3 > [class*="col"] > .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--ev-shadow-hover) !important;
+}
+body .admin-stat-card::after, body .row.g-3 > [class*="col"] > .card::after {
+    content: "";
+    position: absolute;
+    right: -40px;
+    top: -40px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.08), transparent 70%);
+    pointer-events: none;
+}
+body .admin-stat-icon-wrap {
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.14), rgba(79, 70, 229, 0.1));
+    color: var(--ev-indigo);
+}
+
+/* ---------- Vehicle cards ---------- */
+body .car-card, body .car-card-row, body .vehicle-card {
+    border: 1px solid var(--ev-border) !important;
+    border-radius: var(--ev-radius) !important;
+    box-shadow: var(--ev-shadow) !important;
+    background: var(--ev-surface);
+    overflow: hidden;
+    transition: transform 0.45s var(--ev-ease), box-shadow 0.45s var(--ev-ease), border-color 0.45s var(--ev-ease);
+}
+body .car-card:hover, body .car-card-row:hover, body .vehicle-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--ev-shadow-hover) !important;
+    border-color: rgba(59, 130, 246, 0.35) !important;
+}
+body .car-card-img-wrap, body .car-card .vehicle-img, body .vehicle-card-media {
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(160deg, #eef2f7, #e2e8f0);
+}
+body .car-card img, body .car-card-row img, body .vehicle-card img {
+    transition: transform 0.8s var(--ev-ease);
+}
+body .car-card:hover img, body .car-card-row:hover img, body .vehicle-card:hover img { transform: scale(1.04); }
+body .car-card .vehicle-img { aspect-ratio: 16 / 10; }
+
+body .price-box, body .ev-price-tag {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px -10px rgba(15, 23, 42, 0.25);
+    color: var(--ev-obsidian);
+}
+body .car-category-badge, body .vehicle-cat {
+    border-radius: 999px;
+    background: rgba(79, 70, 229, 0.08);
+    color: var(--ev-indigo);
+    border: 1px solid rgba(79, 70, 229, 0.18);
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+/* Spec micro-badges (seats / transmission / fuel) */
+body .car-card-info-col .rounded-2.border,
+body .car-card .rounded-2.border {
+    border-radius: 999px !important;
+    background: #f8fafc !important;
+    border-color: var(--ev-border) !important;
+    padding-inline: 0.7rem !important;
+}
+
+/* ---------- License plates ---------- */
+body .admin-plate-badge, body .plate-box, body .sch-plate, body .ev-plate {
+    font-family: var(--ev-font-mono);
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: #0b0f19;
+    background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+    border: 1.5px solid #0f172a;
+    border-radius: 6px;
+    padding: 0.18rem 0.55rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+    box-shadow: inset 0 0 0 2px #fff, 0 1px 2px rgba(15, 23, 42, 0.12);
+}
+body .ev-plate::before, body .admin-plate-badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ev-cobalt);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* ---------- Floating-row tables ---------- */
+body .table-responsive > .table, body .admin-card .table, body .card .table {
+    border-collapse: separate;
+    border-spacing: 0 6px;
+    margin-top: -6px;
+}
+body .table > thead > tr > th {
+    background: transparent;
+    border: 0;
+    color: #64748b;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding-block: 0.6rem;
+    white-space: nowrap;
+}
+body .table > thead > tr > th svg.lucide { width: 13px; height: 13px; margin-right: 0.35rem; vertical-align: -2px; opacity: 0.7; }
+body .table > tbody > tr > td {
+    background: var(--ev-surface);
+    border-top: 1px solid var(--ev-border);
+    border-bottom: 1px solid var(--ev-border);
+    vertical-align: middle;
+    padding-block: 0.85rem;
+}
+body .table > tbody > tr > td:first-child { border-left: 1px solid var(--ev-border); border-radius: 12px 0 0 12px; }
+body .table > tbody > tr > td:last-child { border-right: 1px solid var(--ev-border); border-radius: 0 12px 12px 0; }
+body .table > tbody > tr { transition: transform 0.35s var(--ev-ease), filter 0.35s var(--ev-ease); }
+body .table > tbody > tr:hover > td { background: #fbfcfe; border-color: rgba(59, 130, 246, 0.25); }
+body .table > tbody > tr:hover { transform: translateY(-1px); filter: drop-shadow(0 6px 12px rgba(15, 23, 42, 0.06)); }
+body .table-hover > tbody > tr:hover > * { --bs-table-bg-state: transparent; }
+
+/* Avatar initials injected by theme-enhance.js */
+body .ev-person { display: inline-flex; align-items: center; gap: 0.65rem; }
+body .ev-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: inline-grid;
+    place-items: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #fff;
+    background: var(--ev-accent-grad);
+    box-shadow: 0 4px 10px -4px rgba(79, 70, 229, 0.6);
+    flex-shrink: 0;
+}
+
+/* Icon action toolbar in last cell */
+body .table td:last-child .d-flex { gap: 0.35rem; }
+body .table td:last-child .admin-btn-sm, body .table td:last-child .btn-sm { border-radius: 9px; }
+
+/* ---------- Glowing status dots ---------- */
+body .admin-badge-dot, body .crms-status-dot {
+    box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 18%, transparent), 0 0 10px currentColor;
+}
+body .admin-status-badge, body .crms-status-pill, body .badge {
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+/* ---------- Page header ---------- */
+body .admin-page-title { font-size: 1.75rem; }
+body .nav-pills {
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--ev-border) !important;
+    border-radius: 14px !important;
+    box-shadow: var(--ev-shadow);
+}
+body .nav-pills .nav-link { border-radius: 10px; }
+body .nav-pills .nav-link.active, body .nav-pills .nav-link.active.bg-navy {
+    background: var(--ev-glass-dark) !important;
+    color: #fff !important;
+    box-shadow: 0 6px 16px -8px rgba(11, 15, 25, 0.6);
+}
+
+/* ---------- Dashboard chart ---------- */
+body .ev-chart-card { padding: 1.5rem; }
+body .ev-chart-legend { display: flex; flex-direction: column; gap: 0.75rem; }
+body .ev-chart-legend-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; font-size: 0.875rem; color: #334155; }
+body .ev-chart-legend-item b { font-family: var(--ev-font-mono); color: #0b0f19; }
+body .ev-chart-swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-right: 0.5rem; }
+body .ev-utilization-hero {
+    background: var(--ev-glass-dark);
+    color: #e2e8f0;
+    border-radius: 14px;
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+}
+body .ev-utilization-hero::after {
+    content: "";
+    position: absolute;
+    right: -60px;
+    bottom: -60px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(79, 70, 229, 0.45), transparent 70%);
+}
+body .ev-utilization-hero .ev-big { font-family: var(--ev-font-mono); font-size: 2.5rem; font-weight: 800; color: #fff; letter-spacing: -0.04em; }
+
+/* ---------- Flatpickr ---------- */
+.flatpickr-calendar {
+    font-family: var(--ev-font-ui);
+    border-radius: 16px !important;
+    border: 1px solid var(--ev-border) !important;
+    box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.22) !important;
+    padding: 6px;
+}
+.flatpickr-day { border-radius: 10px !important; font-weight: 600; }
+.flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange,
+.flatpickr-day.selected:hover {
+    background: var(--ev-accent-grad) !important;
+    border-color: transparent !important;
+    color: #fff !important;
+}
+.flatpickr-day.today { border-color: var(--ev-cobalt) !important; }
+.flatpickr-months .flatpickr-month, .flatpickr-current-month { font-weight: 800; }
+input.flatpickr-input + input[readonly] {
+    background-color: #fff;
+    cursor: pointer;
+    padding-left: 2.4rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cpath d='M16 2v4M8 2v4M3 10h18'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 0.85rem center;
+}
+
+/* ---------- Scrollbar ---------- */
+body ::-webkit-scrollbar { width: 10px; height: 10px; }
+body ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; border: 2px solid var(--ev-canvas); }
+body ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+@media (prefers-reduced-motion: reduce) {
+    body *, body *::before, body *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+    body .car-card:hover img, body .car-card-row:hover img { transform: none; }
+}

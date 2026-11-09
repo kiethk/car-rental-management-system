@@ -2,16 +2,27 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <body>
 <th:block th:fragment="common">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
     <link rel="stylesheet" th:href="@{/css/vendor/bootstrap/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/shared/app.css}">
     <link rel="stylesheet" th:href="@{/css/shared/confirm-modal.css}">
     <link rel="stylesheet" th:href="@{/css/shared/admin.css}">
     <link rel="stylesheet" th:href="@{/css/shared/customer.css}">
     <link rel="stylesheet" th:href="@{/css/shared/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/shared/theme.css}">
+    <link rel="stylesheet" th:href="@{/css/shared/theme-elevate.css}">
     <script th:src="@{/js/vendor/bootstrap/bootstrap.bundle.min.js}" defer></script>
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/vn.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.1/dist/apexcharts.min.js" defer></script>
     <script th:src="@{/js/shared/app.js}" defer></script>
     <script th:src="@{/js/shared/confirm-modal.js}" defer></script>
     <script th:src="@{/js/shared/rental-search-form.js}" defer></script>
+    <script th:src="@{/js/shared/theme-enhance.js}" defer></script>
 </th:block>
 </body>
 </html>

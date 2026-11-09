@@ -69,6 +69,32 @@
                 </div>
             </div>
 
+            <!-- Fleet Utilization (ApexCharts) -->
+            <div class="card border-0 shadow-sm rounded-xl bg-white mb-4 ev-chart-card">
+                <div class="row g-4 align-items-center">
+                    <div class="col-lg-4">
+                        <div class="ev-utilization-hero">
+                            <div class="small text-uppercase fw-bold" style="letter-spacing:.1em;color:#94a3b8">Tỷ lệ khai thác</div>
+                            <div class="ev-big" th:text="${totalVehicles > 0 ? (rentedVehicles * 100 / totalVehicles) + '%' : '0%'}">15%</div>
+                            <div class="small" style="color:#cbd5e1">Xe đang cho thuê trên tổng đội xe hoạt động</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div id="evUtilizationChart" role="img" aria-label="Biểu đồ phân bổ trạng thái đội xe"
+                             th:attr="data-available=${availableVehicles},data-rented=${rentedVehicles},data-maintenance=${maintenanceVehicles}"
+                             data-available="15" data-rented="3" data-maintenance="2"></div>
+                    </div>
+                    <div class="col-lg-4">
+                        <h2 class="h6 fw-bold text-navy mb-3">Phân bổ đội xe</h2>
+                        <div class="ev-chart-legend">
+                            <div class="ev-chart-legend-item"><span><span class="ev-chart-swatch" style="background:#10b981"></span>Sẵn sàng</span><b th:text="${availableVehicles}">15</b></div>
+                            <div class="ev-chart-legend-item"><span><span class="ev-chart-swatch" style="background:#4f46e5"></span>Đang thuê</span><b th:text="${rentedVehicles}">3</b></div>
+                            <div class="ev-chart-legend-item"><span><span class="ev-chart-swatch" style="background:#f43f5e"></span>Bảo dưỡng</span><b th:text="${maintenanceVehicles}">2</b></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Secondary Alerts & Quick Access -->
             <div class="row g-4 mb-4">
                 <!-- Registration Alerts -->

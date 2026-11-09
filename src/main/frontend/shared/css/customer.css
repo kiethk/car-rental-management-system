@@ -24,13 +24,13 @@ body[data-screen^="customer/"] h1,
 body[data-screen^="customer/"] h2,
 body[data-screen^="customer/"] h3 { color: var(--customer-navy); letter-spacing: -.015em; }
 body[data-screen^="customer/"] a { text-underline-offset: .16em; }
-body[data-screen^="customer/"] :focus-visible { outline: 3px solid rgba(237,138,36,.55); outline-offset: 2px; }
+body[data-screen^="customer/"] :focus-visible { outline: 3px solid rgba(37,99,235,.55); outline-offset: 2px; }
 body[data-screen^="customer/"] .btn-navy,
 body[data-screen^="customer/"] .btn-primary { background: var(--customer-navy); border-color: var(--customer-navy); color: #fff; }
 body[data-screen^="customer/"] .btn-amber,
 body[data-screen^="customer/"] .btn-orange { background: var(--customer-orange); border-color: var(--customer-orange); color: #fff; }
 body[data-screen^="customer/"] .form-control:focus,
-body[data-screen^="customer/"] .form-select:focus { border-color: var(--customer-orange); box-shadow: 0 0 0 .2rem rgba(237,138,36,.2); }
+body[data-screen^="customer/"] .form-select:focus { border-color: var(--customer-orange); box-shadow: 0 0 0 .2rem rgba(37,99,235,.18); }
 
 body[data-screen="customer/auth/login"] main,
 body[data-screen="customer/auth/register"] main { min-height: 100vh; padding: 2rem 1.25rem; }
