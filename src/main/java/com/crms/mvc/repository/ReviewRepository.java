@@ -12,12 +12,12 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Optional<Review> findByBookingId(Long bookingId);
 
     @Query("""
-            SELECT new com.crms.mvc.dto.ReviewDTO(r.rating, r.comment, r.createdAt)
+            SELECT new com.crms.mvc.dto.ReviewDTO(r.rating, r.comment, r.createdAt, b.customer.name)
             FROM Review r
             JOIN r.booking b
-            JOIN b.slot s
+            JOIN b.vehicle v
             WHERE LOWER(b.status) = 'completed'
-              AND s.vehicleType.id = :vehicleTypeId
+              AND v.vehicleType.id = :vehicleTypeId
               AND NOT EXISTS (
                   SELECT p.id FROM Payment p
                   WHERE p.booking = b AND LOWER(p.status) = 'pending'
