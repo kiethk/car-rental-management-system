@@ -33,8 +33,6 @@ public interface IssueRepository extends JpaRepository<Issue, Long>, JpaSpecific
 
     long countByStatus(IssueStatus status);
 
-    List<Issue> findByStatusAndNotifiedAtIsNullAndReportedAtBefore(IssueStatus status, OffsetDateTime reportedBefore);
-
     /** The list page loads everything it shows in one query (the count query ignores the graph). */
     @Override
     @EntityGraph(attributePaths = {"booking", "booking.customer", "vehicle", "vehicle.vehicleType", "employee"})

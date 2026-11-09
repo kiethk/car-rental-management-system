@@ -5,7 +5,6 @@ import com.crms.mvc.entity.*;
 import com.crms.mvc.repository.*;
 import com.crms.mvc.service.BookingFeeService;
 import com.crms.mvc.service.BookingService;
-import com.crms.mvc.service.CompensationVoucherService;
 import com.crms.mvc.service.ContractService;
 import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.service.PaymentService;
@@ -36,8 +35,8 @@ public class BookingServiceImpl implements BookingService {
     private int openingHour = com.crms.mvc.config.OpeningHours.DEFAULT.open();
     @org.springframework.beans.factory.annotation.Value("${crms.opening-hours.close:23}")
     private int closingHour = com.crms.mvc.config.OpeningHours.DEFAULT.close();
-    @org.springframework.beans.factory.annotation.Value("${crms.station.address:Kho xe DriveNow - ĐH FPT TP.HCM (Khu Công nghệ cao, TP. Thủ Đức)}")
-    private String stationAddress = "Kho xe DriveNow - ĐH FPT TP.HCM (Khu Công nghệ cao, TP. Thủ Đức)";
+    @org.springframework.beans.factory.annotation.Value("${crms.station.address:Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM}")
+    private String stationAddress = "Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM";
 
     private final BookingRepository bookingRepository;
     private final CustomerRepository customerRepository;
@@ -51,7 +50,6 @@ public class BookingServiceImpl implements BookingService {
     private final ContractTemplateService contractTemplateService;
     private final BookingFeeService bookingFeeService;
     private final PricingService pricingService;
-    private final CompensationVoucherService compensationVoucherService;
 
     public BookingServiceImpl(
             BookingRepository bookingRepository,
@@ -65,8 +63,7 @@ public class BookingServiceImpl implements BookingService {
             ContractService contractService,
             ContractTemplateService contractTemplateService,
             BookingFeeService bookingFeeService,
-            PricingService pricingService,
-            CompensationVoucherService compensationVoucherService) {
+            PricingService pricingService) {
         this.bookingRepository = bookingRepository;
         this.customerRepository = customerRepository;
         this.slotRepository = slotRepository;
@@ -79,7 +76,6 @@ public class BookingServiceImpl implements BookingService {
         this.contractTemplateService = contractTemplateService;
         this.bookingFeeService = bookingFeeService;
         this.pricingService = pricingService;
-        this.compensationVoucherService = compensationVoucherService;
     }
 
     @Override
@@ -397,13 +393,6 @@ public class BookingServiceImpl implements BookingService {
         b.setStatus("cancelled");
         b.setCancelledAt(OffsetDateTime.now());
         bookingRepository.save(b);
-        compensationVoucherService.issueFor(b);
-    }
-
-    /** 10.00 prints as "10": stripTrailingZeros alone turns 10 into 1E+1, which pages would show as "1E+1%". */
-    private static BigDecimal plainPercent(BigDecimal percent) {
-        BigDecimal stripped = percent.stripTrailingZeros();
-        return stripped.scale() < 0 ? stripped.setScale(0) : stripped;
     }
 
     /** A promotion code applies only between its start and end dates (Vietnam time) and while it has uses left. */
@@ -541,14 +530,6 @@ public class BookingServiceImpl implements BookingService {
         if (d.getContract() != null && d.getContract().getTerms() != null) {
             d.setPickupDeadline(awaitingPickupUntil(b, d.getContract().getTerms(), OffsetDateTime.now()));
         }
-        if ("cancelled".equalsIgnoreCase(b.getStatus())) {
-            compensationVoucherService.findForBooking(b.getId()).ifPresent(v -> {
-                d.setCompensationVoucherCode(v.getCode());
-                d.setCompensationVoucherValidUntil(v.getEndDate());
-                d.setCompensationVoucherUsed(v.getQuantity() == null || v.getQuantity() <= 0);
-                d.setCompensationVoucherPercent(v.getDiscountValue() != null ? plainPercent(v.getDiscountValue()) : null);
-            });
-        }
         if (isOverdue(b, OffsetDateTime.now())) {
             BigDecimal multiplier = d.getContract() != null && d.getContract().getTerms() != null
                     ? d.getContract().getTerms().getLateFeeMultiplier() : null;
@@ -635,7 +616,7 @@ public class BookingServiceImpl implements BookingService {
         java.util.Map<Long, List<java.time.LocalDate>> inspectionDays = new java.util.HashMap<>();
         for (com.crms.mvc.entity.VehicleInspection inspection : vehicleRepository.findScheduledInspectionsByVehicleTypeId(vehicleTypeId)) {
             inspectionDays.computeIfAbsent(inspection.getVehicle().getId(), id -> new ArrayList<>())
-                    .add(inspection.getScheduledAt().withOffsetSameInstant(vietnam).toLocalDate());
+                    .add(inspection.getScheduledDate());
         }
 
         return allVehiclesOfType.stream()
@@ -664,7 +645,7 @@ public class BookingServiceImpl implements BookingService {
 
         // Days the customer cannot book for inspection reasons are marked too, so a free-looking hour is really bookable.
         List<LocalDate> inspectionDays = vehicleRepository.findScheduledInspectionsByVehicleId(vehicleId).stream()
-                .map(i -> i.getScheduledAt().withOffsetSameInstant(ZoneOffset.ofHours(7)).toLocalDate())
+                .map(com.crms.mvc.entity.VehicleInspection::getScheduledDate)
                 .toList();
 
         List<VehicleScheduleDTO.Day> scheduleDays = new ArrayList<>();

@@ -47,16 +47,6 @@ public class ContractTemplateFormDTO {
     @Max(value = 24, message = "Thời gian chờ nhận xe không được vượt quá 24 giờ")
     private Integer pickupWaitHours;
 
-    @NotNull(message = "Vui lòng nhập tỷ lệ voucher đền bù")
-    @Min(value = 0, message = "Voucher đền bù không được âm")
-    @Max(value = 100, message = "Voucher đền bù không được vượt quá 100%")
-    private Integer compensationVoucherPercent;
-
-    @NotNull(message = "Vui lòng nhập thời hạn voucher đền bù")
-    @Min(value = 1, message = "Voucher đền bù phải có hiệu lực tối thiểu 1 ngày")
-    @Max(value = 365, message = "Voucher đền bù không được có hiệu lực quá 365 ngày")
-    private Integer compensationVoucherDays;
-
     public static ContractTemplateFormDTO fromTemplate(ContractTemplateDTO template) {
         ContractTemplateFormDTO form = new ContractTemplateFormDTO();
         form.setTitle(template.getTitle());
@@ -66,8 +56,6 @@ public class ContractTemplateFormDTO {
         form.setFreeCancellationHours(template.getFreeCancellationHours());
         form.setFreeCancelAfterDepositHours(template.getFreeCancelAfterDepositHours());
         form.setPickupWaitHours(template.getPickupWaitHours());
-        form.setCompensationVoucherPercent(template.getCompensationVoucherPercent());
-        form.setCompensationVoucherDays(template.getCompensationVoucherDays());
         return form;
     }
 
@@ -92,9 +80,4 @@ public class ContractTemplateFormDTO {
     public Integer getPickupWaitHours() { return pickupWaitHours; }
     public void setPickupWaitHours(Integer hours) { this.pickupWaitHours = hours; }
 
-    public Integer getCompensationVoucherPercent() { return compensationVoucherPercent; }
-    public void setCompensationVoucherPercent(Integer percent) { this.compensationVoucherPercent = percent; }
-
-    public Integer getCompensationVoucherDays() { return compensationVoucherDays; }
-    public void setCompensationVoucherDays(Integer days) { this.compensationVoucherDays = days; }
 }

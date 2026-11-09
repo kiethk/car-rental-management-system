@@ -49,11 +49,6 @@ public class BookingDetailDTO implements Serializable {
     private LateReturnDTO lateReturn;
     /** Set while a paid booking waits for its customer after the pickup time: when it will be cancelled. */
     private OffsetDateTime pickupDeadline;
-    /** Voucher bù issued when the booking was cancelled because no car of its type was left. */
-    private String compensationVoucherCode;
-    private java.time.LocalDate compensationVoucherValidUntil;
-    private boolean compensationVoucherUsed;
-    private java.math.BigDecimal compensationVoucherPercent;
     private List<BookingFeeDTO> fees;
 
     private Long staffId;
@@ -175,15 +170,6 @@ public class BookingDetailDTO implements Serializable {
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
     public List<PaymentDTO> getPayments() { return payments; }
     public void setPayments(List<PaymentDTO> payments) { this.payments = payments; }
-    /** Set only while the rental is active, the car is not back and its return time has passed. */
-    public String getCompensationVoucherCode() { return compensationVoucherCode; }
-    public void setCompensationVoucherCode(String code) { this.compensationVoucherCode = code; }
-    public java.time.LocalDate getCompensationVoucherValidUntil() { return compensationVoucherValidUntil; }
-    public void setCompensationVoucherValidUntil(java.time.LocalDate validUntil) { this.compensationVoucherValidUntil = validUntil; }
-    public boolean isCompensationVoucherUsed() { return compensationVoucherUsed; }
-    public java.math.BigDecimal getCompensationVoucherPercent() { return compensationVoucherPercent; }
-    public void setCompensationVoucherPercent(java.math.BigDecimal percent) { this.compensationVoucherPercent = percent; }
-    public void setCompensationVoucherUsed(boolean used) { this.compensationVoucherUsed = used; }
 
     /** When the deposit was paid; null while it is unpaid. */
     public OffsetDateTime getDepositPaidAt() {
@@ -198,6 +184,7 @@ public class BookingDetailDTO implements Serializable {
     public OffsetDateTime getPickupDeadline() { return pickupDeadline; }
     public void setPickupDeadline(OffsetDateTime pickupDeadline) { this.pickupDeadline = pickupDeadline; }
 
+    /** Set only while the rental is active, the car is not back and its return time has passed. */
     public LateReturnDTO getLateReturn() { return lateReturn; }
     public void setLateReturn(LateReturnDTO lateReturn) { this.lateReturn = lateReturn; }
 

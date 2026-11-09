@@ -173,7 +173,7 @@ public class AdminBookingController {
 
         try {
             bookingService.cancelForUnavailableCar(bookingId, refundMethod);
-            ra.addFlashAttribute("success", "Đã huỷ đơn, hoàn 100% tiền cọc tại quầy và gửi khách voucher bù cho lần thuê sau.");
+            ra.addFlashAttribute("success", "Đã huỷ đơn, hoàn 100% tiền cọc tại quầy.");
         } catch (Exception e) {
             ra.addFlashAttribute("error", "Không huỷ được đơn: " + e.getMessage());
         }

@@ -34,8 +34,7 @@ public interface BookingService {
     /**
      * No car of the booked type is free for this booking's rental window: the rental company cannot fulfil the
      * contract, so cancel the confirmed booking and hand back 100% of the deposit at the counter (refundMethod CASH
-     * or BANK_TRANSFER), regardless of the free-cancellation deadline, and issue the customer the single-use
-     * voucher (CompensationVoucherService). Refused while a same-type car is free.
+     * or BANK_TRANSFER), regardless of the free-cancellation deadline. Refused while a same-type car is free.
      */
     void cancelForUnavailableCar(Long bookingId, String refundMethod);
 

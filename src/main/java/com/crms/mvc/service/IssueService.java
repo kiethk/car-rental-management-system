@@ -22,7 +22,7 @@ import java.util.Optional;
  * the only writer of that fee.
  */
 public interface IssueService {
-    /** Records an Issue for a rental in progress (picked up, not settled yet). */
+    /** Records an Issue for a rental in progress (picked up, not settled yet), with the photos attached to the form. */
     Issue create(IssueFormDTO form, IssueActor actor);
 
     /** Edits an open Issue, including its fee. */
@@ -72,12 +72,6 @@ public interface IssueService {
      * before it is rented again.
      */
     boolean bookingHasVehicleDamage(Long bookingId);
-
-    /**
-     * Emails customers about open Issues whose notice grace period has passed and who have not been told yet.
-     * Runs on a schedule; an Issue cancelled inside the grace period is never announced.
-     */
-    void sendDueNotices();
 
     /** The data a customer email about this Issue needs, read inside a transaction. */
     Optional<IssueNoticeDTO> findNotice(Long issueId);

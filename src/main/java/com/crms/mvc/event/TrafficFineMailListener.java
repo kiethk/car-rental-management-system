@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -66,10 +67,12 @@ public class TrafficFineMailListener {
                 log.warn("Cannot send traffic fine mail: booking #{} has no customer email", notice.bookingId());
                 return;
             }
-            mailer.send(notice.customerEmail(), subject, template, Map.of(
-                    "notice", notice,
-                    "bookingUrl", mailer.url("/bookings/" + notice.bookingId()),
-                    "hasAttachment", !attachments.isEmpty()), attachments);
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("notice", notice);
+            variables.put("bookingUrl", mailer.url("/bookings/" + notice.bookingId()));
+            variables.put("hasAttachment", !attachments.isEmpty());
+            variables.put("attachmentName", attachments.keySet().stream().findFirst().orElse(null));
+            mailer.send(notice.customerEmail(), subject, template, variables, attachments);
         } catch (Exception e) {
             log.warn("Could not send traffic fine mail for booking #{}: {}", notice.bookingId(), e.getMessage());
         }

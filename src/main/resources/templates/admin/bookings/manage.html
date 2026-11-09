@@ -90,14 +90,6 @@
                         </div>
                     </div>
 
-                    <div th:if="${booking.compensationVoucherCode != null}" class="admin-alert admin-alert-info mb-4">
-                        <div>
-                            Đơn bị huỷ vì không còn xe cùng loại. Khách đã được hoàn 100% cọc và nhận voucher giảm <span th:text="${booking.compensationVoucherPercent} + '%'">10%</span>
-                            <strong class="font-mono" th:text="${booking.compensationVoucherCode}">BU42-K7QM2X</strong>
-                            (<span th:text="${booking.compensationVoucherUsed ? 'đã sử dụng' : 'hạn đến ' + #temporals.format(booking.compensationVoucherValidUntil, 'dd/MM/yyyy')}">hạn đến 05/02/2027</span>).
-                        </div>
-                    </div>
-
                     <div class="row g-4">
                         <!-- Left Column: Customer, Schedule, Contract, Payments -->
                         <div class="col-lg-7">
@@ -405,11 +397,7 @@
                                             <p class="mb-2">
                                                 Huỷ đơn và hoàn lại toàn bộ
                                                 <strong th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">500,000 đ</strong>
-                                                tiền cọc cho khách ngay tại quầy, kể cả khi đã quá hạn huỷ miễn phí, vì bên cho thuê không giao được xe đúng loại đã đặt.
-                                                <th:block th:if="${booking.contract != null and booking.contract.terms != null}">
-                                                    Hệ thống tự gửi khách một voucher giảm <span th:text="${booking.contract.terms.compensationVoucherPercent} + '%'">10%</span>
-                                                    cho lần thuê sau (dùng 1 lần, hạn <span th:text="${booking.contract.terms.compensationVoucherDays}">90</span> ngày).
-                                                </th:block>
+                                                tiền cọc cho khách ngay tại quầy, kể cả khi đã quá hạn huỷ miễn phí.
                                             </p>
                                             <div class="admin-form-group">
                                                 <label class="admin-form-label" for="noCarRefundMethod">Hình thức hoàn tiền</label>

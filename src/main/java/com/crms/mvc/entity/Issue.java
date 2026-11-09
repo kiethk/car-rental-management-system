@@ -50,7 +50,7 @@ public class Issue {
     @Column(name = "evidence_url", length = 500)
     private String evidenceUrl;
 
-    /** Null while the issue is inside its notice grace period; set once the customer has been emailed. */
+    /** When the customer was emailed about this issue; null for issues recorded before emails went out at once. */
     @Column(name = "notified_at")
     private OffsetDateTime notifiedAt;
 

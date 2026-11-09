@@ -21,9 +21,6 @@ public class ContractTemplateDTO implements Serializable {
     private Integer freeCancelAfterDepositHours;
     /** Thời gian chờ nhận xe: hours after the pickup time before an unclaimed booking is cancelled. */
     private Integer pickupWaitHours;
-    /** Voucher bù given when no car of the booked type can be handed over. */
-    private Integer compensationVoucherPercent;
-    private Integer compensationVoucherDays;
     private ContractTemplateStatus status;
     private String createdByName;
     private OffsetDateTime createdAt;
@@ -40,8 +37,6 @@ public class ContractTemplateDTO implements Serializable {
         dto.setFreeCancellationHours(template.getFreeCancellationHours());
         dto.setFreeCancelAfterDepositHours(template.getFreeCancelAfterDepositHours());
         dto.setPickupWaitHours(template.getPickupWaitHours());
-        dto.setCompensationVoucherPercent(template.getCompensationVoucherPercent());
-        dto.setCompensationVoucherDays(template.getCompensationVoucherDays());
         dto.setStatus(template.getStatus());
         dto.setCreatedByName(template.getCreatedBy() != null ? template.getCreatedBy().getName() : null);
         dto.setCreatedAt(template.getCreatedAt());
@@ -128,12 +123,6 @@ public class ContractTemplateDTO implements Serializable {
 
     public Integer getPickupWaitHours() { return pickupWaitHours; }
     public void setPickupWaitHours(Integer hours) { this.pickupWaitHours = hours; }
-
-    public Integer getCompensationVoucherPercent() { return compensationVoucherPercent; }
-    public void setCompensationVoucherPercent(Integer percent) { this.compensationVoucherPercent = percent; }
-
-    public Integer getCompensationVoucherDays() { return compensationVoucherDays; }
-    public void setCompensationVoucherDays(Integer days) { this.compensationVoucherDays = days; }
 
     public ContractTemplateStatus getStatus() { return status; }
     public void setStatus(ContractTemplateStatus status) { this.status = status; }

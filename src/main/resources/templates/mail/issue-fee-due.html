@@ -40,6 +40,10 @@
                 </tr>
             </table>
 
+            <p style="margin:0 0 16px 0;" th:if="${photoCount != null and photoCount > 0}">
+                Chúng tôi đính kèm <span th:text="${photoCount} + ' ảnh'">2 ảnh</span> chụp sự cố trong email này
+                (tệp anh-su-co-1, ...). Vui lòng mở các tệp đính kèm để xem bằng chứng.
+            </p>
             <p style="margin:16px 0;">
                 <a th:href="${bookingUrl}" style="display:inline-block; padding:10px 18px; background:#002B49; color:#ffffff; text-decoration:none; border-radius:6px; font-weight:bold;">
                     Xem chi tiết và thanh toán
