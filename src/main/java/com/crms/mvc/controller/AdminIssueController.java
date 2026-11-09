@@ -63,7 +63,7 @@ public class AdminIssueController {
         model.addAttribute("openCount", issueService.countOpen());
         model.addAttribute("issueTypes", IssueType.values());
         model.addAttribute("activeNav", "issues");
-        return "admin/issues/list";
+        return "screens/admin/issues/list/index";
     }
 
     @GetMapping("/new")
@@ -149,7 +149,7 @@ public class AdminIssueController {
         }
         model.addAttribute("issue", issue);
         model.addAttribute("activeNav", "issues");
-        return "admin/issues/detail";
+        return "screens/admin/issues/detail/index";
     }
 
     @GetMapping("/{id}/edit")
@@ -209,7 +209,7 @@ public class AdminIssueController {
         model.addAttribute("issueId", issueId);
         model.addAttribute("issueTypes", IssueType.values());
         model.addAttribute("activeNav", "issues");
-        return "admin/issues/form";
+        return "screens/admin/issues/form/index";
     }
 
     private IssueActor actorOf(HttpSession session) {

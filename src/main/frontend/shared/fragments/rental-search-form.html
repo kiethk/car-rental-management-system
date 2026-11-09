@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <body>
+        <!-- Reusable rental schedule picker with accessible calendar and time options -->
+        <div th:fragment="rentalSearchForm(title, buttonText, formId)" class="w-full">
+            <form data-rental-search
+                method="get"
+                th:action="@{/search}"
+                th:id="${formId != null ? formId : 'rental-schedule-form'}"
+                class="card-shadcn overflow-visible"
+                th:attr="data-server-error=${scheduleError},data-open-hour=${openingHours != null ? openingHours.open : 0},data-close-hour=${openingHours != null ? openingHours.close : 23}"
+            >
+                <!-- Preserved filters on search page -->
+                <input
+                    th:if="${category != null and category != ''}"
+                    type="hidden"
+                    name="category"
+                    th:value="${category}"
+                />
+                <input th:if="${minSeats != null and minSeats > 0}" type="hidden" name="seats" th:value="${minSeats}" />
+
+                <!-- Hidden standard inputs for form submission -->
+                <input
+                    type="hidden"
+                    data-rental-role="rental-start-date"
+                    name="startDate"
+                    th:value="${selectedStartDate != null ? selectedStartDate : today}"
+                />
+                <input
+                    type="hidden"
+                    data-rental-role="rental-start-time"
+                    name="startTime"
+                    th:value="${selectedStart != null ? selectedStart : '09:00'}"
+                />
+                <input
+                    type="hidden"
+                    data-rental-role="rental-end-date"
+                    name="endDate"
+                    th:value="${selectedEndDate != null ? selectedEndDate : today}"
+                />
+                <input
+                    type="hidden"
+                    data-rental-role="rental-end-time"
+                    name="endTime"
+                    th:value="${selectedEnd != null ? selectedEnd : '18:00'}"
+                />
+
+                <!-- Card Header -->
+                <div class="px-6 py-4 border-border">
+                    <h2 class="text-base font-bold text-slate-900 tracking-tight" th:text="${title}">
+                        Lựa chọn lịch trình thuê xe
+                    </h2>
+                </div>
+
+                <!-- Card Content: Two-panel Schedule (Pickup vs Return) -->
+                <div class="px-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- 1. Pickup Card (shadcn clean card) -->
+                        <div class="rounded-xl border border-border bg-surface/50 p-4 space-y-3.5">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                                    Lịch trình nhận xe
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <!-- Custom Pickup Date Trigger & Popover -->
+                                <div class="space-y-1 relative" data-rental-role="pickup-date-wrapper">
+                                    <button
+                                        type="button"
+                                        data-rental-role="pickup-date-trigger" aria-expanded="false"
+                                        class="w-full h-10 px-3 py-2 bg-white border border-border rounded-lg text-sm text-left flex items-center justify-between shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-colors cursor-pointer"
+                                    >
+                                        <div class="flex items-center gap-2 truncate">
+                                            <svg
+                                                class="w-4 h-4 text-slate-500 flex-shrink-0"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                            >
+                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                                <line x1="16" y1="2" x2="16" y2="6" />
+                                                <line x1="8" y1="2" x2="8" y2="6" />
+                                                <line x1="3" y1="10" x2="21" y2="10" />
+                                            </svg>
+                                            <span data-rental-role="pickup-date-display" class="font-medium text-slate-800 truncate"
+                                                >Thứ 5, 22/10/2026</span
+                                            >
+                                        </div>
+                                        <svg
+                                            class="w-4 h-4 text-slate-400 flex-shrink-0 ml-1.5"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                        >
+                                            <path d="m6 9 6 6 6-6" />
+                                        </svg>
+                                    </button>
+
+                                    <!-- Light shadcn Calendar Popover with Embedded Presets -->
+                                    <div
+                                        data-rental-role="pickup-date-popover" role="dialog" aria-label="Chọn ngày nhận xe"
+                                        class="hidden absolute top-full left-0 mt-2 z-50 calendar-card-light p-3 popover-shadcn select-none max-w-[calc(100vw-2rem)]"
+                                    >
+                                        <!-- Calendar Header -->
+                                        <div class="cal-dark-header">
+                                            <button
+                                                type="button"
+                                                data-rental-role="pickup-cal-prev"
+                                                class="cal-nav-btn"
+                                                aria-label="Tháng trước"
+                                            >
+                                                <svg
+                                                    class="w-4 h-4"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2.5"
+                                                >
+                                                    <path d="m15 18-6-6 6-6" />
+                                                </svg>
+                                            </button>
+                                            <span data-rental-role="pickup-cal-month-year" class="cal-dark-title">Tháng 10 2026</span>
+                                            <button
+                                                type="button"
+                                                data-rental-role="pickup-cal-next"
+                                                class="cal-nav-btn"
+                                                aria-label="Tháng sau"
+                                            >
+                                                <svg
+                                                    class="w-4 h-4"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2.5"
+                                                >
+                                                    <path d="m9 18 6-6-6-6" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <!-- Weekday Headers -->
+                                        <div class="cal-dark-weekdays">
+                                            <span>CN</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span
+                                            ><span>T6</span><span>T7</span>
+                                        </div>
+
+                                        <!-- 6-week Days Grid (42 cells) -->
+                                        <div data-rental-role="pickup-cal-grid" class="cal-dark-grid">
+                                            <!-- Injected via JS -->
+                                        </div>
+
+                                        <!-- Embedded Presets inside the Calendar Popover -->
+                                        <div class="cal-preset-footer">
+                                            <div class="cal-preset-row">
+                                                <button
+                                                    type="button"
+                                                    class="pickup-preset-btn cal-preset-btn"
+                                                    data-days="0"
+                                                >
+                                                    Hôm nay
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="pickup-preset-btn cal-preset-btn"
+                                                    data-days="1"
+                                                >
+                                                    Ngày mai
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="pickup-preset-btn cal-preset-btn"
+                                                    data-days="3"
+                                                >
+                                                    Sau 3 ngày
+                                                </button>
+                                            </div>
+                                            <div class="cal-preset-row">
+                                                <button
+                                                    type="button"
+                                                    class="pickup-preset-btn cal-preset-btn"
+                                                    data-days="7"
+                                                >
+                                                    Sau 1 tuần
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="pickup-preset-btn cal-preset-btn"
+                                                    data-days="14"
+                                                >
+                                                    Sau 2 tuần
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Custom Pickup Hour Trigger & Popover -->
+                                <div class="space-y-1 relative" data-rental-role="pickup-hour-wrapper">
+                                    <button
+                                        type="button"
+                                        data-rental-role="pickup-hour-trigger" aria-expanded="false"
+                                        class="w-full h-10 px-3 py-2 bg-white border border-border rounded-lg text-sm text-left flex items-center justify-between shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-colors cursor-pointer"
+                                    >
+                                        <div class="flex items-center gap-2 truncate">
+                                            <svg
+                                                class="w-4 h-4 text-emerald-600 flex-shrink-0"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                            >
+                                                <circle cx="12" cy="12" r="10" />
+                                                <polyline points="12 6 12 12 16 14" />
+                                            </svg>
+                                            <span data-rental-role="pickup-hour-display" class="font-semibold text-slate-800 truncate"
+                                                >09:00</span
+                                            >
+                                        </div>
+                                        <svg
+                                            class="w-4 h-4 text-slate-400 flex-shrink-0 ml-1.5"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                        >
+                                            <path d="m6 9 6 6 6-6" />
+                                        </svg>
+                                    </button>
+
+                                    <!-- Light Hour Options Popover Menu -->
+                                    <div
+                                        data-rental-role="pickup-hour-popover" role="listbox" aria-label="Chọn giờ nhận xe"
+                                        class="hidden absolute top-full left-0 right-0 mt-2 z-50 hour-card-dark max-h-52 overflow-y-auto popover-shadcn select-none"
+                                    >
+                                        <!-- Injected via JS -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Return Card (shadcn clean card) -->
+                        <div class="rounded-xl border border-border bg-surface/50 p-4 space-y-3.5">
+                            <div class="flex items-center justify-between  mb-2">
+                                <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                                    Lịch trình trả xe
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <!-- Custom Return Date Trigger & Popover -->
+                                <div class="space-y-1 relative" data-rental-role="return-date-wrapper">
+                                    <button
+                                        type="button"
+                                        data-rental-role="return-date-trigger" aria-expanded="false"
+                                        class="w-full h-10 px-3 py-2 bg-white border border-border rounded-lg text-sm text-left flex items-center justify-between shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-colors cursor-pointer"
+                                    >
+                                        <div class="flex items-center gap-2 truncate">
+                                            <svg
+                                                class="w-4 h-4 text-slate-500 flex-shrink-0"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                            >
+                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                                <line x1="16" y1="2" x2="16" y2="6" />
+                                                <line x1="8" y1="2" x2="8" y2="6" />
+                                                <line x1="3" y1="10" x2="21" y2="10" />
+                                            </svg>
+                                            <span data-rental-role="return-date-display" class="font-medium text-slate-800 truncate"
+                                                >Thứ 5, 22/10/2026</span
+                                            >
+                                        </div>
+                                        <svg
+                                            class="w-4 h-4 text-slate-400 flex-shrink-0 ml-1.5"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                        >
+                                            <path d="m6 9 6 6 6-6" />
+                                        </svg>
+                                    </button>
+
+                                    <!-- Light shadcn Calendar Popover with Embedded Presets -->
+                                    <div
+                                        data-rental-role="return-date-popover" role="dialog" aria-label="Chọn ngày trả xe"
+                                        class="hidden absolute top-full left-0 mt-2 z-50 calendar-card-light p-3 popover-shadcn select-none max-w-[calc(100vw-2rem)]"
+                                    >
+                                        <!-- Calendar Header -->
+                                        <div class="cal-dark-header">
+                                            <button
+                                                type="button"
+                                                data-rental-role="return-cal-prev"
+                                                class="cal-nav-btn"
+                                                aria-label="Tháng trước"
+                                            >
+                                                <svg
+                                                    class="w-4 h-4"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2.5"
+                                                >
+                                                    <path d="m15 18-6-6 6-6" />
+                                                </svg>
+                                            </button>
+                                            <span data-rental-role="return-cal-month-year" class="cal-dark-title">Tháng 10 2026</span>
+                                            <button
+                                                type="button"
+                                                data-rental-role="return-cal-next"
+                                                class="cal-nav-btn"
+                                                aria-label="Tháng sau"
+                                            >
+                                                <svg
+                                                    class="w-4 h-4"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2.5"
+                                                >
+                                                    <path d="m9 18 6-6-6-6" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <!-- Weekday Headers -->
+                                        <div class="cal-dark-weekdays">
+                                            <span>CN</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span
+                                            ><span>T6</span><span>T7</span>
+                                        </div>
+
+                                        <!-- 6-week Days Grid (42 cells) -->
+                                        <div data-rental-role="return-cal-grid" class="cal-dark-grid">
+                                            <!-- Injected via JS -->
+                                        </div>
+
+                                        <!-- Embedded Presets inside the Return Calendar Popover -->
+                                        <div class="cal-preset-footer">
+                                            <div class="cal-preset-row">
+                                                <button
+                                                    type="button"
+                                                    class="return-preset-btn cal-preset-btn"
+                                                    data-add-days="0"
+                                                >
+                                                    Trong ngày
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="return-preset-btn cal-preset-btn"
+                                                    data-add-days="1"
+                                                >
+                                                    Ngày mai (+1 ngày)
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="return-preset-btn cal-preset-btn"
+                                                    data-add-days="3"
+                                                >
+                                                    Sau 3 ngày
+                                                </button>
+                                            </div>
+                                            <div class="cal-preset-row">
+                                                <button
+                                                    type="button"
+                                                    class="return-preset-btn cal-preset-btn"
+                                                    data-add-days="7"
+                                                >
+                                                    Sau 1 tuần
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="return-preset-btn cal-preset-btn"
+                                                    data-add-days="14"
+                                                >
+                                                    Sau 2 tuần
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Custom Return Hour Trigger & Popover -->
+                                <div class="space-y-1 relative" data-rental-role="return-hour-wrapper">
+                                    <button
+                                        type="button"
+                                        data-rental-role="return-hour-trigger" aria-expanded="false"
+                                        class="w-full h-10 px-3 py-2 bg-white border border-border rounded-lg text-sm text-left flex items-center justify-between shadow-2xs hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-colors cursor-pointer"
+                                    >
+                                        <div class="flex items-center gap-2 truncate">
+                                            <svg
+                                                class="w-4 h-4 text-amber-600 flex-shrink-0"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                            >
+                                                <circle cx="12" cy="12" r="10" />
+                                                <polyline points="12 6 12 12 16 14" />
+                                            </svg>
+                                            <span data-rental-role="return-hour-display" class="font-semibold text-slate-800 truncate"
+                                                >18:00</span
+                                            >
+                                        </div>
+                                        <svg
+                                            class="w-4 h-4 text-slate-400 flex-shrink-0 ml-1.5"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                        >
+                                            <path d="m6 9 6 6 6-6" />
+                                        </svg>
+                                    </button>
+
+                                    <!-- Light Hour Options Popover Menu -->
+                                    <div
+                                        data-rental-role="return-hour-popover" role="listbox" aria-label="Chọn giờ trả xe"
+                                        class="hidden absolute top-full left-0 right-0 mt-2 z-50 hour-card-dark max-h-52 overflow-y-auto popover-shadcn select-none"
+                                    >
+                                        <!-- Injected via JS -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schedule validation message (filled by the server on search, by script while editing) -->
+                <div
+                    data-rental-role="rental-schedule-error"
+                    role="alert"
+                    th:text="${scheduleError}"
+                    th:classappend="${scheduleError == null} ? 'hidden'"
+                    class="mx-6 mb-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-700"
+                ></div>
+
+                <!-- Card Footer: Live Summary & Action -->
+                <div class="px-6 py-4 border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3 text-xs text-muted-foreground w-full sm:w-auto">
+                        <div
+                            class="w-9 h-9 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center flex-shrink-0 border border-slate-200"
+                        >
+                            <svg
+                                class="w-4 h-4 text-slate-700"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                <line x1="16" y1="2" x2="16" y2="6" />
+                                <line x1="8" y1="2" x2="8" y2="6" />
+                                <line x1="3" y1="10" x2="21" y2="10" />
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="font-bold text-slate-900 text-sm block" data-rental-role="rental-itinerary"
+                                >Thứ 5, 22/10/2026 09:00 → Thứ 5, 22/10/2026 18:00 (9 giờ)</span
+                            >
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        data-rental-role="rental-search-btn"
+                        class="w-full sm:w-auto btn-navy font-semibold px-6 py-2.5 rounded-lg shadow-sm hover:shadow group text-sm flex items-center justify-center gap-2"
+                    >
+                        <span data-rental-role="rental-search-btn-text" th:text="${buttonText != null ? buttonText : 'Tìm kiếm xe'}"
+                            >Tìm kiếm xe</span
+                        >
+                        <svg
+                            class="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </form>
+</div>
+    </body>
+</html>

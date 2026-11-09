@@ -114,7 +114,7 @@ class BookingContractFlowTest {
                         .param("startTime", "2026-10-24T09:00")
                         .param("endTime", "2026-10-24T19:00"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("bookings/checkout"))
+                .andExpect(view().name("screens/customer/bookings/checkout/index"))
                 // 10 hours x 100,000 = 1,000,000; deposit 30% from version 3
                 .andExpect(content().string(containsString("300,000")))
                 .andExpect(content().string(containsString("name=\"contractTemplateId\" value=\"3\"")))
@@ -240,6 +240,9 @@ class BookingContractFlowTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("★★★★☆")))
                 .andExpect(content().string(containsString("Xe sạch và nhân viên hỗ trợ tốt.")))
+                .andExpect(content().string(containsString("/bookings/42/review/update")))
+                .andExpect(content().string(containsString("Cập nhật đánh giá")))
+                .andExpect(content().string(containsString("value=\"4\" id=\"rating4\" name=\"rating\" checked=\"checked\"")))
                 .andExpect(content().string(not(containsString("Gửi đánh giá"))));
     }
 
@@ -253,6 +256,18 @@ class BookingContractFlowTest {
                 .andExpect(flash().attribute("success", "Cảm ơn bạn đã chia sẻ đánh giá về chuyến đi!"));
 
         verify(reviewService).submit(eq(42L), eq(1L), any());
+    }
+
+    @Test
+    void customerCanUpdateReviewForCompletedBooking() throws Exception {
+        mvc.perform(post("/bookings/42/review/update").session(customerSession)
+                        .param("rating", "4")
+                        .param("comment", "Đã cập nhật đánh giá."))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/bookings/42"))
+                .andExpect(flash().attribute("success", "Đánh giá đã được cập nhật."));
+
+        verify(reviewService).update(eq(42L), eq(1L), any());
     }
 
     @Test
@@ -363,7 +378,7 @@ class BookingContractFlowTest {
                         .param("startTime", "2026-10-24T09:00").param("endTime", "2026-10-24T19:00"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        org.assertj.core.api.Assertions.assertThat(html).containsPattern("value=\"9\"\\s+class=\"sr-only\"\\s+checked=\"checked\"");
+        org.assertj.core.api.Assertions.assertThat(html).containsPattern("<input(?=[^>]*name=\"vehicleId\")(?=[^>]*value=\"9\")(?=[^>]*checked=\"checked\")[^>]*>");
 
         mvc.perform(get("/bookings/checkout").session(customerSession)
                         .param("vehicleTypeId", "1").param("vehicleId", "8")

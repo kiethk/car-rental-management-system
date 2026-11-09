@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DriveNow — Dịch vụ thuê xe tự lái tại TP. Hồ Chí Minh</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <th:block th:replace="~{fragments/assets :: common}">
+    </th:block>
+    <link rel="stylesheet" th:href="@{/css/screens/customer/home/style.css}">
+    <script defer th:src="@{/js/screens/customer/home/script.js}">
+    </script>
+  </head>
+  <body class="bg-surface text-navy min-vh-100 d-flex flex-column" data-screen="customer/home">
+<th:block th:replace="~{layouts/customer :: shell(~{::screenContent})}">
+    <th:block th:fragment="screenContent">
+
+    <main class="flex-fill home-page">
+      <!-- Hero Section -->
+      <section class="home-hero">
+        <div class="crms-container">
+          <div class="home-hero-grid">
+            <div class="home-hero-copy">
+              <p class="home-eyebrow"><span class="home-eyebrow-dot"></span> Thuê xe tự lái / TP. Hồ Chí Minh </p>
+              <h1 class="home-hero-title">Hành trình tiếp theo.<br /><span>Theo cách của bạn.</span></h1>
+              <p class="home-hero-lead"> Xe đời mới mọi cung đường đều thảnh thơi. Chọn xe, đến nhận tại trạm và lên đường ngay. </p>
+              <ul class="home-hero-points">
+                <li><i data-lucide="clock-3" aria-hidden="true"></i> Thuê theo giờ</li>
+                <li><i data-lucide="badge-check" aria-hidden="true"></i> Giá minh bạch</li>
+                <li><i data-lucide="key-round" aria-hidden="true"></i> Nhận xe ngay</li>
+              </ul>
+              <div class="home-hero-ctas">
+                <a th:href="@{/search}" class="home-btn home-btn-primary">
+                  <span>Thuê xe ngay</span>
+                  <i data-lucide="arrow-right" aria-hidden="true"></i>
+                </a>
+                <a th:href="@{/vehicles}" class="home-btn home-btn-ghost">
+                  <span>Xem danh sách xe</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="home-hero-media">
+              <div id="hero-carousel" class="promotion-carousel overflow-hidden" th:attr="aria-label=${hasPromotionImages ? 'Khuyến mãi hiện có' : 'Xe cho thuê nổi bật'}">
+                <article th:if="${hasPromotionImages}" th:each="promotion, iter : ${promotions}" class="promotion-slide" th:classappend="${iter.index == 0 ? ' active' : ''}" th:attr="aria-hidden=${iter.index != 0}">
+                  <img th:src="${promotion.urlImagePromotion}" decoding="async" th:attr="loading=${iter.index == 0 ? 'eager' : 'lazy'}" th:alt="${'Khuyến mãi ' + promotion.code}">
+                </article>
+                <article th:unless="${hasPromotionImages}" th:each="car, iter : ${fallbackVehicleImages}" class="promotion-slide" th:classappend="${iter.index == 0 ? ' active' : ''}" th:attr="aria-hidden=${iter.index != 0}">
+                  <img th:src="${car.value}" decoding="async" th:attr="loading=${iter.index == 0 ? 'eager' : 'lazy'}" th:alt="${car.key}">
+                </article>
+                <div class="promotion-controls" th:if="${hasPromotionImages ? #lists.size(promotions) > 1 : fallbackVehicleImages.size() > 1}">
+                  <button type="button" data-promotion-direction="-1" th:attr="aria-label=${hasPromotionImages ? 'Khuyến mãi trước' : 'Xe trước'}">‹</button>
+                  <button type="button" data-promotion-direction="1" th:attr="aria-label=${hasPromotionImages ? 'Khuyến mãi tiếp theo' : 'Xe tiếp theo'}">›</button>
+                </div>
+              </div>
+              <div class="home-hero-float">
+                <span class="home-hero-float-label">Trải nghiệm</span>
+                <strong>Đặt xe trong 2 phút</strong>
+                <span>Xác nhận tức thì · Hủy linh hoạt</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- How It Works Section -->
+      <section class="home-section home-process">
+        <div class="crms-container">
+          <div class="home-section-head">
+            <div>
+              <p class="home-eyebrow">Quy trình</p>
+              <h2 class="home-section-title">Quy trình thuê xe</h2>
+            </div>
+            <p class="home-section-desc">Bốn bước gọn gàng từ lúc chọn xe đến khi trả xe và quyết toán.</p>
+          </div>
+          <div class="home-steps">
+            <article class="home-step">
+              <span class="home-step-num">01</span>
+              <span class="home-step-icon"><i data-lucide="car-front" aria-hidden="true"></i></span>
+              <h3>Chọn dòng xe phù hợp</h3>
+              <p>Khám phá các dòng xe đa dạng và lựa chọn khung giờ thuê chính xác theo lịch trình của bạn.</p>
+            </article>
+            <article class="home-step">
+              <span class="home-step-num">02</span>
+              <span class="home-step-icon"><i data-lucide="credit-card" aria-hidden="true"></i></span>
+              <h3>Đặt xe &amp; Đặt cọc</h3>
+              <p>Xác nhận lịch đặt, xem hợp đồng điện tử và đặt cọc 50% qua VNPay.</p>
+            </article>
+            <article class="home-step">
+              <span class="home-step-num">03</span>
+              <span class="home-step-icon"><i data-lucide="key-round" aria-hidden="true"></i></span>
+              <h3>Nhận xe tại bãi</h3>
+              <p>Hoàn tất xác thực danh tính, nhận chìa khóa cùng với xe đã được vệ sinh sạch sẽ.</p>
+            </article>
+            <article class="home-step">
+              <span class="home-step-num">04</span>
+              <span class="home-step-icon"><i data-lucide="receipt-text" aria-hidden="true"></i></span>
+              <h3>Trả xe &amp; Quyết toán</h3>
+              <p>Trả xe tại bãi, thanh toán chi phí phát sinh (nếu có) và nhận hoàn trả tiền cọc tự động.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Featured Cars Section -->
+      <section class="home-section home-featured">
+        <div class="crms-container">
+          <div class="home-section-head">
+            <div>
+              <p class="home-eyebrow">Bộ sưu tập</p>
+              <h2 class="home-section-title">Dòng xe nổi bật</h2>
+              <p class="home-section-desc">Các dòng xe được ưa chuộng và sẵn sàng phục vụ tại TP. Hồ Chí Minh.</p>
+            </div>
+            <a th:href="@{/vehicles}" class="home-section-link">Xem tất cả dòng xe <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+          </div>
+          <div class="home-cars">
+            <article th:each="vt : ${featuredVehicles}" class="car-card home-car-card">
+              <div class="car-img-wrapper">
+                <img th:src="${vt.imageUrl != null and !vt.imageUrl.isBlank() ? vt.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${vt.displayName}" data-fallback-src="/images/car-rental-logo.svg" loading="lazy" decoding="async">
+                <span class="home-car-cat" th:text="${vt.category}">Sedan</span>
+                <div class="home-car-price">
+                  <span>từ</span>
+                  <strong><span th:text="${#numbers.formatDecimal(vt.pricePerHour, 0, 'COMMA', 0, 'POINT')}">150,000</span><small>đ/h</small></strong>
+                </div>
+              </div>
+              <div class="home-car-body">
+                <div class="home-car-head">
+                  <h3 th:text="${vt.displayName}">Toyota Vios 2023</h3>
+                  <span class="home-car-rating" th:replace="~{fragments/labels :: rating(${ratings[vt.id]})}">★ 4.8 (12 đánh giá)</span>
+                </div>
+                <div class="home-car-specs">
+                  <span class="home-spec"><i data-lucide="users" aria-hidden="true"></i><span th:text="${vt.seats + ' chỗ'}">5 chỗ</span></span>
+                  <span class="home-spec"><i data-lucide="settings-2" aria-hidden="true"></i><span th:replace="~{fragments/labels :: transmission(${vt.transmission})}">Số tự động</span></span>
+                  <span class="home-spec"><i data-lucide="fuel" aria-hidden="true"></i><span th:replace="~{fragments/labels :: fuel(${vt.fuelType})}">Xăng</span></span>
+                </div>
+                <p class="home-car-desc" th:text="${vt.description != null ? vt.description : 'Xe sạch sẽ, bền bỉ và tiết kiệm, phù hợp cho di chuyển trong phố lẫn những chuyến đi cuối tuần.'}"> Xe sạch sẽ, bền bỉ và tiết kiệm. </p>
+                <div class="home-car-foot">
+                  <a th:href="@{/vehicles/{id}(id=${vt.id})}" class="home-car-btn home-car-btn-ghost">Chi tiết</a>
+                  <a th:href="@{/search(keyword=${vt.displayName})}" class="home-car-btn home-car-btn-primary">Thuê ngay <i data-lucide="arrow-right" aria-hidden="true"></i></a>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    </th:block>
+</th:block>
+</body>
+</html>

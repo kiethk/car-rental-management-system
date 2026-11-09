@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kiểm tra & Xác nhận đặt xe — DriveNow</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}" />
+    <th:block th:replace="~{fragments/assets :: common}">
+    </th:block>
+    <link rel="stylesheet" th:href="@{/css/screens/customer/bookings/checkout/style.css}">
+    <script defer th:src="@{/js/screens/customer/bookings/checkout/script.js}">
+    </script>
+  </head>
+  <body class="bg-surface text-navy min-vh-100 d-flex flex-column" data-screen="customer/bookings/checkout">
+    <div th:replace="~{fragments/header :: header}">
+    </div>
+    <main class="flex-fill">
+      <!-- Top Navigation Header -->
+      <div class="bg-white border-bottom border">
+        <div class="customer-full-width mx-auto px-4 customer-sm-px-6 customer-py-3">
+          <div class="d-flex flex-column customer-sm-flex-row customer-sm-items-center customer-sm-justify-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+              <a th:href="@{/search}" class="d-inline-flex align-items-center customer-gap-1 customer-text-xs fw-semibold text-secondary text-decoration-none" >
+                <svg class="customer-icon-sm customer-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" >
+                  <path d="M19 12H5M12 5l-7 7 7 7" />
+                </svg> Quay lại</a>
+              <span class="text-body-secondary">/</span>
+              <h1 class="fs-5 customer-sm-text-xl fw-bold text-dark"> Kiểm tra & Xác nhận đặt xe </h1>
+            </div>
+            <!-- Stepper -->
+            <div class="d-flex align-items-center gap-2 customer-text-xs">
+              <span class="d-inline-flex align-items-center gap-1 text-secondary fw-medium">
+                <svg class="customer-icon-sm customer-icon-sm text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg> Lịch trình </span>
+              <span class="text-body-secondary">→</span>
+              <span class="d-inline-flex align-items-center customer-gap-1 fw-bold text-dark bg-light px-3 py-1 rounded-pill border border" >
+                <span class="customer-dot-size customer-dot-size rounded-pill bg-warning">
+                </span> Xác nhận </span>
+              <span class="text-body-secondary">→</span>
+              <span class="text-body-secondary fw-medium">Đặt cọc</span>
+              <span class="text-body-secondary">→</span>
+              <span class="text-body-secondary fw-medium">Đã xác nhận cọc</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Main Container (Expanded to max-w-7xl matching Home & Search) -->
+      <div class="customer-full-width mx-auto px-4 customer-sm-px-6 py-4">
+        <div th:if="${error}" class="mb-4 bg-danger-subtle border border-danger-subtle text-danger px-4 py-3 rounded-4 small d-flex align-items-center gap-2" >
+          <svg class="customer-icon-md customer-icon-md text-danger flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span th:text="${error}">Error message</span>
+        </div>
+        <form th:action="@{/bookings}" th:object="${bookingForm}" method="post" data-checkout-form th:attr="data-quote-url=@{/bookings/quote}">
+          <input type="hidden" th:field="*{vehicleTypeId}" />
+          <input type="hidden" th:field="*{startTime}" />
+          <input type="hidden" th:field="*{endTime}" />
+          <input type="hidden" th:field="*{contractTemplateId}" />
+          <div class="checkout-grid">
+            <!-- Booking and schedule details -->
+            <div class="customer-stack-6">
+              <!-- CARD 1: Vehicle & Schedule -->
+              <div class="checkout-section customer-stack-5">
+                <!-- Vehicle Summary Row -->
+                <div class="d-flex align-items-center gap-4 pb-4 border-bottom border">
+                  <img th:src="${vehicleImage}" th:alt="${vehicleType.name}" class="customer-vehicle-width customer-vehicle-height rounded-4 object-cover bg-light flex-shrink-0 border border shadow-sm" loading="lazy" decoding="async" />
+                  <div class="flex-fill customer-min-w-0">
+                    <!-- Name on top, subtle category badge inline -->
+                    <div class="d-flex align-items-center gap-2">
+                      <h2 class="fw-bold text-dark fs-4 lh-1 truncate" th:text="${vehicleType.brand != null and vehicleType.name.toLowerCase().startsWith(vehicleType.brand.toLowerCase()) ? vehicleType.name : (vehicleType.brand + ' ' + vehicleType.name)}" > Toyota Vios 2023 </h2>
+                      <span class="car-category-badge bookings-checkout-car-category-badge" th:text="${vehicleType.category}">Sedan</span>
+                    </div>
+                    <!-- Specs Micro-Badges: Seats, Transmission, Fuel -->
+                    <div class="d-flex flex-wrap align-items-center gap-2 customer-mt-3">
+                      <span class="d-inline-flex align-items-center customer-gap-1 customer-px-2 py-1 rounded-2 customer-text-xs fw-medium bg-light text-body border border">
+                        <svg class="customer-icon-sm customer-icon-sm text-body-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                          <circle cx="9" cy="7" r="4"/>
+                          <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        <span th:text="${vehicleType.seats + ' chỗ'}">5 chỗ</span>
+                      </span>
+                      <span class="d-inline-flex align-items-center customer-gap-1 customer-px-2 py-1 rounded-2 customer-text-xs fw-medium bg-light text-body border border">
+                        <svg class="customer-icon-sm customer-icon-sm text-body-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="12" cy="12" r="3"/>
+                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                        <span th:replace="~{fragments/labels :: transmission(${vehicleType.transmission})}">Số tự động</span>
+                      </span>
+                      <span class="d-inline-flex align-items-center customer-gap-1 customer-px-2 py-1 rounded-2 customer-text-xs fw-medium bg-light text-body border border">
+                        <svg class="customer-icon-sm customer-icon-sm text-body-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M3 22h12M4 9h10M4 22V4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v18M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L19.4 6.4a2 2 0 0 0-1.4-.4H16"/>
+                        </svg>
+                        <span th:replace="~{fragments/labels :: fuel(${vehicleType.fuelType})}">Xăng</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Schedule Itinerary Card (Clean Timeline, NO giant square box!) -->
+                <div class="checkout-schedule-card">
+                  <!-- Pickup -->
+                  <div class="checkout-schedule-item">
+                    <span class="checkout-schedule-label">Thời gian nhận xe</span>
+                    <span class="checkout-schedule-val" th:text="${#temporals.format(bookingForm.startTime, 'dd/MM/yyyy, HH:mm')}" >23/10/2026, 09:00</span >
+                  </div>
+                  <!-- Duration / Direction indicator -->
+                  <div class="checkout-timeline-mid">
+                    <span class="checkout-duration-pill" th:text="${rentalHours + ' giờ'}" >9 giờ</span >
+                  </div>
+                  <!-- Return -->
+                  <div class="checkout-schedule-item customer-sm-text-end">
+                    <span class="checkout-schedule-label">Thời gian trả xe</span>
+                    <span class="checkout-schedule-val" th:text="${#temporals.format(bookingForm.endTime, 'dd/MM/yyyy, HH:mm')}" >23/10/2026, 18:00</span >
+                  </div>
+                </div>
+                <!-- Vehicle Unit Assignment (Collapsible / Dropdown with Notice) -->
+                <div class="pt-2 border-top border customer-stack-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label class="d-block customer-text-xs fw-bold text-body text-uppercase" >Lựa chọn bàn giao xe</label>
+                  </div>
+                  <!-- Default Auto-assign Option -->
+                  <label class="checkout-plate-option">
+                    <div class="d-flex align-items-center customer-gap-2">
+                      <input type="radio" name="vehicleId" value="" id="autoAssignRadio" class="visually-hidden" th:checked="${bookingForm.vehicleId == null or bookingForm.vehicleId == ''}" />
+                      <span class="customer-text-xs fw-bold text-dark" >Hệ thống chọn xe còn trống</span >
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="plate-selected-check text-dark">
+                        <svg class="customer-icon-md customer-icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </div>
+                    </div>
+                  </label>
+                  <!-- Dropdown Toggle for Specific License Plates -->
+                  <div th:if="${availableCars != null and !availableCars.isEmpty()}">
+                    <button type="button" data-action="toggle-plate-picker" aria-controls="specificPlateDrawer" th:attr="aria-expanded=${bookingForm.vehicleId != null and bookingForm.vehicleId != ''}" class="w-100 d-flex align-items-center justify-content-between py-2 px-3 rounded-3 border border-dashed border bg-light customer-text-xs text-body fw-semibold" >
+                      <span class="d-flex align-items-center gap-2">
+                        <svg class="customer-icon-sm customer-icon-sm text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" >
+                          <rect x="3" y="4" width="18" height="16" rx="2" />
+                          <circle cx="9" cy="10" r="2" />
+                          <line x1="15" y1="8" x2="17" y2="8" />
+                          <line x1="15" y1="12" x2="17" y2="12" />
+                        </svg>
+                        <span>Chọn biển số xe cụ thể (tùy chọn)</span>
+                      </span>
+                      <svg id="plateChevron" th:classappend="${bookingForm.vehicleId != null and bookingForm.vehicleId != '' ? 'customer-rotate-180' : ''}" class="customer-icon-md customer-icon-md text-body-secondary " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" >
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                    </button>
+                    <!-- Collapsible Drawer -->
+                    <div id="specificPlateDrawer" th:classappend="${bookingForm.vehicleId != null and bookingForm.vehicleId != '' ? '' : 'hidden'}" class="customer-stack-2 pt-2" >
+                      <!-- Concise English Notice -->
+                      <div class="customer-p-2 rounded-3 bg-warning-subtle border border-warning-subtle customer-text-xs text-warning-emphasis d-flex align-items-start gap-2" >
+                        <svg class="customer-icon-sm customer-icon-sm text-warning flex-shrink-0 customer-mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" >
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="12" y1="8" x2="12" y2="12" />
+                          <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                        <div class="lh-lg customer-text-xs">
+                          <strong class="fw-semibold text-warning-emphasis">Lưu ý:</strong> Hệ thống ưu tiên cấp đúng biển số bạn đã chọn. Nếu đến giờ nhận mà xe chưa sẵn sàng, DriveNow đổi cho bạn xe khác cùng loại với giá giữ nguyên; nếu không còn xe cùng loại, đơn được hủy, bạn được hoàn 100% tiền cọc. </div>
+                      </div>
+                      <!-- Specific Car Radio Options -->
+                      <div class="customer-stack-1">
+                        <label th:each="car : ${availableCars}" class="checkout-plate-option">
+                          <div class="d-flex align-items-center customer-gap-2">
+                            <input type="radio" name="vehicleId" th:value="${car.id}" class="visually-hidden" th:checked="${bookingForm.vehicleId != null and bookingForm.vehicleId == car.id}" />
+                            <span class="plate-badge customer-text-xs" th:text="${car.licensePlate != null ? car.licensePlate.plate : ('Xe #' + car.id)}" >Chưa có biển số</span >
+                            <span class="customer-text-xs text-secondary fw-medium" th:text="${car.color + ' · ' + car.year}" >Trắng · 2023</span >
+                          </div>
+                          <div class="plate-selected-check text-dark">
+                            <svg class="customer-icon-md customer-icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- CARD 2: Driver Verification -->
+              <div class="checkout-section">
+                <label class="d-block customer-text-xs fw-bold text-body text-uppercase mb-3" >Giấy phép lái xe (GPLX)</label>
+                <div th:if="${hasValidLicense}" class="license-alert-verified d-flex align-items-center justify-content-between gap-3 customer-text-xs" >
+                  <div class="d-flex align-items-center customer-gap-2">
+                    <div class="customer-icon-xl customer-icon-xl rounded-pill bg-success-subtle text-success d-flex align-items-center justify-content-center flex-shrink-0" >
+                      <svg class="customer-icon-md customer-icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </div>
+                    <div>
+                      <span class="fw-bold text-success-emphasis">Đã có giấy phép lái xe</span>
+                      <span class="text-success-emphasis font-monospace ml-1" th:if="${customerLicense != null}" th:text="'(' + ${customerLicense.licenseNumber} + ')'" >(52A-123456)</span >
+                    </div>
+                  </div>
+                  <a th:href="@{/licenses/my-license}" class="customer-text-xs fw-bold text-success-emphasis" >Xem</a >
+                </div>
+                <div th:if="${!hasValidLicense and !licenseExpired}" class="license-alert-required d-flex align-items-center justify-content-between gap-3 customer-text-xs" >
+                  <div class="d-flex align-items-center customer-gap-2">
+                    <div class="customer-icon-xl customer-icon-xl rounded-3 bg-light text-body d-flex align-items-center justify-content-center flex-shrink-0" >
+                      <svg class="customer-icon-md customer-icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" >
+                        <rect x="3" y="4" width="18" height="16" rx="3" />
+                        <circle cx="9" cy="10" r="2" />
+                        <line x1="15" y1="8" x2="17" y2="8" />
+                      </svg>
+                    </div>
+                    <span class="fw-bold text-dark">Bạn chưa tải GPLX lên (không bắt buộc)</span>
+                  </div>
+                  <a th:href="@{/licenses/my-license}" class="btn-outline-shadcn d-inline-flex align-items-center justify-content-center customer-gap-1 py-1 px-3 customer-text-xs fw-semibold text-nowrap text-decoration-none" >
+                    <span>Tải lên</span>
+                    <svg class="customer-icon-sm customer-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" >
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </a>
+                </div>
+                <div th:if="${!hasValidLicense and licenseExpired}" class="license-alert-required d-flex align-items-center justify-content-between gap-3 customer-text-xs border-danger-subtle bg-danger-subtle" >
+                  <div class="d-flex align-items-center customer-gap-2">
+                    <div class="customer-icon-xl customer-icon-xl rounded-3 bg-danger-subtle text-danger d-flex align-items-center justify-content-center flex-shrink-0" >
+                      <svg class="customer-icon-md customer-icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" >
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="15" y1="9" x2="9" y2="15" />
+                        <line x1="9" y1="9" x2="15" y2="15" />
+                      </svg>
+                    </div>
+                    <span class="fw-bold text-danger-emphasis">GPLX đã tải lên hết hạn trước ngày trả xe</span>
+                  </div>
+                  <a th:href="@{/licenses/my-license}" class="btn-outline-shadcn d-inline-flex align-items-center justify-content-center customer-gap-1 py-1 px-3 customer-text-xs fw-semibold text-nowrap text-decoration-none" >
+                    <span>Cập nhật GPLX</span>
+                    <svg class="customer-icon-sm customer-icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" >
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <!-- Pricing summary and confirmation -->
+            <div class="">
+              <div class="checkout-summary-box customer-stack-5 sticky customer-sticky-summary">
+                <h2 class="small fw-bold text-dark pb-3 text-uppercase">Tóm tắt chi phí thuê xe</h2>
+                <!-- Line Items -->
+                <div class="customer-stack-3 customer-text-xs">
+                  <div class="d-flex justify-content-between align-items-center text-secondary">
+                    <span>Đơn giá theo giờ</span>
+                    <span class="fw-bold text-dark" >
+                      <span th:text="${#numbers.formatDecimal(vehicleType.pricePerHour, 0, 'COMMA', 0, 'POINT')}" >150,000</span > đ / giờ</span >
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center text-secondary">
+                    <span>Thời lượng thuê xe</span>
+                    <span class="fw-bold text-dark" >
+                      <span th:text="${rentalHours}">9</span> giờ</span >
+                  </div>
+                  <div id="basePriceRow" class="hidden d-flex justify-content-between align-items-center text-secondary customer-text-xs">
+                    <span>Tổng trước ưu đãi</span>
+                    <span id="baseRentalFeeDisplay" th:text="${#numbers.formatDecimal(estimatedTotal, 0, 'COMMA', 0, 'POINT')}">1,350,000</span>
+                  </div>
+                  <!-- Discount row displays the server quote response. -->
+                  <div id="discountRow" class="hidden d-flex justify-content-between align-items-center text-success customer-text-xs" >
+                    <span id="discountLabel" class="text-success fw-medium" >Giảm giá khuyến mãi</span >
+                    <span class="fw-bold text-success" >-<span id="discountAmountDisplay">0</span> đ</span >
+                  </div>
+                  <!-- Net Total Fee -->
+                  <div class="d-flex justify-content-between align-items-center pt-3 border-top border">
+                    <span class="fw-bold text-dark fs-6">Tổng tiền thuê dự kiến</span>
+                    <span class="fw-bold fw-bold text-dark" >
+                      <span class="fw-bold fs-4 text-dark fs-6" id="totalRentalFeeDisplay" th:text="${#numbers.formatDecimal(estimatedTotal, 0, 'COMMA', 0, 'POINT')}" >1,350,000</span > đ</span >
+                  </div>
+                </div>
+                <!-- Promotion Code Input in Order Summary -->
+                <div class="pt-3 customer-stack-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <label for="promoInput" class="d-block customer-text-xs fw-bold text-body"> Mã khuyến mãi / Ưu đãi <span class="text-body-secondary fw-normal">(tùy chọn)</span>
+                    </label>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <input id="promoInput" type="text" th:field="*{promotionCode}" class="input-shadcn flex-fill customer-text-xs text-uppercase fw-semibold" autocomplete="off" />
+                    <button type="button" data-action="apply-promo" class="customer-px-3 py-2 rounded-3 border border bg-white customer-text-xs fw-bold text-body shadow-sm text-nowrap cursor-pointer" >Áp dụng</button>
+                  </div>
+                  <p id="promoFeedback" class="customer-text-xs fw-medium hidden mt-1" role="status" aria-live="polite">
+                  </p>
+                </div>
+                <!-- Deposit Due Card (Zero line-wrap on đ currency) -->
+                <div class="checkout-deposit-card">
+                  <div class="checkout-deposit-top">
+                    <div>
+                      <div class="customer-text-xs fw-bold text-dark d-flex align-items-center customer-gap-1">
+                        <span>Tiền cọc giữ xe cần trả ngay</span>
+                        <span id="depositPercentDisplay" data-policy="deposit" class="customer-text-xs fw-bold text-warning-emphasis bg-warning-subtle customer-px-1 customer-py-0 rounded" th:text="${contractTerms.depositPercent} + '%'" >Tỷ lệ theo hợp đồng</span >
+                      </div>
+                    </div>
+                    <div class="checkout-deposit-val">
+                      <span id="depositDueDisplay" th:text="${#numbers.formatDecimal(depositAmount, 0, 'COMMA', 0, 'POINT')}" >675,000</span >
+                      <span class="customer-text-xs fw-bold text-dark">đ</span>
+                    </div>
+                  </div>
+                  <div class="checkout-remaining-row customer-pt-2 border-top border d-flex justify-content-between align-items-center" >
+                    <span>Tiền thuê còn lại (thanh toán khi nhận xe)</span>
+                    <span class="checkout-remaining-val fw-bold text-dark text-nowrap" >
+                      <span id="remainingBalanceDisplay" th:text="${#numbers.formatDecimal(remainingAmount, 0, 'COMMA', 0, 'POINT')}" >675,000</span > đ</span >
+                  </div>
+                </div>
+                <!-- Agreement Checkbox -->
+                <label class="terms-accept">
+                  <!-- Clickwrap: not pre-checked; the server re-validates acceptedTerms and the version id -->
+                  <input type="checkbox" id="termsCheckbox" name="acceptedTerms" value="true" required class="terms-accept-checkbox" />
+                  <span class="terms-accept-text"> Tôi đã đọc và đồng ý với <button type="button" data-bs-toggle="modal" data-bs-target="#rentalTermsModal" class="terms-accept-link">Hợp đồng thuê xe tự lái</button>. </span>
+                </label>
+                <!-- CTA Action Button (the driving license is optional, so it is always enabled) -->
+                <div class="customer-stack-2">
+                  <div>
+                    <button type="submit" class="btn-amber w-100 customer-py-3 small fw-bold shadow-sm justify-content-center" >
+                      <span>Xác nhận & Thanh toán cọc</span>
+                      <svg class="customer-icon-md customer-icon-md ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" >
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <!-- Trust signals -->
+                <div class="pt-3 border-top border customer-stack-2 customer-text-xs text-secondary">
+                  <div class="d-flex align-items-center gap-2">
+                    <svg class="customer-icon-md customer-icon-md text-success flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span data-policy="cancellation" th:text="'Miễn phí hủy chuyến trước thời điểm nhận xe ' + ${contractTerms.freeCancellationHours} + ' giờ'">Điều kiện hủy theo điều khoản đã chọn</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </main>
+    <div class="modal fade" id="rentalTermsModal" tabindex="-1" aria-labelledby="rentalTermsTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="d-flex align-items-center gap-3">
+              <img th:src="@{/images/car-rental-logo.svg}" alt="DriveNow" width="32" height="32" class="rounded" />
+              <div>
+                <h2 class="modal-title fs-5" id="rentalTermsTitle" th:text="${contractTerms.title}">Hợp đồng thuê xe ô tô tự lái</h2>
+                <p class="small text-muted mb-0">DriveNow Mobility Vietnam</p>
+              </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng">
+            </button>
+          </div>
+          <div class="modal-body terms-modal-body">
+            <div class="terms-parties mb-4">
+              <div>
+                <strong>Bên A (bên cho thuê):</strong> Công ty TNHH DriveNow Mobility Việt Nam • <span th:text="${stationAddress}">Địa chỉ trạm</span> • Hotline 1800 6868</div>
+              <div>
+                <strong>Bên B (bên thuê):</strong>
+                <span th:text="${session.account != null ? session.account.name : 'Khách hàng'}">Khách hàng</span>
+              </div>
+            </div>
+            <div th:replace="~{fragments/contract-terms :: terms(${contractTerms})}">
+            </div>
+            <p class="small text-muted mb-0"> Khi tick ô đồng ý và xác nhận đặt xe, hệ thống ghi nhận thời điểm, địa chỉ IP và phiên bản điều khoản bạn đã đồng ý. Sau khi thanh toán tiền cọc, hợp đồng PDF đầy đủ (gồm thông tin xe, thời hạn và số tiền) được gửi đến email của bạn. </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="button" class="btn btn-amber" data-action="accept-terms">Tôi đồng ý với các điều khoản</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

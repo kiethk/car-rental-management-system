@@ -72,7 +72,7 @@ public class AdminBookingController {
         List<BookingSummaryDTO> list = bookingQueryService.getAllBookings(status);
         model.addAttribute("bookings", list);
         model.addAttribute("currentStatus", status);
-        return "admin/bookings/list";
+        return "screens/admin/bookings/list/index";
     }
 
 
@@ -143,7 +143,7 @@ public class AdminBookingController {
                 model.addAttribute("vietQrUrl", qrUrl);
             }
 
-            return "admin/bookings/manage";
+            return "screens/admin/bookings/manage/index";
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             return "redirect:/admin/bookings";

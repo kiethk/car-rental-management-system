@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="shell(content)">
+    <div th:replace="~{fragments/header :: header}"></div>
+    <th:block th:replace="${content}"></th:block>
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</th:block>
+</body>
+</html>

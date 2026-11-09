@@ -4,6 +4,9 @@ import com.crms.mvc.util.EnumTokens;
 import com.crms.mvc.enums.BookingStatus;
 import com.crms.mvc.util.CurrentAccount;
 import com.crms.mvc.dto.BookingCreateDTO;
+import com.crms.mvc.dto.BookingQuoteDTO;
+import java.time.LocalDateTime;
+import org.springframework.format.annotation.DateTimeFormat;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.BookingSummaryDTO;
 import com.crms.mvc.dto.BookingCancelDTO;
@@ -25,6 +28,7 @@ import com.crms.mvc.service.HandoverService;
 import com.crms.mvc.util.MediaUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -130,7 +134,7 @@ public class BookingController {
         model.addAttribute("allCount", results.size());
         model.addAttribute("brands", vehicleTypeService.getDistinctBrands());
         model.addAttribute("categories", vehicleTypeService.getDistinctCategories());
-        return "bookings/search";
+        return "screens/customer/bookings/search/index";
     }
 
     /** Why the window cannot be rented, or null when it can. */
@@ -148,6 +152,33 @@ public class BookingController {
         model.addAttribute("rentalDays", duration.days());
         model.addAttribute("remainingHours", duration.remainingHours());
         model.addAttribute("durationDisplay", duration.display());
+    }
+
+    @GetMapping(value = "/bookings/quote", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<BookingQuoteDTO> previewQuote(
+            @RequestParam Long vehicleTypeId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+            @RequestParam Long contractTemplateId,
+            @RequestParam(required = false) String promoCode,
+            HttpSession session) {
+        if (CurrentAccount.customerId(session).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(BookingQuoteDTO.invalid("Vui lòng đăng nhập bằng tài khoản khách hàng."));
+        }
+        BookingCreateDTO request = new BookingCreateDTO();
+        request.setVehicleTypeId(vehicleTypeId);
+        request.setStartTime(startTime);
+        request.setEndTime(endTime);
+        request.setContractTemplateId(contractTemplateId);
+        request.setPromotionCode(promoCode);
+        try {
+            return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                    .body(BookingQuoteDTO.from(bookingService.previewPrice(request)));
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            return ResponseEntity.badRequest().cacheControl(CacheControl.noStore()).body(BookingQuoteDTO.invalid(ex.getMessage()));
+        }
     }
 
     // BƯỚC 3: Màn hình Checkout / Xác nhận đơn đặt xe
@@ -221,7 +252,7 @@ public class BookingController {
         model.addAttribute("remainingAmount", quote.getRemainingAmount());
         model.addAttribute("vehicleImage", VehicleImages.urlOf(vt));
         model.addAttribute("contractTerms", contractTerms);
-        return "bookings/checkout";
+        return "screens/customer/bookings/checkout/index";
     }
 
     // TẠO ĐƠN: POST /bookings -> Lưu Booking (pending_payment) -> Sang trang cọc
@@ -272,7 +303,7 @@ public class BookingController {
                 return "redirect:/bookings/" + bookingId;
             }
             model.addAttribute("booking", detail);
-            return "bookings/deposit";
+            return "screens/customer/bookings/deposit/index";
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             return "redirect:/bookings/my-bookings";
@@ -288,7 +319,7 @@ public class BookingController {
         try {
             BookingDetailDTO detail = bookingQueryService.getBookingDetail(bookingId, customerId);
             model.addAttribute("booking", detail);
-            return "bookings/success";
+            return "screens/customer/bookings/success/index";
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             return "redirect:/bookings/my-bookings";
@@ -313,7 +344,7 @@ public class BookingController {
         model.addAttribute("bookings", filtered);
         model.addAttribute("allCount", all.size());
         model.addAttribute("currentFilter", filterStatus);
-        return "bookings/my-bookings";
+        return "screens/customer/bookings/my-bookings/index";
     }
 
     // Chi tiết đơn
@@ -362,10 +393,15 @@ public class BookingController {
                 if (reviewEligible) {
                     ReviewDTO review = reviewService.findForCustomer(bookingId, customerId);
                     model.addAttribute("review", review);
-                    model.addAttribute("reviewForm", new ReviewFormDTO());
+                    ReviewFormDTO reviewForm = new ReviewFormDTO();
+                    if (review != null) {
+                        reviewForm.setRating(review.getRating());
+                        reviewForm.setComment(review.getComment());
+                    }
+                    model.addAttribute("reviewForm", reviewForm);
                 }
             }
-            return "bookings/detail";
+            return "screens/customer/bookings/detail/index";
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
             return "redirect:/bookings/my-bookings";
@@ -387,6 +423,27 @@ public class BookingController {
         try {
             reviewService.submit(bookingId, customerId, form);
             ra.addFlashAttribute("success", "Cảm ơn bạn đã chia sẻ đánh giá về chuyến đi!");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/bookings/" + bookingId;
+    }
+
+    @PostMapping("/bookings/{id}/review/update")
+    public String updateReview(@PathVariable("id") Long bookingId,
+                               @Valid @ModelAttribute("reviewForm") ReviewFormDTO form,
+                               BindingResult result, HttpSession session, RedirectAttributes ra) {
+        Long customerId = CurrentAccount.customerId(session).orElse(null);
+        if (customerId == null) return "redirect:/login";
+
+        if (result.hasErrors()) {
+            ra.addFlashAttribute("error", result.getAllErrors().get(0).getDefaultMessage());
+            return "redirect:/bookings/" + bookingId;
+        }
+
+        try {
+            reviewService.update(bookingId, customerId, form);
+            ra.addFlashAttribute("success", "Đánh giá đã được cập nhật.");
         } catch (IllegalArgumentException | IllegalStateException e) {
             ra.addFlashAttribute("error", e.getMessage());
         }

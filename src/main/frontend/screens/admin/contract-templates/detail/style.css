@@ -1,0 +1,10 @@
+/* Screen-scoped DriveNow admin workspace */
+[data-screen="admin/contract-templates/detail"] .contract-templates-detail-label-detail { font-size: 14px; }
+[data-screen="admin/contract-templates/detail"] .contract-templates-detail-label-detail-bcac { font-size: 14px; }
+[data-screen="admin/contract-templates/detail"] .contract-templates-detail-label-detail-3ea6 { font-size: 14px; }
+[data-screen="admin/contract-templates/detail"] .contract-templates-detail-label-detail-798f { font-size: 14px; }
+[data-screen="admin/contract-templates/detail"] .contract-templates-detail-label-detail-28a5 { font-size: 14px; }
+[data-screen="admin/contract-templates/detail"] .contract-templates-detail-label-detail-7316 { font-size: 14px; }
+[data-screen="admin/contract-templates/detail"] .contract-templates-detail-label-detail-39f1 { font-size: 14px; }
+
+/* Shared screen behavior hooks */

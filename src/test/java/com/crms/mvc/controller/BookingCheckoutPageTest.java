@@ -5,6 +5,7 @@ import com.crms.mvc.enums.Transmission;
 import com.crms.mvc.enums.VehicleCategory;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.enums.ContractTemplateStatus;
+import com.crms.mvc.dto.BookingCreateDTO;
 import com.crms.mvc.entity.LicensePlate;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleType;
@@ -187,7 +188,7 @@ class BookingCheckoutPageTest {
         mvc.perform(get("/bookings/checkout").session(customer).param("vehicleTypeId", "1")
                         .param("startDate", "not-a-date").param("startTime", "nine"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("bookings/checkout"));
+                .andExpect(view().name("screens/customer/bookings/checkout/index"));
 
         ArgumentCaptor<OffsetDateTime> start = ArgumentCaptor.forClass(OffsetDateTime.class);
         verify(bookingService).validateRentalSchedule(any(), any());
@@ -215,7 +216,7 @@ class BookingCheckoutPageTest {
         MvcResult result = mvc.perform(get("/bookings/checkout").session(customer).param("vehicleTypeId", "1")
                         .param("startTime", "2030-01-10T09:00").param("endTime", "2030-01-10T19:00"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("bookings/checkout"))
+                .andExpect(view().name("screens/customer/bookings/checkout/index"))
                 .andExpect(model().attribute("rentalHours", 10L))
                 .andExpect(model().attribute("durationDisplay", "10h"))
                 .andReturn();
@@ -228,5 +229,35 @@ class BookingCheckoutPageTest {
         assertThat(result.getModelAndView().getModel().get("estimatedTotal")).isEqualTo(new BigDecimal("1000000"));
         assertThat(result.getModelAndView().getModel().get("depositAmount")).isEqualTo(new BigDecimal("300000"));
         assertThat(start).isBefore(LocalDateTime.of(2030, 1, 10, 19, 0));
+    }
+
+    @Test
+    void quotePreviewReturnsBackendAmountsForTheDisplayedContract() throws Exception {
+        when(bookingService.previewPrice(any())).thenReturn(new com.crms.mvc.dto.PriceQuoteDTO(
+                3, new BigDecimal("100000"), new BigDecimal("60000"), new BigDecimal("0.30")));
+        mvc.perform(get("/bookings/quote").session(customer)
+                        .param("vehicleTypeId", "1").param("contractTemplateId", "3")
+                        .param("startTime", "2030-01-10T09:00").param("endTime", "2030-01-10T12:00")
+                        .param("promoCode", "REAL20"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.valid").value(true))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.totalPrice").value(240000))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.depositAmount").value(72000));
+        ArgumentCaptor<BookingCreateDTO> input = ArgumentCaptor.forClass(BookingCreateDTO.class);
+        verify(bookingService).previewPrice(input.capture());
+        assertThat(input.getValue().getContractTemplateId()).isEqualTo(3L);
+        assertThat(input.getValue().getPromotionCode()).isEqualTo("REAL20");
+    }
+
+    @Test
+    void quotePreviewReturnsAnInvalidResponseForUnavailablePromotion() throws Exception {
+        when(bookingService.previewPrice(any())).thenThrow(new IllegalArgumentException("Mã đã hết lượt sử dụng."));
+        mvc.perform(get("/bookings/quote").session(customer)
+                        .param("vehicleTypeId", "1").param("contractTemplateId", "3")
+                        .param("startTime", "2030-01-10T09:00").param("endTime", "2030-01-10T12:00")
+                        .param("promoCode", "OLD"))
+                .andExpect(status().isBadRequest())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.valid").value(false))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.message").value("Mã đã hết lượt sử dụng."));
     }
 }

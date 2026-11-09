@@ -59,7 +59,7 @@ public class VehicleController {
         model.addAttribute("categories", vehicleTypeService.getDistinctCategories());
         model.addAttribute("totalCount", vehicles.size());
         model.addAttribute("ratings", reviewService.ratingsByVehicleType());
-        return "vehicles/list";
+        return "screens/customer/vehicles/list/index";
     }
 
     @GetMapping("/vehicles/{id}")
@@ -85,7 +85,7 @@ public class VehicleController {
             model.addAttribute("physicalCars", physicalCars);
         }
 
-        return "vehicles/detail";
+        return "screens/customer/vehicles/detail/index";
     }
 
     /** One car's schedule for the next 30 days, so a customer who wants that exact car can find a free window. */
@@ -101,6 +101,6 @@ public class VehicleController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Xe đã ngừng hoạt động");
         }
         model.addAttribute("schedule", schedule);
-        return "vehicles/schedule";
+        return "screens/customer/vehicles/schedule/index";
     }
 }

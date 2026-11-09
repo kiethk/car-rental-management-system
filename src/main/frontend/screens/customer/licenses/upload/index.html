@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Giấy phép lái xe — DriveNow</title>
+    <th:block th:replace="~{fragments/assets :: common}">
+    </th:block>
+    <link rel="stylesheet" th:href="@{/css/screens/customer/licenses/upload/style.css}">
+    <script defer th:src="@{/js/screens/customer/licenses/upload/script.js}">
+    </script>
+  </head>
+  <body class="d-flex flex-column min-vh-100 bg-surface" data-screen="customer/licenses/upload">
+<th:block th:replace="~{layouts/customer :: shell(~{::screenContent})}">
+    <th:block th:fragment="screenContent">
+    
+    <main class="container py-5 flex-grow-1">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="mb-4">
+            <h1 class="h3 fw-bold text-navy mb-1">Giấy phép lái xe của bạn</h1>
+            <p class="text-muted small mb-0">Bạn có thể tải lên giấy phép lái xe để nhân viên xác minh nhanh hơn khi nhận xe (không bắt buộc để đặt xe)</p>
+          </div>
+          <div th:if="${error}" class="alert alert-danger py-2" th:text="${error}">
+          </div>
+          <div th:if="${param.submitted}" class="alert alert-success py-2"> Đã tải lên giấy phép lái xe thành công. </div>
+          <section th:if="${currentLicense != null}" class="card card-drivenow border shadow-sm p-4 bg-white rounded-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h2 class="h5 fw-bold text-navy mb-0">GPLX hiện tại</h2>
+              <span th:if="${!licenseExpired}" class="badge badge-success px-3 py-1 fw-bold">Đã tải lên</span>
+              <span th:if="${licenseExpired}" class="badge badge-danger px-3 py-1 fw-bold">Đã hết hạn</span>
+            </div>
+            <div class="row align-items-center">
+              <div class="col-md-6 mb-3 mb-md-0">
+                <dl class="row mb-0 small">
+                  <dt class="col-12 col-sm-5 text-muted mb-2">Số GPLX:</dt>
+                  <dd class="col-12 col-sm-7 font-monospace fw-bold text-navy mb-2" th:text="${currentLicense.licenseNumber}">
+                  </dd>
+                  <dt class="col-12 col-sm-5 text-muted mb-2">Hạng GPLX:</dt>
+                  <dd class="col-12 col-sm-7 mb-2">
+                    <span class="badge badge-light border text-navy fw-bold" th:text="${currentLicense.licenseClass}">
+                    </span>
+                  </dd>
+                  <dt class="col-12 col-sm-5 text-muted mb-2">Ngày hết hạn:</dt>
+                  <dd class="col-12 col-sm-7 fw-bold text-navy mb-2" th:text="${currentLicense.licenseExpiry}">
+                  </dd>
+                </dl>
+              </div>
+              <div class="col-md-6 text-center">
+                <img th:src="@{/licenses/{id}/image(id=${currentLicense.id})}" data-image-zoom loading="lazy" decoding="async" alt="Ảnh giấy phép lái xe đã tải lên" class="img-fluid border rounded-3 shadow-sm licenses-upload-img-detail">
+              </div>
+            </div>
+          </section>
+          <section class="card card-drivenow border shadow-sm p-4 bg-white rounded-4">
+            <h2 class="h5 fw-bold text-navy mb-3" th:text="${currentLicense == null ? 'Tải lên giấy phép lái xe' : 'Cập nhật giấy phép lái xe'}">
+            </h2>
+            <form th:action="@{/licenses}" th:object="${licenseForm}" method="post" enctype="multipart/form-data">
+              <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger py-2 mb-3"> Vui lòng kiểm tra lại các trường thông tin có lỗi bên dưới. </div>
+              <div class="row g-3">
+                <div class="col-md-6 form-group mb-3">
+                  <label for="licenseNumber" class="small fw-bold text-navy mb-1">Số GPLX <span class="text-danger">*</span>
+                  </label>
+                  <input id="licenseNumber" type="text" th:field="*{licenseNumber}" class="form-control rounded-3 font-monospace" th:classappend="${#fields.hasErrors('licenseNumber')} ? 'is-invalid'" maxlength="50" placeholder="VD: 790123456789">
+                  <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('licenseNumber')}" th:errors="*{licenseNumber}">
+                  </div>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label for="licenseClass" class="small fw-bold text-navy mb-1">Hạng GPLX <span class="text-danger">*</span>
+                  </label>
+                  <input id="licenseClass" type="text" th:field="*{licenseClass}" class="form-control rounded-3" th:classappend="${#fields.hasErrors('licenseClass')} ? 'is-invalid'" maxlength="20" placeholder="VD: B1, B2, C...">
+                  <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('licenseClass')}" th:errors="*{licenseClass}">
+                  </div>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label for="licenseExpiry" class="small fw-bold text-navy mb-1">Ngày hết hạn <span class="text-danger">*</span>
+                  </label>
+                  <input id="licenseExpiry" type="date" th:field="*{licenseExpiry}" class="form-control rounded-3" th:classappend="${#fields.hasErrors('licenseExpiry')} ? 'is-invalid'">
+                  <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('licenseExpiry')}" th:errors="*{licenseExpiry}">
+                  </div>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label for="licenseImage" class="small fw-bold text-navy mb-1">Ảnh mặt trước GPLX <span class="text-danger">*</span>
+                  </label>
+                  <input id="licenseImage" type="file" th:field="*{licenseImage}" class="form-control rounded-3" th:classappend="${#fields.hasErrors('licenseImage')} ? 'is-invalid'" accept="image/jpeg,image/png,image/webp">
+                  <small class="text-muted d-block licenses-upload-small-detail">Hỗ trợ: JPG, PNG, WebP (tối đa 5MB)</small>
+                  <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('licenseImage')}" th:errors="*{licenseImage}">
+                  </div>
+                </div>
+              </div>
+              <div class="pt-3 border-top mt-2">
+                <button type="submit" class="btn btn-navy fw-bold px-4 rounded-3 shadow-sm">Tải lên GPLX</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </div>
+    </main>
+    
+  
+    </th:block>
+</th:block>
+</body>
+</html>

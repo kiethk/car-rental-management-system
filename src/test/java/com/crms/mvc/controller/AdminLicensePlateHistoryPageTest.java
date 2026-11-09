@@ -43,7 +43,7 @@ class AdminLicensePlateHistoryPageTest {
 
         mvc.perform(get("/admin/license-plates/vehicle/5").session(TestSessions.staff(2L)))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/license-plates/history"))
+                .andExpect(view().name("screens/admin/license-plates/history/index"))
                 .andExpect(content().string(containsString("xe #5 (Toyota Vios)")));
     }
 }

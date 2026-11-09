@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý khuyến mãi — Quản trị DriveNow</title>
+    <th:block th:replace="~{fragments/assets :: common}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/screens/admin/promotions/list/style.css}">
+    <script defer th:src="@{/js/screens/admin/promotions/list/script.js}"></script>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface" data-screen="admin/promotions/list">
+<th:block th:replace="~{layouts/admin :: shell(~{::screenContent}, 'promotions')}">
+    <th:block th:fragment="screenContent">
+<div th:if="${success}" class="alert alert-success border-0 rounded-lg shadow-sm" role="alert" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger border-0 rounded-lg shadow-sm" role="alert" th:text="${error}"></div>
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+                <div>
+                    <h1 class="h3 fw-bold text-navy mb-1">Quản lý khuyến mãi</h1>
+                    <p class="text-muted small mb-0">Quản lý mã giảm giá, ngày hết hạn, hình ảnh và số lượng.</p>
+                </div>
+                <a th:href="@{/admin/promotions/new}" class="btn btn-navy fw-bold btn-sm px-3 py-2 rounded-lg shadow-sm mt-3 mt-md-0">
+                    + Thêm khuyến mãi
+                </a>
+            </div>
+            <div class="card border-0 shadow-sm rounded-xl overflow-hidden bg-white">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle admin-table">
+                        <thead class="bg-surface-2 text-navy small fw-bold">
+                        <tr>
+                            <th class="border-top-0 py-3">Hình ảnh</th>
+                            <th class="border-top-0 py-3">Mã</th>
+                            <th class="border-top-0 py-3">Giảm giá</th>
+                            <th class="border-top-0 py-3">Ngày bắt đầu</th>
+                            <th class="border-top-0 py-3">Ngày kết thúc</th>
+                            <th class="border-top-0 py-3 text-center">Số lượng</th>
+                            <th class="border-top-0 py-3 text-center">Trạng thái</th>
+                            <th class="border-top-0 py-3 text-center">Hành động</th>
+                        </tr>
+                        </thead>
+                        <tbody class="small text-navy">
+                        <tr th:if="${#lists.isEmpty(promotions)}">
+                            <td colspan="8" class="text-center py-4 text-muted">Không tìm thấy khuyến mãi nào.</td>
+                        </tr>
+                        <tr th:each="promotion : ${promotions}"
+                            th:with="promotionStatus=${promotion.quantity == 0 ? 'HẾT HÀNG' : (today.isBefore(promotion.startDate) ? 'SẮP DIỄN RA' : (today.isAfter(promotion.endDate) ? 'ĐÃ HẾT HẠN' : 'HOẠT ĐỘNG'))}">
+                            <td>
+                                <img th:if="${promotion.urlImagePromotion != null and !promotion.urlImagePromotion.isBlank()}" data-image-zoom loading="lazy" decoding="async"
+                                     th:src="${promotion.urlImagePromotion}" th:alt="${promotion.code}"
+                                     class="rounded border promotions-list-img-detail">
+                                <span th:unless="${promotion.urlImagePromotion != null and !promotion.urlImagePromotion.isBlank()}" class="text-muted">—</span>
+                            </td>
+                            <td class="fw-bold" th:text="${promotion.code}">WELCOME10</td>
+                            <td>
+                                <span th:text="${#strings.toLowerCase(promotion.discountType) == 'percent' ? #numbers.formatDecimal(promotion.discountValue, 0, 'POINT', 2, 'POINT') + '%' : #numbers.formatDecimal(promotion.discountValue, 0, 'COMMA', 0, 'POINT') + ' VND'}">10%</span>
+                                <small class="d-block text-muted text-capitalize" th:text="${#strings.toLowerCase(promotion.discountType) == 'percent' ? 'Phần trăm' : 'Cố định'}">percent</small>
+                            </td>
+                            <td th:text="${#temporals.format(promotion.startDate, 'dd/MM/yyyy')}">01/01/2026</td>
+                            <td th:text="${#temporals.format(promotion.endDate, 'dd/MM/yyyy')}">31/12/2026</td>
+                            <td class="text-center" th:text="${promotion.quantity}">100</td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-dark border"
+                                      th:classappend="${promotionStatus == 'HOẠT ĐỘNG' ? 'text-success' : (promotionStatus == 'ĐÃ HẾT HẠN' or promotionStatus == 'HẾT HÀNG' ? 'text-danger' : 'text-muted')}"
+                                      th:text="${promotionStatus}">HOẠT ĐỘNG</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-inline-flex align-items-center justify-content-center promotions-list-div-detail">
+                                    <a th:href="@{/admin/promotions/{id}/edit(id=${promotion.id})}" class="admin-btn btn-soft-primary">Chỉnh sửa</a>
+                                    <form method="post" th:action="@{/admin/promotions/{id}/delete(id=${promotion.id})}" class="m-0"
+                                          data-confirm="Xóa khuyến mãi này?" data-confirm-detail="Không xóa được nếu đã dùng trong đơn đặt xe." data-confirm-ok="Xóa" data-confirm-tone="danger">
+                                        <button type="submit" class="admin-btn btn-soft-danger">Xóa</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+    </th:block>
+</th:block>
+
+</body>
+</html>

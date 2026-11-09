@@ -46,7 +46,7 @@ public class AdminVehicleTypeController {
         model.addAttribute("nav", PageNavDTO.of(page, number -> query.urlForPage(LIST_PATH, number)));
         model.addAttribute("listUrl", query.urlForPage(LIST_PATH, query.getPage()));
         model.addAttribute("activeNav", "vehicles");
-        return "admin/vehicle-types/list";
+        return "screens/admin/vehicle-types/list/index";
     }
 
     @GetMapping("/new")
@@ -55,7 +55,7 @@ public class AdminVehicleTypeController {
             model.addAttribute("typeForm", new VehicleTypeFormDTO());
         }
         model.addAttribute("activeNav", "vehicles");
-        return "admin/vehicle-types/form";
+        return "screens/admin/vehicle-types/form/index";
     }
 
     @PostMapping
@@ -65,7 +65,7 @@ public class AdminVehicleTypeController {
                          Model model) {
         if (result.hasErrors()) {
             model.addAttribute("activeNav", "vehicles");
-            return "admin/vehicle-types/form";
+            return "screens/admin/vehicle-types/form/index";
         }
 
         try {
@@ -89,7 +89,7 @@ public class AdminVehicleTypeController {
         }
         model.addAttribute("vehicleType", vt);
         model.addAttribute("activeNav", "vehicles");
-        return "admin/vehicle-types/form";
+        return "screens/admin/vehicle-types/form/index";
     }
 
     @PostMapping("/{id}")
@@ -102,7 +102,7 @@ public class AdminVehicleTypeController {
             VehicleType vt = vehicleTypeService.findById(id).orElse(null);
             model.addAttribute("vehicleType", vt);
             model.addAttribute("activeNav", "vehicles");
-            return "admin/vehicle-types/form";
+            return "screens/admin/vehicle-types/form/index";
         }
 
         try {

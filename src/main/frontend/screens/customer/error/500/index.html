@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lỗi hệ thống — DriveNow</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <th:block th:replace="~{fragments/assets :: common}">
+    </th:block>
+    <link rel="stylesheet" th:href="@{/css/screens/customer/error/500/style.css}">
+    <script defer th:src="@{/js/screens/customer/error/500/script.js}">
+    </script>
+  </head>
+  <body class="d-flex flex-column min-vh-100 bg-surface" data-screen="customer/error/500">
+<th:block th:replace="~{layouts/customer :: shell(~{::screenContent})}">
+    <th:block th:fragment="screenContent">
+    
+    <main class="container my-5 text-center flex-grow-1">
+      <div class="card card-drivenow border-0 p-5 d-inline-block error-500-div-detail">
+        <h1 class="display-3 fw-bold text-danger">500</h1>
+        <h2 class="h5 fw-bold mb-3">Lỗi hệ thống</h2>
+        <p class="text-muted small mb-4" th:text="${errorMessage}">Đã có lỗi không mong muốn khi xử lý yêu cầu của bạn.</p>
+        <a th:href="@{/}" class="btn btn-navy btn-sm px-4">Về trang chủ</a>
+      </div>
+    </main>
+    
+  
+    </th:block>
+</th:block>
+</body>
+</html>

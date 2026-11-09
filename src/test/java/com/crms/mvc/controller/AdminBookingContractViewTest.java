@@ -58,7 +58,7 @@ class AdminBookingContractViewTest {
 
         mvc.perform(get("/admin/bookings/42").session(staff))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/bookings/manage"))
+                .andExpect(view().name("screens/admin/bookings/manage/index"))
                 .andExpect(content().string(containsString("Điều khoản v1")))
                 .andExpect(content().string(containsString("từ IP 127.0.0.1")))
                 .andExpect(content().string(containsString("Phát hành PDF và gửi email")));
@@ -204,7 +204,7 @@ class AdminBookingContractViewTest {
 
         mvc.perform(get("/admin/bookings").session(staff))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/bookings/list"))
+                .andExpect(view().name("screens/admin/bookings/list/index"))
                 .andExpect(content().string(containsString("Cần hoàn cọc")))
                 .andExpect(content().string(containsString("Hoàn cọc ngay →")));
     }
@@ -228,7 +228,7 @@ class AdminBookingContractViewTest {
 
         mvc.perform(get("/admin/bookings?status=refund").session(staff))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/bookings/list"))
+                .andExpect(view().name("screens/admin/bookings/list/index"))
                 .andExpect(content().string(containsString("Danh sách đơn chờ chuyển khoản hoàn tiền cọc")))
                 .andExpect(content().string(containsString("Hoàn cọc ngay →")));
     }
@@ -254,7 +254,7 @@ class AdminBookingContractViewTest {
 
         mvc.perform(get("/admin/bookings?status=confirmed").session(staff))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/bookings/list"))
+                .andExpect(view().name("screens/admin/bookings/list/index"))
                 .andExpect(content().string(containsString("Honda City")))
                 .andExpect(content().string(containsString("Đã xác nhận")));
     }

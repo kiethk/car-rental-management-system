@@ -95,6 +95,32 @@ class ReviewServiceTest {
     }
 
     @Test
+    void updatesExistingReviewForItsOwner() {
+        Booking booking = booking(BookingStatus.COMPLETED, 7L, 3L);
+        Review review = new Review();
+        review.setRating(3);
+        review.setComment("Okay");
+        when(bookingRepository.findById(7L)).thenReturn(Optional.of(booking));
+        when(paymentRepository.existsByBookingIdAndStatus(7L, PaymentStatus.PENDING)).thenReturn(false);
+        when(reviewRepository.findByBookingId(7L)).thenReturn(Optional.of(review));
+
+        service.update(7L, 3L, form(4, "  Great service.  "));
+
+        assertEquals(4, review.getRating());
+        assertEquals("Great service.", review.getComment());
+        verify(reviewRepository).save(review);
+    }
+
+    @Test
+    void rejectsUpdatingReviewForAnotherCustomersBooking() {
+        when(bookingRepository.findById(7L)).thenReturn(Optional.of(booking(BookingStatus.COMPLETED, 7L, 4L)));
+
+        assertThrows(IllegalArgumentException.class, () -> service.update(7L, 3L, form(4, "Good")));
+
+        verify(reviewRepository, never()).save(any());
+    }
+
+    @Test
     void existingReviewCanOnlyBeShownForItsOwnerAfterCompletion() {
         Booking booking = booking(BookingStatus.COMPLETED, 7L, 3L);
         Review review = new Review();

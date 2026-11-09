@@ -33,7 +33,7 @@ public class AdminLicensePlateController {
             model.addAttribute("plateForm", new LicensePlateChangeDTO());
         }
         addHistoryModel(model, vehicle);
-        return "admin/license-plates/history";
+        return "screens/admin/license-plates/history/index";
     }
 
     @PostMapping("/vehicle/{vehicleId}/change")
@@ -46,7 +46,7 @@ public class AdminLicensePlateController {
             VehicleDTO vehicle = vehicleService.findVehicleById(vehicleId)
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + vehicleId));
             addHistoryModel(model, vehicle);
-            return "admin/license-plates/history";
+            return "screens/admin/license-plates/history/index";
         }
         try {
             licensePlateService.changePlate(vehicleId, form);

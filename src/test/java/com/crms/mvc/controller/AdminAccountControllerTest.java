@@ -45,7 +45,7 @@ class AdminAccountControllerTest {
 
         mvc.perform(get("/admin/accounts").param("type", "employee").session(TestSessions.admin(1L)))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/accounts/list"))
+                .andExpect(view().name("screens/admin/accounts/list/index"))
                 .andExpect(content().string(containsString("Quản lý tài khoản")))
                 .andExpect(content().string(containsString("Locked Staff")))
                 .andExpect(content().string(containsString("Tài khoản của bạn")))
@@ -78,7 +78,7 @@ class AdminAccountControllerTest {
                         .param("name", "").param("phone", "abc").param("email", "bad")
                         .param("password", "short").param("role", "root"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/accounts/form"))
+                .andExpect(view().name("screens/admin/accounts/form/index"))
                 .andExpect(content().string(containsString("Vui lòng nhập họ tên")))
                 .andExpect(content().string(containsString("Vai trò phải là nhân viên hoặc quản trị viên")));
     }
