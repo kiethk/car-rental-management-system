@@ -169,12 +169,18 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Vehicle> findEntityById(Long id) {
-        return vehicleRepository.findByIdWithDetails(id);
+    public Optional<VehicleDTO> findVehicleById(Long id) {
+        return vehicleRepository.findByIdWithDetails(id).map(VehicleDTO::fromEntity);
     }
 
     @Override
-    public Vehicle create(VehicleFormDTO dto) {
+    @Transactional(readOnly = true)
+    public Optional<VehicleFormDTO> findFormById(Long id) {
+        return vehicleRepository.findByIdWithDetails(id).map(VehicleFormDTO::fromEntity);
+    }
+
+    @Override
+    public VehicleDTO create(VehicleFormDTO dto) {
         VehicleType vt = vehicleTypeRepository.findById(dto.getVehicleTypeId())
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dòng xe có mã: " + dto.getVehicleTypeId()));
 
@@ -202,11 +208,11 @@ public class VehicleServiceImpl implements VehicleService {
         firstPlate.setPlate(cleanPlate);
         firstPlate.setProvince(dto.getProvince());
         licensePlateService.changePlate(saved.getId(), firstPlate);
-        return saved;
+        return VehicleDTO.fromEntity(saved);
     }
 
     @Override
-    public Vehicle update(Long id, VehicleFormDTO dto) {
+    public VehicleDTO update(Long id, VehicleFormDTO dto) {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + id));
 
@@ -235,7 +241,7 @@ public class VehicleServiceImpl implements VehicleService {
         // The plate is not edited here: changing it creates a new plate record (LicensePlateService.changePlate).
         vehicle.setRegistrationExpiry(dto.getRegistrationExpiry());
 
-        return vehicleRepository.save(vehicle);
+        return VehicleDTO.fromEntity(vehicleRepository.save(vehicle));
     }
 
     @Override

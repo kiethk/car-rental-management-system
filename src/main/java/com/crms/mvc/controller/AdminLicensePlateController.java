@@ -1,7 +1,7 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.dto.VehicleDTO;
 import com.crms.mvc.dto.LicensePlateChangeDTO;
-import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.service.LicensePlateService;
 import com.crms.mvc.service.VehicleService;
 import jakarta.validation.Valid;
@@ -27,7 +27,7 @@ public class AdminLicensePlateController {
     /** Plate history of one vehicle plus the form to put a new plate on it. */
     @GetMapping("/vehicle/{vehicleId}")
     public String history(@PathVariable Long vehicleId, Model model) {
-        Vehicle vehicle = vehicleService.findEntityById(vehicleId)
+        VehicleDTO vehicle = vehicleService.findVehicleById(vehicleId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + vehicleId));
         if (!model.containsAttribute("plateForm")) {
             model.addAttribute("plateForm", new LicensePlateChangeDTO());
@@ -43,7 +43,7 @@ public class AdminLicensePlateController {
                               Model model,
                               RedirectAttributes ra) {
         if (result.hasErrors()) {
-            Vehicle vehicle = vehicleService.findEntityById(vehicleId)
+            VehicleDTO vehicle = vehicleService.findVehicleById(vehicleId)
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + vehicleId));
             addHistoryModel(model, vehicle);
             return "admin/license-plates/history";
@@ -58,7 +58,7 @@ public class AdminLicensePlateController {
         return "redirect:/admin/license-plates/vehicle/" + vehicleId;
     }
 
-    private void addHistoryModel(Model model, Vehicle vehicle) {
+    private void addHistoryModel(Model model, VehicleDTO vehicle) {
         model.addAttribute("vehicle", vehicle);
         model.addAttribute("history", licensePlateService.findHistory(vehicle.getId()));
         model.addAttribute("activeNav", "vehicles");

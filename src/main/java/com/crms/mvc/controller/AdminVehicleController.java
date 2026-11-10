@@ -75,8 +75,8 @@ public class AdminVehicleController {
         }
 
         try {
-            Vehicle created = vehicleService.create(form);
-            ra.addFlashAttribute("success", "Đã tạo xe thành công! Mã: #" + created.getId() + " - Biển số: " + created.getLicensePlate().getPlate());
+            VehicleDTO created = vehicleService.create(form);
+            ra.addFlashAttribute("success", "Đã tạo xe thành công! Mã: #" + created.getId() + " - Biển số: " + created.getLicensePlate());
             return "redirect:/admin/vehicles";
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
@@ -87,13 +87,12 @@ public class AdminVehicleController {
 
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
-        Vehicle vehicle = vehicleService.findEntityById(id)
+        VehicleFormDTO current = vehicleService.findFormById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + id));
 
         if (!model.containsAttribute("vehicleForm")) {
-            model.addAttribute("vehicleForm", VehicleFormDTO.fromEntity(vehicle));
+            model.addAttribute("vehicleForm", current);
         }
-        model.addAttribute("vehicle", vehicle);
         model.addAttribute("vehicleTypes", vehicleTypeService.findAll());
         model.addAttribute("activeNav", "vehicles");
         return "admin/vehicles/form";
@@ -107,8 +106,6 @@ public class AdminVehicleController {
                          RedirectAttributes ra,
                          Model model) {
         if (result.hasErrors()) {
-            Vehicle vehicle = vehicleService.findEntityById(id).orElse(null);
-            model.addAttribute("vehicle", vehicle);
             model.addAttribute("vehicleTypes", vehicleTypeService.findAll());
             model.addAttribute("activeNav", "vehicles");
             return "admin/vehicles/form";
@@ -120,7 +117,7 @@ public class AdminVehicleController {
         }
 
         try {
-            Vehicle updated = vehicleService.update(id, form);
+            VehicleDTO updated = vehicleService.update(id, form);
             ra.addFlashAttribute("success", "Đã cập nhật xe #" + updated.getId() + ".");
             return "redirect:/admin/vehicles";
         } catch (Exception ex) {
@@ -178,7 +175,7 @@ public class AdminVehicleController {
     /** True when the request would move a vehicle that is not retired yet into the retired status. */
     private boolean isNewRetirement(Long id, String requestedStatus) {
         return Vehicle.STATUS_RETIRED.equalsIgnoreCase(requestedStatus)
-                && vehicleService.findEntityById(id).map(v -> !v.isRetired()).orElse(true);
+                && vehicleService.findVehicleById(id).map(v -> !Vehicle.STATUS_RETIRED.equalsIgnoreCase(v.getStatus())).orElse(true);
     }
 
     /**

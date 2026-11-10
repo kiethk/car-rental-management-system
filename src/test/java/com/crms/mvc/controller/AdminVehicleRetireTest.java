@@ -54,7 +54,7 @@ class AdminVehicleRetireTest {
         admin = sessionOf("admin");
         staff = sessionOf("staff");
 
-        Vehicle saved = new Vehicle();
+        VehicleDTO saved = new VehicleDTO();
         saved.setId(5L);
         when(vehicleService.update(anyLong(), any())).thenReturn(saved);
     }
@@ -130,10 +130,10 @@ class AdminVehicleRetireTest {
 
     @Test
     void staffCanStillEditAVehicleThatIsAlreadyRetired() throws Exception {
-        Vehicle retired = new Vehicle();
+        VehicleDTO retired = new VehicleDTO();
         retired.setId(5L);
         retired.setStatus(Vehicle.STATUS_RETIRED);
-        when(vehicleService.findEntityById(5L)).thenReturn(Optional.of(retired));
+        when(vehicleService.findVehicleById(5L)).thenReturn(Optional.of(retired));
 
         mvc.perform(editForm(staff, "retired"))
                 .andExpect(status().is3xxRedirection())
@@ -144,10 +144,10 @@ class AdminVehicleRetireTest {
 
     @Test
     void onlyAdminsAreOfferedTheRetiredStatusInTheEditForm() throws Exception {
-        Vehicle working = new Vehicle();
+        VehicleFormDTO working = new VehicleFormDTO();
         working.setId(5L);
         working.setStatus(Vehicle.STATUS_AVAILABLE);
-        when(vehicleService.findEntityById(5L)).thenReturn(Optional.of(working));
+        when(vehicleService.findFormById(5L)).thenReturn(Optional.of(working));
 
         mvc.perform(get("/admin/vehicles/5/edit").session(admin))
                 .andExpect(status().isOk())
