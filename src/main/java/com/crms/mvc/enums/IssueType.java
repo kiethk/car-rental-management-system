@@ -1,4 +1,4 @@
-package com.crms.mvc.entity;
+package com.crms.mvc.enums;
 
 /**
  * What kind of incident an Issue records. Only COLLISION and DAMAGE send the vehicle to maintenance on return.

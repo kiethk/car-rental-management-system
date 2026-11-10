@@ -1,7 +1,5 @@
-package com.crms.mvc.controller;
+package com.crms.mvc.dto;
 
-import com.crms.mvc.dto.RentalSearchCriteria;
-import com.crms.mvc.dto.RentalWindow;
 import com.crms.mvc.util.RentalWindowParser;
 
 import java.math.BigDecimal;
@@ -10,7 +8,7 @@ import java.math.BigDecimal;
  * The query string of the vehicle search page. The window comes in under several spellings (see
  * {@link RentalWindowParser}) and is kept as typed; the filters have the defaults the page shows.
  */
-public class RentalSearchParams {
+public class RentalSearchQueryDTO {
     private String startDate;
     private String endDate;
     private String date;

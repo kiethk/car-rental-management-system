@@ -1,5 +1,6 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.util.EnumTokens;
 import com.crms.mvc.dto.LoginIdentityDTO;
 import com.crms.mvc.entity.Customer;
 import com.crms.mvc.entity.Employee;
@@ -43,7 +44,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         if (employee != null && employee.isActive() && passwordEncoder.matches(password, employee.getPasswordHash())) {
-            return new LoginIdentityDTO("employee", employee.getId(), employee.getName(), employee.getRole());
+            return new LoginIdentityDTO("employee", employee.getId(), employee.getName(), EnumTokens.of(employee.getRole()));
         }
 
         return null;

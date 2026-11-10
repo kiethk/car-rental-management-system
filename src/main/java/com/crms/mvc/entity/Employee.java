@@ -1,5 +1,6 @@
 package com.crms.mvc.entity;
 
+import com.crms.mvc.enums.EmployeeRole;
 import jakarta.persistence.*;
 
 @Entity
@@ -22,8 +23,9 @@ public class Employee {
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 20)
-    private String role;
+    private EmployeeRole role;
 
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
@@ -46,6 +48,6 @@ public class Employee {
     public String getPasswordHash() { return passwordHash; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public EmployeeRole getRole() { return role; }
+    public void setRole(EmployeeRole role) { this.role = role; }
 }

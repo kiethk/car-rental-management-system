@@ -1,5 +1,6 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.InspectionStatus;
 import com.crms.mvc.dto.VehicleInspectionFormDTO;
 import com.crms.mvc.entity.VehicleInspection;
 
@@ -16,7 +17,7 @@ public interface VehicleInspectionService {
 
     void startInspection(Long inspectionId);
 
-    void recordResult(Long inspectionId, String status, String notes, LocalDate newRegistrationExpiry);
+    void recordResult(Long inspectionId, InspectionStatus status, String notes, LocalDate newRegistrationExpiry);
 
     List<VehicleInspection> findByVehicleId(Long vehicleId);
 }

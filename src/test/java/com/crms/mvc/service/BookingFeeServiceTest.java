@@ -1,8 +1,10 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.PaymentStatus;
+import com.crms.mvc.enums.FeeType;
 import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Issue;
-import com.crms.mvc.entity.IssueStatus;
+import com.crms.mvc.enums.IssueStatus;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.repository.BookingFeeRepository;
 import com.crms.mvc.repository.BookingRepository;
@@ -38,9 +40,9 @@ class BookingFeeServiceTest {
         BookingFee resolved = issueFee(IssueStatus.RESOLVED, null);
         BookingFee cancelled = issueFee(IssueStatus.CANCELLED, null);
         Payment paid = new Payment();
-        paid.setStatus(Payment.STATUS_PAID);
+        paid.setStatus(PaymentStatus.PAID);
         BookingFee alreadyPaid = issueFee(IssueStatus.OPEN, paid);
-        BookingFee lateFee = plainFee("LATE_FEE");
+        BookingFee lateFee = plainFee(FeeType.LATE_FEE);
         when(feeRepository.findByBookingIdOrderByCreatedAtAsc(42L))
                 .thenReturn(List.of(ready, resolved, cancelled, alreadyPaid, lateFee));
 
@@ -52,7 +54,7 @@ class BookingFeeServiceTest {
     @Test
     void attachingAPaymentMarksEveryFeeAsTaken() {
         BookingFee first = issueFee(IssueStatus.RESOLVED, null);
-        BookingFee second = plainFee("LATE_FEE");
+        BookingFee second = plainFee(FeeType.LATE_FEE);
         Payment payment = new Payment();
 
         service.attachPayment(List.of(first, second), payment);
@@ -81,14 +83,14 @@ class BookingFeeServiceTest {
         Issue issue = new Issue();
         issue.setStatus(issueStatus);
         BookingFee fee = new BookingFee();
-        fee.setFeeType(BookingFee.FEE_TYPE_ISSUE_COMPENSATION);
+        fee.setFeeType(FeeType.ISSUE_COMPENSATION);
         fee.setIssue(issue);
         fee.setAmount(new BigDecimal("200000"));
         fee.setPayment(payment);
         return fee;
     }
 
-    private BookingFee plainFee(String type) {
+    private BookingFee plainFee(FeeType type) {
         BookingFee fee = new BookingFee();
         fee.setFeeType(type);
         fee.setAmount(new BigDecimal("50000"));

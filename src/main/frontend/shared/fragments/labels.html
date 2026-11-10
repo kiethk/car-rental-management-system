@@ -3,9 +3,9 @@
 <body>
 <!-- Vietnamese display labels for the lowercase codes stored on vehicle types. Unknown codes show as-is. -->
 <span th:fragment="transmission(value)"
-      th:text="${value == 'automatic' ? 'Số tự động' : (value == 'manual' ? 'Số sàn' : value)}">Số tự động</span>
+      th:text="${#strings.toLowerCase(value) == 'automatic' ? 'Số tự động' : (#strings.toLowerCase(value) == 'manual' ? 'Số sàn' : value)}">Số tự động</span>
 <span th:fragment="fuel(value)"
-      th:text="${value == 'gasoline' ? 'Xăng' : (value == 'diesel' ? 'Dầu diesel' : (value == 'electric' ? 'Điện' : (value == 'hybrid' ? 'Hybrid' : value)))}">Xăng</span>
+      th:text="${#strings.toLowerCase(value) == 'gasoline' ? 'Xăng' : (#strings.toLowerCase(value) == 'diesel' ? 'Dầu diesel' : (#strings.toLowerCase(value) == 'electric' ? 'Điện' : (#strings.toLowerCase(value) == 'hybrid' ? 'Hybrid' : value)))}">Xăng</span>
 <!-- Roles and vehicle statuses are stored as lowercase codes; the screens show the Vietnamese name. -->
 <span th:fragment="role(value)"
       th:text="${#strings.toLowerCase(value) == 'admin' ? 'Quản trị viên' : (#strings.toLowerCase(value) == 'staff' ? 'Nhân viên' : value)}">Nhân viên</span>

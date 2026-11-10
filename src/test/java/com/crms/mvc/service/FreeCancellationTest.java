@@ -1,5 +1,8 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.BookingStatus;
+import com.crms.mvc.enums.PaymentStatus;
+import com.crms.mvc.enums.PaymentType;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Customer;
@@ -69,14 +72,14 @@ class FreeCancellationTest {
         Booking booking = new Booking();
         booking.setId(5L);
         booking.setCustomer(customer);
-        booking.setStatus("confirmed");
+        booking.setStatus(BookingStatus.CONFIRMED);
         booking.setDepositAmount(new BigDecimal("500000"));
         booking.setPickupTime(OffsetDateTime.now().plusHours(24));
         when(bookings.findById(5L)).thenReturn(Optional.of(booking));
         when(contracts.getTermsOfBooking(5L)).thenReturn(terms());
         Payment deposit = new Payment();
-        deposit.setPaymentType(Payment.TYPE_DEPOSIT);
-        deposit.setStatus(Payment.STATUS_PAID);
+        deposit.setPaymentType(PaymentType.DEPOSIT);
+        deposit.setStatus(PaymentStatus.PAID);
         deposit.setPaidAt(OffsetDateTime.now().minusMinutes(10));
         when(payments.getPaymentsByBooking(5L)).thenReturn(List.of(deposit));
 

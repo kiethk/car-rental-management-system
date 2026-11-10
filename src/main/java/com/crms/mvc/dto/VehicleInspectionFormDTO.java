@@ -54,7 +54,7 @@ public class VehicleInspectionFormDTO {
         if (inspection.getCompletedAt() != null) {
             dto.setCompletedAt(inspection.getCompletedAt().toLocalDateTime());
         }
-        dto.setStatus(inspection.getStatus());
+        dto.setStatus(inspection.getStatus().name().toLowerCase());
         dto.setNotes(inspection.getNotes());
         return dto;
     }

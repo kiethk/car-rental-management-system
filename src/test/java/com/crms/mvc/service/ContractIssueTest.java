@@ -1,5 +1,6 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.BookingStatus;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Contract;
 import com.crms.mvc.repository.ContractRepository;
@@ -54,7 +55,7 @@ class ContractIssueTest {
     private Contract contract() {
         Booking booking = new Booking();
         booking.setId(4L);
-        booking.setStatus("confirmed");
+        booking.setStatus(BookingStatus.CONFIRMED);
         Contract contract = new Contract();
         contract.setContractNumber("CTR-20261102-0004");
         contract.setBooking(booking);

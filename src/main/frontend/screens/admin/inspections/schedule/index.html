@@ -38,7 +38,7 @@
                             <select th:field="*{vehicleId}" class="form-control rounded-lg" required>
                                 <option value="" disabled selected>-- Chọn một xe --</option>
                                 <option th:each="v : ${vehicles}" th:value="${v.id}"
-                                        th:text="'Xe #' + ${v.id} + ' — ' + ${v.vehicleType.displayName} + ' — Biển số: ' + (${v.licensePlate != null} ? ${v.licensePlate.plate} : 'Chưa có biển') + ' (Trạng thái: ' + (${v.status == 'available'} ? 'sẵn sàng' : (${v.status == 'rented'} ? 'đang thuê' : (${v.status == 'maintenance'} ? 'bảo dưỡng' : 'ngừng khai thác'))) + ')'"></option>
+                                        th:text="'Xe #' + ${v.id} + ' — ' + ${v.vehicleType.displayName} + ' — Biển số: ' + (${v.licensePlate != null} ? ${v.licensePlate.plate} : 'Chưa có biển') + ' (Trạng thái: ' + (${#strings.toLowerCase(v.status) == 'available'} ? 'sẵn sàng' : (${#strings.toLowerCase(v.status) == 'rented'} ? 'đang thuê' : (${#strings.toLowerCase(v.status) == 'maintenance'} ? 'bảo dưỡng' : 'ngừng khai thác'))) + ')'"></option>
                             </select>
                             <small class="text-danger" th:if="${#fields.hasErrors('vehicleId')}" th:errors="*{vehicleId}"></small>
                         </div>

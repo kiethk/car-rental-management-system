@@ -18,4 +18,6 @@ public interface ReviewService {
     Map<Long, RatingSummaryDTO> ratingsByVehicleType();
 
     void submit(Long bookingId, Long customerId, ReviewFormDTO form);
+
+    void update(Long bookingId, Long customerId, ReviewFormDTO form);
 }

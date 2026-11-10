@@ -1,5 +1,7 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.dto.LicensePlateChangeDTO;
 import com.crms.mvc.dto.LicensePlateDTO;
 import com.crms.mvc.dto.LicensePlateOverviewDTO;
@@ -36,7 +38,7 @@ public class LicensePlateServiceImpl implements LicensePlateService {
             return new LicensePlateOverviewDTO(
                     vehicle.getId(),
                     vehicle.getVehicleType().getDisplayName(),
-                    vehicle.getStatus(),
+                    EnumTokens.of(vehicle.getStatus()),
                     current != null ? current.getPlate() : null,
                     current != null ? current.getProvince() : null,
                     current != null ? current.getValidFrom() : null,
@@ -60,7 +62,7 @@ public class LicensePlateServiceImpl implements LicensePlateService {
         String newPlate = form.getPlate().trim().toUpperCase();
 
         if (current != null) {
-            if (Vehicle.STATUS_RENTED.equalsIgnoreCase(vehicle.getStatus())) {
+            if (vehicle.getStatus() == VehicleStatus.RENTED) {
                 throw new IllegalStateException("Không đổi được biển số khi xe đang cho thuê");
             }
             if (current.getPlate().equalsIgnoreCase(newPlate)) {

@@ -217,9 +217,9 @@
                             </td>
                             <td th:text="${#temporals.format(ins.scheduledDate, 'yyyy-MM-dd')}">2026-10-25</td>
                             <td>
-                                <span th:if="${ins.status == 'scheduled'}" class="badge bg-warning text-dark px-2 py-1">Đã lên lịch</span>
-                                <span th:if="${ins.status == 'passed'}" class="badge bg-success text-white px-2 py-1">Đạt</span>
-                                <span th:if="${ins.status == 'failed'}" class="badge bg-danger text-white px-2 py-1">Không đạt</span>
+                                <span th:if="${#strings.toLowerCase(ins.status) == 'scheduled'}" class="badge bg-warning text-dark px-2 py-1">Đã lên lịch</span>
+                                <span th:if="${#strings.toLowerCase(ins.status) == 'passed'}" class="badge bg-success text-white px-2 py-1">Đạt</span>
+                                <span th:if="${#strings.toLowerCase(ins.status) == 'failed'}" class="badge bg-danger text-white px-2 py-1">Không đạt</span>
                             </td>
                             <td class="text-muted" th:text="${ins.notes != null ? ins.notes : '—'}">Kiểm tra an toàn định kỳ</td>
                         </tr>

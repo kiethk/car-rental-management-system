@@ -1,8 +1,11 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.enums.FuelType;
+import com.crms.mvc.enums.Transmission;
+import com.crms.mvc.enums.VehicleCategory;
 import com.crms.mvc.dto.ContractTemplateDTO;
+import com.crms.mvc.enums.ContractTemplateStatus;
 import com.crms.mvc.dto.BookingCreateDTO;
-import com.crms.mvc.entity.ContractTemplateStatus;
 import com.crms.mvc.entity.LicensePlate;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleType;
@@ -99,10 +102,10 @@ class BookingCheckoutPageTest {
         type.setId(1L);
         type.setName("Vios");
         type.setBrand("Toyota");
-        type.setCategory("sedan");
+        type.setCategory(VehicleCategory.SEDAN);
         type.setSeats(5);
-        type.setTransmission("automatic");
-        type.setFuelType("gasoline");
+        type.setTransmission(Transmission.AUTOMATIC);
+        type.setFuelType(FuelType.GASOLINE);
         type.setPricePerHour(new BigDecimal("100000"));
         LicensePlate plate = new LicensePlate();
         plate.setPlate("51A-123.45");

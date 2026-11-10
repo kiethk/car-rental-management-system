@@ -1,5 +1,7 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.VehicleStatus;
+import com.crms.mvc.enums.InspectionStatus;
 import com.crms.mvc.dto.VehicleInspectionFormDTO;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleInspection;
@@ -35,7 +37,7 @@ class VehicleInspectionRetiredTest {
 
         retired = new Vehicle();
         retired.setId(7L);
-        retired.setStatus(Vehicle.STATUS_RETIRED);
+        retired.setStatus(VehicleStatus.RETIRED);
     }
 
     @Test
@@ -55,7 +57,7 @@ class VehicleInspectionRetiredTest {
 
         assertThrows(IllegalStateException.class, () -> service.startInspection(1L));
 
-        assertEquals(Vehicle.STATUS_RETIRED, retired.getStatus());
+        assertEquals(VehicleStatus.RETIRED, retired.getStatus());
         verify(vehicleRepository, never()).save(any());
     }
 
@@ -63,16 +65,16 @@ class VehicleInspectionRetiredTest {
     void aPassedInspectionDoesNotBringARetiredVehicleBack() {
         when(inspectionRepository.findById(1L)).thenReturn(Optional.of(inspectionOf(retired)));
 
-        assertThrows(IllegalStateException.class, () -> service.recordResult(1L, "passed", null, null));
+        assertThrows(IllegalStateException.class, () -> service.recordResult(1L, InspectionStatus.PASSED, null, null));
 
-        assertEquals(Vehicle.STATUS_RETIRED, retired.getStatus());
+        assertEquals(VehicleStatus.RETIRED, retired.getStatus());
         verify(vehicleRepository, never()).save(any());
     }
 
     private VehicleInspection inspectionOf(Vehicle vehicle) {
         VehicleInspection inspection = new VehicleInspection();
         inspection.setVehicle(vehicle);
-        inspection.setStatus("scheduled");
+        inspection.setStatus(InspectionStatus.SCHEDULED);
         return inspection;
     }
 }

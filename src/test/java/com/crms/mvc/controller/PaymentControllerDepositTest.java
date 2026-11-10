@@ -1,10 +1,12 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.service.LicenseDocumentService;
+import com.crms.mvc.enums.PaymentMethod;
+import com.crms.mvc.enums.BookingStatus;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.dto.DepositSessionDTO;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.PaymentService;
-import com.crms.mvc.service.VnPayGateway;
 import com.crms.mvc.support.PassThroughSessionAccountService;
 import com.crms.mvc.support.TestSessions;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,9 +39,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(PaymentController.class)
 @Import(PassThroughSessionAccountService.class)
 class PaymentControllerDepositTest {
+    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private PaymentService paymentService;
-    @MockitoBean private VnPayGateway gateway;
     @MockitoBean private BookingService bookingService;
 
     private MockHttpSession customer;
@@ -47,7 +49,7 @@ class PaymentControllerDepositTest {
     @BeforeEach
     void setUp() {
         customer = TestSessions.customer(1L, "John Doe");
-        when(gateway.verifySignature(any())).thenReturn(true);
+        when(paymentService.isValidGatewayReturn(any())).thenReturn(true);
     }
 
     // ---- starting the payment ----
@@ -61,7 +63,7 @@ class PaymentControllerDepositTest {
 
     @Test
     void someoneElsesBookingCannotBePaid() throws Exception {
-        givenBooking(42L, 2L, Booking.STATUS_PENDING_PAYMENT, OffsetDateTime.now());
+        givenBooking(42L, 2L, "pending_payment", OffsetDateTime.now());
 
         mvc.perform(post("/bookings/42/pay-deposit").session(customer))
                 .andExpect(redirectedUrl("/bookings/my-bookings"))
@@ -70,7 +72,7 @@ class PaymentControllerDepositTest {
 
     @Test
     void anAlreadyPaidBookingGoesStraightToTheSuccessPage() throws Exception {
-        givenBooking(42L, 1L, Booking.STATUS_CONFIRMED, OffsetDateTime.now());
+        givenBooking(42L, 1L, "confirmed", OffsetDateTime.now());
 
         mvc.perform(post("/bookings/42/pay-deposit").session(customer))
                 .andExpect(redirectedUrl("/bookings/42/success"));
@@ -78,7 +80,7 @@ class PaymentControllerDepositTest {
 
     @Test
     void aBookingThatIsNotWaitingForTheDepositIsExplained() throws Exception {
-        givenBooking(42L, 1L, Booking.STATUS_CANCELLED, OffsetDateTime.now());
+        givenBooking(42L, 1L, "cancelled", OffsetDateTime.now());
 
         mvc.perform(post("/bookings/42/pay-deposit").session(customer))
                 .andExpect(redirectedUrl("/bookings/42"))
@@ -87,7 +89,7 @@ class PaymentControllerDepositTest {
 
     @Test
     void aBookingLeftUnpaidForMoreThanFifteenMinutesIsCancelled() throws Exception {
-        givenBooking(42L, 1L, Booking.STATUS_PENDING_PAYMENT, OffsetDateTime.now().minusMinutes(16));
+        givenBooking(42L, 1L, "pending_payment", OffsetDateTime.now().minusMinutes(16));
 
         mvc.perform(post("/bookings/42/pay-deposit").session(customer))
                 .andExpect(redirectedUrl("/bookings/42"))
@@ -99,7 +101,7 @@ class PaymentControllerDepositTest {
 
     @Test
     void aFreshPendingBookingIsSentToTheGateway() throws Exception {
-        givenBooking(42L, 1L, Booking.STATUS_PENDING_PAYMENT, OffsetDateTime.now());
+        givenBooking(42L, 1L, "pending_payment", OffsetDateTime.now());
         when(paymentService.createDepositPaymentUrl(eq(42L), anyString())).thenReturn("https://sandbox.example/pay?x=1");
 
         mvc.perform(post("/bookings/42/pay-deposit").session(customer))
@@ -108,7 +110,7 @@ class PaymentControllerDepositTest {
 
     @Test
     void aGatewayFailureComesBackAsAMessageOnTheDepositPage() throws Exception {
-        givenBooking(42L, 1L, Booking.STATUS_PENDING_PAYMENT, OffsetDateTime.now());
+        givenBooking(42L, 1L, "pending_payment", OffsetDateTime.now());
         when(paymentService.createDepositPaymentUrl(eq(42L), anyString())).thenThrow(new IllegalStateException("down"));
 
         mvc.perform(post("/bookings/42/pay-deposit").session(customer))
@@ -120,18 +122,18 @@ class PaymentControllerDepositTest {
 
     @Test
     void aSuccessfulReturnConfirmsTheDeposit() throws Exception {
-        givenBooking(5L, 1L, Booking.STATUS_PENDING_PAYMENT, OffsetDateTime.now());
+        givenBooking(5L, 1L, "pending_payment", OffsetDateTime.now());
 
         mvc.perform(get("/payment/vnpay/return").param("vnp_TxnRef", "5_1700000000000").param("vnp_ResponseCode", "00")
                         .param("vnp_TransactionNo", "T9").param("vnp_Amount", "30000000"))
                 .andExpect(redirectedUrl("/bookings/5/success?vnp_TxnRef=5_1700000000000&vnp_TransactionNo=T9"));
 
-        verify(paymentService).confirmDeposit(5L, "T9", "VNPAY");
+        verify(paymentService).confirmDeposit(5L, "T9", PaymentMethod.VNPAY);
     }
 
     @Test
     void aReturnForABookingInTheWrongStateIsRefused() throws Exception {
-        givenBooking(5L, 1L, Booking.STATUS_CANCELLED, OffsetDateTime.now());
+        givenBooking(5L, 1L, "cancelled", OffsetDateTime.now());
 
         mvc.perform(get("/payment/vnpay/return").param("vnp_TxnRef", "5_1700000000000").param("vnp_ResponseCode", "00")
                         .param("vnp_Amount", "30000000"))
@@ -143,7 +145,7 @@ class PaymentControllerDepositTest {
 
     @Test
     void aReturnWithAnotherAmountThanTheDepositIsRefused() throws Exception {
-        givenBooking(5L, 1L, Booking.STATUS_PENDING_PAYMENT, OffsetDateTime.now());
+        givenBooking(5L, 1L, "pending_payment", OffsetDateTime.now());
 
         mvc.perform(get("/payment/vnpay/return").param("vnp_TxnRef", "5_1700000000000").param("vnp_ResponseCode", "00")
                         .param("vnp_Amount", "1"))

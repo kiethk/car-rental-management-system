@@ -1,5 +1,12 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.enums.PaymentMethod;
+
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.VehicleStatus;
+import com.crms.mvc.enums.BookingStatus;
+import com.crms.mvc.enums.PaymentStatus;
+import com.crms.mvc.enums.PaymentType;
 import com.crms.mvc.dto.CheckInDTO;
 import com.crms.mvc.dto.CheckOutDTO;
 import com.crms.mvc.dto.HandoverRecordDTO;
@@ -11,9 +18,10 @@ import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Employee;
 import com.crms.mvc.entity.Handover;
-import com.crms.mvc.entity.HandoverType;
-import com.crms.mvc.entity.IssueStatus;
-import com.crms.mvc.entity.IssueType;
+import com.crms.mvc.enums.FeeType;
+import com.crms.mvc.enums.HandoverType;
+import com.crms.mvc.enums.IssueStatus;
+import com.crms.mvc.enums.IssueType;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.repository.BookingRepository;
@@ -28,7 +36,8 @@ import com.crms.mvc.service.HandoverService;
 import com.crms.mvc.service.PaymentService;
 import com.crms.mvc.service.PricingService;
 import com.crms.mvc.util.DateTimeUtils;
-import com.crms.mvc.util.EmployeeRole;
+import com.crms.mvc.enums.EmployeeRole;
+import com.crms.mvc.util.EnumTokens;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,7 +95,7 @@ public class HandoverServiceImpl implements HandoverService {
         Booking booking = findBooking(bookingId);
         Employee actor = requireHandler(booking, employeeId);
 
-        if (!Booking.STATUS_CONFIRMED.equalsIgnoreCase(booking.getStatus())) {
+        if (booking.getStatus() != BookingStatus.CONFIRMED) {
             throw new IllegalStateException("Đơn thuê phải được xác nhận trước khi bàn giao xe");
         }
         Vehicle vehicle = booking.getVehicle();
@@ -125,15 +134,15 @@ public class HandoverServiceImpl implements HandoverService {
         record.setIdCardImageUrl(fileUploadService.saveHandoverImage(form.getIdCardImage()));
         handoverRepository.save(record);
         if (rentalBalance.signum() > 0) {
-            paymentService.recordRentalBalancePayment(bookingId, rentalBalance, form.getPaymentMethod());
+            paymentService.recordRentalBalancePayment(bookingId, rentalBalance, PaymentMethod.from(form.getPaymentMethod()));
         }
 
         vehicle.setOdometer(form.getOdometer());
-        vehicle.setStatus(Vehicle.STATUS_RENTED);
+        vehicle.setStatus(VehicleStatus.RENTED);
         vehicleRepository.save(vehicle);
 
         booking.setActualPickupTime(OffsetDateTime.now());
-        booking.setStatus(Booking.STATUS_ACTIVE);
+        booking.setStatus(BookingStatus.ACTIVE);
         bookingRepository.save(booking);
     }
 
@@ -142,7 +151,7 @@ public class HandoverServiceImpl implements HandoverService {
         Booking booking = findBooking(bookingId);
         Employee actor = requireHandler(booking, employeeId);
 
-        if (!Booking.STATUS_ACTIVE.equalsIgnoreCase(booking.getStatus())) {
+        if (booking.getStatus() != BookingStatus.ACTIVE) {
             throw new IllegalStateException("Đơn thuê không ở trạng thái đang thuê");
         }
         if (handoverRepository.existsByBookingIdAndType(bookingId, HandoverType.CHECK_OUT)) {
@@ -165,11 +174,11 @@ public class HandoverServiceImpl implements HandoverService {
         BigDecimal lateFee = pricingService.calculateLateFee(
                 booking.getScheduledEndTime(), returnedAt, booking.getPricePerHour(), multiplier);
         if (lateFee != null && lateFee.signum() > 0) {
-            bookingFeeService.recordFee(bookingId, FEE_LATE, lateFee, "Phí trả xe trễ", null);
+            bookingFeeService.recordFee(bookingId, FeeType.LATE_FEE, lateFee, "Phí trả xe trễ", null);
         }
 
         vehicle.setOdometer(form.getOdometer());
-        vehicle.setStatus(form.isMoveToMaintenance() ? Vehicle.STATUS_MAINTENANCE : Vehicle.STATUS_AVAILABLE);
+        vehicle.setStatus(form.isMoveToMaintenance() ? VehicleStatus.MAINTENANCE : VehicleStatus.AVAILABLE);
         vehicleRepository.save(vehicle);
         bookingRepository.save(booking);
     }
@@ -179,7 +188,7 @@ public class HandoverServiceImpl implements HandoverService {
         Booking booking = findBooking(bookingId);
         requireHandler(booking, employeeId);
 
-        if (!Booking.STATUS_ACTIVE.equalsIgnoreCase(booking.getStatus())) {
+        if (booking.getStatus() != BookingStatus.ACTIVE) {
             throw new IllegalStateException("Đơn thuê không ở bước chờ quyết toán");
         }
         Handover record = handoverRepository.findByBookingIdAndType(bookingId, HandoverType.CHECK_OUT)
@@ -199,7 +208,7 @@ public class HandoverServiceImpl implements HandoverService {
             if (form.getPaymentMethod() == null || !PAYMENT_METHODS.contains(form.getPaymentMethod())) {
                 throw new IllegalArgumentException("Vui lòng chọn tiền mặt hoặc chuyển khoản");
             }
-            Payment finalPayment = paymentService.recordFinalPayment(bookingId, finalAmount, form.getPaymentMethod());
+            Payment finalPayment = paymentService.recordFinalPayment(bookingId, finalAmount, PaymentMethod.from(form.getPaymentMethod()));
             // Ties every fee to the payment that collected it; open Issues among them become RESOLVED.
             if (!unpaid.isEmpty()) {
                 bookingFeeService.attachPayment(unpaid, finalPayment);
@@ -209,14 +218,14 @@ public class HandoverServiceImpl implements HandoverService {
         record.setSettledAt(OffsetDateTime.now());
         handoverRepository.save(record);
 
-        booking.setStatus(Booking.STATUS_COMPLETED);
+        booking.setStatus(BookingStatus.COMPLETED);
         bookingRepository.save(booking);
     }
 
     @Override
     public void reassignStaff(Long bookingId, Long staffId) {
         Booking booking = findBooking(bookingId);
-        if (Booking.STATUS_COMPLETED.equalsIgnoreCase(booking.getStatus()) || Booking.STATUS_CANCELLED.equalsIgnoreCase(booking.getStatus())) {
+        if (booking.getStatus() == BookingStatus.COMPLETED || booking.getStatus() == BookingStatus.CANCELLED) {
             throw new IllegalStateException("Đơn thuê này đã đóng");
         }
         Employee staff = employeeRepository.findById(staffId)
@@ -276,19 +285,19 @@ public class HandoverServiceImpl implements HandoverService {
         receipt.setRentalTotal(booking.getTotalPrice());
         receipt.setDepositAmount(booking.getDepositAmount());
         for (BookingFee fee : bookingFeeService.getFeesByBooking(bookingId)) {
-            String description = hasText(fee.getDescription()) ? fee.getDescription() : fee.getFeeType();
+            String description = hasText(fee.getDescription()) ? fee.getDescription() : (fee.getFeeType() != null ? fee.getFeeType().getLabel() : "");
             receipt.getLines().add(new ReturnReceiptLineDTO(description, fee.getAmount(), isPaidEarlier(fee)));
         }
 
         receipt.setSettled(record.isSettled());
         if (record.isSettled()) {
             Optional<Payment> finalPayment = paymentService.getPaymentsByBooking(bookingId).stream()
-                    .filter(p -> Payment.TYPE_FINAL.equals(p.getPaymentType())
-                            && Payment.STATUS_PAID.equalsIgnoreCase(p.getStatus()))
+                    .filter(p -> PaymentType.FINAL == p.getPaymentType()
+                            && PaymentStatus.PAID == p.getStatus())
                     .findFirst();
             receipt.setAmountDue(finalPayment.map(Payment::getAmount).orElse(BigDecimal.ZERO));
             finalPayment.ifPresent(p -> {
-                receipt.setPaymentMethod(p.getPaymentMethod());
+                receipt.setPaymentMethod(EnumTokens.name(p.getPaymentMethod()));
                 receipt.setPaidAt(DateTimeUtils.toVietnamTime(p.getPaidAt()));
             });
         } else {
@@ -315,7 +324,7 @@ public class HandoverServiceImpl implements HandoverService {
         Employee actor = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy nhân viên: " + employeeId));
         boolean assigned = booking.getEmployee() != null && employeeId.equals(booking.getEmployee().getId());
-        if (!assigned && !EmployeeRole.ADMIN.equals(actor.getRole())) {
+        if (!assigned && actor.getRole() != EmployeeRole.ADMIN) {
             throw new IllegalStateException("Chỉ nhân viên phụ trách hoặc quản trị viên được thực hiện thao tác này");
         }
         return actor;
@@ -331,8 +340,8 @@ public class HandoverServiceImpl implements HandoverService {
     private boolean isPaidEarlier(BookingFee fee) {
         Payment payment = fee.getPayment();
         return payment != null
-                && Payment.STATUS_PAID.equalsIgnoreCase(payment.getStatus())
-                && !Payment.TYPE_FINAL.equals(payment.getPaymentType());
+                && PaymentStatus.PAID == payment.getStatus()
+                && PaymentType.FINAL != payment.getPaymentType();
     }
 
     private BigDecimal sum(List<BookingFee> fees) {
@@ -377,7 +386,7 @@ public class HandoverServiceImpl implements HandoverService {
             throw new IllegalStateException("Chưa đến giờ nhận xe. Chỉ được bàn giao từ "
                     + DateTimeUtils.formatToVietnamTime(scheduledPickup) + ".");
         }
-        if (!Vehicle.STATUS_AVAILABLE.equalsIgnoreCase(vehicle.getStatus())) {
+        if (vehicle.getStatus() != VehicleStatus.AVAILABLE) {
             throw new IllegalStateException("Xe được gán chưa sẵn sàng bàn giao (trạng thái: " + vehicle.getStatus()
                     + "). Hãy đổi sang xe khác cùng loại cho đơn này.");
         }

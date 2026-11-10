@@ -1,4 +1,4 @@
-package com.crms.mvc.entity;
+package com.crms.mvc.enums;
 
 /** Which side of the rental a Handover records. */
 public enum HandoverType {

@@ -1,5 +1,9 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.enums.PaymentMethod;
+
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.BookingStatus;
 import com.crms.mvc.util.CurrentAccount;
 import com.crms.mvc.config.VnPayConfig;
 import com.crms.mvc.dto.DepositSessionDTO;
@@ -7,7 +11,6 @@ import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.PaymentService;
-import com.crms.mvc.service.VnPayGateway;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
@@ -33,12 +36,10 @@ public class PaymentController {
 
     private final PaymentService paymentService;
     private final BookingService bookingService;
-    private final VnPayGateway vnPayGateway;
 
-    public PaymentController(PaymentService paymentService, BookingService bookingService, VnPayGateway gateway) {
+    public PaymentController(PaymentService paymentService, BookingService bookingService) {
         this.paymentService = paymentService;
         this.bookingService = bookingService;
-        this.vnPayGateway = gateway;
     }
 
     @PostMapping("/bookings/{id}/pay-deposit")
@@ -63,11 +64,11 @@ public class PaymentController {
             return "redirect:/bookings/my-bookings";
         }
 
-        if (Booking.STATUS_CONFIRMED.equalsIgnoreCase(deposit.status())) {
+        if (EnumTokens.is(BookingStatus.CONFIRMED, deposit.status())) {
             return "redirect:/bookings/" + bookingId + "/success";
         }
 
-        if (!Booking.STATUS_PENDING_PAYMENT.equalsIgnoreCase(deposit.status())) {
+        if (!EnumTokens.is(BookingStatus.PENDING_PAYMENT, deposit.status())) {
             ra.addFlashAttribute("error", "Đơn đặt xe không ở trạng thái chờ đặt cọc (Trạng thái hiện tại: " + deposit.status() + ").");
             return "redirect:/bookings/" + bookingId;
         }
@@ -141,7 +142,7 @@ public class PaymentController {
             return "redirect:/";
         }
 
-        boolean isValidSignature = vnPayGateway.verifySignature(allParams);
+        boolean isValidSignature = paymentService.isValidGatewayReturn(allParams);
         if (!isValidSignature) {
             log.error("{} signature verification failed for TxnRef: {}", gateway, vnp_TxnRef);
             ra.addFlashAttribute("error", "Xác minh thanh toán thất bại: chữ ký số không hợp lệ.");
@@ -156,7 +157,7 @@ public class PaymentController {
                     return "redirect:/";
                 }
 
-                if (!Booking.STATUS_PENDING_PAYMENT.equalsIgnoreCase(deposit.status()) && !Booking.STATUS_CONFIRMED.equalsIgnoreCase(deposit.status())) {
+                if (!EnumTokens.is(BookingStatus.PENDING_PAYMENT, deposit.status()) && !EnumTokens.is(BookingStatus.CONFIRMED, deposit.status())) {
                     ra.addFlashAttribute("error", "Đơn đặt xe không ở trạng thái chờ thanh toán (trạng thái: " + deposit.status() + ").");
                     return "redirect:/bookings/" + bookingId;
                 }
@@ -172,7 +173,7 @@ public class PaymentController {
                     }
                 }
 
-                paymentService.confirmDeposit(bookingId, transactionNo, gateway);
+                paymentService.confirmDeposit(bookingId, transactionNo, PaymentMethod.from(gateway));
                 log.info("Successfully processed deposit for booking {} via {} (Txn: {})", bookingId, gateway, transactionNo);
                 return "redirect:/bookings/" + bookingId + "/success?vnp_TxnRef=" + vnp_TxnRef +
                         (transactionNo != null ? "&vnp_TransactionNo=" + transactionNo : "");
@@ -192,7 +193,7 @@ public class PaymentController {
 
     /** Return from the gateway for fees owed after settlement (reference "I{paymentId}_{time}"). */
     private String handleIssuePaymentReturn(String txnRef, Map<String, String> params, RedirectAttributes ra) {
-        if (!vnPayGateway.verifySignature(params)) {
+        if (!paymentService.isValidGatewayReturn(params)) {
             log.error("Signature verification failed for issue payment reference {}", txnRef);
             ra.addFlashAttribute("error", "Xác minh thanh toán thất bại: chữ ký số không hợp lệ.");
             return "redirect:/bookings/my-bookings";

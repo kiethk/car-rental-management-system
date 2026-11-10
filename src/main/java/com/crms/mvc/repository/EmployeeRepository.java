@@ -12,8 +12,8 @@ import java.util.List;
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     Employee findByEmailIgnoreCase(String email);
 
-    @Query("SELECT e FROM Employee e WHERE e.role = 'staff' AND e.active = true " +
-           "ORDER BY (SELECT count(b) FROM Booking b WHERE b.employee = e AND b.status IN ('confirmed', 'active', 'pending_payment')) ASC, e.id ASC")
+    @Query("SELECT e FROM Employee e WHERE e.role = com.crms.mvc.enums.EmployeeRole.STAFF AND e.active = true " +
+           "ORDER BY (SELECT count(b) FROM Booking b WHERE b.employee = e AND b.status IN (com.crms.mvc.enums.BookingStatus.CONFIRMED, com.crms.mvc.enums.BookingStatus.ACTIVE, com.crms.mvc.enums.BookingStatus.PENDING_PAYMENT)) ASC, e.id ASC")
     List<Employee> findLeastLoadedStaff(Pageable pageable);
 
     List<Employee> findByActiveTrueOrderByNameAsc();

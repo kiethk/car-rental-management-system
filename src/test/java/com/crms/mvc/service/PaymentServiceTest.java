@@ -1,5 +1,11 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.service.impl.VnPayGateway;
+import com.crms.mvc.enums.PaymentMethod;
+import com.crms.mvc.enums.BookingStatus;
+import com.crms.mvc.enums.FeeType;
+import com.crms.mvc.enums.PaymentStatus;
+import com.crms.mvc.enums.PaymentType;
 import com.crms.mvc.config.VnPayConfig;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.BookingFee;
@@ -77,8 +83,8 @@ public class PaymentServiceTest {
         Payment refund = paymentService.createPendingRefund(10L, new BigDecimal("500000"), "VCB", "1234567890", "NGUYEN VAN A");
 
         assertNotNull(refund);
-        assertEquals("REFUND", refund.getPaymentType());
-        assertEquals("pending", refund.getStatus());
+        assertEquals(PaymentType.REFUND, refund.getPaymentType());
+        assertEquals(PaymentStatus.PENDING, refund.getStatus());
         assertEquals(new BigDecimal("500000"), refund.getAmount());
         assertEquals("VCB: 1234567890 - NGUYEN VAN A", refund.getTransactionCode());
     }
@@ -91,8 +97,8 @@ public class PaymentServiceTest {
         Payment payment = new Payment();
         payment.setId(100L);
         payment.setBooking(booking);
-        payment.setPaymentType("REFUND");
-        payment.setStatus("pending");
+        payment.setPaymentType(PaymentType.REFUND);
+        payment.setStatus(PaymentStatus.PENDING);
         payment.setTransactionCode("VCB: 1234567890 - NGUYEN VAN A");
 
         Mockito.when(paymentRepository.findById(100L)).thenReturn(Optional.of(payment));
@@ -101,7 +107,7 @@ public class PaymentServiceTest {
         Payment confirmed = paymentService.confirmRefundCompleted(100L, 1L, null);
 
         assertNotNull(confirmed);
-        assertEquals("paid", confirmed.getStatus());
+        assertEquals(PaymentStatus.PAID, confirmed.getStatus());
         assertNotNull(confirmed.getPaidAt());
         Mockito.verify(eventPublisher, Mockito.times(1)).publishEvent(Mockito.any(RefundCompletedEvent.class));
     }
@@ -109,25 +115,25 @@ public class PaymentServiceTest {
     @Test
     public void testALiveIssuePaymentSessionIsReported() {
         Payment pending = new Payment();
-        pending.setStatus(Payment.STATUS_PENDING);
+        pending.setStatus(PaymentStatus.PENDING);
         pending.setTransactionCode("ISSUE-11-" + System.currentTimeMillis());
         Mockito.when(paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(
-                11L, Payment.TYPE_ISSUE_COMPENSATION, Payment.STATUS_PENDING)).thenReturn(Optional.of(pending));
+                11L, PaymentType.ISSUE_COMPENSATION, PaymentStatus.PENDING)).thenReturn(Optional.of(pending));
 
         assertTrue(paymentService.hasLiveIssuePaymentSession(11L));
-        assertEquals(Payment.STATUS_PENDING, pending.getStatus());
+        assertEquals(PaymentStatus.PENDING, pending.getStatus());
     }
 
     @Test
     public void testAnExpiredIssuePaymentSessionIsReleasedAndDoesNotBlock() {
         Payment pending = new Payment();
-        pending.setStatus(Payment.STATUS_PENDING);
+        pending.setStatus(PaymentStatus.PENDING);
         pending.setTransactionCode("ISSUE-11-" + (System.currentTimeMillis() - 16 * 60 * 1000L));
         Mockito.when(paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(
-                11L, Payment.TYPE_ISSUE_COMPENSATION, Payment.STATUS_PENDING)).thenReturn(Optional.of(pending));
+                11L, PaymentType.ISSUE_COMPENSATION, PaymentStatus.PENDING)).thenReturn(Optional.of(pending));
 
         assertFalse(paymentService.hasLiveIssuePaymentSession(11L));
-        assertEquals(Payment.STATUS_FAILED, pending.getStatus());
+        assertEquals(PaymentStatus.FAILED, pending.getStatus());
         Mockito.verify(bookingFeeService).detachPayment(pending);
     }
 
@@ -136,8 +142,8 @@ public class PaymentServiceTest {
     @Test
     public void testIssuePaymentChargesExactlyTheOutstandingFeesAndTakesThem() {
         Booking booking = openRentalOf(5L);
-        BookingFee first = fee("ISSUE_COMPENSATION", "200000");
-        BookingFee second = fee("ISSUE_COMPENSATION", "500000");
+        BookingFee first = fee(FeeType.ISSUE_COMPENSATION, "200000");
+        BookingFee second = fee(FeeType.ISSUE_COMPENSATION, "500000");
         Mockito.when(bookingFeeService.getSettleableIssueFees(42L)).thenReturn(List.of(first, second));
         Mockito.when(paymentRepository.save(Mockito.any(Payment.class))).thenAnswer(invocation -> {
             Payment saved = invocation.getArgument(0);
@@ -150,8 +156,8 @@ public class PaymentServiceTest {
         org.mockito.ArgumentCaptor<Payment> captor = org.mockito.ArgumentCaptor.forClass(Payment.class);
         Mockito.verify(paymentRepository).save(captor.capture());
         Payment pending = captor.getValue();
-        assertEquals(Payment.TYPE_ISSUE_COMPENSATION, pending.getPaymentType());
-        assertEquals("pending", pending.getStatus());
+        assertEquals(PaymentType.ISSUE_COMPENSATION, pending.getPaymentType());
+        assertEquals(PaymentStatus.PENDING, pending.getStatus());
         assertEquals(new BigDecimal("700000"), pending.getAmount());
         assertSame(booking, pending.getBooking());
         Mockito.verify(bookingFeeService).attachPayment(List.of(first, second), pending);
@@ -177,7 +183,7 @@ public class PaymentServiceTest {
         assertThrows(IllegalStateException.class, () -> paymentService.createIssuePaymentUrl(42L, 5L, "127.0.0.1"));
 
         // a settled booking is closed: its Issue fees were collected by the settlement
-        booking.setStatus("completed");
+        booking.setStatus(BookingStatus.COMPLETED);
         assertThrows(IllegalStateException.class, () -> paymentService.createIssuePaymentUrl(42L, 5L, "127.0.0.1"));
 
         Mockito.verify(paymentRepository, Mockito.never()).save(Mockito.any());
@@ -188,16 +194,16 @@ public class PaymentServiceTest {
         openRentalOf(5L);
         Payment stale = new Payment();
         stale.setId(70L);
-        stale.setPaymentType(Payment.TYPE_ISSUE_COMPENSATION);
-        stale.setStatus("pending");
-        Mockito.when(paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(42L, Payment.TYPE_ISSUE_COMPENSATION, "pending"))
+        stale.setPaymentType(PaymentType.ISSUE_COMPENSATION);
+        stale.setStatus(PaymentStatus.PENDING);
+        Mockito.when(paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(42L, PaymentType.ISSUE_COMPENSATION, PaymentStatus.PENDING))
                 .thenReturn(Optional.of(stale));
-        Mockito.when(bookingFeeService.getSettleableIssueFees(42L)).thenReturn(List.of(fee("ISSUE_COMPENSATION", "200000")));
+        Mockito.when(bookingFeeService.getSettleableIssueFees(42L)).thenReturn(List.of(fee(FeeType.ISSUE_COMPENSATION, "200000")));
         Mockito.when(paymentRepository.save(Mockito.any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         paymentService.createIssuePaymentUrl(42L, 5L, "127.0.0.1");
 
-        assertEquals("failed", stale.getStatus());
+        assertEquals(PaymentStatus.FAILED, stale.getStatus());
         Mockito.verify(bookingFeeService).detachPayment(stale);
     }
 
@@ -207,7 +213,7 @@ public class PaymentServiceTest {
 
         Payment paid = paymentService.confirmIssuePayment(77L, "VNP123", 70000000L);
 
-        assertEquals("paid", paid.getStatus());
+        assertEquals(PaymentStatus.PAID, paid.getStatus());
         assertEquals("VNP123", paid.getTransactionCode());
         assertNotNull(paid.getPaidAt());
 
@@ -228,7 +234,7 @@ public class PaymentServiceTest {
         openRentalOf(5L);
         Mockito.when(paymentRepository.save(Mockito.any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        paymentService.recordRentalBalancePayment(42L, new BigDecimal("500000"), "CASH");
+        paymentService.recordRentalBalancePayment(42L, new BigDecimal("500000"), PaymentMethod.CASH);
 
         org.mockito.ArgumentCaptor<PaymentReceivedEvent> thanks = org.mockito.ArgumentCaptor.forClass(PaymentReceivedEvent.class);
         Mockito.verify(eventPublisher).publishEvent(thanks.capture());
@@ -241,7 +247,7 @@ public class PaymentServiceTest {
         openRentalOf(5L);
         Mockito.when(paymentRepository.save(Mockito.any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        paymentService.recordFinalPayment(42L, new BigDecimal("300000"), "BANK_TRANSFER");
+        paymentService.recordFinalPayment(42L, new BigDecimal("300000"), PaymentMethod.BANK_TRANSFER);
 
         org.mockito.ArgumentCaptor<PaymentReceivedEvent> thanks = org.mockito.ArgumentCaptor.forClass(PaymentReceivedEvent.class);
         Mockito.verify(eventPublisher).publishEvent(thanks.capture());
@@ -254,13 +260,13 @@ public class PaymentServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> paymentService.confirmIssuePayment(77L, "VNP123", 100L));
 
-        assertEquals("pending", pending.getStatus());
+        assertEquals(PaymentStatus.PENDING, pending.getStatus());
     }
 
     @Test
     public void testAnIssuePaymentThatAlreadyExpiredCannotBeConfirmed() {
         Payment expired = pendingIssuePayment(77L, "700000");
-        expired.setStatus("failed");
+        expired.setStatus(PaymentStatus.FAILED);
 
         assertThrows(IllegalStateException.class, () -> paymentService.confirmIssuePayment(77L, "VNP123", 70000000L));
     }
@@ -270,14 +276,14 @@ public class PaymentServiceTest {
         Booking booking = openRentalOf(5L);
         Payment payment = pendingIssuePayment(77L, "700000");
         payment.setBooking(booking);
-        payment.setStatus("failed");
+        payment.setStatus(PaymentStatus.FAILED);
 
-        BookingFee fee = fee("ISSUE_COMPENSATION", "700000");
+        BookingFee fee = fee(FeeType.ISSUE_COMPENSATION, "700000");
         Mockito.when(bookingFeeService.getSettleableIssueFees(42L)).thenReturn(List.of(fee));
 
         Payment paid = paymentService.confirmIssuePayment(77L, "VNP123", 70000000L);
 
-        assertEquals("paid", paid.getStatus());
+        assertEquals(PaymentStatus.PAID, paid.getStatus());
         assertEquals("VNP123", paid.getTransactionCode());
         Mockito.verify(bookingFeeService).attachPayment(List.of(fee), payment);
     }
@@ -288,18 +294,18 @@ public class PaymentServiceTest {
 
         Payment failed = paymentService.failIssuePayment(77L);
 
-        assertEquals("failed", failed.getStatus());
+        assertEquals(PaymentStatus.FAILED, failed.getStatus());
         Mockito.verify(bookingFeeService).detachPayment(pending);
     }
 
     @Test
     public void testAFailureReportedForAnAlreadyPaidIssuePaymentIsIgnored() {
         Payment paid = pendingIssuePayment(77L, "700000");
-        paid.setStatus("paid");
+        paid.setStatus(PaymentStatus.PAID);
 
         Payment result = paymentService.failIssuePayment(77L);
 
-        assertEquals("paid", result.getStatus());
+        assertEquals(PaymentStatus.PAID, result.getStatus());
         Mockito.verify(bookingFeeService, Mockito.never()).detachPayment(Mockito.any());
     }
 
@@ -309,7 +315,7 @@ public class PaymentServiceTest {
         Booking booking = new Booking();
         booking.setId(42L);
         booking.setCustomer(customer);
-        booking.setStatus("active");
+        booking.setStatus(BookingStatus.ACTIVE);
         Mockito.when(bookingRepository.findById(42L)).thenReturn(Optional.of(booking));
         return booking;
     }
@@ -317,8 +323,8 @@ public class PaymentServiceTest {
     private Payment pendingIssuePayment(Long id, String amount) {
         Payment payment = new Payment();
         payment.setId(id);
-        payment.setPaymentType(Payment.TYPE_ISSUE_COMPENSATION);
-        payment.setStatus("pending");
+        payment.setPaymentType(PaymentType.ISSUE_COMPENSATION);
+        payment.setStatus(PaymentStatus.PENDING);
         payment.setAmount(new BigDecimal(amount));
         payment.setBooking(openRentalOf(5L));
         Mockito.when(paymentRepository.findById(id)).thenReturn(Optional.of(payment));
@@ -326,7 +332,7 @@ public class PaymentServiceTest {
         return payment;
     }
 
-    private BookingFee fee(String type, String amount) {
+    private BookingFee fee(FeeType type, String amount) {
         BookingFee fee = new BookingFee();
         fee.setFeeType(type);
         fee.setAmount(new BigDecimal(amount));

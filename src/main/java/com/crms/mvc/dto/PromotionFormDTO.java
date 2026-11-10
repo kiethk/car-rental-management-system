@@ -1,5 +1,6 @@
 package com.crms.mvc.dto;
 
+import com.crms.mvc.util.EnumTokens;
 import com.crms.mvc.entity.Promotion;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
@@ -50,7 +51,7 @@ public class PromotionFormDTO {
         PromotionFormDTO dto = new PromotionFormDTO();
         dto.setId(promotion.getId());
         dto.setCode(promotion.getCode());
-        dto.setDiscountType(promotion.getDiscountType());
+        dto.setDiscountType(EnumTokens.of(promotion.getDiscountType()));
         dto.setDiscountValue(promotion.getDiscountValue());
         dto.setStartDate(promotion.getStartDate());
         dto.setEndDate(promotion.getEndDate());

@@ -1,6 +1,7 @@
 package com.crms.mvc.dto;
 
-import com.crms.mvc.util.EmployeeRole;
+import com.crms.mvc.enums.EmployeeRole;
+import com.crms.mvc.util.EnumTokens;
 
 import java.io.Serializable;
 
@@ -41,7 +42,7 @@ public final class SessionAccount implements Serializable {
     }
 
     public boolean isAdmin() {
-        return isEmployee() && EmployeeRole.ADMIN.equals(role);
+        return isEmployee() && EnumTokens.is(EmployeeRole.ADMIN, role);
     }
 
     public boolean isStaffOrAdmin() {

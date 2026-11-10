@@ -1,5 +1,7 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.service.LicenseDocumentService;
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.support.PassThroughSessionAccountService;
 import org.springframework.context.annotation.Import;
 import com.crms.mvc.support.TestSessions;
@@ -42,6 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(AdminVehicleController.class)
 @Import(PassThroughSessionAccountService.class)
 class AdminVehicleRetireTest {
+    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private VehicleService vehicleService;
     @MockitoBean private VehicleTypeService vehicleTypeService;
@@ -132,7 +135,7 @@ class AdminVehicleRetireTest {
     void staffCanStillEditAVehicleThatIsAlreadyRetired() throws Exception {
         VehicleDTO retired = new VehicleDTO();
         retired.setId(5L);
-        retired.setStatus(Vehicle.STATUS_RETIRED);
+        retired.setStatus("retired");
         when(vehicleService.findVehicleById(5L)).thenReturn(Optional.of(retired));
 
         mvc.perform(editForm(staff, "retired"))
@@ -146,7 +149,7 @@ class AdminVehicleRetireTest {
     void onlyAdminsAreOfferedTheRetiredStatusInTheEditForm() throws Exception {
         VehicleFormDTO working = new VehicleFormDTO();
         working.setId(5L);
-        working.setStatus(Vehicle.STATUS_AVAILABLE);
+        working.setStatus("available");
         when(vehicleService.findFormById(5L)).thenReturn(Optional.of(working));
 
         mvc.perform(get("/admin/vehicles/5/edit").session(admin))

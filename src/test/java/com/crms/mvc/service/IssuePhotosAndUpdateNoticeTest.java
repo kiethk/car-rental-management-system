@@ -1,5 +1,7 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.BookingStatus;
+import com.crms.mvc.enums.FeeType;
 import com.crms.mvc.dto.IssueActor;
 import com.crms.mvc.dto.IssueFormDTO;
 import com.crms.mvc.entity.Booking;
@@ -7,8 +9,8 @@ import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Employee;
 import com.crms.mvc.entity.Issue;
 import com.crms.mvc.entity.IssueEvidence;
-import com.crms.mvc.entity.IssueStatus;
-import com.crms.mvc.entity.IssueType;
+import com.crms.mvc.enums.IssueStatus;
+import com.crms.mvc.enums.IssueType;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.event.IssueUpdatedEvent;
 import com.crms.mvc.repository.BookingFeeRepository;
@@ -19,7 +21,6 @@ import com.crms.mvc.repository.IssueRepository;
 import com.crms.mvc.repository.LicensePlateRepository;
 import com.crms.mvc.service.impl.IssueServiceImpl;
 import com.crms.mvc.util.DateTimeUtils;
-import com.crms.mvc.util.EmployeeRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -55,7 +56,7 @@ class IssuePhotosAndUpdateNoticeTest {
     private ApplicationEventPublisher eventPublisher;
     private IssueService service;
 
-    private final IssueActor staff = new IssueActor(2L, EmployeeRole.STAFF);
+    private final IssueActor staff = new IssueActor(2L, "staff");
 
     @BeforeEach
     void setUp() {
@@ -186,7 +187,7 @@ class IssuePhotosAndUpdateNoticeTest {
         vehicle.setId(9L);
         Booking booking = new Booking();
         booking.setId(42L);
-        booking.setStatus(Booking.STATUS_ACTIVE);
+        booking.setStatus(BookingStatus.ACTIVE);
         booking.setVehicle(vehicle);
         when(bookingRepository.findById(42L)).thenReturn(Optional.of(booking));
         return booking;
@@ -199,7 +200,6 @@ class IssuePhotosAndUpdateNoticeTest {
         Issue issue = new Issue();
         issue.setId(7L);
         issue.setBooking(booking);
-        issue.setVehicle(booking.getVehicle());
         issue.setIssueType(original.getIssueType());
         issue.setSubject(original.getSubject());
         issue.setDescription(original.getDescription());
@@ -211,7 +211,7 @@ class IssuePhotosAndUpdateNoticeTest {
         BookingFee existing = new BookingFee();
         existing.setBooking(booking);
         existing.setIssue(issue);
-        existing.setFeeType(BookingFee.FEE_TYPE_ISSUE_COMPENSATION);
+        existing.setFeeType(FeeType.ISSUE_COMPENSATION);
         existing.setAmount(new BigDecimal(fee));
         when(bookingFeeRepository.findByIssueId(7L)).thenReturn(List.of(existing));
         return issue;

@@ -1,6 +1,7 @@
 package com.crms.mvc.dto;
 
-import com.crms.mvc.util.EmployeeRole;
+import com.crms.mvc.enums.EmployeeRole;
+import com.crms.mvc.util.EnumTokens;
 
 /** Who is acting on an Issue: the logged-in employee and their role, so the service can enforce admin-only steps. */
 public record IssueActor(Long employeeId, String role) {
@@ -9,6 +10,6 @@ public record IssueActor(Long employeeId, String role) {
     }
 
     public boolean isAdmin() {
-        return EmployeeRole.ADMIN.equals(role);
+        return EnumTokens.is(EmployeeRole.ADMIN, role);
     }
 }

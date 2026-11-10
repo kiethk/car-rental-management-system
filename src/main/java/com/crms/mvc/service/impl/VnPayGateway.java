@@ -1,5 +1,6 @@
-package com.crms.mvc.service;
+package com.crms.mvc.service.impl;
 
+import com.crms.mvc.service.PaymentGateway;
 import com.crms.mvc.config.VnPayConfig;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.util.DateTimeUtils;
@@ -19,12 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-/**
- * The VNPay side of a payment and nothing else: it signs the redirect URL the customer is sent to and checks the
- * signature of the answer. What the money means for a booking (deposit, fees, refunds) lives in {@link PaymentService}.
- */
+/** {@link PaymentGateway} for VNPay: signs the redirect URL and verifies the signed answer. */
 @Component
-public class VnPayGateway {
+public class VnPayGateway implements PaymentGateway {
     private static final Logger log = LoggerFactory.getLogger(VnPayGateway.class);
 
     private final VnPayConfig config;
@@ -33,7 +31,8 @@ public class VnPayGateway {
         this.config = config;
     }
 
-    /** Signs and assembles the VNPay redirect URL; the amount is in dong, VNPay wants it times 100. */
+    /** The amount is in dong; VNPay wants it times 100. */
+    @Override
     public String createPaymentUrl(BigDecimal amount, String txnRef, String orderInfo, String clientIp) {
         long amountInCents = amount.multiply(new BigDecimal(100)).longValue();
 
@@ -92,7 +91,7 @@ public class VnPayGateway {
         }
     }
 
-    /** True when the query VNPay sent back to the return URL carries a valid signature. */
+    @Override
     public boolean verifySignature(Map<String, String> queryParams) {
         String vnp_SecureHash = queryParams.get("vnp_SecureHash");
         if (vnp_SecureHash == null || vnp_SecureHash.trim().isEmpty()) {

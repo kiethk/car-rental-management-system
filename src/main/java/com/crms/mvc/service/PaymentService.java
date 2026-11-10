@@ -1,10 +1,12 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.PaymentMethod;
 import com.crms.mvc.dto.DepositSessionDTO;
 import com.crms.mvc.entity.Payment;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.NoSuchElementException;
 
@@ -12,11 +14,14 @@ public interface PaymentService {
     /** Owner, status, amount and age of a booking's deposit; empty when the booking does not exist. */
     Optional<DepositSessionDTO> findDepositSession(Long bookingId);
 
+    /** True when the query the payment provider sent back to the return address carries a valid signature. */
+    boolean isValidGatewayReturn(Map<String, String> queryParams);
+
     /** The gateway URL the customer is sent to for the deposit of this booking. */
     String createDepositPaymentUrl(Long bookingId, String clientIp);
 
     /** Records the deposit as paid and confirms the booking; repeating it for a confirmed booking changes nothing. */
-    Payment confirmDeposit(Long bookingId, String transactionNo, String paymentMethod);
+    Payment confirmDeposit(Long bookingId, String transactionNo, PaymentMethod paymentMethod);
 
     /**
      * True while the customer has an unexpired VNPay session for Issue fees on this booking.
@@ -41,10 +46,10 @@ public interface PaymentService {
     Payment failIssuePayment(Long paymentId);
 
     /** Settlement payment: the unpaid fees only. */
-    Payment recordFinalPayment(Long bookingId, BigDecimal amount, String paymentMethod);
+    Payment recordFinalPayment(Long bookingId, BigDecimal amount, PaymentMethod paymentMethod);
 
     /** The rest of the rent (total minus deposit), collected by staff at handover in cash or by bank transfer. */
-    Payment recordRentalBalancePayment(Long bookingId, BigDecimal amount, String paymentMethod);
+    Payment recordRentalBalancePayment(Long bookingId, BigDecimal amount, PaymentMethod paymentMethod);
     List<Payment> getPaymentsByBooking(Long bookingId);
 
     Payment createPendingRefund(Long bookingId, BigDecimal amount, String bankCode, String accountNumber, String accountHolder);
@@ -54,7 +59,7 @@ public interface PaymentService {
      * Money handed back to a customer who is at the counter: recorded as an already paid refund, in cash or by
      * bank transfer, and the customer is notified like any completed refund.
      */
-    Payment recordCounterRefund(Long bookingId, BigDecimal amount, String paymentMethod);
+    Payment recordCounterRefund(Long bookingId, BigDecimal amount, PaymentMethod paymentMethod);
     Optional<Payment> getPendingRefund(Long bookingId);
     List<Payment> getPendingRefunds();
     long countPendingRefunds();

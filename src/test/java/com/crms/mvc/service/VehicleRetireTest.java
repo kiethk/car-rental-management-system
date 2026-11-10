@@ -1,5 +1,6 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.dto.VehicleFormDTO;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleType;
@@ -40,38 +41,38 @@ class VehicleRetireTest {
 
     @Test
     void anAvailableOrMaintenanceVehicleCanBeRetired() {
-        Vehicle vehicle = vehicleWithStatus("maintenance");
+        Vehicle vehicle = vehicleWithStatus(VehicleStatus.MAINTENANCE);
 
         service.updateStatus(7L, "retired");
 
-        assertEquals(Vehicle.STATUS_RETIRED, vehicle.getStatus());
+        assertEquals(VehicleStatus.RETIRED, vehicle.getStatus());
         verify(vehicleRepository).save(vehicle);
     }
 
     @Test
     void aVehicleOnTripCannotBeRetired() {
-        Vehicle vehicle = vehicleWithStatus("rented");
+        Vehicle vehicle = vehicleWithStatus(VehicleStatus.RENTED);
 
         assertThrows(IllegalStateException.class, () -> service.updateStatus(7L, "retired"));
 
-        assertEquals("rented", vehicle.getStatus());
+        assertEquals(VehicleStatus.RENTED, vehicle.getStatus());
         verify(vehicleRepository, never()).save(any());
     }
 
     @Test
     void aRetiredVehicleCannotComeBack() {
-        Vehicle vehicle = vehicleWithStatus(Vehicle.STATUS_RETIRED);
+        Vehicle vehicle = vehicleWithStatus(VehicleStatus.RETIRED);
 
         assertThrows(IllegalStateException.class, () -> service.updateStatus(7L, "available"));
         assertThrows(IllegalStateException.class, () -> service.updateStatus(7L, "maintenance"));
 
-        assertEquals(Vehicle.STATUS_RETIRED, vehicle.getStatus());
+        assertEquals(VehicleStatus.RETIRED, vehicle.getStatus());
         verify(vehicleRepository, never()).save(any());
     }
 
     @Test
     void editingARetiredVehicleThroughTheFormKeepsItRetired() {
-        Vehicle vehicle = vehicleWithStatus(Vehicle.STATUS_RETIRED);
+        Vehicle vehicle = vehicleWithStatus(VehicleStatus.RETIRED);
         VehicleType type = new VehicleType();
         type.setId(3L);
         when(vehicleTypeRepository.findById(3L)).thenReturn(Optional.of(type));
@@ -87,13 +88,13 @@ class VehicleRetireTest {
 
         service.update(7L, form);
 
-        assertEquals(Vehicle.STATUS_RETIRED, vehicle.getStatus());
+        assertEquals(VehicleStatus.RETIRED, vehicle.getStatus());
         assertEquals(1200, vehicle.getOdometer());
     }
 
     @Test
     void editingAWorkingVehicleThroughTheFormCanRetireIt() {
-        Vehicle vehicle = vehicleWithStatus("available");
+        Vehicle vehicle = vehicleWithStatus(VehicleStatus.AVAILABLE);
         VehicleType type = new VehicleType();
         type.setId(3L);
         when(vehicleTypeRepository.findById(3L)).thenReturn(Optional.of(type));
@@ -104,22 +105,22 @@ class VehicleRetireTest {
         form.setColor("Red");
         form.setYear(2024);
         form.setOdometer(1200);
-        form.setStatus(Vehicle.STATUS_RETIRED);
+        form.setStatus("retired");
         form.setRegistrationExpiry(LocalDate.now().plusYears(1));
 
         service.update(7L, form);
 
-        assertEquals(Vehicle.STATUS_RETIRED, vehicle.getStatus());
+        assertEquals(VehicleStatus.RETIRED, vehicle.getStatus());
     }
 
     @Test
     void unknownStatusesAreStillRejected() {
-        vehicleWithStatus("available");
+        vehicleWithStatus(VehicleStatus.AVAILABLE);
 
         assertThrows(IllegalArgumentException.class, () -> service.updateStatus(7L, "scrapped"));
     }
 
-    private Vehicle vehicleWithStatus(String status) {
+    private Vehicle vehicleWithStatus(VehicleStatus status) {
         Vehicle vehicle = new Vehicle();
         vehicle.setId(7L);
         vehicle.setStatus(status);

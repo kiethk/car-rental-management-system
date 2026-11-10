@@ -1,11 +1,15 @@
-package com.crms.mvc.service;
+package com.crms.mvc.util;
 
+import com.crms.mvc.enums.VehicleStatus;
+import com.crms.mvc.enums.InspectionStatus;
 import com.crms.mvc.dto.VehicleInspectionFormDTO;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleInspection;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.VehicleInspectionRepository;
 import com.crms.mvc.repository.VehicleRepository;
+import com.crms.mvc.service.VehicleAvailabilityService;
+import com.crms.mvc.service.VehicleInspectionService;
 import com.crms.mvc.service.impl.VehicleAvailabilityServiceImpl;
 import com.crms.mvc.service.impl.VehicleInspectionServiceImpl;
 import com.crms.mvc.entity.VehicleType;
@@ -136,13 +140,13 @@ class InspectionRulesTest {
         form.setVehicleId(7L);
         form.setScheduledDate(LocalDate.now().plusDays(2));
 
-        assertThat(service.schedule(form).getStatus()).isEqualTo("scheduled");
+        assertThat(service.schedule(form).getStatus()).isEqualTo(InspectionStatus.SCHEDULED);
     }
 
     private static Vehicle car(Long id, LocalDate registrationExpiry) {
         Vehicle vehicle = new Vehicle();
         vehicle.setId(id);
-        vehicle.setStatus(Vehicle.STATUS_AVAILABLE);
+        vehicle.setStatus(VehicleStatus.AVAILABLE);
         vehicle.setRegistrationExpiry(registrationExpiry);
         vehicle.setVehicleType(new VehicleType());
         return vehicle;

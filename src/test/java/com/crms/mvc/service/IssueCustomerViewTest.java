@@ -5,8 +5,8 @@ import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Customer;
 import com.crms.mvc.entity.Employee;
 import com.crms.mvc.entity.Issue;
-import com.crms.mvc.entity.IssueStatus;
-import com.crms.mvc.entity.IssueType;
+import com.crms.mvc.enums.IssueStatus;
+import com.crms.mvc.enums.IssueType;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.repository.BookingFeeRepository;
 import com.crms.mvc.repository.BookingRepository;
@@ -87,7 +87,6 @@ class IssueCustomerViewTest {
         Issue issue = new Issue();
         issue.setId(id);
         issue.setBooking(booking);
-        issue.setVehicle(vehicle);
         issue.setEmployee(reporter);
         issue.setIssueType(IssueType.DAMAGE);
         issue.setSubject("Scratch " + id);

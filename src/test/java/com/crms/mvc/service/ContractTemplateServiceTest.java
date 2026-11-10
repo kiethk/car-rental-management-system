@@ -3,7 +3,7 @@ package com.crms.mvc.service;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.dto.ContractTemplateFormDTO;
 import com.crms.mvc.entity.ContractTemplate;
-import com.crms.mvc.entity.ContractTemplateStatus;
+import com.crms.mvc.enums.ContractTemplateStatus;
 import com.crms.mvc.entity.Employee;
 import com.crms.mvc.repository.ContractTemplateRepository;
 import com.crms.mvc.repository.EmployeeRepository;

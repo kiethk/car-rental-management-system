@@ -1,5 +1,6 @@
 package com.crms.mvc.entity;
 
+import com.crms.mvc.enums.HandoverType;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 

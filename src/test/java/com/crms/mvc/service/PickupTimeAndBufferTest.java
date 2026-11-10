@@ -1,10 +1,15 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.PaymentMethod;
+import com.crms.mvc.enums.EmployeeRole;
+import com.crms.mvc.enums.VehicleStatus;
+import com.crms.mvc.enums.BookingStatus;
 import com.crms.mvc.dto.CheckInDTO;
 import com.crms.mvc.dto.IssueActor;
 import com.crms.mvc.dto.IssueFormDTO;
 import com.crms.mvc.dto.SettlementDTO;
 import com.crms.mvc.entity.*;
+import com.crms.mvc.enums.*;
 import com.crms.mvc.repository.*;
 import com.crms.mvc.util.DateTimeUtils;
 import com.crms.mvc.service.impl.VehicleAvailabilityServiceImpl;
@@ -84,12 +89,12 @@ class PickupTimeAndBufferTest {
         employee = new Employee();
         employee.setId(1L);
         employee.setName("Staff Member");
-        employee.setRole("staff");
+        employee.setRole(EmployeeRole.STAFF);
         employee.setActive(true);
 
         vehicle = new Vehicle();
         vehicle.setId(100L);
-        vehicle.setStatus("available");
+        vehicle.setStatus(VehicleStatus.AVAILABLE);
         vehicle.setOdometer(5000);
 
         com.crms.mvc.entity.Customer customer = new com.crms.mvc.entity.Customer();
@@ -100,7 +105,7 @@ class PickupTimeAndBufferTest {
         booking.setCustomer(customer);
         booking.setVehicle(vehicle);
         booking.setEmployee(employee);
-        booking.setStatus("confirmed");
+        booking.setStatus(BookingStatus.CONFIRMED);
         booking.setPickupTime(OffsetDateTime.now().plusHours(1)); // scheduled 1 hour in future
         booking.setScheduledEndTime(OffsetDateTime.now().plusDays(1));
         booking.setTotalPrice(new BigDecimal("1000000"));
@@ -133,7 +138,7 @@ class PickupTimeAndBufferTest {
         assertThatThrownBy(() -> handoverService.checkIn(10L, 1L, createCheckInForm()))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Chưa đến giờ nhận xe");
-        assertEquals("confirmed", booking.getStatus());
+        assertEquals(BookingStatus.CONFIRMED, booking.getStatus());
     }
 
     @Test
@@ -143,8 +148,8 @@ class PickupTimeAndBufferTest {
 
         handoverService.checkIn(10L, 1L, createCheckInForm());
 
-        assertEquals("active", booking.getStatus());
-        assertEquals("rented", vehicle.getStatus());
+        assertEquals(BookingStatus.ACTIVE, booking.getStatus());
+        assertEquals(VehicleStatus.RENTED, vehicle.getStatus());
         assertNotNull(booking.getActualPickupTime());
     }
 
@@ -152,7 +157,7 @@ class PickupTimeAndBufferTest {
     @DisplayName("Check-in rejected when the assigned car is still out: staff must reassign another car")
     void testCheckInRejectedWhenAssignedCarNotAvailable() {
         booking.setPickupTime(OffsetDateTime.now().minusMinutes(1));
-        vehicle.setStatus("rented");
+        vehicle.setStatus(VehicleStatus.RENTED);
 
         assertThatThrownBy(() -> handoverService.checkIn(10L, 1L, createCheckInForm()))
                 .isInstanceOf(IllegalStateException.class)
@@ -164,7 +169,7 @@ class PickupTimeAndBufferTest {
     @DisplayName("Customer liability starts at the actual pickup, not the scheduled one: a car handed over late")
     void testIssueBeforeActualPickupIsRejected() {
         // Scheduled 60 minutes ago, but the car was only handed over 10 minutes ago
-        booking.setStatus("active");
+        booking.setStatus(BookingStatus.ACTIVE);
         booking.setPickupTime(OffsetDateTime.now().minusMinutes(60));
         booking.setActualPickupTime(OffsetDateTime.now().minusMinutes(10));
 
@@ -184,7 +189,7 @@ class PickupTimeAndBufferTest {
     @Test
     @DisplayName("Settlement ties the unpaid damage fee to the settlement payment, which resolves its issue")
     void testSettlementCollectsOpenDamageIssueFees() {
-        booking.setStatus("active");
+        booking.setStatus(BookingStatus.ACTIVE);
 
         Handover checkOutRecord = new Handover();
         checkOutRecord.setType(HandoverType.CHECK_OUT);
@@ -195,14 +200,14 @@ class PickupTimeAndBufferTest {
         List<BookingFee> unpaid = List.of(damageFee);
         when(bookingFeeService.getUnpaidFees(10L)).thenReturn(unpaid);
         Payment finalPayment = new Payment();
-        when(paymentService.recordFinalPayment(10L, new BigDecimal("200000"), "CASH")).thenReturn(finalPayment);
+        when(paymentService.recordFinalPayment(10L, new BigDecimal("200000"), PaymentMethod.CASH)).thenReturn(finalPayment);
 
         SettlementDTO form = new SettlementDTO();
         form.setPaymentMethod("CASH");
 
         handoverService.settle(10L, 1L, form);
 
-        assertEquals("completed", booking.getStatus());
+        assertEquals(BookingStatus.COMPLETED, booking.getStatus());
         assertNotNull(checkOutRecord.getSettledAt());
         verify(bookingFeeService).attachPayment(unpaid, finalPayment);
     }
@@ -215,7 +220,7 @@ class PickupTimeAndBufferTest {
 
         Vehicle car = new Vehicle();
         car.setId(100L);
-        car.setStatus("available");
+        car.setStatus(VehicleStatus.AVAILABLE);
         when(vehicleRepository.findByVehicleTypeIdWithDetails(1L)).thenReturn(List.of(car));
 
         // Given: Existing booking at 17:00 - 19:00

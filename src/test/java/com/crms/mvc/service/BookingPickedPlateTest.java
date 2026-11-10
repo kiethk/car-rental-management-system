@@ -1,5 +1,6 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.dto.BookingCreateDTO;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.entity.Customer;
@@ -42,7 +43,7 @@ class BookingPickedPlateTest {
         // Only car 1 is still free; the customer picked car 2, which someone else just booked.
         Vehicle stillFree = new Vehicle();
         stillFree.setId(1L);
-        stillFree.setStatus(Vehicle.STATUS_AVAILABLE);
+        stillFree.setStatus(VehicleStatus.AVAILABLE);
         when(vehicleRepository.findByVehicleTypeIdWithDetails(3L)).thenReturn(List.of(stillFree));
 
         BookingCreateDTO dto = new BookingCreateDTO();

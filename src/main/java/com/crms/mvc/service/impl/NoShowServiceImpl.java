@@ -1,5 +1,6 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.enums.BookingStatus;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.event.NoShowCancelledEvent;
@@ -47,7 +48,7 @@ public class NoShowServiceImpl implements NoShowService {
             if (now.isBefore(deadline)) {
                 continue;
             }
-            booking.setStatus(Booking.STATUS_CANCELLED);
+            booking.setStatus(BookingStatus.CANCELLED);
             booking.setCancelledAt(now);
             bookingRepository.save(booking);
             cancelled++;

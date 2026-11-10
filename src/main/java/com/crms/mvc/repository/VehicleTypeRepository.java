@@ -1,5 +1,6 @@
 package com.crms.mvc.repository;
 
+import com.crms.mvc.enums.VehicleCategory;
 import com.crms.mvc.entity.VehicleType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,14 +16,14 @@ public interface VehicleTypeRepository extends JpaRepository<VehicleType, Long> 
     /** Keyword (already a lower-case LIKE pattern) matches model, brand, "brand model" together, or category. */
     @Query("SELECT vt FROM VehicleType vt WHERE LOWER(vt.name) LIKE :keyword ESCAPE '\\' "
             + "OR LOWER(CONCAT(vt.brand, ' ', vt.name)) LIKE :keyword ESCAPE '\\' "
-            + "OR LOWER(vt.brand) LIKE :keyword ESCAPE '\\' OR LOWER(vt.category) LIKE :keyword ESCAPE '\\'")
+            + "OR LOWER(vt.brand) LIKE :keyword ESCAPE '\\' OR LOWER(CAST(vt.category AS string)) LIKE :keyword ESCAPE '\\'")
     Page<VehicleType> searchForAdmin(@Param("keyword") String keywordPattern, Pageable pageable);
 
     @Query("SELECT DISTINCT vt.brand FROM VehicleType vt ORDER BY vt.brand ASC")
     List<String> findDistinctBrands();
 
     @Query("SELECT DISTINCT vt.category FROM VehicleType vt ORDER BY vt.category ASC")
-    List<String> findDistinctCategories();
+    List<VehicleCategory> findDistinctCategories();
 
     boolean existsByNameIgnoreCaseAndBrandIgnoreCase(String name, String brand);
 

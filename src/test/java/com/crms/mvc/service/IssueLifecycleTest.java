@@ -1,11 +1,15 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.PaymentMethod;
+import com.crms.mvc.enums.BookingStatus;
+import com.crms.mvc.enums.PaymentStatus;
+import com.crms.mvc.enums.FeeType;
 import com.crms.mvc.dto.IssueActor;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Issue;
-import com.crms.mvc.entity.IssueStatus;
-import com.crms.mvc.entity.IssueType;
+import com.crms.mvc.enums.IssueStatus;
+import com.crms.mvc.enums.IssueType;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.event.IssueCancelledEvent;
 import com.crms.mvc.repository.BookingFeeRepository;
@@ -16,7 +20,6 @@ import com.crms.mvc.repository.IssueRepository;
 import com.crms.mvc.repository.LicensePlateRepository;
 import com.crms.mvc.repository.PaymentRepository;
 import com.crms.mvc.service.impl.IssueServiceImpl;
-import com.crms.mvc.util.EmployeeRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
@@ -46,8 +49,8 @@ class IssueLifecycleTest {
     private IssueService service;
     private ApplicationEventPublisher eventPublisher;
 
-    private final IssueActor staff = new IssueActor(2L, EmployeeRole.STAFF);
-    private final IssueActor admin = new IssueActor(1L, EmployeeRole.ADMIN);
+    private final IssueActor staff = new IssueActor(2L, "staff");
+    private final IssueActor admin = new IssueActor(1L, "admin");
 
     @BeforeEach
     void setUp() {
@@ -76,8 +79,8 @@ class IssueLifecycleTest {
         assertEquals("Khách nộp tiền mặt", resolved.getResolutionNote());
         assertNotNull(resolved.getResolvedAt());
         assertNotNull(fee.getPayment());
-        assertEquals(Payment.STATUS_PAID, fee.getPayment().getStatus());
-        assertEquals("CASH", fee.getPayment().getPaymentMethod());
+        assertEquals(PaymentStatus.PAID, fee.getPayment().getStatus());
+        assertEquals(PaymentMethod.CASH, fee.getPayment().getPaymentMethod());
         verify(paymentRepository).save(any(Payment.class));
     }
 
@@ -147,7 +150,7 @@ class IssueLifecycleTest {
     private Issue issue(IssueStatus status) {
         Booking booking = new Booking();
         booking.setId(42L);
-        booking.setStatus(Booking.STATUS_ACTIVE);
+        booking.setStatus(BookingStatus.ACTIVE);
         Issue issue = new Issue();
         issue.setId(7L);
         issue.setBooking(booking);
@@ -162,7 +165,7 @@ class IssueLifecycleTest {
         fee.setId(70L);
         fee.setBooking(issue.getBooking());
         fee.setIssue(issue);
-        fee.setFeeType(BookingFee.FEE_TYPE_ISSUE_COMPENSATION);
+        fee.setFeeType(FeeType.ISSUE_COMPENSATION);
         fee.setAmount(new BigDecimal("200000"));
         fee.setPayment(payment);
         when(bookingFeeRepository.findByIssueId(issue.getId())).thenReturn(List.of(fee));

@@ -1,5 +1,6 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.BookingStatus;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.dto.LateReturnDTO;
 import com.crms.mvc.entity.Booking;
@@ -148,7 +149,7 @@ class LateReturnTest {
         customer.setEmail("an@example.com");
         Booking booking = new Booking();
         booking.setId(42L);
-        booking.setStatus("active");
+        booking.setStatus(BookingStatus.ACTIVE);
         booking.setSlot(slot);
         booking.setCustomer(customer);
         booking.setPricePerHour(HOURLY);

@@ -1,7 +1,8 @@
 package com.crms.mvc.dto;
 
-import com.crms.mvc.entity.IssueStatus;
-import com.crms.mvc.entity.IssueType;
+import com.crms.mvc.enums.SlotStatus;
+import com.crms.mvc.enums.IssueStatus;
+import com.crms.mvc.enums.IssueType;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;

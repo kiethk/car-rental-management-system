@@ -91,9 +91,9 @@
                                         51A-123.45
                                     </span>
                                     <span th:if="${ins.vehicle != null}"
-                                          th:class="'admin-status-badge ms-1 ' + (${ins.vehicle.status == 'available'} ? 'bg-success text-white' : (${ins.vehicle.status == 'maintenance'} ? 'bg-secondary text-white' : (${ins.vehicle.status == 'retired'} ? 'bg-dark text-white' : 'bg-warning text-dark')))"
+                                          th:class="'admin-status-badge ms-1 ' + (${#strings.toLowerCase(ins.vehicle.status) == 'available'} ? 'bg-success text-white' : (${#strings.toLowerCase(ins.vehicle.status) == 'maintenance'} ? 'bg-secondary text-white' : (${#strings.toLowerCase(ins.vehicle.status) == 'retired'} ? 'bg-dark text-white' : 'bg-warning text-dark')))"
                                          
-                                          th:text="${#strings.toUpperCase(ins.vehicle.status == 'available' ? 'sẵn sàng' : (ins.vehicle.status == 'rented' ? 'đang thuê' : (ins.vehicle.status == 'maintenance' ? 'bảo dưỡng' : 'ngừng khai thác')))}" class="inspections-list-span-detail">SẴN SÀNG</span>
+                                          th:text="${#strings.toUpperCase(#strings.toLowerCase(ins.vehicle.status) == 'available' ? 'sẵn sàng' : (#strings.toLowerCase(ins.vehicle.status) == 'rented' ? 'đang thuê' : (#strings.toLowerCase(ins.vehicle.status) == 'maintenance' ? 'bảo dưỡng' : 'ngừng khai thác')))}" class="inspections-list-span-detail">SẴN SÀNG</span>
                                 </td>
                                 <td>
                                     <span class="fw-bold text-navy"
@@ -105,13 +105,13 @@
                                     <span th:if="${ins.completedAt == null}" class="text-muted small">Đang chờ...</span>
                                 </td>
                                 <td class="text-center">
-                                    <span th:if="${ins.status == 'scheduled'}" class="admin-status-badge bg-warning text-dark">
+                                    <span th:if="${#strings.toLowerCase(ins.status) == 'scheduled'}" class="admin-status-badge bg-warning text-dark">
                                         ĐÃ LÊN LỊCH
                                     </span>
-                                    <span th:if="${ins.status == 'passed'}" class="admin-status-badge bg-success text-white">
+                                    <span th:if="${#strings.toLowerCase(ins.status) == 'passed'}" class="admin-status-badge bg-success text-white">
                                         ĐẠT
                                     </span>
-                                    <span th:if="${ins.status == 'failed'}" class="admin-status-badge bg-danger text-white">
+                                    <span th:if="${#strings.toLowerCase(ins.status) == 'failed'}" class="admin-status-badge bg-danger text-white">
                                         KHÔNG ĐẠT
                                     </span>
                                 </td>
@@ -121,14 +121,14 @@
                                 </td>
                                 <td class="text-center">
                                     <!-- Action buttons -->
-                                    <div th:if="${ins.status == 'scheduled'}">
+                                    <div th:if="${ins.status.name() == 'SCHEDULED'}">
                                         <a th:href="@{/admin/inspections/{id}/result(id=${ins.id})}"
                                            class="admin-btn btn-soft-primary"
                                            title="Ghi nhận kết quả từ trạm đăng kiểm">
                                             Ghi kết quả
                                         </a>
                                     </div>
-                                    <div th:if="${ins.status != 'scheduled'}">
+                                    <div th:if="${#strings.toLowerCase(ins.status) != 'scheduled'}">
                                         <span class="admin-status-badge bg-light text-dark border text-muted">Đã hoàn tất</span>
                                     </div>
                                 </td>

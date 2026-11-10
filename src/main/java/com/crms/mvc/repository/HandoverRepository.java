@@ -1,7 +1,7 @@
 package com.crms.mvc.repository;
 
 import com.crms.mvc.entity.Handover;
-import com.crms.mvc.entity.HandoverType;
+import com.crms.mvc.enums.HandoverType;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 

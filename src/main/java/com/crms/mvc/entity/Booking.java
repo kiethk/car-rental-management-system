@@ -1,5 +1,6 @@
 package com.crms.mvc.entity;
 
+import com.crms.mvc.enums.BookingStatus;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -7,16 +8,6 @@ import java.time.OffsetDateTime;
 @Entity
 @Table(name = "bookings")
 public class Booking {
-    /** Created and waiting for the deposit; expires if it is not paid in time. */
-    public static final String STATUS_PENDING_PAYMENT = "pending_payment";
-    /** Deposit paid, car not handed over yet. */
-    public static final String STATUS_CONFIRMED = "confirmed";
-    /** Car handed over, rental in progress until settlement. */
-    public static final String STATUS_ACTIVE = "active";
-    /** Settled and closed. */
-    public static final String STATUS_COMPLETED = "completed";
-    public static final String STATUS_CANCELLED = "cancelled";
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "booking_id")
@@ -58,8 +49,9 @@ public class Booking {
     @Column(name = "total_price", nullable = false, precision = 14, scale = 2)
     private BigDecimal totalPrice;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
-    private String status;
+    private BookingStatus status;
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
@@ -111,8 +103,8 @@ public class Booking {
     public BigDecimal getTotalPrice() { return totalPrice; }
     public void setTotalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public BookingStatus getStatus() { return status; }
+    public void setStatus(BookingStatus status) { this.status = status; }
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }

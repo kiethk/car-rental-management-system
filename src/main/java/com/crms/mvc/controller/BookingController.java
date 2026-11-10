@@ -1,5 +1,7 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.BookingStatus;
 import com.crms.mvc.util.CurrentAccount;
 import com.crms.mvc.dto.BookingCreateDTO;
 import com.crms.mvc.dto.BookingQuoteDTO;
@@ -19,7 +21,7 @@ import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.PaymentService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import com.crms.mvc.entity.IssueStatus;
+import com.crms.mvc.enums.IssueStatus;
 import com.crms.mvc.dto.IssueDTO;
 import com.crms.mvc.service.IssueService;
 import com.crms.mvc.service.HandoverService;
@@ -52,6 +54,7 @@ import com.crms.mvc.service.BookingQueryService;
 import com.crms.mvc.service.VehicleAvailabilityService;
 import com.crms.mvc.dto.RentalWindow;
 import com.crms.mvc.dto.RentalDuration;
+import com.crms.mvc.dto.RentalSearchQueryDTO;
 import com.crms.mvc.util.RentalWindowParser;
 import com.crms.mvc.util.VehicleImages;
 
@@ -99,7 +102,7 @@ public class BookingController {
 
     // STEP 1 & 2: Choose rental schedule & filter available vehicle types
     @GetMapping({ "/search", "/vehicles/available" })
-    public String searchAvailableVehicles(@ModelAttribute RentalSearchParams params, Model model) {
+    public String searchAvailableVehicles(@ModelAttribute RentalSearchQueryDTO params, Model model) {
         RentalWindow window = params.window();
 
         // Invalid times are reported back to the customer, never silently moved to another slot.
@@ -291,8 +294,8 @@ public class BookingController {
 
         try {
             BookingDetailDTO detail = bookingQueryService.getBookingDetail(bookingId, customerId);
-            if (!Booking.STATUS_PENDING_PAYMENT.equalsIgnoreCase(detail.getStatus())) {
-                if (Booking.STATUS_CONFIRMED.equalsIgnoreCase(detail.getStatus())) {
+            if (!EnumTokens.is(BookingStatus.PENDING_PAYMENT, detail.getStatus())) {
+                if (EnumTokens.is(BookingStatus.CONFIRMED, detail.getStatus())) {
                     return "redirect:/bookings/" + bookingId + "/success";
                 }
                 ra.addFlashAttribute("error",
@@ -359,7 +362,7 @@ public class BookingController {
             OffsetDateTime cancelDeadline = acceptedTerms != null && detail.getPickupTime() != null
                     ? acceptedTerms.freeCancellationUntil(detail.getPickupTime(), detail.getDepositPaidAt())
                     : null;
-            boolean refundEligible = Booking.STATUS_CONFIRMED.equalsIgnoreCase(detail.getStatus()) && cancelDeadline != null
+            boolean refundEligible = EnumTokens.is(BookingStatus.CONFIRMED, detail.getStatus()) && cancelDeadline != null
                     && !OffsetDateTime.now().isAfter(cancelDeadline);
 
             model.addAttribute("refundEligible", refundEligible);
@@ -371,7 +374,7 @@ public class BookingController {
             model.addAttribute("issues", issues);
             model.addAttribute("trafficFines", trafficFineService.findByBookingForCustomer(bookingId, customerId));
 
-            boolean canPay = Booking.STATUS_ACTIVE.equalsIgnoreCase(detail.getStatus());
+            boolean canPay = EnumTokens.is(BookingStatus.ACTIVE, detail.getStatus());
             List<IssueDTO> payableIssues = issues.stream()
                     .filter(i -> canPay && i.getStatus() == IssueStatus.OPEN && !i.isFeePaid()
                             && i.getFeeAmount() != null && i.getFeeAmount().compareTo(BigDecimal.ZERO) > 0)
@@ -384,13 +387,18 @@ public class BookingController {
             model.addAttribute("payableTotal", payableTotal);
             model.addAttribute("returnReceipt", handoverService.getReturnReceipt(bookingId));
 
-            if (Booking.STATUS_COMPLETED.equalsIgnoreCase(detail.getStatus())) {
+            if (EnumTokens.is(BookingStatus.COMPLETED, detail.getStatus())) {
                 boolean reviewEligible = reviewService.isEligibleForCustomer(bookingId, customerId);
                 model.addAttribute("reviewEligible", reviewEligible);
                 if (reviewEligible) {
                     ReviewDTO review = reviewService.findForCustomer(bookingId, customerId);
                     model.addAttribute("review", review);
-                    model.addAttribute("reviewForm", new ReviewFormDTO());
+                    ReviewFormDTO reviewForm = new ReviewFormDTO();
+                    if (review != null) {
+                        reviewForm.setRating(review.getRating());
+                        reviewForm.setComment(review.getComment());
+                    }
+                    model.addAttribute("reviewForm", reviewForm);
                 }
             }
             return "screens/customer/bookings/detail/index";
@@ -421,6 +429,27 @@ public class BookingController {
         return "redirect:/bookings/" + bookingId;
     }
 
+    @PostMapping("/bookings/{id}/review/update")
+    public String updateReview(@PathVariable("id") Long bookingId,
+                               @Valid @ModelAttribute("reviewForm") ReviewFormDTO form,
+                               BindingResult result, HttpSession session, RedirectAttributes ra) {
+        Long customerId = CurrentAccount.customerId(session).orElse(null);
+        if (customerId == null) return "redirect:/login";
+
+        if (result.hasErrors()) {
+            ra.addFlashAttribute("error", result.getAllErrors().get(0).getDefaultMessage());
+            return "redirect:/bookings/" + bookingId;
+        }
+
+        try {
+            reviewService.update(bookingId, customerId, form);
+            ra.addFlashAttribute("success", "Đánh giá đã được cập nhật.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/bookings/" + bookingId;
+    }
+
     // Hủy đơn
     @PostMapping("/bookings/{id}/cancel")
     public String cancelBooking(@PathVariable("id") Long bookingId,
@@ -432,7 +461,7 @@ public class BookingController {
 
         try {
             BookingDetailDTO detail = bookingQueryService.getBookingDetail(bookingId, customerId);
-            boolean wasConfirmed = Booking.STATUS_CONFIRMED.equalsIgnoreCase(detail.getStatus());
+            boolean wasConfirmed = EnumTokens.is(BookingStatus.CONFIRMED, detail.getStatus());
             boolean refundCreated = bookingService.cancelBooking(bookingId, customerId, form);
 
             if (refundCreated) {
