@@ -18,6 +18,8 @@ body[data-screen="admin/dashboard"] .reg-alert-warning .reg-alert-days { color: 
 body[data-screen="admin/dashboard"] .reg-alert-danger .reg-alert-days { color: var(--fleet-bad-fg); }
 body[data-screen="admin/dashboard"] .reg-alert-meta { font-size: 0.8rem; color: var(--color-muted); margin-top: 2px; }
 body[data-screen="admin/dashboard"] .reg-alert-meta a { color: var(--color-accent-deep); font-weight: 600; white-space: nowrap; text-decoration: none; }
+body[data-screen="admin/dashboard"] .reg-alert-danger { background: var(--fleet-bad-bg, #FEE2E2); border-color: var(--fleet-bad-bd, #FECACA); }
+body[data-screen="admin/dashboard"] .reg-alert-warning { background: var(--fleet-warn-bg, #FEF3C7); border-color: var(--fleet-warn-bd, #FDE68A); }
 body[data-screen="admin/dashboard"] .reg-alert-meta a:hover { text-decoration: underline; }
 body[data-screen="admin/dashboard"] .reg-alert-empty { padding: 0 16px 12px; font-size: 0.8rem; color: var(--color-muted); }
 /* Screen-scoped DriveNow admin workspace */
@@ -25,5 +27,53 @@ body[data-screen="admin/dashboard"] .reg-alert-empty { padding: 0 16px 12px; fon
 [data-screen="admin/dashboard"] .dashboard-span-detail-bcac { letter-spacing: 0.05em; }
 [data-screen="admin/dashboard"] .dashboard-span-detail-3ea6 { letter-spacing: 0.05em; }
 [data-screen="admin/dashboard"] .dashboard-span-detail-798f { letter-spacing: 0.05em; }
+
+/* Navy–Orange light: KPI cards, chart panel and recent inspections table */
+body[data-screen="admin/dashboard"] { background: var(--color-canvas); color: var(--color-body); }
+body[data-screen="admin/dashboard"] .row.g-3 > [class*="col"] > .card {
+    background: var(--color-surface) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: 14px;
+}
+body[data-screen="admin/dashboard"] .row.g-3 > [class*="col"] > .card .h2 {
+    color: var(--color-heading) !important;
+}
+body[data-screen="admin/dashboard"] .row.g-3 > [class*="col"] > .card .badge {
+    border-radius: 999px;
+}
+body[data-screen="admin/dashboard"] .ev-chart-card {
+    background: var(--color-surface) !important;
+    border: 1px solid var(--color-border) !important;
+}
+body[data-screen="admin/dashboard"] :is(.table, .admin-table) thead th {
+    background: var(--color-surface-2) !important;
+    color: var(--color-heading) !important;
+    border-bottom: 1px solid var(--color-border) !important;
+}
+body[data-screen="admin/dashboard"] :is(.table, .admin-table) tbody td {
+    background: var(--color-surface) !important;
+    color: var(--color-body) !important;
+    border-color: var(--color-border) !important;
+}
+body[data-screen="admin/dashboard"] .list-group-item {
+    gap: .75rem;
+}
+body[data-screen="admin/dashboard"] .list-group-item > div {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+body[data-screen="admin/dashboard"] .list-group-item > div .small {
+    display: block;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+body[data-screen="admin/dashboard"] .list-group-item > span:last-child {
+    flex: 0 0 auto;
+    align-self: center;
+}
+body[data-screen="admin/dashboard"] :is(.table, .admin-table) tbody tr:hover > td {
+    background: var(--color-surface-3) !important;
+    border-color: var(--color-border-strong) !important;
+}
 
 /* Shared screen behavior hooks */

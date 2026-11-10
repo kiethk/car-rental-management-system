@@ -1,5 +1,5 @@
 /* ============================================================
-   DriveNow — Customer vehicle listing (Obsidian & Champagne)
+   DriveNow — Customer vehicle listing (Navy & Amber light)
    ============================================================ */
 body[data-screen="customer/vehicles/list"] main { background: var(--color-canvas); }
 
@@ -33,7 +33,7 @@ body[data-screen="customer/vehicles/list"] .crms-sidebar .card {
     background: var(--color-surface);
     border: 1px solid var(--color-border) !important;
     border-radius: 16px !important;
-    box-shadow: 0 4px 20px -2px rgba(12, 16, 22, .06), 0 2px 6px -1px rgba(12, 16, 22, .04) !important;
+    box-shadow: 0 4px 20px -2px rgba(10, 25, 47, .06), 0 2px 6px -1px rgba(10, 25, 47, .04) !important;
 }
 body[data-screen="customer/vehicles/list"] .crms-sidebar h5 {
     color: var(--color-heading);
@@ -95,13 +95,13 @@ body[data-screen="customer/vehicles/list"] .car-card.vlist-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border) !important;
     border-radius: 16px !important;
-    box-shadow: 0 4px 20px -2px rgba(12, 16, 22, .06), 0 2px 6px -1px rgba(12, 16, 22, .04) !important;
+    box-shadow: 0 4px 20px -2px rgba(10, 25, 47, .06), 0 2px 6px -1px rgba(10, 25, 47, .04) !important;
     transition: transform .45s cubic-bezier(.16,1,.3,1), box-shadow .45s cubic-bezier(.16,1,.3,1), border-color .3s ease;
 }
 body[data-screen="customer/vehicles/list"] .car-card.vlist-card:hover {
     transform: translateY(-5px);
-    border-color: rgba(198, 161, 91, .5) !important;
-    box-shadow: 0 22px 46px -20px rgba(12, 16, 22, .3), 0 6px 14px -4px rgba(12, 16, 22, .08) !important;
+    border-color: rgba(245, 158, 11, .5) !important;
+    box-shadow: 0 22px 46px -20px rgba(10, 25, 47, .3), 0 6px 14px -4px rgba(10, 25, 47, .08) !important;
 }
 body[data-screen="customer/vehicles/list"] .car-img-wrapper.vlist-media {
     position: relative;
@@ -109,7 +109,7 @@ body[data-screen="customer/vehicles/list"] .car-img-wrapper.vlist-media {
     aspect-ratio: 16 / 10;
     height: auto;
     overflow: hidden;
-    background: linear-gradient(160deg, #EFECE4, #E5E0D4);
+    background: linear-gradient(160deg, var(--color-surface-2), var(--color-surface-3));
     border-radius: 16px 16px 0 0;
 }
 body[data-screen="customer/vehicles/list"] .vlist-media img {
@@ -126,7 +126,7 @@ body[data-screen="customer/vehicles/list"] .vlist-cat {
     top: .85rem; left: .85rem;
     padding: .28rem .62rem;
     border-radius: 999px;
-    background: #0C1016;
+    background: var(--color-obsidian);
     color: #fff;
     font-size: .62rem;
     font-weight: 700;
@@ -143,7 +143,7 @@ body[data-screen="customer/vehicles/list"] .vlist-price {
     border-radius: 12px;
     background: rgba(255, 255, 255, .84);
     border: 1px solid rgba(255, 255, 255, .85);
-    box-shadow: 0 10px 24px -12px rgba(12, 16, 22, .42);
+    box-shadow: 0 10px 24px -12px rgba(10, 25, 47, .42);
     backdrop-filter: blur(12px) saturate(160%);
     -webkit-backdrop-filter: blur(12px) saturate(160%);
 }
@@ -245,15 +245,20 @@ body[data-screen="customer/vehicles/list"] .vlist-btn svg { width: 15px; height:
 body[data-screen="customer/vehicles/list"] .vlist-btn-ghost { color: var(--color-heading); background: var(--color-surface); border: 1px solid var(--color-border-strong); }
 body[data-screen="customer/vehicles/list"] .vlist-btn-ghost:hover { color: var(--color-heading); border-color: var(--color-obsidian); }
 body[data-screen="customer/vehicles/list"] .vlist-btn-primary {
-    color: var(--color-accent-ink);
-    background: linear-gradient(135deg, #D3B274 0%, var(--color-accent) 55%, var(--color-accent-strong) 100%);
-    border: 1px solid rgba(198, 161, 91, .85);
-    box-shadow: 0 6px 16px -8px rgba(198, 161, 91, .7);
+    color: #fff;
+    background: linear-gradient(135deg, var(--color-obsidian-2) 0%, var(--color-obsidian) 100%);
+    border: 1px solid var(--color-obsidian);
+    box-shadow: 0 6px 16px -8px rgba(10, 25, 47, .55);
 }
 body[data-screen="customer/vehicles/list"] .vlist-btn-primary:hover {
-    color: var(--color-accent-ink);
+    color: #fff;
     transform: translateY(-1px);
-    box-shadow: 0 10px 22px -10px rgba(198, 161, 91, .8);
+    box-shadow: 0 10px 22px -10px rgba(10, 25, 47, .65);
+}
+body[data-screen="customer/vehicles/list"] .vlist-btn:focus-visible {
+    outline: 2px solid var(--color-obsidian);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(10, 25, 47, .32);
 }
 
 /* ---------- Empty state ---------- */

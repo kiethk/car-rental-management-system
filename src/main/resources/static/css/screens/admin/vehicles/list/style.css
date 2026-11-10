@@ -28,8 +28,8 @@
 }
 [data-screen="admin/vehicles/list"] .admin-odometer-wrap input[type="number"]:focus {
     outline: none;
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 .2rem rgba(198, 161, 91, .24);
+    border-color: var(--color-heading);
+    box-shadow: 0 0 0 .2rem rgba(10, 25, 47, .32);
 }
 [data-screen="admin/vehicles/list"] .admin-odometer-wrap input[type="number"]::-webkit-outer-spin-button,
 [data-screen="admin/vehicles/list"] .admin-odometer-wrap input[type="number"]::-webkit-inner-spin-button {
@@ -43,7 +43,7 @@
     height: 2rem;
     flex-shrink: 0;
     place-items: center;
-    border: 1px solid rgba(198, 161, 91, .9);
+    border: 1px solid var(--color-accent);
     border-radius: 7px;
     color: var(--color-accent-ink);
     background: var(--color-accent);
@@ -56,11 +56,68 @@
 [data-screen="admin/vehicles/list"] .admin-odometer-wrap button:hover {
     background: var(--color-accent-strong);
     transform: translateY(-1px);
-    box-shadow: 0 4px 10px -4px rgba(198, 161, 91, .7);
+    box-shadow: 0 4px 10px -4px rgba(245, 158, 11, .55);
 }
 [data-screen="admin/vehicles/list"] .admin-odometer-wrap button:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 .2rem rgba(198, 161, 91, .3);
+    box-shadow: 0 0 0 .2rem rgba(10, 25, 47, .32);
+}
+
+/* Navy–Orange light: table, forms and neutral status chips */
+body[data-screen="admin/vehicles/list"] { background: var(--color-canvas); color: var(--color-body); }
+body[data-screen="admin/vehicles/list"] :is(.table, .admin-table) thead th {
+    background: var(--color-surface-2) !important;
+    color: var(--color-heading) !important;
+    border-bottom: 1px solid var(--color-border) !important;
+}
+body[data-screen="admin/vehicles/list"] :is(.table, .admin-table) tbody td {
+    background: var(--color-surface) !important;
+    color: var(--color-body) !important;
+    border-color: var(--color-border) !important;
+}
+body[data-screen="admin/vehicles/list"] :is(.table, .admin-table) tbody tr:hover > td {
+    background: var(--color-surface-3) !important;
+    border-color: var(--color-border-strong) !important;
+}
+body[data-screen="admin/vehicles/list"] :is(.form-control, .form-select) {
+    color: var(--color-heading) !important;
+    background-color: var(--color-surface) !important;
+    border-color: var(--color-border-strong) !important;
+}
+body[data-screen="admin/vehicles/list"] :is(.form-control, .form-select):focus {
+    border-color: var(--color-heading) !important;
+    box-shadow: 0 0 0 .25rem rgba(10, 25, 47, .32) !important;
+}
+body[data-screen="admin/vehicles/list"] .admin-status-badge.bg-success {
+    color: var(--fleet-ok-fg, #15803d) !important;
+    background: var(--fleet-ok-bg, #dcfce7) !important;
+    border-color: var(--fleet-ok-bd, #86efac) !important;
+}
+body[data-screen="admin/vehicles/list"] .admin-status-badge.bg-warning {
+    color: var(--fleet-warn-fg, #b45309) !important;
+    background: var(--fleet-warn-bg, #fef3c7) !important;
+    border-color: var(--fleet-warn-bd, #fde68a) !important;
+}
+body[data-screen="admin/vehicles/list"] .admin-status-badge.bg-secondary,
+body[data-screen="admin/vehicles/list"] .admin-status-badge.bg-dark,
+body[data-screen="admin/vehicles/list"] .admin-status-badge.bg-light {
+    color: var(--color-body, #334155) !important;
+    background: var(--color-surface-2, #eef2f8) !important;
+    border-color: var(--color-border, #dde4ee) !important;
+}
+body[data-screen="admin/vehicles/list"] .admin-status-badge.bg-dark,
+body[data-screen="admin/vehicles/list"] .admin-status-badge.bg-light {
+    color: var(--color-muted, #64748b) !important;
+}
+body[data-screen="admin/vehicles/list"] .btn-dark {
+    color: #fff;
+    background: var(--color-heading);
+    border-color: var(--color-heading);
+}
+body[data-screen="admin/vehicles/list"] .btn-dark:hover {
+    color: #fff;
+    background: var(--color-obsidian-2, #132a4a);
+    border-color: var(--color-obsidian-2, #132a4a);
 }
 
 /* Shared screen behavior hooks */

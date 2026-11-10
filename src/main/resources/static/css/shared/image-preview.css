@@ -2,7 +2,7 @@
 body.image-preview-open { overflow: hidden; }
 img[data-image-zoom], a[data-image-zoom] { cursor: zoom-in; }
 img[data-image-zoom] { transition: transform .25s ease, box-shadow .25s ease; }
-img[data-image-zoom]:hover { transform: scale(1.02); box-shadow: 0 10px 24px -12px rgba(12, 16, 22, .35); }
+img[data-image-zoom]:hover { transform: scale(1.02); box-shadow: 0 10px 24px -12px rgba(10, 25, 47, .35); }
 
 .image-lightbox {
     position: fixed;
@@ -12,7 +12,7 @@ img[data-image-zoom]:hover { transform: scale(1.02); box-shadow: 0 10px 24px -12
     align-items: center;
     justify-content: center;
     padding: 1.5rem;
-    background: rgba(12, 16, 22, .84);
+    background: rgba(10, 25, 47, .84);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
 }

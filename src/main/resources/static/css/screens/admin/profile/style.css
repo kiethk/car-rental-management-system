@@ -1,0 +1,42 @@
+/* Screen-scoped DriveNow admin workspace */
+
+/* Navy–Orange light theme */
+body[data-screen="admin/profile"] .card {
+    background: #FFFFFF !important;
+    border: 1px solid #DDE4EE !important;
+    box-shadow: 0 4px 16px -6px rgba(10, 25, 47, .08) !important;
+}
+body[data-screen="admin/profile"] h1,
+body[data-screen="admin/profile"] h2 {
+    color: #0A192F;
+}
+body[data-screen="admin/profile"] label {
+    color: #0A192F !important;
+}
+body[data-screen="admin/profile"] .form-control {
+    color: #0A192F;
+    background: #FFFFFF;
+    border-color: #C9D4E2;
+}
+body[data-screen="admin/profile"] .form-control.bg-light,
+body[data-screen="admin/profile"] .form-control[readonly] {
+    color: #334155 !important;
+    background: #EEF2F8 !important;
+    border-color: #DDE4EE !important;
+}
+body[data-screen="admin/profile"] .form-control:focus {
+    border-color: #0A192F !important;
+    box-shadow: 0 0 0 .22rem rgba(10, 25, 47, .32) !important;
+}
+body[data-screen="admin/profile"] .btn-navy {
+    color: #FFFFFF !important;
+    background: #0A192F !important;
+    border-color: #0A192F !important;
+}
+body[data-screen="admin/profile"] .btn-navy:hover {
+    background: #132A4A !important;
+    border-color: #132A4A !important;
+}
+body[data-screen="admin/profile"] .border-top {
+    border-color: #DDE4EE !important;
+}

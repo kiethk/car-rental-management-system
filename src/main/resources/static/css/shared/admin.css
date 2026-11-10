@@ -9,7 +9,7 @@ body[data-screen^="admin/"] h2 { font-size: 1.05rem; }
 body[data-screen^="admin/"] .admin-page-header { margin-bottom: .85rem; }
 body[data-screen^="admin/"] .admin-page-title { font-size: 1.35rem; }
 body[data-screen^="admin/"] .admin-page-subtitle, body[data-screen^="admin/"] .text-muted.small { line-height: 1.4; }
-body[data-screen^="admin/"] .card { border: 0; border-radius: .5rem; box-shadow: 0 1px 3px rgba(12,16,22,.08) !important; }
+body[data-screen^="admin/"] .card { border: 0; border-radius: .5rem; box-shadow: 0 1px 3px rgba(10,25,47,.08) !important; }
 body[data-screen^="admin/"] .card > .card-body, body[data-screen^="admin/"] .card.p-4 { padding: 1rem !important; }
 body[data-screen^="admin/"] .admin-card { margin-bottom: .8rem; border-radius: .55rem; }
 body[data-screen^="admin/"] .admin-card-header { padding: .8rem 1rem; }

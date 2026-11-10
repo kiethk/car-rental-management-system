@@ -40,6 +40,10 @@
         const summary = document.getElementById('sch-summary');
         const message = document.getElementById('sch-message');
         const pad = (n) => String(n).padStart(2, '0');
+        const setDateValue = (input, value) => {
+            if (input._flatpickr) input._flatpickr.setDate(value, false, 'Y-m-d');
+            else input.value = value;
+        };
 
         [startHour, endHour].forEach((select) => {
             for (let h = OPEN; h <= CLOSE; h++) select.add(new Option(pad(h) + ':00', h));
@@ -54,7 +58,11 @@
         });
         const firstDate = cells.length ? cells[0].dataset.date : '';
         const lastDate = cells.length ? cells[cells.length - 1].dataset.date : '';
-        [startDate, endDate].forEach((input) => { input.min = firstDate; input.max = lastDate; });
+        [startDate, endDate].forEach((input) => {
+            input.min = firstDate;
+            input.max = lastDate;
+            if (input._flatpickr) input._flatpickr.set({ minDate: firstDate, maxDate: lastDate });
+        });
 
         const toKey = (date, hour) => date + 'T' + pad(hour) + ':00';
         const cellByKey = new Map(cells.map((c) => [toKey(c.dataset.date, Number(c.dataset.hour)), c]));
@@ -116,10 +124,10 @@
         // The end is the hour after the last chosen cell; for the day's last hour that is 00:00 of the next day.
         const setEnd = (dateStr, endAt) => {
             if (ALL_DAY && endAt === 24) {
-                endDate.value = addDay(dateStr);
+                setDateValue(endDate, addDay(dateStr));
                 endHour.value = 0;
             } else {
-                endDate.value = dateStr;
+                setDateValue(endDate, dateStr);
                 endHour.value = endAt;
             }
         };
@@ -135,7 +143,7 @@
                     message.textContent = 'Chỉ nhận xe từ ' + pad2(OPEN) + ':00 đến ' + pad2(CLOSE - 1) + ':00 để còn ít nhất 1 giờ thuê trước giờ đóng cửa.';
                     return;
                 }
-                startDate.value = c.dataset.date;
+                setDateValue(startDate, c.dataset.date);
                 startHour.value = hour;
                 setEnd(c.dataset.date, hour + 1);
                 picking = 'end';

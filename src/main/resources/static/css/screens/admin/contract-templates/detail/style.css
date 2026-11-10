@@ -8,3 +8,66 @@
 [data-screen="admin/contract-templates/detail"] .contract-templates-detail-label-detail-39f1 { font-size: 14px; }
 
 /* Shared screen behavior hooks */
+
+/* Navy–Orange light theme */
+body[data-screen="admin/contract-templates/detail"] .card {
+    background: #FFFFFF !important;
+    border: 1px solid #DDE4EE !important;
+    box-shadow: 0 4px 16px -6px rgba(10, 25, 47, .08) !important;
+}
+body[data-screen="admin/contract-templates/detail"] :is(.form-label, label.fw-bold) {
+    color: #0A192F !important;
+}
+body[data-screen="admin/contract-templates/detail"] .form-control {
+    color: #0A192F;
+    background: #FFFFFF;
+    border-color: #C9D4E2;
+}
+body[data-screen="admin/contract-templates/detail"] .form-control:focus {
+    border-color: #0A192F !important;
+    box-shadow: 0 0 0 .22rem rgba(10, 25, 47, .32) !important;
+}
+body[data-screen="admin/contract-templates/detail"] .input-group-text {
+    color: #64748B;
+    background: #EEF2F8;
+    border-color: #C9D4E2;
+}
+body[data-screen="admin/contract-templates/detail"] .btn-navy {
+    color: #FFFFFF !important;
+    background: #0A192F !important;
+    border-color: #0A192F !important;
+}
+body[data-screen="admin/contract-templates/detail"] .btn-navy:hover {
+    background: #132A4A !important;
+    border-color: #132A4A !important;
+}
+body[data-screen="admin/contract-templates/detail"] .btn-amber {
+    color: #0A192F !important;
+    background: #F59E0B !important;
+    border-color: #F59E0B !important;
+}
+body[data-screen="admin/contract-templates/detail"] .btn-amber:hover {
+    color: #0A192F !important;
+    background: #D97706 !important;
+    border-color: #D97706 !important;
+}
+body[data-screen="admin/contract-templates/detail"] .btn-outline-secondary {
+    color: #0A192F !important;
+    background: #FFFFFF !important;
+    border-color: #C9D4E2 !important;
+}
+body[data-screen="admin/contract-templates/detail"] .btn-outline-secondary:hover {
+    background: #EEF2F8 !important;
+    border-color: #C9D4E2 !important;
+}
+body[data-screen="admin/contract-templates/detail"] .alert-light {
+    color: #334155 !important;
+    background: #F8FAFD !important;
+    border-color: #DDE4EE !important;
+}
+body[data-screen="admin/contract-templates/detail"] a:not(.btn):not(.admin-btn):not(.nav-link):not(.admin-sidebar-link) {
+    color: #0A192F;
+}
+body[data-screen="admin/contract-templates/detail"] a:not(.btn):not(.admin-btn):not(.nav-link):not(.admin-sidebar-link):hover {
+    color: #D97706;
+}

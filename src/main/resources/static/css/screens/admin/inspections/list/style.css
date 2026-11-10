@@ -6,3 +6,69 @@
 [data-screen="admin/inspections/list"] .inspections-list-small-detail { max-width: 250px; }
 
 /* Shared screen behavior hooks */
+
+/* Navy–Orange light theme */
+body[data-screen="admin/inspections/list"] .card {
+    background: #FFFFFF !important;
+}
+body[data-screen="admin/inspections/list"] .admin-table {
+    --bs-table-hover-bg: #F8FAFD;
+}
+body[data-screen="admin/inspections/list"] .admin-table thead th {
+    color: #0A192F !important;
+    background: #EEF2F8 !important;
+    border-bottom-color: #DDE4EE !important;
+}
+body[data-screen="admin/inspections/list"] .admin-table tbody td {
+    color: #334155;
+}
+body[data-screen="admin/inspections/list"] .admin-table tbody tr:hover > td {
+    background: #F8FAFD !important;
+}
+body[data-screen="admin/inspections/list"] .admin-table a:not(.btn):not(.admin-btn) {
+    color: #0A192F;
+}
+body[data-screen="admin/inspections/list"] .admin-table a:not(.btn):not(.admin-btn):hover {
+    color: #D97706;
+}
+body[data-screen="admin/inspections/list"] .btn-navy {
+    color: #FFFFFF !important;
+    background: #0A192F !important;
+    border-color: #0A192F !important;
+}
+body[data-screen="admin/inspections/list"] .btn-navy:hover {
+    background: #132A4A !important;
+    border-color: #132A4A !important;
+}
+body[data-screen="admin/inspections/list"] .admin-btn.btn-soft-primary {
+    color: #0A192F !important;
+    background: #EEF2F8 !important;
+    border: 1px solid #DDE4EE !important;
+}
+body[data-screen="admin/inspections/list"] .admin-btn.btn-soft-primary:hover {
+    color: #B45309 !important;
+    background: #F8FAFD !important;
+    border-color: #F59E0B !important;
+}
+body[data-screen="admin/inspections/list"] .admin-status-badge.bg-success {
+    color: #15803D !important;
+    background: #DCFCE7 !important;
+    border: 1px solid #BBF7D0 !important;
+}
+body[data-screen="admin/inspections/list"] .admin-status-badge.bg-warning {
+    color: #B45309 !important;
+    background: #FEF3C7 !important;
+    border: 1px solid #FDE68A !important;
+}
+body[data-screen="admin/inspections/list"] .admin-status-badge.bg-danger {
+    color: #DC2626 !important;
+    background: #FEE2E2 !important;
+    border: 1px solid #FECACA !important;
+}
+body[data-screen="admin/inspections/list"] .admin-status-badge.bg-secondary,
+body[data-screen="admin/inspections/list"] .admin-status-badge.bg-dark,
+body[data-screen="admin/inspections/list"] .admin-status-badge.bg-light {
+    color: #334155 !important;
+    background: #EEF2F8 !important;
+    border: 1px solid #DDE4EE !important;
+}

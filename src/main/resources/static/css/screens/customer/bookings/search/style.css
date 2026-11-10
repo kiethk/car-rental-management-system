@@ -15,12 +15,32 @@ body[data-screen="customer/bookings/search"] .search-filter-heading {
 body[data-screen="customer/bookings/search"] .search-filter-heading h3 { margin: 0; font-size: .95rem; }
 body[data-screen="customer/bookings/search"] .search-filter-panel :is(input:not([type="hidden"]), select) {
     min-height: 42px;
-    border-color: #a9bacb !important;
+    border-color: #C9D4E2 !important;
     color: var(--crms-ink);
     background: var(--color-surface);
 }
+body[data-screen="customer/bookings/search"] .search-filter-panel :is(input:not([type="hidden"]), select):focus {
+    border-color: var(--color-obsidian) !important;
+    box-shadow: 0 0 0 .25rem rgba(10, 25, 47, .32);
+    outline: none;
+}
 body[data-screen="customer/bookings/search"] .search-filter-panel label { font-size: .85rem; color: var(--crms-muted) !important; }
 body[data-screen="customer/bookings/search"] .search-filter-panel button { border: 0; min-height: 42px; }
+body[data-screen="customer/bookings/search"] .search-filter-panel button[type="submit"] {
+    color: #fff;
+    background: var(--color-obsidian);
+    border: 1px solid var(--color-obsidian);
+}
+body[data-screen="customer/bookings/search"] .search-filter-panel button[type="submit"]:hover {
+    color: #fff;
+    background: var(--color-obsidian-2);
+    border-color: var(--color-obsidian-2);
+}
+body[data-screen="customer/bookings/search"] .search-filter-panel button[type="submit"]:focus-visible {
+    outline: 2px solid var(--color-obsidian);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(10, 25, 47, .32);
+}
 body[data-screen="customer/bookings/search"] .car-card-row {
     display: grid;
     grid-template-columns: clamp(220px, 28%, 300px) minmax(0, 1fr);
@@ -32,13 +52,13 @@ body[data-screen="customer/bookings/search"] .car-card-row {
     border-radius: 10px;
     overflow: hidden;
     background: var(--color-surface);
-    box-shadow: 0 2px 5px rgb(16 43 72 / 5%);
+    box-shadow: 0 2px 5px rgb(10 25 47 / 5%);
     transition: border-color .15s ease, box-shadow .15s ease;
 }
 body[data-screen="customer/bookings/search"] .car-card-row:hover {
-    border-color: #708ba6;
+    border-color: var(--color-border-strong);
     background: var(--color-surface);
-    box-shadow: 0 4px 14px rgb(16 43 72 / 10%);
+    box-shadow: 0 4px 14px rgb(10 25 47 / 10%);
 }
 body[data-screen="customer/bookings/search"] .car-card-img-wrap { min-width: 0; height: 220px; overflow: hidden; background: var(--color-surface-2); }
 body[data-screen="customer/bookings/search"] .car-card-img-wrap img {
@@ -63,7 +83,7 @@ body[data-screen="customer/bookings/search"] .car-category-badge {
     display: inline-flex;
     padding: 3px 7px;
     border-radius: 4px;
-    color: #284c6d;
+    color: var(--color-obsidian);
     background: var(--color-surface-2);
     font-size: .65rem;
     font-weight: 700;
@@ -81,22 +101,51 @@ body[data-screen="customer/bookings/search"] .car-card-pricing-col {
     border-left: 1px solid var(--crms-border);
     text-align: right;
 }
+body[data-screen="customer/bookings/search"] .price-box {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
 body[data-screen="customer/bookings/search"] .price-box > div:first-child { font-size: .7rem; font-weight: 700; color: var(--crms-muted) !important; }
 body[data-screen="customer/bookings/search"] .price-box > div:nth-child(2) { font-size: 1.5rem !important; line-height: 1.35; color: var(--crms-navy) !important; }
-body[data-screen="customer/bookings/search"] .car-card-available-text { margin-top: 10px; color: #17633c; }
-body[data-screen="customer/bookings/search"] .action-box :is(a, button) {
+body[data-screen="customer/bookings/search"] .car-card-available-text { margin-top: 10px; color: #15803D; }
+body[data-screen="customer/bookings/search"] .action-box :is(a, button:not(:disabled)) {
     display: flex !important;
     align-items: center;
     justify-content: center;
     min-height: 42px;
     padding: 10px 14px !important;
     white-space: normal !important;
-    border: 1px solid var(--crms-orange);
+    border: 1px solid var(--color-obsidian);
     color: #fff;
-    background: var(--crms-orange);
+    background: var(--color-obsidian);
     font-size: .875rem;
 }
-body[data-screen="customer/bookings/search"] .action-box a:hover { background: var(--crms-orange-dark); border-color: var(--crms-orange-dark); }
+body[data-screen="customer/bookings/search"] .action-box button:disabled {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 10px 14px !important;
+    white-space: normal !important;
+    border: 1px solid var(--color-border);
+    color: var(--color-muted);
+    background: var(--color-surface-2);
+    font-size: .875rem;
+    cursor: not-allowed;
+}
+body[data-screen="customer/bookings/search"] .action-box a:hover {
+    color: #fff;
+    background: var(--color-obsidian-2);
+    border-color: var(--color-obsidian-2);
+}
+body[data-screen="customer/bookings/search"] .action-box a:focus-visible {
+    outline: 2px solid var(--color-obsidian);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(10, 25, 47, .32);
+}
 @container rental-results (max-width: 850px) {
     body[data-screen="customer/bookings/search"] .car-card-row { grid-template-columns: 210px minmax(0, 1fr); }
     body[data-screen="customer/bookings/search"] .car-card-img-wrap { height: 100%; min-height: 250px; }

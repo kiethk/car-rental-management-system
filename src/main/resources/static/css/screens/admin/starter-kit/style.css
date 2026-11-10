@@ -1,0 +1,86 @@
+/* Screen-scoped DriveNow admin workspace */
+
+/* Navy–Orange light theme */
+body[data-screen="admin/starter-kit"] .admin-card {
+    background: #FFFFFF !important;
+    border: 1px solid #DDE4EE !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 4px 16px -6px rgba(10, 25, 47, .06) !important;
+}
+body[data-screen="admin/starter-kit"] .admin-page-title,
+body[data-screen="admin/starter-kit"] .admin-card-title {
+    color: #0A192F !important;
+}
+body[data-screen="admin/starter-kit"] .admin-table {
+    --bs-table-hover-bg: #F8FAFD;
+}
+body[data-screen="admin/starter-kit"] .admin-table thead th {
+    color: #0A192F !important;
+    background: #EEF2F8 !important;
+    border-bottom-color: #DDE4EE !important;
+}
+body[data-screen="admin/starter-kit"] .admin-table tbody td {
+    color: #334155;
+}
+body[data-screen="admin/starter-kit"] .admin-table tbody tr:hover > td {
+    background: #F8FAFD !important;
+}
+body[data-screen="admin/starter-kit"] .admin-table .badge.bg-light {
+    color: #0A192F !important;
+    background: #EEF2F8 !important;
+    border-color: #DDE4EE !important;
+}
+body[data-screen="admin/starter-kit"] .admin-form-label,
+body[data-screen="admin/starter-kit"] label {
+    color: #0A192F !important;
+}
+body[data-screen="admin/starter-kit"] .admin-form-input,
+body[data-screen="admin/starter-kit"] .admin-form-select,
+body[data-screen="admin/starter-kit"] .admin-form-textarea {
+    color: #0A192F !important;
+    background: #FFFFFF !important;
+    border-color: #C9D4E2 !important;
+}
+body[data-screen="admin/starter-kit"] .admin-form-input:focus,
+body[data-screen="admin/starter-kit"] .admin-form-select:focus,
+body[data-screen="admin/starter-kit"] .admin-form-textarea:focus {
+    border-color: #0A192F !important;
+    box-shadow: 0 0 0 .22rem rgba(10, 25, 47, .32) !important;
+}
+body[data-screen="admin/starter-kit"] .btn-primary,
+body[data-screen="admin/starter-kit"] .admin-btn-primary {
+    color: #FFFFFF !important;
+    background: #0A192F !important;
+    border-color: #0A192F !important;
+    box-shadow: none !important;
+}
+body[data-screen="admin/starter-kit"] .btn-primary:hover,
+body[data-screen="admin/starter-kit"] .admin-btn-primary:hover {
+    color: #FFFFFF !important;
+    background: #132A4A !important;
+    border-color: #132A4A !important;
+}
+body[data-screen="admin/starter-kit"] .admin-btn-secondary {
+    color: #0A192F !important;
+    background: #FFFFFF !important;
+    border-color: #C9D4E2 !important;
+}
+body[data-screen="admin/starter-kit"] .admin-btn-secondary:hover {
+    background: #EEF2F8 !important;
+    border-color: #C9D4E2 !important;
+}
+body[data-screen="admin/starter-kit"] .admin-tab-item.active {
+    color: #FFFFFF !important;
+    background: #0A192F !important;
+}
+body[data-screen="admin/starter-kit"] .admin-tab-item {
+    color: #64748B;
+}
+body[data-screen="admin/starter-kit"] pre.bg-slate-900 {
+    color: #EEF2F8 !important;
+    background: #0A192F !important;
+    border: 1px solid #132A4A;
+}
+body[data-screen="admin/starter-kit"] pre.bg-slate-900 code {
+    color: #EEF2F8;
+}

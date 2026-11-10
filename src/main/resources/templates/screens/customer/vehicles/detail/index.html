@@ -8,7 +8,6 @@
     <th:block th:replace="~{fragments/assets :: common}">
     </th:block>
     <link rel="stylesheet" th:href="@{/css/screens/customer/vehicles/detail/style.css}">
-    <link rel="stylesheet" th:href="@{/css/shared/dark.css}">
     <script defer th:src="@{/js/screens/customer/vehicles/detail/script.js}">
     </script>
   </head>
@@ -96,20 +95,6 @@
               <p th:if="${review.comment == null or review.comment.isBlank()}" class="small text-muted mb-0 mt-2">Chỉ chấm sao</p>
             </article>
           </section>
-          <!-- Features & Safety Commitments -->
-          <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
-            <h4 class="h6 fw-bold text-navy mb-3">Tiêu chuẩn dịch vụ</h4>
-            <div class="row g-3">
-              <div class="col-sm-6 d-flex align-items-center gap-2 text-muted small">
-                <span class="badge badge-success-light text-success p-1 rounded">✓</span> Nhận & trả xe trực tiếp tại kho bãi trung tâm </div>
-              <div class="col-sm-6 d-flex align-items-center gap-2 text-muted small">
-                <span class="badge badge-success-light text-success p-1 rounded">✓</span> Đạt chứng nhận đăng kiểm an toàn kỹ thuật </div>
-              <div class="col-sm-6 d-flex align-items-center gap-2 text-muted small">
-                <span class="badge badge-success-light text-success p-1 rounded">✓</span> Điều hòa tự động & Kết nối Bluetooth thông minh </div>
-              <div class="col-sm-6 d-flex align-items-center gap-2 text-muted small">
-                <span class="badge badge-success-light text-success p-1 rounded">✓</span> Camera lùi & Cảm biến đỗ xe </div>
-            </div>
-          </div>
         </div>
         <!-- Right: Specifications & Booking Box -->
         <div class="col-lg-5">
