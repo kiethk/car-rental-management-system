@@ -210,12 +210,6 @@
     "source": "src/main/resources/templates/home.html"
   },
   {
-    "oldView": "licenses/upload",
-    "view": "screens/customer/licenses/upload/index",
-    "screen": "customer/licenses/upload",
-    "source": "src/main/resources/templates/licenses/upload.html"
-  },
-  {
     "oldView": "profile/index",
     "view": "screens/customer/profile/index/index",
     "screen": "customer/profile/index",

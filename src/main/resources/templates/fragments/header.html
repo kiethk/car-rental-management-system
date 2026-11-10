@@ -34,20 +34,7 @@
             <!-- Right side -->
             <div class="flex items-center gap-3">
                 <!-- Customer Profile Dropdown -->
-                <th:block th:if="${account != null and account.customer}"
-                          th:with="licenseOnFile=${hasLicense != null and hasLicense}">
-                    
-                    <a th:if="${!licenseOnFile}" 
-                       th:href="@{/licenses/my-license}" 
-                       class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition-all text-decoration-none">
-                        <svg class="w-3.5 h-3.5 text-amber-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect width="18" height="14" x="3" y="5" rx="2"/>
-                            <circle cx="9" cy="11" r="2"/>
-                            <path d="M15 11h2M15 14h2M6 16c0-1.5 1.5-2 3-2s3 .5 3 2"/>
-                        </svg>
-                        <span>Tải lên GPLX</span>
-                    </a>
-
+                <th:block th:if="${account != null and account.customer}">
                     <div class="crms-dropdown user-dropdown-container">
                         <button type="button" aria-expanded="false" class="crms-dropdown-toggle header-user-btn flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-white hover:bg-surface text-navy transition-all">
                             <div class="w-7 h-7 rounded-full bg-navy text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
@@ -63,9 +50,6 @@
                                 <div class="text-[11px] text-muted-foreground truncate" th:text="${account.email != null ? account.email : ''}">customer@gmail.com</div>
                                 <div class="flex items-center gap-1.5 mt-1.5">
                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-white text-muted-foreground border border-border">Khách hàng</span>
-                                    <span th:if="${licenseOnFile}" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Đã có GPLX
-                                    </span>
                                 </div>
                             </div>
                             
@@ -77,14 +61,6 @@
                                 <a th:href="@{/bookings/my-bookings}" class="crms-dropdown-item header-dropdown-item">
                                     <svg class="w-4 h-4 text-muted-foreground flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                                     <span>Chuyến đi của tôi</span>
-                                </a>
-                                <a th:href="@{/licenses/my-license}" class="crms-dropdown-item header-dropdown-item justify-between">
-                                    <div class="flex items-center gap-2">
-                                        <svg class="w-4 h-4 text-muted-foreground flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                        <span>Giấy phép lái xe</span>
-                                    </div>
-                                    <span th:if="${licenseOnFile}" class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">Đã tải lên</span>
-                                    <span th:if="${!licenseOnFile}" class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold border border-slate-200">Tải lên</span>
                                 </a>
                             </div>
                             
@@ -166,7 +142,7 @@
                 <!-- Guest Login & Sign Up Buttons -->
                 <th:block th:if="${account == null}">
                     <div class="flex items-center gap-2">
-                        <a th:href="@{/register}" class="crms-nav-link header-nav-link header-register-link text-xs font-semibold hidden sm:inline-flex">
+                        <a th:href="@{/register}" class="crms-nav-link header-nav-link header-register-link hidden sm:inline-flex">
                             Đăng ký
                         </a>
                         <a th:href="@{/login}" class="car-action-btn-primary">

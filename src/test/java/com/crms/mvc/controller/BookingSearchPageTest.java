@@ -5,7 +5,6 @@ import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.service.HandoverService;
 import com.crms.mvc.service.IssueService;
-import com.crms.mvc.service.LicenseDocumentService;
 import com.crms.mvc.service.PaymentService;
 import com.crms.mvc.service.PricingService;
 import com.crms.mvc.service.ReviewService;
@@ -56,7 +55,6 @@ class BookingSearchPageTest {
     @MockitoBean private PaymentService paymentService;
     @MockitoBean private VehicleTypeService vehicleTypeService;
     @MockitoBean private PricingService pricingService;
-    @MockitoBean private LicenseDocumentService licenseDocumentService;
     @MockitoBean private ContractTemplateService contractTemplateService;
     @MockitoBean private IssueService issueService;
     @MockitoBean private HandoverService handoverService;

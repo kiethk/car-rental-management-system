@@ -1,7 +1,6 @@
 package com.crms.mvc.dto;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 /**
@@ -15,9 +14,6 @@ public class ContractDocumentDTO {
     private String customerName;
     private String customerPhone;
     private String customerEmail;
-    private String licenseNumber;
-    private String licenseClass;
-    private LocalDate licenseExpiry;
 
     private String vehicleName;
     private String vehicleCategory;
@@ -63,15 +59,6 @@ public class ContractDocumentDTO {
 
     public String getCustomerEmail() { return customerEmail; }
     public void setCustomerEmail(String customerEmail) { this.customerEmail = customerEmail; }
-
-    public String getLicenseNumber() { return licenseNumber; }
-    public void setLicenseNumber(String licenseNumber) { this.licenseNumber = licenseNumber; }
-
-    public String getLicenseClass() { return licenseClass; }
-    public void setLicenseClass(String licenseClass) { this.licenseClass = licenseClass; }
-
-    public LocalDate getLicenseExpiry() { return licenseExpiry; }
-    public void setLicenseExpiry(LocalDate licenseExpiry) { this.licenseExpiry = licenseExpiry; }
 
     public String getVehicleName() { return vehicleName; }
     public void setVehicleName(String vehicleName) { this.vehicleName = vehicleName; }

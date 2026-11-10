@@ -40,8 +40,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
-import com.crms.mvc.entity.LicenseDocument;
-import com.crms.mvc.service.LicenseDocumentService;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.dto.ReviewDTO;
@@ -66,7 +64,6 @@ public class BookingController {
     private final PaymentService paymentService;
     private final VehicleTypeService vehicleTypeService;
     private final PricingService pricingService;
-    private final LicenseDocumentService licenseDocumentService;
     private final ContractTemplateService contractTemplateService;
     private final IssueService issueService;
     private final HandoverService handoverService;
@@ -79,7 +76,6 @@ public class BookingController {
             VehicleAvailabilityService vehicleAvailabilityService,
             PaymentService paymentService,
             VehicleTypeService vehicleTypeService,
-            LicenseDocumentService licenseDocumentService,
             ContractTemplateService contractTemplateService,
             PricingService pricingService,
             IssueService issueService,
@@ -91,7 +87,6 @@ public class BookingController {
         this.vehicleAvailabilityService = vehicleAvailabilityService;
         this.paymentService = paymentService;
         this.vehicleTypeService = vehicleTypeService;
-        this.licenseDocumentService = licenseDocumentService;
         this.contractTemplateService = contractTemplateService;
         this.pricingService = pricingService;
         this.issueService = issueService;
@@ -237,15 +232,9 @@ public class BookingController {
             }
         }
 
-        LicenseDocument license = licenseDocumentService.getCustomerLicense(customerId);
-        boolean hasValidLicense = licenseDocumentService.hasValidLicense(customerId, window.endDate());
-
         model.addAttribute("vehicleType", vt);
         model.addAttribute("bookingForm", form);
         model.addAttribute("availableCars", availableCars);
-        model.addAttribute("customerLicense", license);
-        model.addAttribute("hasValidLicense", hasValidLicense);
-        model.addAttribute("licenseExpired", license != null && !hasValidLicense);
         addDuration(model, new RentalDuration(quote.getRentalHours()));
         model.addAttribute("estimatedTotal", quote.getTotalPrice());
         model.addAttribute("depositAmount", quote.getDepositAmount());

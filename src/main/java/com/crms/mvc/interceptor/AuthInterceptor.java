@@ -22,7 +22,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         String path = request.getRequestURI().substring(request.getContextPath().length());
-        if (account.get().isEmployee() && !path.matches("/licenses/\\d+/image")) {
+        if (account.get().isEmployee()) {
             String target = path.startsWith("/profile") ? "/admin/profile" : "/admin/dashboard";
             response.sendRedirect(request.getContextPath() + target);
             return false;

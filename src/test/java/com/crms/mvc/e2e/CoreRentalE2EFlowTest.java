@@ -28,7 +28,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -334,7 +333,7 @@ class CoreRentalE2EFlowTest {
     }
 
     @Test
-    @DisplayName("Luồng 6: Quản lý Tài khoản, Phân quyền & Giấy phép lái xe -> Đăng ký mật khẩu BCrypt, cấp Session & Admin quản lý khóa tài khoản")
+    @DisplayName("Luồng 6: Quản lý Tài khoản & Phân quyền -> Đăng ký mật khẩu BCrypt, cấp Session & Admin quản lý khóa tài khoản")
     void testFlow6_AccountSecurityAndLicenseFlow() {
         // 1. Kiểm tra mã hóa mật khẩu bảo mật BCrypt
         String rawPassword = "SecurePassword@123";
@@ -342,26 +341,13 @@ class CoreRentalE2EFlowTest {
         assertNotEquals(rawPassword, encodedPassword, "Mật khẩu không được lưu plain-text");
         assertTrue(passwordEncoder.matches(rawPassword, encodedPassword), "Mật khẩu BCrypt phải khớp khi đăng nhập");
 
-        // 2. Khởi tạo tài khoản Customer và nộp GPLX (Đã bỏ xét duyệt theo chỉ đạo Mentor)
+        // 2. Khởi tạo tài khoản Customer
         Customer customer = new Customer();
         customer.setId(201L);
         customer.setName("Lê Thị Khách");
         customer.setEmail("khach@test.com");
         customer.setPasswordHash(encodedPassword);
         customer.setActive(true);
-
-        LicenseDocument license = new LicenseDocument(
-                customer,
-                "B2-987654321",
-                "B2",
-                LocalDate.now().plusYears(5),
-                "license_b2.jpg",
-                OffsetDateTime.now()
-        );
-
-        assertEquals("B2-987654321", license.getLicenseNumber());
-        assertEquals("license_b2.jpg", license.getLicenseImageUrl());
-        assertNotNull(license.getSubmittedAt());
 
         // 3. Admin thực hiện Khóa / Kích hoạt tài khoản
         customer.setActive(false);

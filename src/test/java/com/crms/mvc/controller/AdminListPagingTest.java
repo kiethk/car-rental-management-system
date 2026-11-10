@@ -1,6 +1,5 @@
 package com.crms.mvc.controller;
 
-import com.crms.mvc.service.LicenseDocumentService;
 import com.crms.mvc.enums.FuelType;
 import com.crms.mvc.enums.Transmission;
 import com.crms.mvc.enums.VehicleCategory;
@@ -45,7 +44,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(PassThroughSessionAccountService.class)
 @WebMvcTest({AdminVehicleController.class, AdminVehicleTypeController.class})
 class AdminListPagingTest {
-    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private VehicleService vehicleService;
     @MockitoBean private VehicleTypeService vehicleTypeService;

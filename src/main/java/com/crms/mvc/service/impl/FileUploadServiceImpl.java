@@ -17,8 +17,6 @@ import java.util.UUID;
 @Service
 public class FileUploadServiceImpl implements FileUploadService {
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
-    private static final Path LICENSE_UPLOAD_DIRECTORY =
-            Path.of("uploads", "licenses").toAbsolutePath().normalize();
     private static final Path HANDOVER_UPLOAD_DIRECTORY =
             Path.of("uploads", "handovers").toAbsolutePath().normalize();
     private static final Path VEHICLE_UPLOAD_DIRECTORY =
@@ -33,26 +31,6 @@ public class FileUploadServiceImpl implements FileUploadService {
             Path.of("uploads", "issues").toAbsolutePath().normalize();
     private static final Path TRAFFIC_FINE_DIRECTORY =
             Path.of("uploads", "traffic-fines").toAbsolutePath().normalize();
-
-    @Override
-    public String saveLicenseImage(MultipartFile image) {
-        String extension = validatedImageExtension(image, "Ảnh giấy phép lái xe");
-        String fileName = UUID.randomUUID() + extension;
-        Path destination = LICENSE_UPLOAD_DIRECTORY.resolve(fileName);
-
-        try {
-            Files.createDirectories(LICENSE_UPLOAD_DIRECTORY);
-            Files.copy(image.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
-            return fileName;
-        } catch (IOException exception) {
-            throw new IllegalStateException("Không thể lưu ảnh giấy phép lái xe", exception);
-        }
-    }
-
-    @Override
-    public Resource loadLicenseImage(String fileName) {
-        return loadFrom(LICENSE_UPLOAD_DIRECTORY, fileName);
-    }
 
     @Override
     public String saveVehicleImage(MultipartFile image) {

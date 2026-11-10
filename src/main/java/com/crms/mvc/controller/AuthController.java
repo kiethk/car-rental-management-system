@@ -33,7 +33,11 @@ public class AuthController {
     }
 
     @GetMapping("/login")
-    public String loginForm(Model model) {
+    public String loginForm(HttpServletRequest request, Model model) {
+        SessionAccount current = CurrentAccount.of(request.getSession(false)).orElse(null);
+        if (current != null) {
+            return current.isCustomer() ? "redirect:/" : "redirect:/admin/dashboard";
+        }
         model.addAttribute("loginForm", new LoginDTO());
         return "screens/customer/auth/login/index";
     }
