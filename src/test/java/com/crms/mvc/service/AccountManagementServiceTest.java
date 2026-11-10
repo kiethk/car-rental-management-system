@@ -6,6 +6,7 @@ import com.crms.mvc.dto.LoginIdentityDTO;
 import com.crms.mvc.dto.SessionAccount;
 import com.crms.mvc.entity.Customer;
 import com.crms.mvc.entity.Employee;
+import com.crms.mvc.exception.AccountLockedException;
 import com.crms.mvc.repository.CustomerRepository;
 import com.crms.mvc.repository.EmployeeRepository;
 import com.crms.mvc.service.impl.AccountManagementServiceImpl;
@@ -26,7 +27,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -103,10 +103,9 @@ class AccountManagementServiceTest {
 
         LoginIdentityDTO active = auth.login("c@crms.test", "password");
         customer.setActive(false);
-        LoginIdentityDTO locked = auth.login("c@crms.test", "password");
 
         assertNotNull(active);
-        assertNull(locked);
+        assertThrows(AccountLockedException.class, () -> auth.login("c@crms.test", "password"));
     }
 
     @Test
