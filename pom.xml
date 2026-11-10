@@ -39,48 +39,6 @@
                 <directory>src/main/resources</directory>
                 <filtering>false</filtering>
             </resource>
-            <resource>
-                <directory>src/main/frontend/screens</directory>
-                <filtering>false</filtering>
-                <targetPath>templates/screens</targetPath>
-                <includes><include>**/*.html</include></includes>
-            </resource>
-            <resource>
-                <directory>src/main/frontend/screens</directory>
-                <filtering>false</filtering>
-                <targetPath>static/css/screens</targetPath>
-                <includes><include>**/*.css</include></includes>
-            </resource>
-            <resource>
-                <directory>src/main/frontend/screens</directory>
-                <filtering>false</filtering>
-                <targetPath>static/js/screens</targetPath>
-                <includes><include>**/*.js</include></includes>
-            </resource>
-            <resource>
-                <directory>src/main/frontend/shared/fragments</directory>
-                <filtering>false</filtering>
-                <targetPath>templates/fragments</targetPath>
-                <includes><include>**/*.html</include></includes>
-            </resource>
-            <resource>
-                <directory>src/main/frontend/shared/layouts</directory>
-                <filtering>false</filtering>
-                <targetPath>templates/layouts</targetPath>
-                <includes><include>**/*.html</include></includes>
-            </resource>
-            <resource>
-                <directory>src/main/frontend/shared/css</directory>
-                <filtering>false</filtering>
-                <targetPath>static/css/shared</targetPath>
-                <includes><include>**/*.css</include></includes>
-            </resource>
-            <resource>
-                <directory>src/main/frontend/shared/js</directory>
-                <filtering>false</filtering>
-                <targetPath>static/js/shared</targetPath>
-                <includes><include>**/*.js</include></includes>
-            </resource>
         </resources>
         <plugins>
             <plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin>
