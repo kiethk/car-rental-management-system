@@ -8,7 +8,6 @@ import com.crms.mvc.dto.IssueActor;
 import com.crms.mvc.dto.IssueDTO;
 import com.crms.mvc.dto.IssueFormDTO;
 import com.crms.mvc.dto.IssueQueryDTO;
-import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Issue;
 import com.crms.mvc.entity.IssueStatus;
 import com.crms.mvc.entity.IssueType;
@@ -29,10 +28,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
@@ -58,6 +55,8 @@ class AdminIssueControllerTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private IssueService issueService;
     @MockitoBean private BookingService bookingService;
+    @MockitoBean private com.crms.mvc.service.BookingQueryService bookingQueryService;
+    @MockitoBean private com.crms.mvc.service.VehicleAvailabilityService vehicleAvailabilityService;
 
     private MockHttpSession staff;
 
@@ -89,7 +88,7 @@ class AdminIssueControllerTest {
 
     @Test
     void anIncompleteFormIsShownAgainWithoutCallingTheService() throws Exception {
-        when(bookingService.getBookingDetailForAdmin(42L)).thenReturn(booking());
+        when(bookingQueryService.getBookingDetailForAdmin(42L)).thenReturn(booking());
 
         mvc.perform(post("/admin/issues").session(staff).param("bookingId", "42").param("issueType", "DAMAGE"))
                 .andExpect(status().isOk())
@@ -110,7 +109,7 @@ class AdminIssueControllerTest {
 
     @Test
     void theNewFormIsOpenedForOneBooking() throws Exception {
-        when(bookingService.getBookingDetailForAdmin(42L)).thenReturn(booking());
+        when(bookingQueryService.getBookingDetailForAdmin(42L)).thenReturn(booking());
 
         mvc.perform(get("/admin/issues/new").session(staff).param("bookingId", "42"))
                 .andExpect(status().isOk())

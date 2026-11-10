@@ -30,25 +30,27 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
-import java.math.BigDecimal;
-import java.util.Map;
-import java.util.stream.Collectors;
-import com.crms.mvc.entity.Booking;
-import com.crms.mvc.entity.VehicleType;
-import com.crms.mvc.util.DateTimeUtils;
+import com.crms.mvc.service.BookingQueryService;
+import com.crms.mvc.service.VehicleAvailabilityService;
 
 @Controller
 @RequestMapping("/admin/bookings")
 public class AdminBookingController {
     private final BookingService bookingService;
+    private final BookingQueryService bookingQueryService;
+    private final VehicleAvailabilityService vehicleAvailabilityService;
     private final PaymentService paymentService;
     private final IssueService issueService;
     private final HandoverService handoverService;
 
     public AdminBookingController(BookingService bookingService,
+                                  BookingQueryService bookingQueryService,
+                                  VehicleAvailabilityService vehicleAvailabilityService,
                                   PaymentService paymentService, IssueService issueService,
                                   HandoverService handoverService) {
         this.bookingService = bookingService;
+        this.bookingQueryService = bookingQueryService;
+        this.vehicleAvailabilityService = vehicleAvailabilityService;
         this.paymentService = paymentService;
         this.issueService = issueService;
         this.handoverService = handoverService;
@@ -65,9 +67,9 @@ public class AdminBookingController {
 
         long pendingRefundCount = paymentService.countPendingRefunds();
         model.addAttribute("pendingRefundCount", pendingRefundCount);
-        model.addAttribute("overdueRentalCount", bookingService.countOverdueRentals());
+        model.addAttribute("overdueRentalCount", bookingQueryService.countOverdueRentals());
 
-        List<BookingSummaryDTO> list = bookingService.getAllBookings(status);
+        List<BookingSummaryDTO> list = bookingQueryService.getAllBookings(status);
         model.addAttribute("bookings", list);
         model.addAttribute("currentStatus", status);
         return "admin/bookings/list";
@@ -80,16 +82,16 @@ public class AdminBookingController {
         if (employeeId == null) return "redirect:/login";
 
         try {
-            BookingDetailDTO detail = bookingService.getBookingDetailForAdmin(bookingId);
+            BookingDetailDTO detail = bookingQueryService.getBookingDetailForAdmin(bookingId);
             // Same-type cars free for this booking's rental window (with the 1-hour buffer), like checkout uses.
             List<Vehicle> availableVehicles = detail.getPickupTime() != null && detail.getScheduledEndTime() != null
-                    ? bookingService.findAvailableVehiclesInTimeRange(
+                    ? vehicleAvailabilityService.findAvailableVehiclesInTimeRange(
                             detail.getVehicleTypeId(), detail.getPickupTime(), detail.getScheduledEndTime())
                     : List.of();
 
             model.addAttribute("booking", detail);
             model.addAttribute("availableVehicles", availableVehicles);
-            model.addAttribute("overdueRentalCount", bookingService.countOverdueRentals());
+            model.addAttribute("overdueRentalCount", bookingQueryService.countOverdueRentals());
             // Start both forms at the last reading the system has; staff only change it if the dashboard differs.
             CheckInDTO checkInForm = new CheckInDTO();
             checkInForm.setOdometer(detail.getVehicleOdometer());

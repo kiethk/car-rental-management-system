@@ -3,6 +3,7 @@ package com.crms.mvc.service;
 import com.crms.mvc.config.OpeningHours;
 import com.crms.mvc.repository.*;
 import com.crms.mvc.service.impl.BookingServiceImpl;
+import com.crms.mvc.service.impl.VehicleAvailabilityServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -57,10 +58,6 @@ class OpeningHoursTest {
     }
 
     private BookingServiceImpl service() {
-        return new BookingServiceImpl(mock(BookingRepository.class), mock(CustomerRepository.class),
-                mock(SlotRepository.class), mock(VehicleTypeRepository.class), mock(VehicleRepository.class),
-                mock(EmployeeRepository.class), mock(PromotionRepository.class), mock(PaymentService.class),
-                mock(ContractService.class), mock(ContractTemplateService.class), mock(BookingFeeService.class),
-                mock(PricingService.class));
+        return new BookingServiceImpl(mock(BookingRepository.class), mock(CustomerRepository.class), mock(SlotRepository.class), mock(VehicleTypeRepository.class), mock(VehicleRepository.class), mock(EmployeeRepository.class), mock(PromotionRepository.class), mock(PaymentService.class), mock(ContractService.class), mock(ContractTemplateService.class), mock(PricingService.class), new VehicleAvailabilityServiceImpl(mock(BookingRepository.class), mock(VehicleRepository.class), mock(VehicleTypeRepository.class), mock(ContractTemplateService.class), mock(PricingService.class)));
     }
 }

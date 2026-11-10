@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TrafficFineNoticeRepository extends JpaRepository<TrafficFineNotice, Long> {
     @EntityGraph(attributePaths = {"booking.customer", "booking.vehicle", "recordedBy"})
@@ -14,5 +15,5 @@ public interface TrafficFineNoticeRepository extends JpaRepository<TrafficFineNo
     List<TrafficFineNotice> findByBookingIdOrderByViolationAtDesc(Long bookingId);
 
     @EntityGraph(attributePaths = {"booking.customer", "booking.vehicle", "recordedBy"})
-    java.util.Optional<TrafficFineNotice> findWithDetailsById(Long id);
+    Optional<TrafficFineNotice> findWithDetailsById(Long id);
 }

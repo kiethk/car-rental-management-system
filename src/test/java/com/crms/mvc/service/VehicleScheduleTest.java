@@ -6,7 +6,7 @@ import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleType;
 import com.crms.mvc.repository.*;
-import com.crms.mvc.service.impl.BookingServiceImpl;
+import com.crms.mvc.service.impl.VehicleAvailabilityServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,16 +27,13 @@ class VehicleScheduleTest {
 
     private final BookingRepository bookingRepository = mock(BookingRepository.class);
     private final VehicleRepository vehicleRepository = mock(VehicleRepository.class);
-    private BookingServiceImpl service;
+    private VehicleAvailabilityServiceImpl service;
     private final LocalDate day = LocalDate.now(VN).plusDays(2);
 
     @BeforeEach
     void setUp() {
-        service = new BookingServiceImpl(
-                bookingRepository, mock(CustomerRepository.class), mock(SlotRepository.class),
-                mock(VehicleTypeRepository.class), vehicleRepository, mock(EmployeeRepository.class),
-                mock(PromotionRepository.class), mock(PaymentService.class), mock(ContractService.class),
-                mock(ContractTemplateService.class), mock(BookingFeeService.class), mock(PricingService.class));
+        service = new VehicleAvailabilityServiceImpl(bookingRepository, vehicleRepository, mock(VehicleTypeRepository.class),
+                mock(ContractTemplateService.class), mock(PricingService.class));
 
         VehicleType type = new VehicleType();
         type.setId(1L);

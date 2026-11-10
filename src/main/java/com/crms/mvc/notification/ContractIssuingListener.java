@@ -1,4 +1,4 @@
-package com.crms.mvc.event;
+package com.crms.mvc.notification;
 
 import com.crms.mvc.service.ContractService;
 import org.slf4j.Logger;
@@ -7,6 +7,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import com.crms.mvc.event.DepositConfirmedEvent;
 
 /**
  * Issues the contract PDF and emails it once the deposit transaction has committed.

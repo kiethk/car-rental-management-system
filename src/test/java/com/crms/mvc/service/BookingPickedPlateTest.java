@@ -7,6 +7,7 @@ import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleType;
 import com.crms.mvc.repository.*;
 import com.crms.mvc.service.impl.BookingServiceImpl;
+import com.crms.mvc.service.impl.VehicleAvailabilityServiceImpl;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -28,11 +29,7 @@ class BookingPickedPlateTest {
         VehicleTypeRepository vehicleTypeRepository = mock(VehicleTypeRepository.class);
         VehicleRepository vehicleRepository = mock(VehicleRepository.class);
         ContractTemplateService contractTemplateService = mock(ContractTemplateService.class);
-        BookingServiceImpl service = new BookingServiceImpl(
-                bookingRepository, customerRepository, mock(SlotRepository.class), vehicleTypeRepository,
-                vehicleRepository, mock(EmployeeRepository.class), mock(PromotionRepository.class),
-                mock(PaymentService.class), mock(ContractService.class), contractTemplateService,
-                mock(BookingFeeService.class), mock(PricingService.class));
+        BookingServiceImpl service = new BookingServiceImpl(bookingRepository, customerRepository, mock(SlotRepository.class), vehicleTypeRepository, vehicleRepository, mock(EmployeeRepository.class), mock(PromotionRepository.class), mock(PaymentService.class), mock(ContractService.class), contractTemplateService, mock(PricingService.class), new VehicleAvailabilityServiceImpl(bookingRepository, vehicleRepository, vehicleTypeRepository, contractTemplateService, mock(PricingService.class)));
 
         when(customerRepository.findById(1L)).thenReturn(Optional.of(new Customer()));
         VehicleType type = new VehicleType();

@@ -1,4 +1,4 @@
-package com.crms.mvc.event;
+package com.crms.mvc.notification;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +9,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.HashMap;
 import java.util.Map;
+import com.crms.mvc.event.PaymentReceivedEvent;
 
 /**
  * Thanks the customer once a payment after the deposit has been recorded: the rest of the rent at handover, or the

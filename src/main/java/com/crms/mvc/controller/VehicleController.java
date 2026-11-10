@@ -6,7 +6,7 @@ import com.crms.mvc.dto.VehicleDTO;
 import com.crms.mvc.dto.VehicleScheduleDTO;
 import com.crms.mvc.dto.VehicleSearchFilterDTO;
 import com.crms.mvc.entity.Vehicle;
-import com.crms.mvc.service.BookingService;
+import com.crms.mvc.service.VehicleAvailabilityService;
 import com.crms.mvc.service.ContractTemplateService;
 import com.crms.mvc.service.ReviewService;
 import com.crms.mvc.service.VehicleService;
@@ -20,9 +20,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.NoSuchElementException;
+import org.springframework.transaction.annotation.Transactional;
+import com.crms.mvc.util.DateTimeUtils;
 
 @Controller
 public class VehicleController {
@@ -30,7 +31,7 @@ public class VehicleController {
     private final VehicleService vehicleService;
     private final VehicleTypeService vehicleTypeService;
     private final ContractTemplateService contractTemplateService;
-    private final BookingService bookingService;
+    private final VehicleAvailabilityService vehicleAvailabilityService;
     private final ReviewService reviewService;
 
     /** How far ahead a customer can see one car's schedule. */
@@ -39,12 +40,12 @@ public class VehicleController {
     public VehicleController(VehicleService vehicleService,
                              VehicleTypeService vehicleTypeService,
                              ContractTemplateService contractTemplateService,
-                             BookingService bookingService,
+                             VehicleAvailabilityService vehicleAvailabilityService,
                              ReviewService reviewService) {
         this.vehicleService = vehicleService;
         this.vehicleTypeService = vehicleTypeService;
         this.contractTemplateService = contractTemplateService;
-        this.bookingService = bookingService;
+        this.vehicleAvailabilityService = vehicleAvailabilityService;
         this.reviewService = reviewService;
     }
 
@@ -60,7 +61,7 @@ public class VehicleController {
     }
 
     @GetMapping("/vehicles/{id}")
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public String detail(@PathVariable Long id, Model model) {
         VehicleDTO vehicle = vehicleService.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy xe!"));
@@ -90,7 +91,7 @@ public class VehicleController {
     public String schedule(@PathVariable Long vehicleId, Model model) {
         VehicleScheduleDTO schedule;
         try {
-            schedule = bookingService.getVehicleSchedule(vehicleId, LocalDate.now(ZoneOffset.ofHours(7)), SCHEDULE_DAYS);
+            schedule = vehicleAvailabilityService.getVehicleSchedule(vehicleId, LocalDate.now(DateTimeUtils.VIETNAM_ZONE), SCHEDULE_DAYS);
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy xe!");
         }

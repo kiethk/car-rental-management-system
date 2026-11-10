@@ -2,10 +2,12 @@ package com.crms.mvc.controller;
 
 import com.crms.mvc.util.CurrentAccount;
 import com.crms.mvc.config.VnPayConfig;
+import com.crms.mvc.dto.DepositSessionDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.PaymentService;
+import com.crms.mvc.service.VnPayGateway;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
@@ -20,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.time.OffsetDateTime;
 
 @Controller
 public class PaymentController {
@@ -30,10 +33,12 @@ public class PaymentController {
 
     private final PaymentService paymentService;
     private final BookingService bookingService;
+    private final VnPayGateway vnPayGateway;
 
-    public PaymentController(PaymentService paymentService, BookingService bookingService) {
+    public PaymentController(PaymentService paymentService, BookingService bookingService, VnPayGateway gateway) {
         this.paymentService = paymentService;
         this.bookingService = bookingService;
+        this.vnPayGateway = gateway;
     }
 
     @PostMapping("/bookings/{id}/pay-deposit")
@@ -47,36 +52,36 @@ public class PaymentController {
             return "redirect:/login";
         }
 
-        Booking booking = bookingService.findEntityById(bookingId).orElse(null);
-        if (booking == null) {
+        DepositSessionDTO deposit = paymentService.findDepositSession(bookingId).orElse(null);
+        if (deposit == null) {
             ra.addFlashAttribute("error", "Không tìm thấy đơn đặt xe.");
             return "redirect:/bookings/my-bookings";
         }
 
-        if (booking.getCustomer() == null || !booking.getCustomer().getId().equals(customerId)) {
+        if (!customerId.equals(deposit.customerId())) {
             ra.addFlashAttribute("error", "Bạn không có quyền thanh toán đơn đặt xe này.");
             return "redirect:/bookings/my-bookings";
         }
 
-        if ("confirmed".equalsIgnoreCase(booking.getStatus())) {
+        if (Booking.STATUS_CONFIRMED.equalsIgnoreCase(deposit.status())) {
             return "redirect:/bookings/" + bookingId + "/success";
         }
 
-        if (!"pending_payment".equalsIgnoreCase(booking.getStatus())) {
-            ra.addFlashAttribute("error", "Đơn đặt xe không ở trạng thái chờ đặt cọc (Trạng thái hiện tại: " + booking.getStatus() + ").");
+        if (!Booking.STATUS_PENDING_PAYMENT.equalsIgnoreCase(deposit.status())) {
+            ra.addFlashAttribute("error", "Đơn đặt xe không ở trạng thái chờ đặt cọc (Trạng thái hiện tại: " + deposit.status() + ").");
             return "redirect:/bookings/" + bookingId;
         }
 
         // Hạn chót 15 phút: tự động hủy đơn và chặn thanh toán nếu quá 15 phút
-        if (booking.getCreatedAt() != null && booking.getCreatedAt().plusMinutes(com.crms.mvc.entity.Payment.PAYMENT_TIMEOUT_MINUTES).isBefore(java.time.OffsetDateTime.now())) {
-            bookingService.cancelBooking(bookingId, customerId);
+        if (deposit.createdAt() != null && deposit.createdAt().plusMinutes(Payment.PAYMENT_TIMEOUT_MINUTES).isBefore(OffsetDateTime.now())) {
+            bookingService.cancelUnpaidBooking(bookingId, customerId);
             ra.addFlashAttribute("error", "Đơn đặt xe đã hết hạn thanh toán cọc sau 15 phút và đã tự động hủy.");
             return "redirect:/bookings/" + bookingId;
         }
 
         try {
             String clientIp = VnPayConfig.getIpAddress(request);
-            String paymentUrl = paymentService.createDepositPaymentUrl(booking, clientIp);
+            String paymentUrl = paymentService.createDepositPaymentUrl(bookingId, clientIp);
             return "redirect:" + paymentUrl;
         } catch (Exception e) {
             log.error("Failed to initiate payment for booking {}", bookingId, e);
@@ -136,7 +141,7 @@ public class PaymentController {
             return "redirect:/";
         }
 
-        boolean isValidSignature = paymentService.verifyPaymentSignature(allParams);
+        boolean isValidSignature = vnPayGateway.verifySignature(allParams);
         if (!isValidSignature) {
             log.error("{} signature verification failed for TxnRef: {}", gateway, vnp_TxnRef);
             ra.addFlashAttribute("error", "Xác minh thanh toán thất bại: chữ ký số không hợp lệ.");
@@ -145,21 +150,21 @@ public class PaymentController {
 
         if ("00".equals(responseCode)) {
             try {
-                Booking booking = bookingService.findEntityById(bookingId).orElse(null);
-                if (booking == null) {
+                DepositSessionDTO deposit = paymentService.findDepositSession(bookingId).orElse(null);
+                if (deposit == null) {
                     ra.addFlashAttribute("error", "Không tìm thấy đơn đặt xe: " + bookingId);
                     return "redirect:/";
                 }
 
-                if (!"pending_payment".equalsIgnoreCase(booking.getStatus()) && !"confirmed".equalsIgnoreCase(booking.getStatus())) {
-                    ra.addFlashAttribute("error", "Đơn đặt xe không ở trạng thái chờ thanh toán (trạng thái: " + booking.getStatus() + ").");
+                if (!Booking.STATUS_PENDING_PAYMENT.equalsIgnoreCase(deposit.status()) && !Booking.STATUS_CONFIRMED.equalsIgnoreCase(deposit.status())) {
+                    ra.addFlashAttribute("error", "Đơn đặt xe không ở trạng thái chờ thanh toán (trạng thái: " + deposit.status() + ").");
                     return "redirect:/bookings/" + bookingId;
                 }
 
                 // Verify returned amount (amount is in cents, multiplied by 100)
                 if (amountStr != null) {
                     long returnedAmount = Long.parseLong(amountStr);
-                    long expectedAmount = booking.getDepositAmount().multiply(BigDecimal.valueOf(100)).longValue();
+                    long expectedAmount = deposit.depositAmount().multiply(BigDecimal.valueOf(100)).longValue();
                     if (returnedAmount != expectedAmount) {
                         log.error("Payment amount mismatch for booking {}: expected={}, received={}", bookingId, expectedAmount, returnedAmount);
                         ra.addFlashAttribute("error", "Số tiền thanh toán không khớp.");
@@ -167,7 +172,7 @@ public class PaymentController {
                     }
                 }
 
-                paymentService.processDeposit(bookingId, transactionNo, gateway);
+                paymentService.confirmDeposit(bookingId, transactionNo, gateway);
                 log.info("Successfully processed deposit for booking {} via {} (Txn: {})", bookingId, gateway, transactionNo);
                 return "redirect:/bookings/" + bookingId + "/success?vnp_TxnRef=" + vnp_TxnRef +
                         (transactionNo != null ? "&vnp_TransactionNo=" + transactionNo : "");
@@ -187,7 +192,7 @@ public class PaymentController {
 
     /** Return from the gateway for fees owed after settlement (reference "I{paymentId}_{time}"). */
     private String handleIssuePaymentReturn(String txnRef, Map<String, String> params, RedirectAttributes ra) {
-        if (!paymentService.verifyPaymentSignature(params)) {
+        if (!vnPayGateway.verifySignature(params)) {
             log.error("Signature verification failed for issue payment reference {}", txnRef);
             ra.addFlashAttribute("error", "Xác minh thanh toán thất bại: chữ ký số không hợp lệ.");
             return "redirect:/bookings/my-bookings";

@@ -1,5 +1,6 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.config.StationProperties;
 import com.crms.mvc.dto.ContractDocumentDTO;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.entity.ContractTemplateStatus;
@@ -41,7 +42,7 @@ class ContractDocumentGeneratorTest {
         generator = new OpenHtmlToPdfContractGenerator(engine,
                 new ClassPathResource("fonts/LiberationSerif-Regular.ttf"),
                 new ClassPathResource("fonts/LiberationSerif-Bold.ttf"),
-                "Lô E2a-7, Đường D1, Khu Công nghệ cao, Long Thạnh Mỹ, TP. Thủ Đức, TP.HCM");
+                StationProperties.DEFAULT);
     }
 
     @Test

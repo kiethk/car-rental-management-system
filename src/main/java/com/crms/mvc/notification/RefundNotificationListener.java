@@ -1,25 +1,20 @@
-package com.crms.mvc.event;
+package com.crms.mvc.notification;
 
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Payment;
+import com.crms.mvc.event.RefundCompletedEvent;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.PaymentRepository;
 import com.crms.mvc.util.DateTimeUtils;
-import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import org.thymeleaf.ITemplateEngine;
-import org.thymeleaf.context.Context;
 
-import java.util.Locale;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Listens for completed refund events and notifies the customer via email.
@@ -28,30 +23,17 @@ import java.util.Locale;
 public class RefundNotificationListener {
     private static final Logger log = LoggerFactory.getLogger(RefundNotificationListener.class);
     private static final String TEMPLATE = "mail/refund-completed";
-    private static final Locale VIETNAMESE = Locale.of("vi", "VN");
 
-    private final ObjectProvider<JavaMailSender> mailSender;
-    private final ITemplateEngine templateEngine;
+    private final CustomerMailer mailer;
     private final BookingRepository bookingRepository;
     private final PaymentRepository paymentRepository;
-    private final String username;
-    private final String password;
-    private final String fromAddress;
 
-    public RefundNotificationListener(ObjectProvider<JavaMailSender> mailSender,
-                                      ITemplateEngine templateEngine,
+    public RefundNotificationListener(CustomerMailer mailer,
                                       BookingRepository bookingRepository,
-                                      PaymentRepository paymentRepository,
-                                      @Value("${spring.mail.username:}") String username,
-                                      @Value("${spring.mail.password:}") String password,
-                                      @Value("${crms.mail.from:}") String fromAddress) {
-        this.mailSender = mailSender;
-        this.templateEngine = templateEngine;
+                                      PaymentRepository paymentRepository) {
+        this.mailer = mailer;
         this.bookingRepository = bookingRepository;
         this.paymentRepository = paymentRepository;
-        this.username = username;
-        this.password = password;
-        this.fromAddress = fromAddress;
     }
 
     @Async
@@ -59,8 +41,7 @@ public class RefundNotificationListener {
     public void onRefundCompleted(RefundCompletedEvent event) {
         log.info("Handling RefundCompletedEvent for booking #{} payment #{}", event.bookingId(), event.paymentId());
         try {
-            JavaMailSender sender = mailSender.getIfAvailable();
-            if (sender == null || username == null || username.isBlank() || password == null || password.isBlank()) {
+            if (!mailer.isConfigured()) {
                 log.info("Email service not configured; skipping refund notification email for booking #{}", event.bookingId());
                 return;
             }
@@ -90,26 +71,19 @@ public class RefundNotificationListener {
                 }
             }
 
-            Context context = new Context(VIETNAMESE);
-            context.setVariable("customerName", booking.getCustomer().getName());
-            context.setVariable("bookingId", booking.getId());
-            context.setVariable("refundAmount", payment.getAmount());
-            context.setVariable("bankCode", bankCode);
-            context.setVariable("accountNumber", accountNumber);
-            context.setVariable("accountHolder", accountHolder);
-            context.setVariable("paidAt", DateTimeUtils.toVietnamTime(payment.getPaidAt()));
-            context.setVariable("vehicleName", booking.getSlot() != null && booking.getSlot().getVehicleType() != null
+            Map<String, Object> vars = new HashMap<>();
+            vars.put("customerName", booking.getCustomer().getName());
+            vars.put("bookingId", booking.getId());
+            vars.put("refundAmount", payment.getAmount());
+            vars.put("bankCode", bankCode);
+            vars.put("accountNumber", accountNumber);
+            vars.put("accountHolder", accountHolder);
+            vars.put("paidAt", DateTimeUtils.toVietnamTime(payment.getPaidAt()));
+            vars.put("vehicleName", booking.getSlot() != null && booking.getSlot().getVehicleType() != null
                     ? booking.getSlot().getVehicleType().getName() : "Phương tiện DriveNow");
 
-            String body = templateEngine.process(TEMPLATE, context);
-
-            MimeMessage message = sender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(fromAddress == null || fromAddress.isBlank() ? "DriveNow <" + username + ">" : fromAddress);
-            helper.setTo(booking.getCustomer().getEmail());
-            helper.setSubject("DriveNow - Xác nhận hoàn tất hoàn tiền cọc đơn #" + booking.getId());
-            helper.setText(body, true);
-            sender.send(message);
+            mailer.send(booking.getCustomer().getEmail(),
+                    "DriveNow - Xác nhận hoàn tất hoàn tiền cọc đơn #" + booking.getId(), TEMPLATE, vars);
 
             log.info("Sent refund completed email to {} for booking #{}", booking.getCustomer().getEmail(), booking.getId());
         } catch (Exception e) {
@@ -117,4 +91,3 @@ public class RefundNotificationListener {
         }
     }
 }
-

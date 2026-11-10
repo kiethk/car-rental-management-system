@@ -33,6 +33,8 @@ class AdminDashboardVehicleCountTest {
     @MockitoBean private VehicleInspectionService vehicleInspectionService;
     @MockitoBean private LicensePlateService licensePlateService;
     @MockitoBean private BookingService bookingService;
+    @MockitoBean private com.crms.mvc.service.BookingQueryService bookingQueryService;
+    @MockitoBean private com.crms.mvc.service.VehicleAvailabilityService vehicleAvailabilityService;
 
     @Test
     void retiredVehiclesAreCountedSeparatelyFromTheFleetTotal() throws Exception {

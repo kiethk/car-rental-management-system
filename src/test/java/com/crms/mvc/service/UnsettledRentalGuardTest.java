@@ -12,6 +12,7 @@ import com.crms.mvc.repository.SlotRepository;
 import com.crms.mvc.repository.VehicleRepository;
 import com.crms.mvc.repository.VehicleTypeRepository;
 import com.crms.mvc.service.impl.BookingServiceImpl;
+import com.crms.mvc.service.impl.VehicleAvailabilityServiceImpl;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -34,10 +35,7 @@ class UnsettledRentalGuardTest {
         BookingRepository bookings = mock(BookingRepository.class);
         CustomerRepository customers = mock(CustomerRepository.class);
         ContractTemplateService templates = mock(ContractTemplateService.class);
-        BookingServiceImpl service = new BookingServiceImpl(bookings, customers, mock(SlotRepository.class),
-                mock(VehicleTypeRepository.class), mock(VehicleRepository.class), mock(EmployeeRepository.class),
-                mock(PromotionRepository.class), mock(PaymentService.class), mock(ContractService.class), templates,
-                mock(BookingFeeService.class), mock(PricingService.class));
+        BookingServiceImpl service = new BookingServiceImpl(bookings, customers, mock(SlotRepository.class), mock(VehicleTypeRepository.class), mock(VehicleRepository.class), mock(EmployeeRepository.class), mock(PromotionRepository.class), mock(PaymentService.class), mock(ContractService.class), templates, mock(PricingService.class), new VehicleAvailabilityServiceImpl(bookings, mock(VehicleRepository.class), mock(VehicleTypeRepository.class), templates, mock(PricingService.class)));
         when(customers.findById(1L)).thenReturn(Optional.of(new Customer()));
         ContractTemplateDTO terms = new ContractTemplateDTO();
         terms.setId(9L);

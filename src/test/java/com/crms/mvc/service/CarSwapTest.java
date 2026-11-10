@@ -6,6 +6,7 @@ import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleType;
 import com.crms.mvc.repository.*;
 import com.crms.mvc.service.impl.BookingServiceImpl;
+import com.crms.mvc.service.impl.VehicleAvailabilityServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,11 +37,7 @@ class CarSwapTest {
 
     @BeforeEach
     void setUp() {
-        service = new BookingServiceImpl(
-                bookingRepository, mock(CustomerRepository.class), mock(SlotRepository.class),
-                mock(VehicleTypeRepository.class), vehicleRepository, mock(EmployeeRepository.class),
-                mock(PromotionRepository.class), paymentService, mock(ContractService.class),
-                mock(ContractTemplateService.class), mock(BookingFeeService.class), mock(PricingService.class));
+        service = new BookingServiceImpl(bookingRepository, mock(CustomerRepository.class), mock(SlotRepository.class), mock(VehicleTypeRepository.class), vehicleRepository, mock(EmployeeRepository.class), mock(PromotionRepository.class), paymentService, mock(ContractService.class), mock(ContractTemplateService.class), mock(PricingService.class), new VehicleAvailabilityServiceImpl(bookingRepository, vehicleRepository, mock(VehicleTypeRepository.class), mock(ContractTemplateService.class), mock(PricingService.class)));
 
         Slot slot = new Slot();
         slot.setVehicleType(booked);

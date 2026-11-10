@@ -9,9 +9,9 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import com.crms.mvc.entity.VehicleInspection;
 
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     /**
@@ -71,10 +71,10 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     /** Inspections of this car that are scheduled and not done yet. */
     @Query("SELECT i FROM VehicleInspection i WHERE i.vehicle.id = :vehicleId AND i.status = 'scheduled'")
-    List<com.crms.mvc.entity.VehicleInspection> findScheduledInspectionsByVehicleId(@Param("vehicleId") Long vehicleId);
+    List<VehicleInspection> findScheduledInspectionsByVehicleId(@Param("vehicleId") Long vehicleId);
 
     /** Inspections of this vehicle type's cars that are scheduled and not done yet. */
     @Query("SELECT i FROM VehicleInspection i JOIN FETCH i.vehicle v WHERE v.vehicleType.id = :typeId AND i.status = 'scheduled'")
-    List<com.crms.mvc.entity.VehicleInspection> findScheduledInspectionsByVehicleTypeId(@Param("typeId") Long typeId);
+    List<VehicleInspection> findScheduledInspectionsByVehicleTypeId(@Param("typeId") Long typeId);
 
 }

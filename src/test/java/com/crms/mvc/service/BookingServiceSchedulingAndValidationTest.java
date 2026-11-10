@@ -38,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import com.crms.mvc.service.impl.VehicleAvailabilityServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class BookingServiceSchedulingAndValidationTest {
@@ -346,7 +347,8 @@ class BookingServiceSchedulingAndValidationTest {
         Vehicle retired = vehicleWithStatus(3L, Vehicle.STATUS_RETIRED);
         when(vehicleRepository.findByVehicleTypeIdWithDetails(3L)).thenReturn(java.util.List.of(ready, repairing, retired));
 
-        var offered = bookingService.findAvailableVehiclesInTimeRange(3L, OffsetDateTime.now().plusDays(1), OffsetDateTime.now().plusDays(2));
+        var offered = new VehicleAvailabilityServiceImpl(bookingRepository, vehicleRepository, null, null, null)
+                .findAvailableVehiclesInTimeRange(3L, OffsetDateTime.now().plusDays(1), OffsetDateTime.now().plusDays(2));
 
         assertThat(offered).containsExactly(ready);
     }

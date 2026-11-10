@@ -40,9 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -50,6 +48,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -68,19 +67,6 @@ public class IssueServiceImpl implements IssueService {
     private final PaymentRepository paymentRepository;
     private final ApplicationEventPublisher eventPublisher;
 
-    public IssueServiceImpl(IssueRepository issueRepository,
-                            BookingRepository bookingRepository,
-                            EmployeeRepository employeeRepository,
-                            BookingFeeRepository bookingFeeRepository,
-                            IssueEvidenceRepository issueEvidenceRepository,
-                            FileUploadService fileUploadService,
-                            LicensePlateRepository licensePlateRepository,
-                            ApplicationEventPublisher eventPublisher) {
-        this(issueRepository, bookingRepository, employeeRepository, bookingFeeRepository,
-                issueEvidenceRepository, fileUploadService, licensePlateRepository, null, eventPublisher);
-    }
-
-    @org.springframework.beans.factory.annotation.Autowired
     public IssueServiceImpl(IssueRepository issueRepository,
                             BookingRepository bookingRepository,
                             EmployeeRepository employeeRepository,
@@ -197,7 +183,7 @@ public class IssueServiceImpl implements IssueService {
         payment.setStatus(Payment.STATUS_PAID);
         payment.setPaidAt(OffsetDateTime.now());
         payment.setTransactionCode("DIRECT-" + issue.getId() + "-" + System.currentTimeMillis());
-        Payment savedPayment = paymentRepository != null ? paymentRepository.save(payment) : payment;
+        Payment savedPayment = paymentRepository.save(payment);
 
         fee.setPayment(savedPayment);
         bookingFeeRepository.save(fee);
@@ -356,7 +342,7 @@ public class IssueServiceImpl implements IssueService {
     }
 
     private void invalidatePendingPayments(Long bookingId) {
-        if (bookingId == null || paymentRepository == null) return;
+        if (bookingId == null) return;
         paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(
                 bookingId, Payment.TYPE_ISSUE_COMPENSATION, Payment.STATUS_PENDING)
                 .ifPresent(p -> {
@@ -474,9 +460,9 @@ public class IssueServiceImpl implements IssueService {
     }
 
     private boolean changedSince(IssueUpdatedEvent before, Issue after, BigDecimal newFee) {
-        return !java.util.Objects.equals(before.previousTypeLabel(), after.getIssueType().getLabel())
-                || !java.util.Objects.equals(before.previousSubject(), after.getSubject())
-                || !java.util.Objects.equals(before.previousDescription(), after.getDescription())
+        return !Objects.equals(before.previousTypeLabel(), after.getIssueType().getLabel())
+                || !Objects.equals(before.previousSubject(), after.getSubject())
+                || !Objects.equals(before.previousDescription(), after.getDescription())
                 || before.previousOccurredAt() == null || !before.previousOccurredAt().isEqual(after.getOccurredAt())
                 || before.previousFeeAmount() == null || before.previousFeeAmount().compareTo(newFee) != 0;
     }

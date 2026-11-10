@@ -1,19 +1,22 @@
 package com.crms.mvc.service;
 
-import com.crms.mvc.entity.Booking;
+import com.crms.mvc.dto.DepositSessionDTO;
 import com.crms.mvc.entity.Payment;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.NoSuchElementException;
 
 public interface PaymentService {
-    String createDepositPaymentUrl(Booking booking, String clientIp);
-    boolean verifyPaymentSignature(Map<String, String> queryParams);
+    /** Owner, status, amount and age of a booking's deposit; empty when the booking does not exist. */
+    Optional<DepositSessionDTO> findDepositSession(Long bookingId);
 
-    Payment processDeposit(Long bookingId);
-    Payment processDeposit(Long bookingId, String transactionNo, String paymentMethod);
+    /** The gateway URL the customer is sent to for the deposit of this booking. */
+    String createDepositPaymentUrl(Long bookingId, String clientIp);
+
+    /** Records the deposit as paid and confirms the booking; repeating it for a confirmed booking changes nothing. */
+    Payment confirmDeposit(Long bookingId, String transactionNo, String paymentMethod);
 
     /**
      * True while the customer has an unexpired VNPay session for Issue fees on this booking.
@@ -26,7 +29,7 @@ public interface PaymentService {
      * the system computes, never typed by the customer. Returns the VNPay URL to redirect to. A payment left
      * pending by an earlier abandoned attempt is cancelled first, so its fees are not stuck.
      *
-     * @throws java.util.NoSuchElementException when the booking is not the customer's
+     * @throws NoSuchElementException when the booking is not the customer's
      * @throws IllegalStateException when the rental is not in progress (already settled or not picked up) or nothing is owed
      */
     String createIssuePaymentUrl(Long bookingId, Long customerId, String clientIp);

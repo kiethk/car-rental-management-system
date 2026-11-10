@@ -5,7 +5,6 @@ import com.crms.mvc.dto.PageNavDTO;
 import com.crms.mvc.dto.VehicleDTO;
 import com.crms.mvc.dto.VehicleFormDTO;
 import com.crms.mvc.entity.Vehicle;
-import com.crms.mvc.service.LicensePlateService;
 import com.crms.mvc.service.VehicleService;
 import com.crms.mvc.service.VehicleTypeService;
 import com.crms.mvc.util.CurrentAccount;

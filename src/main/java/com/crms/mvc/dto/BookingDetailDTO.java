@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Objects;
+import com.crms.mvc.entity.Vehicle;
 
 public class BookingDetailDTO implements Serializable {
     private Long id;
@@ -135,7 +137,7 @@ public class BookingDetailDTO implements Serializable {
     public void setVehicleStatus(String vehicleStatus) { this.vehicleStatus = vehicleStatus; }
 
     /** The assigned car can be handed over now: the same check HandoverService.checkIn makes. */
-    public boolean isVehicleReadyForHandover() { return "available".equalsIgnoreCase(vehicleStatus); }
+    public boolean isVehicleReadyForHandover() { return Vehicle.STATUS_AVAILABLE.equalsIgnoreCase(vehicleStatus); }
 
     public boolean isVehicleRetired() { return vehicleRetired; }
     public void setVehicleRetired(boolean vehicleRetired) { this.vehicleRetired = vehicleRetired; }
@@ -177,7 +179,7 @@ public class BookingDetailDTO implements Serializable {
         return payments.stream()
                 .filter(p -> "DEPOSIT".equalsIgnoreCase(p.getPaymentType()) && "paid".equalsIgnoreCase(p.getStatus()))
                 .map(PaymentDTO::getPaidAt)
-                .filter(java.util.Objects::nonNull)
+                .filter(Objects::nonNull)
                 .findFirst().orElse(null);
     }
 

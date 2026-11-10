@@ -13,11 +13,6 @@ import com.crms.mvc.entity.IssueType;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.entity.ContractTemplateStatus;
 import com.crms.mvc.dto.BookingSummaryDTO;
-import com.crms.mvc.entity.Booking;
-import com.crms.mvc.entity.Payment;
-import com.crms.mvc.entity.Slot;
-import com.crms.mvc.entity.VehicleType;
-import com.crms.mvc.entity.Customer;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.IssueService;
 import com.crms.mvc.service.VehicleService;
@@ -43,6 +38,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AdminBookingContractViewTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private BookingService bookingService;
+    @MockitoBean private com.crms.mvc.service.BookingQueryService bookingQueryService;
+    @MockitoBean private com.crms.mvc.service.VehicleAvailabilityService vehicleAvailabilityService;
     @MockitoBean private VehicleService vehicleService;
     @MockitoBean private com.crms.mvc.service.PaymentService paymentService;
     @MockitoBean private IssueService issueService;
@@ -50,7 +47,7 @@ class AdminBookingContractViewTest {
 
     @Test
     void confirmedBookingWithoutPdfOffersRetry() throws Exception {
-        when(bookingService.getBookingDetailForAdmin(42L)).thenReturn(confirmedBooking());
+        when(bookingQueryService.getBookingDetailForAdmin(42L)).thenReturn(confirmedBooking());
         when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
 
         MockHttpSession staff = TestSessions.staff(2L);
@@ -68,7 +65,7 @@ class AdminBookingContractViewTest {
         BookingDetailDTO booking = confirmedBooking();
         booking.setVehicleId(9L);
         booking.setVehicleRetired(true);
-        when(bookingService.getBookingDetailForAdmin(42L)).thenReturn(booking);
+        when(bookingQueryService.getBookingDetailForAdmin(42L)).thenReturn(booking);
         when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
 
         mvc.perform(get("/admin/bookings/42").session(staffSession()))
@@ -82,7 +79,7 @@ class AdminBookingContractViewTest {
     void confirmedBookingWithAWorkingVehicleShowsNoRetirementWarning() throws Exception {
         BookingDetailDTO booking = confirmedBooking();
         booking.setVehicleId(9L);
-        when(bookingService.getBookingDetailForAdmin(42L)).thenReturn(booking);
+        when(bookingQueryService.getBookingDetailForAdmin(42L)).thenReturn(booking);
         when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
 
         mvc.perform(get("/admin/bookings/42").session(staffSession()))
@@ -96,7 +93,7 @@ class AdminBookingContractViewTest {
         BookingDetailDTO booking = confirmedBooking();
         booking.setStatus("active");
         booking.setVehicleId(9L);
-        when(bookingService.getBookingDetailForAdmin(42L)).thenReturn(booking);
+        when(bookingQueryService.getBookingDetailForAdmin(42L)).thenReturn(booking);
         when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
         IssueDTO issue = new IssueDTO();
         issue.setId(7L);
@@ -116,7 +113,7 @@ class AdminBookingContractViewTest {
         BookingDetailDTO booking = confirmedBooking();
         booking.setStatus("active");
         booking.setVehicleId(9L);
-        when(bookingService.getBookingDetailForAdmin(42L)).thenReturn(booking);
+        when(bookingQueryService.getBookingDetailForAdmin(42L)).thenReturn(booking);
         when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
 
         mvc.perform(get("/admin/bookings/42").session(staffSession()))
@@ -127,7 +124,7 @@ class AdminBookingContractViewTest {
 
     @Test
     void aBookingTheCustomerHasNotPickedUpHasNoIssueSection() throws Exception {
-        when(bookingService.getBookingDetailForAdmin(42L)).thenReturn(confirmedBooking());
+        when(bookingQueryService.getBookingDetailForAdmin(42L)).thenReturn(confirmedBooking());
         when(vehicleService.findByStatusWithDetails("available")).thenReturn(List.of());
 
         mvc.perform(get("/admin/bookings/42").session(staffSession()))
@@ -195,7 +192,7 @@ class AdminBookingContractViewTest {
         summary.setStatus("cancelled");
         summary.setHasPendingRefund(true);
         summary.setPickupTime(OffsetDateTime.now().plusDays(2));
-        when(bookingService.getAllBookings("all")).thenReturn(List.of(summary));
+        when(bookingQueryService.getAllBookings("all")).thenReturn(List.of(summary));
 
         MockHttpSession staff = new MockHttpSession();
         staff.setAttribute(CurrentAccount.SESSION_KEY,
@@ -219,7 +216,7 @@ class AdminBookingContractViewTest {
         summary.setStatus("cancelled");
         summary.setHasPendingRefund(true);
         summary.setPickupTime(OffsetDateTime.now().plusDays(2));
-        when(bookingService.getAllBookings("refund")).thenReturn(List.of(summary));
+        when(bookingQueryService.getAllBookings("refund")).thenReturn(List.of(summary));
 
         MockHttpSession staff = new MockHttpSession();
         staff.setAttribute(CurrentAccount.SESSION_KEY,
@@ -245,7 +242,7 @@ class AdminBookingContractViewTest {
         summary.setHasPendingRefund(false);
         summary.setPickupTime(OffsetDateTime.now().plusDays(1));
         summary.setScheduledEndTime(OffsetDateTime.now().plusDays(2));
-        when(bookingService.getAllBookings("confirmed")).thenReturn(List.of(summary));
+        when(bookingQueryService.getAllBookings("confirmed")).thenReturn(List.of(summary));
 
         MockHttpSession staff = new MockHttpSession();
         staff.setAttribute(CurrentAccount.SESSION_KEY,

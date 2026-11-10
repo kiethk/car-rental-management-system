@@ -8,7 +8,6 @@ import com.crms.mvc.entity.IssueStatus;
 import com.crms.mvc.entity.IssueType;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.event.IssueCancelledEvent;
-import com.crms.mvc.event.IssueFeeDueEvent;
 import com.crms.mvc.repository.BookingFeeRepository;
 import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.EmployeeRepository;

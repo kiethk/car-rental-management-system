@@ -7,6 +7,7 @@ import org.springframework.core.io.Resource;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /** Traffic fines (phạt nguội): matched to a rental, recorded as a notice to the customer, never charged. */
 public interface TrafficFineService {
@@ -15,7 +16,7 @@ public interface TrafficFineService {
      * Finds who had the car when a traffic fine was issued: the vehicle that carried the plate at that moment
      * and the rental that held it then.
      *
-     * @throws java.util.NoSuchElementException when no car carried the plate, or no rental held it, at that time
+     * @throws NoSuchElementException when no car carried the plate, or no rental held it, at that time
      */
     Booking findBookingForViolation(String plate, LocalDateTime violationAt);
 

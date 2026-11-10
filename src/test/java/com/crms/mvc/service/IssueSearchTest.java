@@ -17,7 +17,6 @@ import com.crms.mvc.repository.IssueEvidenceRepository;
 import com.crms.mvc.repository.IssueRepository;
 import com.crms.mvc.repository.LicensePlateRepository;
 import com.crms.mvc.service.impl.IssueServiceImpl;
-import com.crms.mvc.util.DateTimeUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -29,15 +28,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -57,7 +52,7 @@ class IssueSearchTest {
         feeRepository = mock(BookingFeeRepository.class);
         plateRepository = mock(LicensePlateRepository.class);
         service = new IssueServiceImpl(issueRepository, mock(BookingRepository.class), mock(EmployeeRepository.class),
-                feeRepository, mock(IssueEvidenceRepository.class), mock(FileUploadService.class), plateRepository,
+                feeRepository, mock(IssueEvidenceRepository.class), mock(FileUploadService.class), plateRepository, mock(com.crms.mvc.repository.PaymentRepository.class),
                 mock(ApplicationEventPublisher.class));
     }
 

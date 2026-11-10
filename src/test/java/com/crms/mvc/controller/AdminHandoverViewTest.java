@@ -42,6 +42,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AdminHandoverViewTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private BookingService bookingService;
+    @MockitoBean private com.crms.mvc.service.BookingQueryService bookingQueryService;
+    @MockitoBean private com.crms.mvc.service.VehicleAvailabilityService vehicleAvailabilityService;
     @MockitoBean private VehicleService vehicleService;
     @MockitoBean private PaymentService paymentService;
     @MockitoBean private HandoverService handoverService;
@@ -71,7 +73,7 @@ class AdminHandoverViewTest {
         spare.setId(6L);
         spare.setColor("Trắng");
         spare.setYear(2024);
-        when(bookingService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(spare));
+        when(vehicleAvailabilityService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(spare));
 
         mvc.perform(get("/admin/bookings/42").session(TestSessions.staff(2L)))
                 .andExpect(status().isOk())
@@ -100,7 +102,7 @@ class AdminHandoverViewTest {
         stubBooking("confirmed", new HandoverSummaryDTO());
         com.crms.mvc.entity.Vehicle spare = new com.crms.mvc.entity.Vehicle();
         spare.setId(6L);
-        when(bookingService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(spare));
+        when(vehicleAvailabilityService.findAvailableVehiclesInTimeRange(eq(1L), any(), any())).thenReturn(List.of(spare));
 
         mvc.perform(get("/admin/bookings/42").session(TestSessions.staff(2L)))
                 .andExpect(status().isOk())
@@ -121,10 +123,10 @@ class AdminHandoverViewTest {
     @Test
     void staffSeeAnOverdueRentalWithItsLateFeeAndTheCustomerPhone() throws Exception {
         stubBooking("active", new HandoverSummaryDTO());
-        BookingDetailDTO detail = bookingService.getBookingDetailForAdmin(42L);
+        BookingDetailDTO detail = bookingQueryService.getBookingDetailForAdmin(42L);
         detail.setCustomerPhone("0901234567");
         detail.setLateReturn(new com.crms.mvc.dto.LateReturnDTO(70, 1, new BigDecimal("200000"), detail.getScheduledEndTime().plusHours(2)));
-        when(bookingService.countOverdueRentals()).thenReturn(1L);
+        when(bookingQueryService.countOverdueRentals()).thenReturn(1L);
 
         mvc.perform(get("/admin/bookings/42").session(TestSessions.staff(2L)))
                 .andExpect(status().isOk())
@@ -136,7 +138,7 @@ class AdminHandoverViewTest {
     @Test
     void aCarStillOutWithThePreviousCustomerBlocksTheHandoverButton() throws Exception {
         stubBooking("confirmed", new HandoverSummaryDTO());
-        bookingService.getBookingDetailForAdmin(42L).setVehicleStatus("rented");
+        bookingQueryService.getBookingDetailForAdmin(42L).setVehicleStatus("rented");
 
         String html = mvc.perform(get("/admin/bookings/42").session(TestSessions.staff(2L)))
                 .andExpect(status().isOk())
@@ -314,7 +316,7 @@ class AdminHandoverViewTest {
         detail.setLateFee(BigDecimal.ZERO);
         detail.setPayments(List.of());
         detail.setFees(List.of());
-        when(bookingService.getBookingDetailForAdmin(42L)).thenReturn(detail);
+        when(bookingQueryService.getBookingDetailForAdmin(42L)).thenReturn(detail);
         when(handoverService.getSummary(42L)).thenReturn(summary);
     }
 }

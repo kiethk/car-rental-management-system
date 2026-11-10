@@ -28,19 +28,18 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import com.crms.mvc.util.DateTimeUtils;
 
 @Service
 @Transactional
 public class ContractServiceImpl implements ContractService {
     private static final Logger log = LoggerFactory.getLogger(ContractServiceImpl.class);
-    private static final ZoneId VIETNAM_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
     // A contract is only issued once the deposit is paid.
-    private static final Set<String> ISSUABLE_BOOKING_STATUSES = Set.of("confirmed", "active", "completed");
+    private static final Set<String> ISSUABLE_BOOKING_STATUSES = Set.of(Booking.STATUS_CONFIRMED, Booking.STATUS_ACTIVE, Booking.STATUS_COMPLETED);
 
     private final ContractRepository contractRepository;
     private final ContractTemplateRepository contractTemplateRepository;
@@ -225,6 +224,6 @@ public class ContractServiceImpl implements ContractService {
     }
 
     private OffsetDateTime toVietnamTime(OffsetDateTime time) {
-        return time != null ? time.atZoneSameInstant(VIETNAM_ZONE).toOffsetDateTime() : null;
+        return time != null ? time.atZoneSameInstant(DateTimeUtils.VIETNAM_ZONE).toOffsetDateTime() : null;
     }
 }

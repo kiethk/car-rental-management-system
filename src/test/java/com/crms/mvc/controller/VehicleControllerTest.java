@@ -36,6 +36,8 @@ class VehicleControllerTest {
     @MockitoBean private VehicleTypeService vehicleTypeService;
     @MockitoBean private ContractTemplateService contractTemplateService;
     @MockitoBean private com.crms.mvc.service.BookingService bookingService;
+    @MockitoBean private com.crms.mvc.service.BookingQueryService bookingQueryService;
+    @MockitoBean private com.crms.mvc.service.VehicleAvailabilityService vehicleAvailabilityService;
     @MockitoBean private ReviewService reviewService;
 
     private final VehicleDTO vehicle = new VehicleDTO(1L, "51A-123.45", "Toyota", "Vios", 2025, new BigDecimal("180000"), "available");
@@ -93,7 +95,7 @@ class VehicleControllerTest {
         schedule.setVehicleTypeName("Toyota Vios");
         schedule.setVehicleStatus("available");
         schedule.setDays(List.of(new com.crms.mvc.dto.VehicleScheduleDTO.Day(java.time.LocalDate.of(2026, 11, 10), hours)));
-        when(bookingService.getVehicleSchedule(eq(5L), any(), anyInt())).thenReturn(schedule);
+        when(vehicleAvailabilityService.getVehicleSchedule(eq(5L), any(), anyInt())).thenReturn(schedule);
 
         mvc.perform(get("/vehicles/cars/5/schedule")).andExpect(status().isOk())
                 .andExpect(view().name("vehicles/schedule"))
@@ -107,7 +109,7 @@ class VehicleControllerTest {
         com.crms.mvc.dto.VehicleScheduleDTO schedule = new com.crms.mvc.dto.VehicleScheduleDTO();
         schedule.setVehicleStatus("retired");
         schedule.setDays(List.of());
-        when(bookingService.getVehicleSchedule(eq(6L), any(), anyInt())).thenReturn(schedule);
+        when(vehicleAvailabilityService.getVehicleSchedule(eq(6L), any(), anyInt())).thenReturn(schedule);
         mvc.perform(get("/vehicles/cars/6/schedule")).andExpect(status().isNotFound());
     }
 

@@ -1,7 +1,6 @@
 package com.crms.mvc.service;
 
 import org.springframework.core.io.Resource;
-import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface FileUploadService {
@@ -37,6 +36,4 @@ public interface FileUploadService {
     Resource loadTrafficFineImage(String fileName);
 
     void deleteTrafficFineImage(String fileName);
-
-    MediaType resolveMediaType(String fileName);
 }

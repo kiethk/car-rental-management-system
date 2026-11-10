@@ -1,4 +1,4 @@
-package com.crms.mvc.event;
+package com.crms.mvc.notification;
 
 import com.crms.mvc.dto.TrafficFineNoticeDTO;
 import com.crms.mvc.service.FileUploadService;
@@ -12,6 +12,8 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.HashMap;
 import java.util.Map;
+import com.crms.mvc.event.TrafficFineRecordedEvent;
+import com.crms.mvc.event.TrafficFineRemovedEvent;
 
 /**
  * Emails the customer when a traffic fine is recorded or removed. Runs after the commit and off the request
