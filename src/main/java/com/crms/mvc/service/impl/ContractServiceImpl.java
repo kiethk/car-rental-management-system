@@ -10,12 +10,10 @@ import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Contract;
 import com.crms.mvc.entity.ContractTemplate;
 import com.crms.mvc.entity.Customer;
-import com.crms.mvc.entity.LicenseDocument;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleType;
 import com.crms.mvc.repository.ContractRepository;
 import com.crms.mvc.repository.ContractTemplateRepository;
-import com.crms.mvc.repository.LicenseDocumentRepository;
 import com.crms.mvc.repository.PaymentRepository;
 import com.crms.mvc.service.ContractDocumentGenerator;
 import com.crms.mvc.service.ContractMailService;
@@ -46,7 +44,6 @@ public class ContractServiceImpl implements ContractService {
 
     private final ContractRepository contractRepository;
     private final ContractTemplateRepository contractTemplateRepository;
-    private final LicenseDocumentRepository licenseDocumentRepository;
     private final PaymentRepository paymentRepository;
     private final ContractDocumentGenerator contractDocumentGenerator;
     private final ContractMailService contractMailService;
@@ -54,14 +51,12 @@ public class ContractServiceImpl implements ContractService {
 
     public ContractServiceImpl(ContractRepository contractRepository,
                                ContractTemplateRepository contractTemplateRepository,
-                               LicenseDocumentRepository licenseDocumentRepository,
                                PaymentRepository paymentRepository,
                                ContractDocumentGenerator contractDocumentGenerator,
                                ContractMailService contractMailService,
                                FileUploadService fileUploadService) {
         this.contractRepository = contractRepository;
         this.contractTemplateRepository = contractTemplateRepository;
-        this.licenseDocumentRepository = licenseDocumentRepository;
         this.paymentRepository = paymentRepository;
         this.contractDocumentGenerator = contractDocumentGenerator;
         this.contractMailService = contractMailService;
@@ -182,8 +177,6 @@ public class ContractServiceImpl implements ContractService {
         doc.setCustomerName(customer.getName());
         doc.setCustomerPhone(customer.getPhone());
         doc.setCustomerEmail(customer.getEmail());
-        licenseDocumentRepository.findFirstByCustomer_IdOrderBySubmittedAtDesc(customer.getId())
-                .ifPresent(license -> fillLicense(doc, license));
 
         doc.setVehicleName(type.getDisplayName());
         doc.setVehicleCategory(EnumTokens.of(type.getCategory()));
@@ -218,12 +211,6 @@ public class ContractServiceImpl implements ContractService {
         doc.setAcceptedIp(contract.getAcceptedIp());
         doc.setTerms(ContractTemplateDTO.fromEntity(contract.getTemplate()));
         return doc;
-    }
-
-    private void fillLicense(ContractDocumentDTO doc, LicenseDocument license) {
-        doc.setLicenseNumber(license.getLicenseNumber());
-        doc.setLicenseClass(license.getLicenseClass());
-        doc.setLicenseExpiry(license.getLicenseExpiry());
     }
 
     private OffsetDateTime toVietnamTime(OffsetDateTime time) {

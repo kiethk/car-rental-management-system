@@ -18,7 +18,6 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
@@ -92,9 +91,6 @@ class ContractDocumentGeneratorTest {
         doc.setCustomerName("Nguyễn Thị Hồng Nhung");
         doc.setCustomerPhone("0901234567");
         doc.setCustomerEmail("nhung@example.com");
-        doc.setLicenseNumber("790123456789");
-        doc.setLicenseClass("B");
-        doc.setLicenseExpiry(LocalDate.of(2030, 1, 1));
         doc.setVehicleName("Toyota Vios");
         doc.setVehicleCategory("sedan");
         doc.setSeats(5);

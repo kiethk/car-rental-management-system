@@ -1,10 +1,10 @@
 package com.crms.mvc.controller;
 
-import com.crms.mvc.service.LicenseDocumentService;
 import com.crms.mvc.entity.Promotion;
 import com.crms.mvc.service.PromotionService;
 import com.crms.mvc.service.VehicleTypeService;
 import com.crms.mvc.support.PassThroughSessionAccountService;
+import com.crms.mvc.support.TestSessions;
 import org.springframework.context.annotation.Import;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +24,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(PassThroughSessionAccountService.class)
 @WebMvcTest(HomeController.class)
 class HomeControllerTest {
-    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private VehicleTypeService vehicleTypeService;
     @MockitoBean private PromotionService promotionService;
+
+    @Test
+    void licenseUploadAndAdminReviewRoutesAreGone() throws Exception {
+        mvc.perform(get("/licenses/my-license").session(TestSessions.customer(1L)))
+                .andExpect(status().isNotFound());
+        mvc.perform(get("/admin/licenses").session(TestSessions.staff(2L)))
+                .andExpect(status().isNotFound());
+    }
 
     @Test
     void rendersPromotionImagesOnlyInGalleryAboveHowItWorks() throws Exception {

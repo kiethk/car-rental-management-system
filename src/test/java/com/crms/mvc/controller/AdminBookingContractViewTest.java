@@ -1,6 +1,5 @@
 package com.crms.mvc.controller;
 
-import com.crms.mvc.service.LicenseDocumentService;
 import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.enums.BookingStatus;
 import com.crms.mvc.dto.SessionAccount;
@@ -39,7 +38,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(PassThroughSessionAccountService.class)
 @WebMvcTest(AdminBookingController.class)
 class AdminBookingContractViewTest {
-    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private BookingService bookingService;
     @MockitoBean private com.crms.mvc.service.BookingQueryService bookingQueryService;

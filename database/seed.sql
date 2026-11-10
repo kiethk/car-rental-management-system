@@ -129,16 +129,7 @@ ON CONFLICT (promotion_id) DO UPDATE SET
     quantity = EXCLUDED.quantity,
     url_image_promotion = EXCLUDED.url_image_promotion;
 
--- 7. LICENSE_DOCUMENTS
--- status: 'pending' | 'approved' | 'rejected'
-INSERT INTO license_documents (license_document_id, customer_id, license_number, license_class, license_expiry, license_image_url, submitted_at)
-VALUES 
-    (1, 1, 'B2-79123456', 'B2', CURRENT_DATE + INTERVAL '5 years', '/uploads/licenses/cust1_license.jpg', CURRENT_TIMESTAMP - INTERVAL '8 days'),
-    (2, 2, 'B1-88123999', 'B1', CURRENT_DATE + INTERVAL '3 years', '/uploads/licenses/cust2_license.jpg', CURRENT_TIMESTAMP - INTERVAL '4 days'),
-    (3, 3, 'B2-99887766', 'B2', CURRENT_DATE + INTERVAL '8 years', '/uploads/licenses/cust3_license.jpg', CURRENT_TIMESTAMP - INTERVAL '1 days')
-ON CONFLICT (license_document_id) DO NOTHING;
-
--- 8. SLOTS
+-- 7. SLOTS
 -- status: 'OPEN' | 'CLOSED'
 INSERT INTO slots (slot_id, vehicle_type_id, start_time, end_time, status)
 VALUES 
@@ -148,7 +139,7 @@ VALUES
     (4, 3, (CURRENT_DATE + INTERVAL '1 day' + INTERVAL '8 hours'), (CURRENT_DATE + INTERVAL '1 day' + INTERVAL '18 hours'), 'CLOSED')
 ON CONFLICT (slot_id) DO NOTHING;
 
--- 9. BOOKINGS
+-- 8. BOOKINGS
 -- pickup_time and scheduled_end_time are whole hours (minute :00), the same rule the booking form enforces.
 -- Past and future bookings sit at fixed daytime hours (CURRENT_DATE + N hours) so they stay inside opening hours
 -- whatever time the seed runs; only the active rental is relative to now, because it must cover the current hour.
@@ -196,7 +187,7 @@ VALUES
     )
 ON CONFLICT (booking_id) DO NOTHING;
 
--- 10. CONTRACT_TEMPLATES
+-- 9. CONTRACT_TEMPLATES
 -- status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED'. Numbers live in typed columns; terms_content holds wording only.
 -- Version 1 is archived: contracts 1 and 2 were signed on it. Version 2 adds the fees and traffic fine, total-loss and car-swap clauses.
 INSERT INTO contract_templates (contract_template_id, version_no, title, terms_content,
@@ -244,7 +235,7 @@ VALUES
      'ACTIVE', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (contract_template_id) DO NOTHING;
 
--- 11. CONTRACTS
+-- 10. CONTRACTS
 -- Contract validity follows bookings.status. file_name is NULL until the PDF is issued.
 INSERT INTO contracts (contract_id, contract_number, booking_id, contract_template_id,
                        accepted_at, accepted_ip, file_name, issued_at, emailed_at, created_at)
@@ -255,7 +246,7 @@ VALUES
     (4, 'CTR-DEMO-REVIEW-0004', 4, 1, CURRENT_TIMESTAMP - INTERVAL '5 days', '127.0.0.1', NULL, NULL, NULL, CURRENT_TIMESTAMP - INTERVAL '5 days')
 ON CONFLICT (contract_id) DO NOTHING;
 
--- 12. PAYMENTS
+-- 11. PAYMENTS
 -- payment_type: 'DEPOSIT' | 'FINAL' | 'REFUND' | 'ISSUE_COMPENSATION'
 -- The deposit is 50% of the rent (contract terms), so settlement never refunds: REFUND only follows a timely cancellation.
 -- Booking 1 settlement: rent 1,350,000 - deposit 675,000 + issue fee 200,000 = 875,000.
@@ -270,14 +261,14 @@ VALUES
     (7, 4, 'FINAL-4-DEMO-0004', 'FINAL', 600000.00, 'CASH', 'PAID', CURRENT_TIMESTAMP - INTERVAL '3 days 16 hours')
 ON CONFLICT (payment_id) DO NOTHING;
 
--- 13. REVIEWS
+-- 12. REVIEWS
 -- rating: 1..5
 INSERT INTO reviews (review_id, booking_id, rating, comment, created_at)
 VALUES 
     (1, 1, 5, 'Clean car, smooth handover, very satisfied!', CURRENT_TIMESTAMP - INTERVAL '2 days')
 ON CONFLICT (review_id) DO UPDATE SET comment = EXCLUDED.comment;
 
--- 14. VEHICLE_INSPECTIONS
+-- 13. VEHICLE_INSPECTIONS
 -- status: 'SCHEDULED' | 'PASSED' | 'FAILED'
 INSERT INTO vehicle_inspections (vehicle_inspection_id, vehicle_id, scheduled_date, completed_at, status, notes)
 VALUES 
@@ -285,7 +276,7 @@ VALUES
     (2, 4, CURRENT_DATE - 1, NULL, 'SCHEDULED', 'Scheduled EV battery and ADAS sensor system diagnostic.')
 ON CONFLICT (vehicle_inspection_id) DO UPDATE SET notes = EXCLUDED.notes;
 
--- 15. ISSUES
+-- 14. ISSUES
 -- issue_type: 'COLLISION' | 'DAMAGE' | 'OTHER'; status: 'OPEN' | 'RESOLVED' | 'CANCELLED'
 -- The amount owed is a booking_fees row (fee_type 'ISSUE_COMPENSATION'), not a column here.
 INSERT INTO issues (issue_id, booking_id, employee_id, issue_type, subject, description, status,
@@ -302,7 +293,7 @@ VALUES
     (1, 1, 'issue_1.jpg', CURRENT_TIMESTAMP - INTERVAL '2 days')
 ON CONFLICT (issue_evidence_id) DO NOTHING;
 
--- 16. BOOKING_FEES
+-- 15. BOOKING_FEES
 -- fee_type: 'RENTAL' | 'LATE_FEE' | 'ISSUE_COMPENSATION'
 -- payment_id: the payment that settled the fee (booking 1's settlement is payment 2); NULL means still owed.
 INSERT INTO booking_fees (booking_fee_id, booking_id, fee_type, amount, description, issue_id, payment_id, created_at)
@@ -317,7 +308,6 @@ SELECT setval(pg_get_serial_sequence('vehicle_types', 'vehicle_type_id'), COALES
 SELECT setval(pg_get_serial_sequence('license_plates', 'license_plate_id'), COALESCE(MAX(license_plate_id), 1)) FROM license_plates;
 SELECT setval(pg_get_serial_sequence('vehicles', 'vehicle_id'), COALESCE(MAX(vehicle_id), 1)) FROM vehicles;
 SELECT setval(pg_get_serial_sequence('promotions', 'promotion_id'), COALESCE(MAX(promotion_id), 1)) FROM promotions;
-SELECT setval(pg_get_serial_sequence('license_documents', 'license_document_id'), COALESCE(MAX(license_document_id), 1)) FROM license_documents;
 SELECT setval(pg_get_serial_sequence('slots', 'slot_id'), COALESCE(MAX(slot_id), 1)) FROM slots;
 SELECT setval(pg_get_serial_sequence('bookings', 'booking_id'), COALESCE(MAX(booking_id), 1)) FROM bookings;
 SELECT setval(pg_get_serial_sequence('contract_templates', 'contract_template_id'), COALESCE(MAX(contract_template_id), 1)) FROM contract_templates;

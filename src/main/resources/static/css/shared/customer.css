@@ -81,8 +81,11 @@ body[data-screen^="customer/bookings/"] .ledger-table td { padding: .6rem; verti
 body[data-screen^="customer/bookings/"] .txn-code { font-family: var(--font-mono); font-size: .7rem; color: var(--color-muted); }
 body[data-screen="customer/bookings/success"] .success-layout,
 body[data-screen="customer/bookings/my-bookings"] .booking-list { width: 100%; }
-body[data-screen="customer/profile/index"] main,
-body[data-screen="customer/licenses/upload"] main { padding-inline: clamp(1rem, 2vw, 2rem); }
+body[data-screen="customer/profile/index"] main { padding-inline: clamp(1rem, 2vw, 2rem); }
+body[data-screen="customer/profile/index"] .row { --bs-gutter-x: 1.25rem; }
+body[data-screen="customer/error/404"] .error-404-div-detail { max-width: 500px; }
+body[data-screen="customer/error/500"] .error-500-div-detail { max-width: 500px; }
+body[data-screen="customer/error/default"] .error-default-div-detail { max-width: 500px; }
 
 @media (max-width: 960px) {
     body[data-screen="customer/bookings/checkout"] .checkout-grid,
@@ -389,8 +392,6 @@ body[data-screen^="customer/bookings/"] .checkout-plate-option:has(input:checked
 body[data-screen^="customer/bookings/"] .checkout-deposit-card { display:flex; flex-direction:column; gap:.65rem; padding:.85rem 1rem; border:1px solid var(--color-border); border-radius:12px; background:var(--color-surface-2); }
 body[data-screen^="customer/bookings/"] .checkout-deposit-top { display:flex; justify-content:space-between; align-items:flex-start; gap:.75rem; }
 body[data-screen^="customer/bookings/"] .checkout-deposit-val { color: var(--color-heading); font-family:var(--font-mono); font-size:1.1rem; font-weight:800; white-space:nowrap; }
-body[data-screen^="customer/bookings/"] .license-alert-verified { padding:.7rem .9rem; border:1px solid var(--fleet-ok-bd); border-radius:10px; background:var(--fleet-ok-bg); }
-body[data-screen^="customer/bookings/"] .license-alert-required { padding:.7rem .9rem; border:1px solid var(--color-border-strong); border-radius:10px; background:var(--color-surface-2); }
 body[data-screen^="customer/bookings/"] .terms-accept { display:flex; align-items:flex-start; gap:.6rem; cursor:pointer; }
 body[data-screen^="customer/bookings/"] .terms-accept-checkbox { width:16px; height:16px; margin-top:2px; flex-shrink:0; accent-color:var(--color-obsidian); }
 body[data-screen^="customer/bookings/"] .terms-accept-text { color:var(--color-body); font-size:.78rem; line-height:1.55; }

@@ -329,6 +329,7 @@ body.sidebar-collapsed .admin-sidebar-link { justify-content: center; }
 .crms-dropdown-item:hover, .crms-dropdown-item:focus-visible { color: var(--crms-navy); background: var(--crms-surface); }
 .header-nav-link { display: inline-flex; align-items: center; min-height: 2.5rem; padding-inline: .75rem; border-radius: .5rem; color: #3b4b5c; text-decoration: none; }
 .header-nav-link:hover, .header-nav-link.active { color: var(--crms-navy); background: var(--crms-surface); }
+.header-register-link { min-height: 2.25rem; padding: .5rem 1rem; font-size: .9375rem; font-weight: 650; white-space: nowrap; }
 .header-user-btn { min-height: 2.25rem; }
 .crms-confirm-overlay { z-index: 1100; }
 .crms-footer-map-container { height: 190px; }

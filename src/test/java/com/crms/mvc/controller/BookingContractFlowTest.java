@@ -20,7 +20,6 @@ import com.crms.mvc.service.PricingService;
 import com.crms.mvc.service.impl.PricingServiceImpl;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.ContractTemplateService;
-import com.crms.mvc.service.LicenseDocumentService;
 import com.crms.mvc.service.PaymentService;
 import com.crms.mvc.service.ReviewService;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,7 +60,6 @@ class BookingContractFlowTest {
     @MockitoBean private PaymentService paymentService;
     @MockitoBean private VehicleTypeService vehicleTypeService;
     @MockitoBean private PricingService pricingService;
-    @MockitoBean private LicenseDocumentService licenseDocumentService;
     @MockitoBean private ContractTemplateService contractTemplateService;
     @MockitoBean private com.crms.mvc.service.IssueService issueService;
     @MockitoBean private com.crms.mvc.service.HandoverService handoverService;
@@ -161,7 +159,7 @@ class BookingContractFlowTest {
 
     @Test
     void bookingDoesNotRequireADrivingLicense() throws Exception {
-        // The customer has no license on file (mock default): the booking must still go through.
+        // The customer has no license on file: the booking must still go through.
         com.crms.mvc.entity.Booking booking = new com.crms.mvc.entity.Booking();
         booking.setId(43L);
         when(bookingService.createBooking(eq(1L), any(), any())).thenReturn(booking);

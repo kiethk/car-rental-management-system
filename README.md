@@ -32,7 +32,7 @@ DBeaver: host `localhost`, port `5434` (hoặc `5432`), database `car_rental_man
 | Người | Luồng phụ trách |
 |---|---|
 | Kiệt | Chọn loại xe/slot → đặt xe → cọc → gán xe → nhận/trả xe → thanh toán cuối; hủy/hoàn tiền; ghép các phần |
-| Phú | Đăng ký/đăng nhập → hồ sơ → nộp GPLX → nhân viên duyệt/từ chối; tài khoản khách/nhân viên và phân quyền |
+| Phú | Đăng ký/đăng nhập → hồ sơ; tài khoản khách/nhân viên và phân quyền |
 | Phúc | Quản lý loại xe → xe → biển số → kiểm định/bảo trì; danh sách, tìm kiếm, chi tiết xe |
 | Trí | Quản lý khuyến mãi; khách đánh giá booking đã hoàn thành; ghi nhận và cập nhật sự cố |
 

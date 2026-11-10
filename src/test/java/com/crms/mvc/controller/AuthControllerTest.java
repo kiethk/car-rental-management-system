@@ -1,9 +1,10 @@
 package com.crms.mvc.controller;
 
-import com.crms.mvc.service.LicenseDocumentService;
 import org.springframework.context.annotation.Import;
 import com.crms.mvc.support.PassThroughSessionAccountService;
+import com.crms.mvc.support.TestSessions;
 import com.crms.mvc.dto.LoginIdentityDTO;
+import com.crms.mvc.exception.AccountLockedException;
 import com.crms.mvc.service.AuthService;
 import com.crms.mvc.service.CustomerService;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -24,7 +26,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(PassThroughSessionAccountService.class)
 @WebMvcTest(AuthController.class)
 class AuthControllerTest {
-    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private AuthService authService;
     @MockitoBean private CustomerService customerService;
@@ -32,6 +33,16 @@ class AuthControllerTest {
     @Test void showsLoginForm() throws Exception {
         mvc.perform(get("/login")).andExpect(status().isOk()).andExpect(view().name("screens/customer/auth/login/index"))
                 .andExpect(content().string(containsString("name=\"email\"")));
+    }
+
+    @Test void loggedInCustomerIsSentHomeFromLoginPage() throws Exception {
+        mvc.perform(get("/login").session(TestSessions.customer(1L)))
+                .andExpect(redirectedUrl("/"));
+    }
+
+    @Test void loggedInEmployeeIsSentToDashboardFromLoginPage() throws Exception {
+        mvc.perform(get("/login").session(TestSessions.staff(2L)))
+                .andExpect(redirectedUrl("/admin/dashboard"));
     }
 
     @Test void blankFieldsShowValidationErrors() throws Exception {
@@ -45,6 +56,15 @@ class AuthControllerTest {
         when(authService.login("a@example.com", "wrong")).thenReturn(null);
         mvc.perform(post("/login").param("email", "a@example.com").param("password", "wrong"))
                 .andExpect(status().isOk()).andExpect(content().string(containsString("Email hoặc mật khẩu không đúng")));
+    }
+
+    @Test void lockedAccountShowsLockedMessage() throws Exception {
+        when(authService.login("locked@example.com", "secret")).thenThrow(new AccountLockedException());
+        mvc.perform(post("/login").param("email", "locked@example.com").param("password", "secret"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("screens/customer/auth/login/index"))
+                .andExpect(content().string(containsString("Tài khoản đã bị khóa")))
+                .andExpect(content().string(not(containsString("Email hoặc mật khẩu không đúng"))));
     }
 
     @Test void validLoginRedirectsAndStoresSession() throws Exception {

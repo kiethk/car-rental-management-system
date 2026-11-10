@@ -4,6 +4,7 @@ import com.crms.mvc.dto.LoginDTO;
 import com.crms.mvc.dto.LoginIdentityDTO;
 import com.crms.mvc.dto.CustomerRegisterDTO;
 import com.crms.mvc.dto.SessionAccount;
+import com.crms.mvc.exception.AccountLockedException;
 import com.crms.mvc.service.AuthService;
 import com.crms.mvc.service.CustomerService;
 import com.crms.mvc.service.SessionAccountService;
@@ -33,7 +34,11 @@ public class AuthController {
     }
 
     @GetMapping("/login")
-    public String loginForm(Model model) {
+    public String loginForm(HttpServletRequest request, Model model) {
+        SessionAccount current = CurrentAccount.of(request.getSession(false)).orElse(null);
+        if (current != null) {
+            return current.isCustomer() ? "redirect:/" : "redirect:/admin/dashboard";
+        }
         model.addAttribute("loginForm", new LoginDTO());
         return "screens/customer/auth/login/index";
     }
@@ -47,7 +52,13 @@ public class AuthController {
             return "screens/customer/auth/login/index";
         }
 
-        LoginIdentityDTO account = authService.login(form.getEmail(), form.getPassword());
+        LoginIdentityDTO account;
+        try {
+            account = authService.login(form.getEmail(), form.getPassword());
+        } catch (AccountLockedException exception) {
+            model.addAttribute("error", "Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.");
+            return "screens/customer/auth/login/index";
+        }
         if (account == null) {
             model.addAttribute("error", "Email hoặc mật khẩu không đúng");
             return "screens/customer/auth/login/index";
