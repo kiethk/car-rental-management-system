@@ -9,7 +9,7 @@
 .issue-fee-amount {
   font-family: var(--font-mono);
   font-weight: 600;
-  color: var(--color-obsidian, #0f172a);
+  color: var(--color-heading, #0f172a);
   white-space: nowrap;
 }
 
@@ -59,7 +59,7 @@
 /* Header actions on the issue detail page: one quiet outlined style for all of them. */
 .admin-btn.issue-action-btn {
   border: 1px solid var(--color-border-strong);
-  background-color: #ffffff;
+  background-color: var(--color-surface);
   color: var(--color-body) !important;
 }
 .admin-btn.issue-action-btn:hover {

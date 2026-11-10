@@ -150,18 +150,18 @@
             chart: { type: 'donut', height: 240, fontFamily: 'Roboto, sans-serif', animations: { easing: 'easeinout', speed: 700 } },
             series,
             labels: ['Sẵn sàng', 'Đang thuê', 'Bảo dưỡng'],
-            colors: ['#10b981', '#C6A15B', '#f43f5e'],
+            colors: ['#34D399', '#D4AF6A', '#FB7185'],
             legend: { show: false },
             dataLabels: { enabled: false },
-            stroke: { width: 3, colors: ['#ffffff'] },
+            stroke: { width: 3, colors: ['#24221E'] },
             plotOptions: {
                 pie: {
                     donut: {
                         size: '74%',
                         labels: {
                             show: true,
-                            value: { fontFamily: 'Roboto Mono, monospace', fontWeight: 800, fontSize: '28px', color: '#11151B' },
-                            total: { show: true, label: 'Tổng xe', color: '#5F646D', fontSize: '12px', formatter: () => String(series.reduce((a, b) => a + b, 0)) },
+                            value: { fontFamily: 'Roboto Mono, monospace', fontWeight: 800, fontSize: '28px', color: '#E9E3D7' },
+                            total: { show: true, label: 'Tổng xe', color: '#A39C8E', fontSize: '12px', formatter: () => String(series.reduce((a, b) => a + b, 0)) },
                         },
                     },
                 },

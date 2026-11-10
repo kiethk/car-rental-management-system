@@ -40,7 +40,7 @@ body[data-screen="customer/home"] .home-eyebrow-dot {
 }
 body[data-screen="customer/home"] .home-hero-title {
     margin: 0;
-    color: var(--color-obsidian);
+    color: var(--color-heading);
     font-size: clamp(2.5rem, 4.4vw, 4.15rem);
     font-weight: 800;
     line-height: 1.03;
@@ -121,13 +121,13 @@ body[data-screen="customer/home"] .home-btn-primary:hover {
     box-shadow: 0 16px 30px -12px rgba(198, 161, 91, .8), inset 0 1px 0 rgba(255, 255, 255, .45);
 }
 body[data-screen="customer/home"] .home-btn-ghost {
-    color: var(--color-obsidian);
+    color: var(--color-heading);
     background: rgba(255, 255, 255, .75);
     border: 1px solid var(--color-border-strong);
 }
 body[data-screen="customer/home"] .home-btn-ghost:hover {
-    color: var(--color-obsidian);
-    background: #fff;
+    color: var(--color-heading);
+    background: var(--color-surface);
     border-color: var(--color-obsidian);
     transform: translateY(-2px);
 }
@@ -168,7 +168,7 @@ body[data-screen="customer/home"] .promotion-controls button {
     min-height: 2.75rem;
     border: 0;
     border-radius: 50%;
-    color: var(--color-obsidian);
+    color: var(--color-heading);
     background: rgba(255, 255, 255, .55);
     font-size: 1.5rem;
     line-height: 1;
@@ -181,7 +181,7 @@ body[data-screen="customer/home"] .promotion-carousel:hover .promotion-controls 
 body[data-screen="customer/home"] .promotion-controls button:hover,
 body[data-screen="customer/home"] .promotion-controls button:focus-visible {
     opacity: 1;
-    background: #fff;
+    background: var(--color-surface);
     transform: scale(1.08);
     box-shadow: 0 8px 18px rgba(12, 16, 22, .25);
     outline: none;
@@ -210,7 +210,7 @@ body[data-screen="customer/home"] .home-hero-float-label {
     letter-spacing: .14em;
     text-transform: uppercase;
 }
-body[data-screen="customer/home"] .home-hero-float strong { color: var(--color-obsidian); font-size: .88rem; font-weight: 700; }
+body[data-screen="customer/home"] .home-hero-float strong { color: var(--color-heading); font-size: .88rem; font-weight: 700; }
 body[data-screen="customer/home"] .home-hero-float span:last-child { color: var(--color-muted); font-size: .7rem; }
 
 /* ---------- Sections ---------- */
@@ -229,7 +229,7 @@ body[data-screen="customer/home"] .home-section-head {
 body[data-screen="customer/home"] .home-section-head .home-eyebrow { margin-bottom: .55rem; }
 body[data-screen="customer/home"] .home-section-title {
     margin: 0;
-    color: var(--color-obsidian);
+    color: var(--color-heading);
     font-size: clamp(1.65rem, 2.5vw, 2.25rem);
     font-weight: 800;
     letter-spacing: -.03em;
@@ -264,7 +264,7 @@ body[data-screen="customer/home"] .home-step {
     position: relative;
     overflow: hidden;
     padding: 1.4rem 1.35rem 1.5rem;
-    background: #fff;
+    background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 16px;
     box-shadow: 0 4px 20px -2px rgba(12, 16, 22, .05), 0 2px 6px -1px rgba(12, 16, 22, .03);
@@ -302,7 +302,7 @@ body[data-screen="customer/home"] .home-step-icon {
     border: 1px solid rgba(198, 161, 91, .22);
 }
 body[data-screen="customer/home"] .home-step-icon svg { width: 21px; height: 21px; }
-body[data-screen="customer/home"] .home-step h3 { margin: 0 0 .45rem; color: var(--color-obsidian); font-size: .98rem; font-weight: 700; }
+body[data-screen="customer/home"] .home-step h3 { margin: 0 0 .45rem; color: var(--color-heading); font-size: .98rem; font-weight: 700; }
 body[data-screen="customer/home"] .home-step p { margin: 0; color: var(--color-muted); font-size: .82rem; line-height: 1.68; }
 
 /* ---------- Featured vehicle cards ---------- */
@@ -316,7 +316,7 @@ body[data-screen="customer/home"] .home-car-card {
     flex-direction: column;
     height: 100%;
     overflow: hidden;
-    background: #fff;
+    background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 16px;
     box-shadow: 0 4px 20px -2px rgba(12, 16, 22, .06), 0 2px 6px -1px rgba(12, 16, 22, .04);
@@ -382,7 +382,7 @@ body[data-screen="customer/home"] .home-car-price strong {
     display: inline-flex;
     align-items: baseline;
     gap: .12rem;
-    color: var(--color-obsidian);
+    color: var(--color-heading);
     font-family: var(--font-mono);
     font-size: 1rem;
     font-weight: 700;
@@ -404,7 +404,7 @@ body[data-screen="customer/home"] .home-car-head {
 }
 body[data-screen="customer/home"] .home-car-head h3 {
     margin: 0;
-    color: var(--color-obsidian);
+    color: var(--color-heading);
     font-size: 1.03rem;
     font-weight: 700;
     line-height: 1.3;
@@ -424,7 +424,7 @@ body[data-screen="customer/home"] .home-spec {
     padding: .28rem .55rem;
     border: 1px solid var(--color-border);
     border-radius: 999px;
-    background: #FBFAF7;
+    background: var(--color-surface-2);
     color: var(--color-body);
     font-size: .68rem;
     font-weight: 600;
@@ -465,8 +465,8 @@ body[data-screen="customer/home"] .home-car-btn {
     transition: background-color .25s ease, border-color .25s ease, color .25s ease, transform .3s cubic-bezier(.16,1,.3,1), box-shadow .3s ease;
 }
 body[data-screen="customer/home"] .home-car-btn svg { width: 15px; height: 15px; }
-body[data-screen="customer/home"] .home-car-btn-ghost { color: var(--color-obsidian); background: #fff; border: 1px solid var(--color-border-strong); }
-body[data-screen="customer/home"] .home-car-btn-ghost:hover { color: var(--color-obsidian); border-color: var(--color-obsidian); background: #fff; }
+body[data-screen="customer/home"] .home-car-btn-ghost { color: var(--color-heading); background: var(--color-surface); border: 1px solid var(--color-border-strong); }
+body[data-screen="customer/home"] .home-car-btn-ghost:hover { color: var(--color-heading); border-color: var(--color-obsidian); background: var(--color-surface); }
 body[data-screen="customer/home"] .home-car-btn-primary {
     color: var(--color-accent-ink);
     background: linear-gradient(135deg, #D3B274 0%, var(--color-accent) 55%, var(--color-accent-strong) 100%);

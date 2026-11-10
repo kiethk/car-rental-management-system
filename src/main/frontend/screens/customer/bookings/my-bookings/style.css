@@ -1,4 +1,4 @@
-body[data-screen="customer/bookings/my-bookings"] .bookings-my-bookings-span-detail {background: #fee2e2; color: #b91c1c;}
+body[data-screen="customer/bookings/my-bookings"] .bookings-my-bookings-span-detail {background: rgba(244, 63, 94, .14); color: #b91c1c;}
 
 /* Card layout mirrors the rental/search result row: full-height media left, compact content right. */
 body[data-screen="customer/bookings/my-bookings"] .customer-stack-4 > div > .customer-sm-flex-row > .flex-fill {

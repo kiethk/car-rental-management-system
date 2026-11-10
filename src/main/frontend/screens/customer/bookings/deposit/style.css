@@ -11,8 +11,8 @@ body[data-screen="customer/bookings/deposit"] .bookings-deposit-div-detail-e99d 
 body[data-screen="customer/bookings/deposit"] .bookings-deposit-div-detail-1d32 {margin-top: 2px}
 body[data-screen="customer/bookings/deposit"] .bookings-deposit-div-detail-8fe8 {flex: 1}
 body[data-screen="customer/bookings/deposit"] .bookings-deposit-div-detail-3d14 {align-items: center; padding-bottom: 12px;}
-body[data-screen="customer/bookings/deposit"] .bookings-deposit-span-detail-f88f {font-size: 15px; font-weight: 700; color: var(--color-obsidian);}
-body[data-screen="customer/bookings/deposit"] .bookings-deposit-span-detail-78b2 {font-size: 1.35rem; font-weight: 800; color: var(--color-obsidian);}
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-span-detail-f88f {font-size: 15px; font-weight: 700; color: var(--color-heading);}
+body[data-screen="customer/bookings/deposit"] .bookings-deposit-span-detail-78b2 {font-size: 1.35rem; font-weight: 800; color: var(--color-heading);}
 body[data-screen="customer/bookings/deposit"] .bookings-deposit-span-detail-94c3 {font-family: var(--font-mono); font-size: 1.15rem; font-weight: 800; letter-spacing: -.02em;}
 body[data-screen="customer/bookings/deposit"] .dh-sub-row { font-size: .85rem; }
 body[data-screen="customer/bookings/deposit"] .dh-sub-row > span:first-child { font-weight: 600; }
@@ -29,7 +29,7 @@ body[data-screen="customer/bookings/deposit"] .sidebar-vehicle-img { object-fit:
 body[data-screen="customer/bookings/deposit"] .deposit-payment-form { margin-top: .25rem; }
 body[data-screen="customer/bookings/deposit"] .payment-method-title {
     margin: 0 0 .75rem;
-    color: var(--color-obsidian);
+    color: var(--color-heading);
     font-size: .95rem;
     font-weight: 700;
     letter-spacing: -.01em;
@@ -48,7 +48,7 @@ body[data-screen="customer/bookings/deposit"] .payment-method {
     padding: .9rem 1rem;
     border: 1px solid var(--color-border);
     border-radius: 12px;
-    background: #fff;
+    background: var(--color-surface);
     cursor: pointer;
     transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
 }
@@ -97,7 +97,7 @@ body[data-screen="customer/bookings/deposit"] .payment-method-info {
     flex: 1;
     min-width: 0;
 }
-body[data-screen="customer/bookings/deposit"] .payment-method-name { color: var(--color-obsidian); font-size: .9rem; font-weight: 700; }
+body[data-screen="customer/bookings/deposit"] .payment-method-name { color: var(--color-heading); font-size: .9rem; font-weight: 700; }
 body[data-screen="customer/bookings/deposit"] .payment-method-desc { color: var(--color-muted); font-size: .75rem; line-height: 1.45; }
 body[data-screen="customer/bookings/deposit"] .payment-method-check {
     display: inline-grid;

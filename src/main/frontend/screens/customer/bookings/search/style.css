@@ -17,7 +17,7 @@ body[data-screen="customer/bookings/search"] .search-filter-panel :is(input:not(
     min-height: 42px;
     border-color: #a9bacb !important;
     color: var(--crms-ink);
-    background: #fff;
+    background: var(--color-surface);
 }
 body[data-screen="customer/bookings/search"] .search-filter-panel label { font-size: .85rem; color: var(--crms-muted) !important; }
 body[data-screen="customer/bookings/search"] .search-filter-panel button { border: 0; min-height: 42px; }
@@ -31,16 +31,16 @@ body[data-screen="customer/bookings/search"] .car-card-row {
     border: 1px solid var(--crms-border);
     border-radius: 10px;
     overflow: hidden;
-    background: #fff;
+    background: var(--color-surface);
     box-shadow: 0 2px 5px rgb(16 43 72 / 5%);
     transition: border-color .15s ease, box-shadow .15s ease;
 }
 body[data-screen="customer/bookings/search"] .car-card-row:hover {
     border-color: #708ba6;
-    background: #fff;
+    background: var(--color-surface);
     box-shadow: 0 4px 14px rgb(16 43 72 / 10%);
 }
-body[data-screen="customer/bookings/search"] .car-card-img-wrap { min-width: 0; height: 220px; overflow: hidden; background: #dfe7ef; }
+body[data-screen="customer/bookings/search"] .car-card-img-wrap { min-width: 0; height: 220px; overflow: hidden; background: var(--color-surface-2); }
 body[data-screen="customer/bookings/search"] .car-card-img-wrap img {
     display: block;
     width: 100%;
@@ -64,7 +64,7 @@ body[data-screen="customer/bookings/search"] .car-category-badge {
     padding: 3px 7px;
     border-radius: 4px;
     color: #284c6d;
-    background: #e6eef7;
+    background: var(--color-surface-2);
     font-size: .65rem;
     font-weight: 700;
     letter-spacing: .04em;

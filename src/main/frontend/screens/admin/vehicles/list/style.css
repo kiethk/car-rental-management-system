@@ -18,8 +18,8 @@
     padding: .3rem .5rem;
     border: 1px solid var(--color-border-strong);
     border-radius: 7px;
-    background: #fff;
-    color: var(--color-obsidian);
+    background: var(--color-surface);
+    color: var(--color-heading);
     font-family: var(--font-mono);
     font-size: .78rem;
     font-variant-numeric: tabular-nums;

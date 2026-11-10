@@ -49,10 +49,10 @@ Nhắn nhóm tiến độ/vướng mắc; cần trao đổi thêm thì nói trê
 ## Code và database
 
 - Java: `src/main/java/com/crms/mvc/`; theo `controller → service → service/impl → repository → entity`, DTO cho form/view.
-- Giao diện web: `src/main/frontend/screens/`, mỗi screen có HTML/CSS/JS; component chung trong `src/main/frontend/shared/`. Maven copy tài nguyên khi build. Xem [hướng dẫn frontend](docs/FRONTEND_GUIDE.md). Email/PDF giữ trong `src/main/resources/templates/`.
+- Giao diện web: `src/main/frontend/screens/`, mỗi screen có HTML/CSS/JS; component chung trong `src/main/frontend/shared/`. Maven copy tài nguyên khi build. Hướng dẫn frontend nằm ở `docs/FRONTEND_GUIDE.md` (tài liệu làm việc local, không commit). Email/PDF giữ trong `src/main/resources/templates/`.
 - SQL: [schema](database/schema.sql), [seed](database/seed.sql). Nếu dùng DB sẵn, chạy trên database mới/empty rồi chỉnh cấu hình local.
-- ERD: [erd_car.drawio](docs/reference/erd_car.drawio). Conceptual có 13 thực thể; physical trong file còn 8 bảng. `SLOT` là khung giờ thuê theo loại xe.
-- Schema base là đề xuất: một xe có nhiều biển số theo thời gian (1-N, bảng `license_plates` có `valid_from`/`valid_to`, biển cũ giữ làm lịch sử và không dùng lại; xem [license-plate-history-erd.md](docs/proposed/license-plate-history-erd.md)), booking được gán xe sau; cần thống nhất capacity slot và chính sách cọc/hoàn/phạt khi làm luồng thuê.
+- ERD local: `docs/reference/erd_car.drawio`. Conceptual có 13 thực thể; physical trong file còn 8 bảng. `SLOT` là khung giờ thuê theo loại xe.
+- Schema base là đề xuất: một xe có nhiều biển số theo thời gian (1-N, bảng `license_plates` có `valid_from`/`valid_to`, biển cũ giữ làm lịch sử và không dùng lại; xem `docs/proposed/license-plate-history-erd.md`), booking được gán xe sau; cần thống nhất capacity slot và chính sách cọc/hoàn/phạt khi làm luồng thuê.
 - Mẫu để làm theo: `VehicleController`, `VehicleService`, `VehicleServiceImpl`, `VehicleDTO`, các trang `templates/vehicles/`.
 
 ## Hợp đồng thuê xe
@@ -65,6 +65,6 @@ Nhắn nhóm tiến độ/vướng mắc; cần trao đổi thêm thì nói trê
   3. Khi test, dùng email của chính mình cho tài khoản khách (ví dụ `ten.ban+khach1@gmail.com`); dữ liệu seed dùng `@example.com` nên không gửi tới ai.
 - Schema đã đổi (bỏ `policies`, thêm `contract_templates`). DB tạo trước thay đổi này phải tạo lại: xóa database `car_rental_management`, tạo mới rồi chạy lại `schema.sql` + `seed.sql`. App dùng `ddl-auto=validate` nên sẽ báo lỗi ngay khi khởi động nếu schema DB không khớp entity.
 - Câu chữ của các chính sách (cọc, hủy, trả trễ) viết trực tiếp trong từng trang, chỉ con số lấy từ DB. Mọi chỗ hiển thị chính sách đều gắn thuộc tính `data-policy` (`deposit`, `cancellation`, `lateReturn`); khi đổi quy tắc, tìm `data-policy` trong toàn project (Ctrl+Shift+F) để sửa đủ. Thêm chỗ hiển thị chính sách mới thì nhớ gắn thuộc tính này.
-- ERD đề xuất cho phần này: [contract-templates-erd.md](docs/proposed/contract-templates-erd.md).
+- ERD đề xuất cho phần này: `docs/proposed/contract-templates-erd.md` (tài liệu local).
 
 Kiểm tra build/test: `mvn verify`.
