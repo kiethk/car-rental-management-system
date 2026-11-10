@@ -33,5 +33,12 @@ database/payment-card-example.txt
 
 # Local issue tracker (specs & tickets)
 .scratch/
-docs/TEAM_UI_GUIDE.md
-docs/PROJECT_ROADMAP.md
+
+# Working documents stay local (not shipped with the app)
+docs/*.md
+docs/*.json
+docs/agents/
+docs/proposed/
+docs/research/
+docs/reference/
+!docs/CODE_CONVENTIONS.md

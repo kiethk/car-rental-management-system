@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý xe — Quản trị DriveNow</title>
+    <th:block th:replace="~{fragments/assets :: common}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/screens/admin/vehicles/list/style.css}">
+    <link rel="stylesheet" th:href="@{/css/shared/dark.css}">
+    <script defer th:src="@{/js/screens/admin/vehicles/list/script.js}"></script>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface" data-screen="admin/vehicles/list">
+
+<th:block th:replace="~{layouts/admin :: shell(~{::screenContent}, 'vehicles')}">
+    <th:block th:fragment="screenContent">
+<!-- Flash Messages -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show border-0 rounded-lg shadow-sm" role="alert">
+                <span th:text="${success}"></span>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show border-0 rounded-lg shadow-sm" role="alert">
+                <span th:text="${error}"></span>
+            </div>
+
+            <!-- Sub Nav Tabs -->
+            <ul class="nav nav-pills mb-4 bg-white p-2 rounded-xl border">
+                <li class="nav-item">
+                    <a class="nav-link active fw-bold bg-navy text-white" th:href="@{/admin/vehicles}">Danh sách xe</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-bold text-navy" th:href="@{/admin/vehicle-types}">Danh mục dòng xe</a>
+                </li>
+            </ul>
+
+            <!-- Page Header -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+                <div>
+                    <h1 class="h3 fw-bold text-navy mb-1">Quản lý xe</h1>
+                </div>
+                <div class="mt-3 mt-md-0 d-flex gap-2">
+                    <a th:href="@{/admin/vehicles/new}" class="btn btn-navy fw-bold btn-sm px-3 py-2 rounded-lg shadow-sm">
+                        + Thêm xe mới
+                    </a>
+                </div>
+            </div>
+
+            <!-- Search + sort + page size -->
+            <form method="get" th:action="@{/admin/vehicles}" class="d-flex flex-wrap align-items-center mb-3 vehicles-list-form-detail">
+                <input type="hidden" name="status" th:value="${query.status}">
+                <input type="search" name="keyword" th:value="${query.keyword}" class="form-control form-control-sm rounded-lg vehicles-list-keyword"
+                       placeholder="Tìm biển số, dòng xe, hãng hoặc màu..." aria-label="Tìm xe">
+                <button type="submit" class="btn btn-navy btn-sm fw-bold rounded-lg px-3">Tìm</button>
+                <a th:if="${query.keyword != null}" th:href="@{/admin/vehicles(status=${query.status})}" class="small text-muted">Xóa</a>
+
+                <span class="ms-md-auto small fw-bold text-muted">Sắp xếp</span>
+                <select name="sort" class="form-control form-control-sm rounded-lg vehicles-list-sort" data-submit-on-change aria-label="Sắp xếp xe">
+                    <option value="name_asc" th:selected="${query.sort == 'name_asc'}">Tên A → Z</option>
+                    <option value="name_desc" th:selected="${query.sort == 'name_desc'}">Tên Z → A</option>
+                    <option value="plate_asc" th:selected="${query.sort == 'plate_asc'}">Biển số A → Z</option>
+                </select>
+                <select name="size" class="form-control form-control-sm rounded-lg vehicles-list-size" data-submit-on-change aria-label="Số xe mỗi trang">
+                    <option th:each="n : ${query.pageSizes}" th:value="${n}" th:text="${n} + ' / trang'" th:selected="${query.size == n}">10 / trang</option>
+                </select>
+            </form>
+
+            <!-- Filter Status Pills (keep the search and sort) -->
+            <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
+                <span class="small fw-bold text-muted me-2">Trạng thái:</span>
+                <a th:href="${query.urlForStatus('/admin/vehicles', 'all')}"
+                   th:class="'btn btn-sm rounded-pill fw-bold ' + (${query.status == 'all'} ? 'btn-navy text-white' : 'btn-light text-navy')">
+                    Tất cả (<span th:text="${totalCars}">0</span>)
+                </a>
+                <a th:href="${query.urlForStatus('/admin/vehicles', 'available')}"
+                   th:class="'btn btn-sm rounded-pill fw-bold ' + (${query.status == 'available'} ? 'btn-success text-white' : 'btn-light text-navy')">
+                    Sẵn sàng (<span th:text="${statusCounts.getOrDefault('available', 0)}">0</span>)
+                </a>
+                <a th:href="${query.urlForStatus('/admin/vehicles', 'rented')}"
+                   th:class="'btn btn-sm rounded-pill fw-bold ' + (${query.status == 'rented'} ? 'btn-warning text-dark' : 'btn-light text-navy')">
+                    Đang thuê (<span th:text="${statusCounts.getOrDefault('rented', 0)}">0</span>)
+                </a>
+                <a th:href="${query.urlForStatus('/admin/vehicles', 'maintenance')}"
+                   th:class="'btn btn-sm rounded-pill fw-bold ' + (${query.status == 'maintenance'} ? 'btn-secondary text-white' : 'btn-light text-navy')">
+                    Bảo dưỡng (<span th:text="${statusCounts.getOrDefault('maintenance', 0)}">0</span>)
+                </a>
+                <a th:href="${query.urlForStatus('/admin/vehicles', 'retired')}"
+                   th:class="'btn btn-sm rounded-pill fw-bold ' + (${query.status == 'retired'} ? 'btn-dark text-white' : 'btn-light text-navy')">
+                    Ngừng khai thác (<span th:text="${statusCounts.getOrDefault('retired', 0)}">0</span>)
+                </a>
+            </div>
+
+            <!-- Vehicles Table Card -->
+            <div class="card border-0 shadow-sm rounded-xl overflow-hidden bg-white">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle admin-table">
+                        <thead class="bg-surface-2 text-navy small fw-bold">
+                            <tr>
+                                <th class="border-top-0 py-3">ID</th>
+                                <th class="border-top-0 py-3">Biển số</th>
+                                <th class="border-top-0 py-3">Dòng xe & màu</th>
+                                <th class="border-top-0 py-3">Năm SX</th>
+                                <th class="border-top-0 py-3">Số km</th>
+                                <th class="border-top-0 py-3 text-center">Trạng thái</th>
+                                <th class="border-top-0 py-3 text-center">Đổi nhanh</th>
+                                <th class="border-top-0 py-3 text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small text-navy">
+                            <tr th:if="${#lists.isEmpty(vehicles)}">
+                                <td colspan="8" class="text-center py-4 text-muted">
+                                    <span th:text="${query.keyword != null or query.status != 'all'} ? 'Không có xe nào khớp với tìm kiếm.' : 'Chưa có xe nào.'">Chưa có xe nào.</span>
+                                    <a th:if="${query.keyword != null or query.status != 'all'}" th:href="@{/admin/vehicles}" class="ms-1">Xem tất cả xe</a>
+                                </td>
+                            </tr>
+                            <tr th:each="v : ${vehicles}">
+                                <td class="fw-bold text-muted" th:text="'#' + ${v.id}">#1</td>
+                                <td>
+                                    <a th:href="@{/admin/license-plates/vehicle/{id}(id=${v.id})}" class="text-decoration-none" title="Lịch sử biển số">
+                                        <span class="admin-plate-badge"
+                                              th:text="${v.licensePlate}">51A-123.45</span>
+                                    </a>
+                                    <small class="d-block text-muted mt-0.5 vehicles-list-small-detail"
+                                           th:text="${v.province}">TP. Hồ Chí Minh</small>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-navy"
+                                         th:text="${v.displayName}">
+                                        Toyota Vios
+                                    </div>
+                                    <small class="text-muted" th:text="'Màu: ' + ${v.color}">Màu: Trắng</small>
+                                </td>
+                                <td th:text="${v.year}">2023</td>
+                                <td>
+                                    <form method="post" th:action="@{/admin/vehicles/{id}/odometer(id=${v.id})}" class="m-0">
+                                        <input type="hidden" name="returnTo" th:value="${listUrl}" />
+                                        <div class="admin-odometer-wrap">
+                                            <input type="number" name="odometer" th:value="${v.odometer}" min="0" required aria-label="Số km hiện tại">
+                                            <button type="submit" title="Lưu số km mới" aria-label="Lưu số km mới">✓</button>
+                                        </div>
+                                    </form>
+                                </td>
+                                <td class="text-center">
+                                    <span th:if="${v.status == 'available'}" class="admin-status-badge bg-success text-white">Sẵn sàng</span>
+                                    <span th:if="${v.status == 'rented'}" class="admin-status-badge bg-warning text-dark">Đang thuê</span>
+                                    <span th:if="${v.status == 'maintenance'}" class="admin-status-badge bg-secondary text-white">Bảo dưỡng</span>
+                                    <span th:if="${v.status == 'retired'}" class="admin-status-badge bg-dark text-white">Ngừng khai thác</span>
+                                </td>
+                                <td class="text-center">
+                                    <div th:if="${v.status == 'available'}">
+                                        <form method="post" th:action="@{/admin/vehicles/{id}/status(id=${v.id})}" class="m-0">
+                                            <input type="hidden" name="status" value="maintenance" />
+                                            <input type="hidden" name="returnTo" th:value="${listUrl}" />
+                                            <button type="submit" class="admin-btn btn-soft-warning">
+                                                Chuyển sang bảo dưỡng
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <div th:if="${v.status == 'maintenance'}">
+                                        <form method="post" th:action="@{/admin/vehicles/{id}/status(id=${v.id})}" class="m-0">
+                                            <input type="hidden" name="status" value="available" />
+                                            <input type="hidden" name="returnTo" th:value="${listUrl}" />
+                                            <button type="submit" class="admin-btn btn-soft-success">
+                                                Chuyển sang sẵn sàng
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <span th:if="${v.status == 'rented'}" class="admin-status-badge bg-light text-dark border text-muted">
+                                        Đang trên đường
+                                    </span>
+                                    <span th:if="${v.status == 'retired'}" class="admin-status-badge bg-light text-dark border text-muted">
+                                        Đã ngừng khai thác
+                                    </span>
+                                    <form th:if="${(v.status == 'available' or v.status == 'maintenance') and (session.account != null and session.account.admin)}"
+                                          method="post" th:action="@{/admin/vehicles/{id}/status(id=${v.id})}" class="m-0 mt-1"
+                                          data-confirm="Ngừng khai thác xe này?" data-confirm-detail="Xe sẽ không được cho thuê lại." data-confirm-ok="Ngừng khai thác" data-confirm-tone="danger">
+                                        <input type="hidden" name="status" value="retired" />
+                                        <input type="hidden" name="returnTo" th:value="${listUrl}" />
+                                        <button type="submit" class="admin-btn btn-soft-danger">
+                                            Ngừng khai thác
+                                        </button>
+                                    </form>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-inline-flex align-items-center justify-content-center vehicles-list-div-detail">
+                                        <a th:href="@{/admin/inspections/new(vehicleId=${v.id})}"
+                                           class="admin-btn btn-soft-secondary" title="Lên lịch đăng kiểm">
+                                            Đăng kiểm
+                                        </a>
+                                        <a th:href="@{/admin/vehicles/{id}/edit(id=${v.id})}"
+                                           class="admin-btn btn-soft-primary">
+                                            Sửa
+                                        </a>
+                                        <form method="post" th:action="@{/admin/vehicles/{id}/delete(id=${v.id})}" class="m-0"
+                                              data-confirm="Xóa xe này?" data-confirm-detail="Không xóa được nếu xe có đơn thuê hoặc lịch đăng kiểm." data-confirm-ok="Xóa" data-confirm-tone="danger">
+                                            <input type="hidden" name="returnTo" th:value="${listUrl}" />
+                                            <button type="submit" class="admin-btn btn-soft-danger">
+                                                Xóa
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div th:replace="~{fragments/pagination :: pager(${nav})}"></div>
+    </th:block>
+</th:block>
+
+</body>
+</html>

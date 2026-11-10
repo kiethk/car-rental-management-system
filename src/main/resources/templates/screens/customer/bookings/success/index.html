@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Đặt xe & Thanh toán thành công — DriveNow</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}" />
+    <th:block th:replace="~{fragments/assets :: common}">
+    </th:block>
+    <link rel="stylesheet" th:href="@{/css/screens/customer/bookings/success/style.css}">
+    <link rel="stylesheet" th:href="@{/css/shared/dark.css}">
+    <script defer th:src="@{/js/screens/customer/bookings/success/script.js}">
+    </script>
+  </head>
+  <body class="bg-surface text-navy min-vh-100 d-flex flex-column" data-screen="customer/bookings/success">
+    <div th:replace="~{fragments/header :: header}">
+    </div>
+    <main class="flex-fill">
+      <div class="success-page-container">
+        <!-- Top Navigation Bar & Stepper -->
+        <div class="stepper-wrap">
+          <a th:href="@{/bookings/my-bookings}" class="stepper-link">
+            <span class="bookings-success-span-detail">←</span> Chuyến đi của tôi </a>
+          <!-- Stepper Progress Bar -->
+          <div class="d-flex align-items-center gap-2 customer-text-xs">
+            <span class="d-inline-flex align-items-center gap-1 text-secondary fw-medium">
+              <svg class="customer-icon-sm customer-icon-sm text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12" />
+              </svg> Lịch trình </span>
+            <span class="text-body-secondary">→</span>
+            <span class="d-inline-flex align-items-center gap-1 text-secondary fw-medium">
+              <svg class="customer-icon-sm customer-icon-sm text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12" />
+              </svg> Xác nhận </span>
+            <span class="text-body-secondary">→</span>
+            <span class="d-inline-flex align-items-center gap-1 text-secondary fw-medium">
+              <svg class="customer-icon-sm customer-icon-sm text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12" />
+              </svg> Đặt cọc </span>
+            <span class="text-body-secondary">→</span>
+            <span class="d-inline-flex align-items-center customer-gap-1 fw-bold text-success-emphasis bg-success-subtle px-3 py-1 rounded-pill border border-success-subtle">
+              Đã xác nhận cọc </span>
+          </div>
+        </div>
+        <!-- Heading Section with Confirmation Badges -->
+        <div class="success-heading-row">
+          <div class="heading-left">
+            <div class="heading-title-group">
+              <div class="check-circle-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+              <h1 class="heading-title">Đặt xe & Thanh toán cọc thành công!</h1>
+            </div>
+          </div>
+        </div>
+        <!-- 2-Column Main Content Layout -->
+        <div class="success-grid-layout">
+          <!-- Left Column: Trip Timeline & Checklist -->
+          <div>
+            <!-- Trip Card -->
+            <div class="surface-card">
+              <div class="trip-card-content">
+                <h2 class="card-header-title">Hành trình chuyến đi</h2>
+                <!-- Vertical Timeline -->
+                <div class="bookings-success-div-detail">
+                  <!-- Pickup Row -->
+                  <div class="timeline-item">
+                    <div class="timeline-time-col">
+                      <div class="time-val" th:text="${#temporals.format(booking.pickupTime, 'HH:mm')}" > 02:00 </div>
+                      <div class="date-val" th:text="${#temporals.format(booking.pickupTime, 'EEE, dd/MM/yyyy')}" > Sat, 24/10/2026 </div>
+                    </div>
+                    <div class="timeline-axis">
+                      <span class="dot-solid">
+                      </span>
+                      <div class="axis-line">
+                      </div>
+                    </div>
+                    <div class="timeline-content">
+                      <div class="timeline-title">Nhận xe tại trạm bãi</div>
+                      <div class="duration-tag" th:with="diffHours=${T(java.time.Duration).between(booking.pickupTime, booking.scheduledEndTime).toHours()}" >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" >
+                          <circle cx="12" cy="12" r="10" />
+                          <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                        <span th:text="${diffHours + ' giờ thuê xe'}">9 giờ thuê xe</span>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Return Row -->
+                  <div class="timeline-item bookings-success-div-detail-e8df">
+                    <div class="timeline-time-col">
+                      <div class="time-val" th:text="${#temporals.format(booking.scheduledEndTime, 'HH:mm')}" > 11:00 </div>
+                      <div class="date-val" th:text="${#temporals.format(booking.scheduledEndTime, 'EEE, dd/MM/yyyy')}" > Sat, 24/10/2026 </div>
+                    </div>
+                    <div class="timeline-axis">
+                      <span class="dot-hollow">
+                      </span>
+                    </div>
+                    <div class="timeline-content">
+                      <div class="timeline-title">Trả xe tại trạm bãi</div>
+                      <div class="timeline-desc"> Cùng điểm nhận · quyết toán các khoản phí phát sinh (nếu có) </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Before You Go Notice Box -->
+                <div class="before-you-go">
+                  <div class="before-title">
+                    <svg class="customer-icon-md customer-icon-md text-warning d-inline-block customer-mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg> Lưu ý trước giờ nhận xe </div>
+                  <div class="customer-stack-2 mt-2">
+                    <div class="d-flex align-items-start customer-gap-2 customer-text-xs text-body">
+                      <span class="customer-dot-size customer-dot-size rounded-pill bg-warning customer-mt-2 flex-shrink-0">
+                      </span>
+                      <div>
+                        <strong>Đến sớm 10–15 phút để làm giấy tờ:</strong> Xe được bàn giao đúng giờ hẹn, không giao sớm hơn.</div>
+                    </div>
+                    <div class="d-flex align-items-start customer-gap-2 customer-text-xs text-body">
+                      <span class="customer-dot-size customer-dot-size rounded-pill bg-warning customer-mt-2 flex-shrink-0">
+                      </span>
+                      <div>
+                        <strong>Mang theo giấy tờ tùy thân gốc:</strong> Bản gốc CCCD và Giấy phép lái xe (GPLX).</div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Station & Contact Staff Notice Box -->
+                <div class="bookings-success-div-detail-eccd">
+                  <div class="bookings-success-div-detail-49c5">Trạm nhận xe & Nhân viên bàn giao</div>
+                  <div class="bookings-success-div-detail-dcaf">  <span th:text="${booking.stationAddress}">Kho xe DriveNow - ĐH FPT TP.HCM (Khu Công nghệ cao, TP. Thủ Đức)</span>
+                  </div>
+                  <div class="bookings-success-div-detail-d433">Mở cửa hàng ngày: <span th:text="${openingHours != null ? openingHours.label : '24/24'}">24/24</span>
+                  </div>
+                  <div class="bookings-success-div-detail-db5f">
+                    <span>Nhân viên bàn giao: </span>
+                    <strong th:text="${booking.staffName}">Nhân viên hỗ trợ</strong>
+                    <span class="bookings-success-span-detail-8006">•</span>
+                    <span>Số điện thoại: </span>
+                    <strong class="bookings-success-strong-detail" th:text="${booking.staffPhone}">0977777777</strong>
+                  </div>
+                </div>
+                <div class="hotline-row">
+                  <span>Tổng đài cứu hộ khẩn cấp 24/7: <strong class="bookings-success-strong-detail-1d32">1800 6868</strong>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <!-- Navigation Action Buttons -->
+            <div class="action-buttons-wrap">
+              <a th:href="@{/bookings/{id}(id=${booking.id})}" class="btn-navy px-5 customer-py-2 rounded-3 small fw-bold shadow-sm d-inline-flex align-items-center gap-2 text-decoration-none">
+                <span>Xem chi tiết đơn</span>
+                <svg class="customer-icon-md customer-icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </a>
+              <a th:href="@{/}" class="btn-outline-shadcn px-5 customer-py-2 rounded-3 small fw-semibold d-inline-flex align-items-center text-decoration-none"> Về trang chủ </a>
+            </div>
+          </div>
+          <!-- Right Column: Vehicle & Payment Cards -->
+          <div class="bookings-success-div-detail-8fe8">
+            <!-- Vehicle Card -->
+            <div class="surface-card">
+              <div class="vehicle-card-content">
+                <img th:src="${booking.imageUrl != null and !booking.imageUrl.isBlank() ? booking.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${booking.vehicleTypeName}" class="vehicle-img" data-fallback-src="/images/car-rental-logo.svg" loading="lazy" decoding="async" />
+                <div class="bookings-success-div-detail-3d14">
+                  <h3 class="vehicle-meta-name" th:text="${booking.vehicleTypeName}">Vios 2023</h3>
+                  <div class="plate-frame">
+                    <div th:text="${booking.licensePlate != null and booking.licensePlate.contains('-') ? #strings.substringBefore(booking.licensePlate, '-') : 'Chưa gán xe'}" > 51A </div>
+                    <div th:text="${booking.licensePlate != null and booking.licensePlate.contains('-') ? #strings.substringAfter(booking.licensePlate, '-') : ''}" > 123.45 </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Payment Breakdown Card -->
+            <div class="surface-card">
+              <div class="payment-card-content">
+                <h2 class="card-header-title bookings-success-h2-detail">Tình trạng thanh toán</h2>
+                <!-- 50% Progress Bar -->
+                <div class="payment-progress-bar">
+                  <div class="payment-progress-fill">
+                  </div>
+                </div>
+                <!-- Payment Line Items -->
+                <div>
+                  <div class="payment-row">
+                    <span class="payment-row-label">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      <th:block data-policy="deposit" th:text="'Đã thanh toán cọc (' + ${booking.contract?.terms?.depositPercent} + '%, VNPay)'">Đã thanh toán cọc (50%, VNPay)</th:block>
+                    </span>
+                    <span class="payment-val-green">
+                      <span th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')}" >675,000</span > đ </span>
+                  </div>
+                  <div class="payment-row">
+                    <span>Thanh toán khi nhận xe</span>
+                    <span class="payment-val-dark">
+                      <span th:text="${#numbers.formatDecimal(booking.totalPrice - booking.depositAmount, 0, 'COMMA', 0, 'POINT')}" >675,000</span > đ </span>
+                  </div>
+                  <!-- Total Rental Cost -->
+                  <div class="payment-total-row">
+                    <span class="payment-total-label">Tổng chi phí thuê dự kiến</span>
+                    <div class="payment-total-val">
+                      <span th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT')}" >1,350,000</span >
+                      <span class="bookings-success-span-detail-78b2">đ</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

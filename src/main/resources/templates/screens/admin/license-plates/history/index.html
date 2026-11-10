@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lịch sử biển số — Quản trị DriveNow</title>
+    <th:block th:replace="~{fragments/assets :: common}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/screens/admin/license-plates/history/style.css}">
+    <link rel="stylesheet" th:href="@{/css/shared/dark.css}">
+    <script defer th:src="@{/js/screens/admin/license-plates/history/script.js}"></script>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface" data-screen="admin/license-plates/history">
+
+<th:block th:replace="~{layouts/admin :: shell(~{::screenContent}, 'vehicles')}">
+    <th:block th:fragment="screenContent">
+<div th:if="${success}" class="alert alert-success border-0 rounded-lg shadow-sm" role="alert" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger border-0 rounded-lg shadow-sm" role="alert" th:text="${error}"></div>
+
+            <a th:href="@{/admin/vehicles}" class="small text-muted">← Quản lý xe</a>
+            <div class="mt-2 mb-4">
+                <h1 class="h3 fw-bold text-navy mb-1"
+                    th:text="'Lịch sử biển số — xe #' + ${vehicle.id} + ' (' + ${vehicle.displayName} + ')'">Lịch sử biển số — xe #1</h1>
+            </div>
+
+            <div class="row">
+                <!-- Every plate this car has had -->
+                <div class="col-lg-7 mb-4">
+                    <div class="card border-0 shadow-sm rounded-xl overflow-hidden bg-white">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle admin-table">
+                                <thead class="bg-surface-2 text-navy small fw-bold">
+                                    <tr>
+                                        <th class="border-top-0 py-3">Biển số</th>
+                                        <th class="border-top-0 py-3">Tỉnh / thành</th>
+                                        <th class="border-top-0 py-3">Dùng từ</th>
+                                        <th class="border-top-0 py-3">Dùng đến</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="p : ${history}">
+                                        <td>
+                                            <span class="admin-plate-badge" th:text="${p.plate}">51A-123.45</span>
+                                            <span th:if="${p.current}" class="admin-status-badge bg-success text-white ms-1 license-plates-history-admin-status-badge"
+                                                 >Hiện tại</span>
+                                        </td>
+                                        <td th:text="${p.province != null ? p.province : '—'}">TP. Hồ Chí Minh</td>
+                                        <td th:text="${#temporals.format(p.validFrom, 'dd/MM/yyyy HH:mm')}">24/10/2025 09:00</td>
+                                        <td th:text="${p.validTo != null ? #temporals.format(p.validTo, 'dd/MM/yyyy HH:mm') : 'nay'}">nay</td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(history)}">
+                                        <td colspan="4" class="text-center text-muted py-4">Xe này chưa có biển số.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Put a new plate on the car -->
+                <div class="col-lg-5 mb-4">
+                    <div class="card border-0 shadow-sm rounded-xl bg-white p-4">
+                        <h2 class="h6 fw-bold text-navy text-uppercase mb-3 license-plates-history-h2-detail">Gắn biển số mới cho xe này</h2>
+                        <form th:action="@{/admin/license-plates/vehicle/{id}/change(id=${vehicle.id})}" th:object="${plateForm}" method="post">
+                            <div class="form-group mb-3">
+                                <label class="fw-bold small text-navy mb-1" for="plate">Biển số xe mới <span class="text-danger">*</span></label>
+                                <input type="text" id="plate" th:field="*{plate}" class="form-control rounded-lg fw-bold text-uppercase"
+                                       placeholder="e.g. 51K-987.65" required>
+                                <small class="text-danger" th:if="${#fields.hasErrors('plate')}" th:errors="*{plate}"></small>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="fw-bold small text-navy mb-1" for="province">Tỉnh / thành phố đăng ký</label>
+                                <input type="text" id="province" th:field="*{province}" class="form-control rounded-lg"
+                                       placeholder="VD: TP. Hồ Chí Minh">
+                                <small class="text-danger" th:if="${#fields.hasErrors('province')}" th:errors="*{province}"></small>
+                            </div>
+                            <p class="small text-muted">
+                                Biển số mới có hiệu lực ngay khi lưu. Không đổi được khi xe đang cho thuê.
+                            </p>
+                            <button type="submit" class="btn btn-navy fw-bold rounded-lg px-4 shadow-sm"
+                                    data-confirm="Đổi sang biển số mới?" data-confirm-detail="Biển số hiện tại sẽ ngừng được dùng." data-confirm-ok="Đổi biển số">Đổi biển số</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+    </th:block>
+</th:block>
+
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ghi kết quả đăng kiểm — Quản trị DriveNow</title>
+    <th:block th:replace="~{fragments/assets :: common}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/screens/admin/inspections/result/style.css}">
+    <link rel="stylesheet" th:href="@{/css/shared/dark.css}">
+    <script defer th:src="@{/js/screens/admin/inspections/result/script.js}"></script>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-surface" data-screen="admin/inspections/result">
+
+<th:block th:replace="~{layouts/admin :: shell(~{::screenContent}, 'inspections')}">
+    <th:block th:fragment="screenContent">
+<!-- Flash Error -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show border-0 rounded-lg shadow-sm" role="alert">
+                <span th:text="${error}"></span>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-xl p-4 p-md-5 bg-white max-w-4xl">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                    <div>
+                        <h1 class="h4 fw-bold text-navy mb-1" th:text="'Ghi kết quả — Đăng kiểm #' + ${inspection.id}">
+                            Ghi kết quả đăng kiểm
+                        </h1>
+                    </div>
+                    <a th:href="@{/admin/inspections}" class="btn btn-outline-secondary btn-sm rounded-lg">
+                        Quay lại danh sách đăng kiểm
+                    </a>
+                </div>
+
+                <!-- Vehicle Information -->
+                <div class="p-3 bg-surface rounded-xl border mb-4">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <span class="small text-muted d-block">Xe:</span>
+                            <span class="fw-bold text-navy"
+                                  th:text="${inspection.vehicle.vehicleType.displayName}">Toyota Vios</span>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="small text-muted d-block">Biển số:</span>
+                            <span class="badge bg-light text-dark border fw-bold text-navy"
+                                  th:text="${inspection.vehicle.licensePlate != null ? inspection.vehicle.licensePlate.plate : 'Chưa có biển'}">51A-123.45</span>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="small text-muted d-block">Hẹn lúc:</span>
+                            <span class="fw-bold text-navy"
+                                  th:text="${#temporals.format(inspection.scheduledDate, 'dd/MM/yyyy')}">2026-10-25 09:00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post" th:action="@{/admin/inspections/{id}/result(id=${inspection.id})}">
+                    <div class="row g-3">
+                        <!-- Select Result -->
+                        <div class="col-12 form-group mb-4">
+                            <label for="statusPassed" class="fw-bold small text-navy mb-2 d-block">Kết quả đăng kiểm chính thức <span class="text-danger">*</span></label>
+                            <div class="d-flex gap-4">
+                                <div class="form-check form-check-inline">
+                                    <input type="radio" id="statusPassed" name="status" value="passed" class="form-check-input" checked data-inspection-result="passed">
+                                    <label class="form-check-label fw-bold text-success" for="statusPassed">
+                                        ĐẠT — Đã được cấp tem đăng kiểm mới
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input type="radio" id="statusFailed" name="status" value="failed" class="form-check-input" data-inspection-result="failed">
+                                    <label class="form-check-label fw-bold text-danger" for="statusFailed">
+                                        KHÔNG ĐẠT — Cần sửa chữa
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Passed Section: Renew registration expiry -->
+                        <div id="passedSection" class="col-12 form-group mb-3 p-3 bg-light rounded-xl border border-success">
+                            <label for="expiryInput" class="fw-bold small text-success mb-1">
+                                Hạn đăng kiểm mới <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" id="expiryInput" name="newRegistrationExpiry"
+                                   th:value="${resultForm.newRegistrationExpiry}"
+                                   class="form-control rounded-lg col-md-6">
+                            <small class="form-text text-muted mt-2">
+                                <strong>Tự động:</strong> Khi lưu, hệ thống cập nhật hạn đăng kiểm của xe và chuyển trạng thái xe về <strong>Sẵn sàng</strong>.
+                            </small>
+                        </div>
+
+                        <!-- Failed Notice -->
+                        <div id="failedNotice" class="col-12 alert alert-warning rounded-xl border-0 mb-3 inspections-result-failed-notice" hidden>
+                            <strong>Lưu ý:</strong> Xe sẽ ở trạng thái <strong>Bảo dưỡng</strong> cho đến khi các lỗi kỹ thuật được khắc phục.
+                        </div>
+
+                        <!-- Inspection Notes -->
+                        <div class="col-12 form-group mb-4">
+                            <label for="inspectionNotes" class="fw-bold small text-navy mb-1">Ghi chú đăng kiểm & thông tin giấy chứng nhận</label>
+                            <textarea id="inspectionNotes" name="notes" rows="3" class="form-control rounded-lg"
+                                      placeholder="VD: Đạt các hạng mục an toàn và khí thải. Nếu không đạt: má phanh sau mòn, cần chỉnh đèn pha..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a th:href="@{/admin/inspections}" class="btn btn-light px-4 rounded-lg">Hủy</a>
+                        <button type="submit" class="btn btn-navy fw-bold px-4 rounded-lg shadow-sm">
+                            Lưu kết quả đăng kiểm
+                        </button>
+                    </div>
+                </form>
+            </div>
+    </th:block>
+</th:block>
+
+
+
+</body>
+</html>

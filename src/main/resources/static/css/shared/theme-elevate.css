@@ -1,0 +1,466 @@
+/*
+ * DriveNow Elevate layer — desktop SaaS / mobility polish (1280–1920px, desktop-first).
+ * Loaded after theme.css. Pure CSS on existing class names; no markup contract changes.
+ * Palette: Obsidian & Champagne (60-30-10).
+ */
+:root {
+    --ev-canvas: #F6F5F1;
+    --ev-surface: #FFFFFF;
+    --ev-surface-2: #EDEBE5;
+    --ev-obsidian: #0C1016;
+    --ev-obsidian-2: #141A22;
+    --ev-glass-dark: linear-gradient(135deg, #0C1016 0%, #141A22 100%);
+    --ev-accent: #C6A15B;
+    --ev-accent-strong: #A9823F;
+    --ev-accent-soft: rgba(198, 161, 91, .12);
+    --ev-accent-ink: #221A0D;
+    --ev-accent-grad: linear-gradient(135deg, #C6A15B 0%, #A9823F 100%);
+    --ev-border: #E5E2DA;
+    --ev-border-strong: #D3CFC4;
+    --ev-ink: #11151B;
+    --ev-body: #3A4049;
+    --ev-muted: #5F646D;
+    --ev-shadow: 0 4px 20px -2px rgba(12, 16, 22, .06), 0 2px 6px -1px rgba(12, 16, 22, .04);
+    --ev-shadow-hover: 0 14px 34px -8px rgba(12, 16, 22, .14), 0 4px 10px -2px rgba(12, 16, 22, .06);
+    --ev-radius: 16px;
+    --ev-radius-sm: 10px;
+    --ev-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --ev-ring: 0 0 0 4px rgba(198, 161, 91, .24);
+    --ev-font-ui: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --ev-font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --fleet-canvas: var(--ev-canvas);
+    --fleet-surface: var(--ev-surface);
+    --fleet-primary: var(--ev-accent);
+    --fleet-primary-hover: var(--ev-accent-strong);
+    --fleet-ring: rgba(198, 161, 91, .24);
+    --fleet-radius: var(--ev-radius);
+    --fleet-radius-sm: var(--ev-radius-sm);
+    --fleet-shadow: var(--ev-shadow);
+    --fleet-shadow-raised: var(--ev-shadow-hover);
+    --bs-primary-rgb: 12, 16, 22;
+    --bs-body-font-family: var(--ev-font-ui);
+    --bs-font-monospace: var(--ev-font-mono);
+}
+
+/* ---------- Canvas & type ---------- */
+html body, html body[data-screen], body[data-screen] input, body[data-screen] button,
+body[data-screen] select, body[data-screen] textarea {
+    font-family: var(--ev-font-ui);
+}
+html body {
+    background-color: var(--ev-canvas);
+    background-image:
+        radial-gradient(1200px 600px at 100% -10%, rgba(198, 161, 91, .07), transparent 60%),
+        radial-gradient(900px 500px at -10% 0%, rgba(12, 16, 22, .04), transparent 60%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.005em;
+}
+body h1, body h2, body h3, body .h1, body .h2, body .h3,
+body .admin-page-title, body .admin-card-title {
+    font-family: var(--ev-font-ui);
+    letter-spacing: -0.025em;
+    font-weight: 800;
+}
+body .font-mono, body code, body kbd,
+body .admin-stat-value, body .h2.fw-bold,
+body .price-box, body [class*="price"] strong, body .booking-code {
+    font-family: var(--ev-font-mono);
+    font-feature-settings: "tnum" 1, "zero" 1;
+    letter-spacing: -0.02em;
+}
+
+/* ---------- Motion baseline ---------- */
+body a, body button, body .btn, body .admin-btn, body .card, body .admin-card,
+body .form-control, body .form-select, body .admin-form-input, body .nav-link,
+body .admin-sidebar-link, body tr, body img {
+    transition-timing-function: var(--ev-ease);
+    transition-duration: 0.35s;
+}
+body .btn, body .admin-btn {
+    transition-property: transform, box-shadow, background-color, border-color, color;
+}
+body .btn:hover:not(:disabled), body .admin-btn:hover:not(:disabled) { transform: translateY(-1px); }
+body .btn:active:not(:disabled), body .admin-btn:active:not(:disabled) { transform: translateY(0) scale(0.98); }
+body .btn i[data-lucide], body .btn svg.lucide, body .admin-btn svg.lucide { width: 16px; height: 16px; flex-shrink: 0; }
+body .btn:has(svg.lucide), body .admin-btn:has(svg.lucide) { display: inline-flex; align-items: center; gap: 0.45rem; }
+
+body .btn-primary, body .admin-btn-primary {
+    background: var(--ev-accent-grad);
+    border-color: transparent;
+    color: var(--ev-accent-ink);
+    box-shadow: 0 6px 16px -6px rgba(198, 161, 91, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+body .btn-primary:hover, body .admin-btn-primary:hover {
+    background: linear-gradient(135deg, #A9823F 0%, #8C6A32 100%);
+    color: var(--ev-accent-ink);
+    box-shadow: 0 10px 22px -8px rgba(198, 161, 91, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+body .btn:focus-visible, body .admin-btn:focus-visible,
+body .form-control:focus, body .form-select:focus, body .admin-form-input:focus {
+    box-shadow: var(--ev-ring);
+    border-color: var(--ev-accent);
+    outline: none;
+}
+
+/* ---------- Header (frosted) ---------- */
+body .crms-site-header {
+    background: rgba(246, 245, 241, 0.82) !important;
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--ev-border);
+}
+
+/* ---------- Admin sidebar (obsidian glass) ---------- */
+body .admin-sidebar-column {
+    background: var(--ev-glass-dark);
+    border-right: 1px solid rgba(198, 161, 91, 0.14);
+    position: relative;
+}
+body .admin-sidebar-column::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(400px 260px at 0% 0%, rgba(198, 161, 91, 0.18), transparent 70%);
+}
+body .admin-sidebar-nav { background: transparent; position: relative; }
+body .admin-sidebar-heading {
+    color: #8A8579;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+body .admin-sidebar-link {
+    color: #D9D4C8;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition-property: background-color, color, border-color, transform;
+}
+body .admin-sidebar-link .admin-nav-icon { color: #9C9688; transition: color 0.35s var(--ev-ease); }
+body .admin-sidebar-link:hover {
+    color: #fff;
+    background: rgba(198, 161, 91, 0.10);
+    transform: translateX(2px);
+}
+body .admin-sidebar-link:hover .admin-nav-icon { color: #fff; }
+body .admin-sidebar-link.active {
+    color: #fff;
+    background: linear-gradient(135deg, rgba(198, 161, 91, 0.22), rgba(169, 130, 63, 0.16));
+    border-color: rgba(198, 161, 91, 0.40);
+    box-shadow: inset 3px 0 0 var(--ev-accent), 0 8px 20px -10px rgba(198, 161, 91, 0.70);
+}
+body .admin-sidebar-link.active .admin-nav-icon { color: var(--ev-accent); }
+
+/* ---------- Cards / bento ---------- */
+body .card, body .admin-card, body .admin-stat-card, body .customer-card,
+body .bg-white.rounded-xl, body .bg-white.rounded-2xl {
+    border: 1px solid var(--ev-border) !important;
+    border-radius: var(--ev-radius) !important;
+    box-shadow: var(--ev-shadow) !important;
+    background-color: var(--ev-surface);
+}
+body .admin-stat-card, body .row.g-3 > [class*="col"] > .card {
+    position: relative;
+    overflow: hidden;
+    transition-property: transform, box-shadow;
+}
+body .admin-stat-card:hover, body .row.g-3 > [class*="col"] > .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--ev-shadow-hover) !important;
+}
+body .admin-stat-card::after, body .row.g-3 > [class*="col"] > .card::after {
+    content: "";
+    position: absolute;
+    right: -40px;
+    top: -40px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(198, 161, 91, 0.10), transparent 70%);
+    pointer-events: none;
+}
+body .admin-stat-icon-wrap {
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(198, 161, 91, 0.18), rgba(169, 130, 63, 0.10));
+    color: var(--ev-accent-strong);
+}
+
+/* ---------- Vehicle cards ---------- */
+body .car-card, body .car-card-row, body .vehicle-card {
+    border: 1px solid var(--ev-border) !important;
+    border-radius: var(--ev-radius) !important;
+    box-shadow: var(--ev-shadow) !important;
+    background: var(--ev-surface);
+    overflow: hidden;
+    transition: transform 0.45s var(--ev-ease), box-shadow 0.45s var(--ev-ease), border-color 0.45s var(--ev-ease);
+}
+body .car-card:hover, body .car-card-row:hover, body .vehicle-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--ev-shadow-hover) !important;
+    border-color: rgba(198, 161, 91, 0.45) !important;
+}
+body .car-card-img-wrap, body .car-card .vehicle-img, body .vehicle-card-media {
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(160deg, #F1EEE7, #E7E3D9);
+}
+body .car-card img, body .car-card-row img, body .vehicle-card img {
+    transition: transform 0.8s var(--ev-ease);
+}
+body .car-card:hover img, body .car-card-row:hover img, body .vehicle-card:hover img { transform: scale(1.04); }
+body .car-card .vehicle-img { aspect-ratio: 16 / 10; }
+
+body .price-box, body .ev-price-tag {
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px -10px rgba(12, 16, 22, 0.28);
+    color: var(--ev-obsidian);
+}
+body .car-category-badge, body .vehicle-cat {
+    border-radius: 999px;
+    background: var(--ev-accent-soft);
+    color: var(--ev-accent-strong);
+    border: 1px solid rgba(198, 161, 91, 0.30);
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+/* Spec micro-badges (seats / transmission / fuel) */
+body .car-card-info-col .rounded-2.border,
+body .car-card .rounded-2.border {
+    border-radius: 999px !important;
+    background: var(--color-surface-2) !important;
+    border-color: var(--ev-border) !important;
+    padding-inline: 0.7rem !important;
+}
+
+/* ---------- License plates ---------- */
+body .admin-plate-badge, body .plate-box, body .sch-plate, body .ev-plate {
+    font-family: var(--ev-font-mono);
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--ev-obsidian);
+    background: linear-gradient(180deg, #FFFFFF 0%, #F1EEE7 100%);
+    border: 1.5px solid var(--ev-obsidian);
+    border-radius: 6px;
+    padding: 0.18rem 0.55rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+    box-shadow: inset 0 0 0 2px #fff, 0 1px 2px rgba(12, 16, 22, 0.12);
+}
+
+/* ---------- Floating-row tables ---------- */
+body .table-responsive > .table, body .admin-card .table, body .card .table {
+    border-collapse: separate;
+    border-spacing: 0 6px;
+    margin-top: -6px;
+}
+body .table > thead > tr > th {
+    background: transparent;
+    border: 0;
+    color: var(--ev-muted);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding-block: 0.6rem;
+    white-space: nowrap;
+}
+body .table > thead > tr > th svg.lucide { width: 13px; height: 13px; margin-right: 0.35rem; vertical-align: -2px; opacity: 0.7; }
+body .table > tbody > tr > td {
+    background: var(--ev-surface);
+    border-top: 1px solid var(--ev-border);
+    border-bottom: 1px solid var(--ev-border);
+    vertical-align: middle;
+    padding-block: 0.85rem;
+}
+body .table > tbody > tr > td:first-child { border-left: 1px solid var(--ev-border); border-radius: 12px 0 0 12px; }
+body .table > tbody > tr > td:last-child { border-right: 1px solid var(--ev-border); border-radius: 0 12px 12px 0; }
+body .table > tbody > tr { transition: transform 0.35s var(--ev-ease), filter 0.35s var(--ev-ease); }
+body .table > tbody > tr:hover > td { background: var(--color-surface-2); border-color: rgba(198, 161, 91, 0.40); }
+body .table > tbody > tr:hover { transform: translateY(-1px); filter: drop-shadow(0 6px 12px rgba(12, 16, 22, 0.06)); }
+body .table-hover > tbody > tr:hover > * { --bs-table-bg-state: transparent; }
+
+/* Avatar initials injected by theme-enhance.js */
+body .ev-person { display: inline-flex; align-items: center; gap: 0.65rem; }
+body .ev-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: inline-grid;
+    place-items: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--ev-accent-ink);
+    background: var(--ev-accent-grad);
+    box-shadow: 0 4px 10px -4px rgba(198, 161, 91, 0.6);
+    flex-shrink: 0;
+}
+
+/* Icon action toolbar in last cell */
+body .table td:last-child .d-flex { gap: 0.35rem; }
+body .table td:last-child .admin-btn-sm, body .table td:last-child .btn-sm { border-radius: 9px; }
+
+/* ---------- Glowing status dots ---------- */
+body .admin-badge-dot, body .crms-status-dot {
+    box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 18%, transparent), 0 0 10px currentColor;
+}
+body .admin-status-badge, body .crms-status-pill, body .badge {
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+/* ---------- Page header ---------- */
+body .admin-page-title { font-size: 1.75rem; }
+body .nav-pills {
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--ev-border) !important;
+    border-radius: 14px !important;
+    box-shadow: var(--ev-shadow);
+}
+body .nav-pills .nav-link { border-radius: 10px; }
+body .nav-pills .nav-link.active, body .nav-pills .nav-link.active.bg-navy {
+    background-color: var(--color-obsidian) !important;
+    background-image: var(--ev-glass-dark) !important;
+    color: #fff !important;
+    box-shadow: 0 6px 16px -8px rgba(12, 16, 22, 0.6);
+}
+
+/* ---------- Dashboard chart ---------- */
+body .ev-chart-card { padding: 1.5rem; }
+body .ev-chart-legend { display: flex; flex-direction: column; gap: 0.75rem; }
+body .ev-chart-legend-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; font-size: 0.875rem; color: var(--ev-body); }
+body .ev-chart-legend-item b { font-family: var(--ev-font-mono); color: var(--ev-ink); }
+body .ev-chart-swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-right: 0.5rem; }
+body .ev-swatch-available { background: #10b981; }
+body .ev-swatch-rented { background: var(--ev-accent); }
+body .ev-swatch-maintenance { background: #f43f5e; }
+body .ev-utilization-label { letter-spacing: .1em; color: #B7B1A4; }
+body .ev-utilization-sub { color: #D9D4C8; }
+body .ev-utilization-hero {
+    background: var(--ev-glass-dark);
+    color: #E7E2D6;
+    border-radius: 14px;
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+}
+body .ev-utilization-hero::after {
+    content: "";
+    position: absolute;
+    right: -60px;
+    bottom: -60px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(198, 161, 91, 0.45), transparent 70%);
+}
+body .ev-utilization-hero .ev-big { font-family: var(--ev-font-mono); font-size: 2.5rem; font-weight: 800; color: #fff; letter-spacing: -0.04em; }
+
+/* ---------- Footer ---------- */
+body .crms-footer {
+    background: var(--color-surface);
+    border-top: 1px solid var(--ev-border);
+    padding: 2.5rem 0 2rem;
+    color: var(--ev-muted);
+}
+body .crms-footer .crms-container { padding-inline: clamp(1rem, 2vw, 2rem); }
+body .crms-footer-grid {
+    display: grid;
+    grid-template-columns: 1.2fr .8fr 1fr;
+    gap: clamp(1.5rem, 2.5vw, 2.5rem);
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--ev-border);
+}
+body .crms-footer-brand-title { color: var(--ev-ink); }
+body .crms-footer-desc { max-width: 26rem; color: var(--ev-muted); }
+body .crms-footer-heading {
+    color: var(--ev-ink);
+    font-size: .875rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    margin-bottom: .85rem;
+}
+body .crms-footer-links { display: flex; flex-direction: column; gap: .5rem; }
+body .crms-footer-link { color: var(--ev-muted); font-size: .8rem; text-decoration: none; transition: color .25s var(--ev-ease); }
+body .crms-footer-link:hover { color: var(--ev-accent-deep); }
+body .crms-footer-info-list { display: flex; flex-direction: column; gap: .5rem; }
+body .crms-footer-map-container {
+    position: relative;
+    height: 190px;
+    overflow: hidden;
+    border-radius: 14px;
+    border: 1px solid var(--ev-border);
+    background:
+        radial-gradient(circle at 28% 30%, rgba(198, 161, 91, .16), transparent 55%),
+        linear-gradient(160deg, #EFECE4, #E5E0D4);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .4);
+}
+body .crms-footer-map-container::before {
+    content: "Kho xe DriveNow · ĐH FPT TP.HCM";
+    position: absolute;
+    z-index: 1;
+    left: .75rem;
+    top: .75rem;
+    padding: .4rem .7rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .88);
+    backdrop-filter: blur(8px);
+    color: var(--ev-ink);
+    font-size: .7rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px -6px rgba(12, 16, 22, .3);
+    pointer-events: none;
+}
+body .crms-footer-bottom { padding-top: 1.25rem; border-top: 0; color: var(--ev-muted); font-size: .78rem; }
+@media (max-width: 991.98px) {
+    body .crms-footer-grid { grid-template-columns: minmax(0, 1fr); }
+    body .crms-footer-map-container { height: 220px; }
+}
+
+/* ---------- Flatpickr ---------- */
+.flatpickr-calendar {
+    font-family: var(--ev-font-ui);
+    border-radius: 16px !important;
+    border: 1px solid var(--ev-border) !important;
+    box-shadow: 0 24px 48px -12px rgba(12, 16, 22, 0.22) !important;
+    padding: 6px;
+}
+.flatpickr-day { border-radius: 10px !important; font-weight: 600; }
+.flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange,
+.flatpickr-day.selected:hover {
+    background: var(--ev-accent-grad) !important;
+    border-color: transparent !important;
+    color: var(--ev-accent-ink) !important;
+}
+.flatpickr-day.today { border-color: var(--ev-accent) !important; }
+.flatpickr-months .flatpickr-month, .flatpickr-current-month { font-weight: 800; }
+input.flatpickr-input + input[readonly] {
+    background-color: var(--color-surface);
+    cursor: pointer;
+    padding-left: 2.4rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%236C727C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cpath d='M16 2v4M8 2v4M3 10h18'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 0.85rem center;
+}
+
+/* ---------- Scrollbar ---------- */
+body ::-webkit-scrollbar { width: 10px; height: 10px; }
+body ::-webkit-scrollbar-thumb { background: #CDC7B9; border-radius: 999px; border: 2px solid var(--ev-canvas); }
+body ::-webkit-scrollbar-thumb:hover { background: #B4AD9D; }
+
+@media (prefers-reduced-motion: reduce) {
+    body *, body *::before, body *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+    body .car-card:hover img, body .car-card-row:hover img { transform: none; }
+}

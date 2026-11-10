@@ -1,0 +1,28 @@
+/* Screen-scoped DriveNow admin workspace */
+[data-screen="admin/bookings/list"] [data-screen-style="01"] { background-color: #dc2626 }
+[data-screen="admin/bookings/list"] [data-screen-style="02"] { background-color: rgba(245, 158, 11, .14); border: 1px solid #fde68a }
+[data-screen="admin/bookings/list"] .bookings-list-span-detail { 
+                                        display: inline-flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        width: 38px;
+                                        height: 38px;
+                                        background-color: var(--fleet-warn-bg);
+                                        border-radius: 50%;
+                                        color: var(--fleet-warn-fg);
+                                        margin-right: 12px;
+                                        flex-shrink: 0;
+                                        font-size: 18px;
+                                     }
+[data-screen="admin/bookings/list"] .bookings-list-a-detail { background-color: var(--color-accent); border-color: var(--color-accent); color: var(--color-accent-ink) }
+[data-screen="admin/bookings/list"] .bookings-list-div-detail { background-color: rgba(244, 63, 94, .13); color: #991b1b; border: 1px solid #fecaca }
+[data-screen="admin/bookings/list"] .bookings-list-strong-detail { font-size: 15px }
+[data-screen="admin/bookings/list"] .bookings-list-admin-status-badge { background-color: #dc2626; border-radius: 6px; padding: 4px 8px }
+[data-screen="admin/bookings/list"] .bookings-list-a-detail-1ea5 { 
+                                                    background-color: #dc2626;
+                                                    border-color: #dc2626;
+                                                    padding: 4px 12px;
+                                                    border-radius: 6px;
+                                                 }
+
+/* Shared screen behavior hooks */

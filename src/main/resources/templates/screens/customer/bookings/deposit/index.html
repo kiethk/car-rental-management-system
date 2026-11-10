@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Thanh toán tiền cọc giữ xe — DriveNow</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/car-rental-logo.svg}" />
+    <th:block th:replace="~{fragments/assets :: common}">
+    </th:block>
+    <link rel="stylesheet" th:href="@{/css/screens/customer/bookings/deposit/style.css}">
+    <link rel="stylesheet" th:href="@{/css/shared/dark.css}">
+    <script defer th:src="@{/js/screens/customer/bookings/deposit/script.js}">
+    </script>
+  </head>
+  <body class="bg-surface text-navy min-vh-100 d-flex flex-column" data-screen="customer/bookings/deposit">
+    <div th:replace="~{fragments/header :: header}">
+    </div>
+    <main class="flex-fill">
+      <div class="deposit-page-container">
+        <!-- Top Bar: Navigation & Stepper -->
+        <div class="deposit-top-bar">
+          <div class="breadcrumb-group">
+            <a th:href="@{/bookings/my-bookings}" class="breadcrumb-back"> ← Chuyến đi của tôi </a>
+            <span class="breadcrumb-sep">/</span>
+            <h1 class="page-title">Thanh toán tiền cọc giữ xe</h1>
+          </div>
+          <!-- 3-Step Stepper -->
+          <div class="stepper-steps">
+            <span class="step-done">
+              <svg class="customer-icon-sm customer-icon-sm text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" >
+                <polyline points="20 6 9 17 4 12" />
+              </svg> Lịch trình </span>
+            <span class="text-body-secondary">→</span>
+            <span class="step-done">
+              <svg class="customer-icon-sm customer-icon-sm text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" >
+                <polyline points="20 6 9 17 4 12" />
+              </svg> Xác nhận </span>
+            <span class="text-body-secondary">→</span>
+            <span class="d-inline-flex align-items-center customer-gap-1 fw-bold text-dark bg-light px-3 py-1 rounded-pill border border">
+              Đặt cọc</span>
+            <span class="text-body-secondary">→</span>
+            <span class="text-body-secondary fw-medium bookings-deposit-span-detail">Đã xác nhận cọc</span>
+          </div>
+        </div>
+        <!-- 2-Column Content Layout (Matching original width & components) -->
+        <div class="deposit-grid-layout">
+          <!-- Left Column: Payment Gateway -->
+          <div class="surface-card">
+            <!-- Title & Holding Timer -->
+            <div class="card-header-row">
+              <div class="holding-badge">
+                <span>Đang giữ chỗ xe: <strong id="depositTimer" class="font-monospace" th:data-expires-at="${booking.createdAt != null ? booking.createdAt.plusMinutes(15) : ''}" role="timer" aria-live="off">15:00</strong>
+                </span>
+              </div>
+            </div>
+            <!-- Payment methods list: VNPay is available; space reserved for future methods -->
+            <form th:action="@{/bookings/{id}/pay-deposit(id=${booking.id})}" method="post" class="deposit-payment-form">
+              <h2 class="payment-method-title">Phương thức thanh toán</h2>
+              <div class="payment-method-list" role="radiogroup" aria-label="Phương thức thanh toán">
+                <label class="payment-method">
+                  <input class="payment-method-input" type="radio" name="method" value="VNPAY" checked>
+                  <span class="payment-method-logo" aria-hidden="true">
+                    <span class="vnpay-wordmark"><span>VN</span><span>PAY</span></span>
+                  </span>
+                  <span class="payment-method-info">
+                    <span class="payment-method-name">VNPay</span>
+                    <span class="payment-method-desc">Cổng thanh toán điện tử — ATM, Visa/Mastercard, VNPAYQR</span>
+                  </span>
+                  <span class="payment-method-check" aria-hidden="true">✓</span>
+                </label>
+              </div>
+              <button type="submit" id="submitPaymentBtn" class="btn-submit-vnpay">
+                <span>Chuyển đến cổng thanh toán VNPay</span>
+                <span>→</span>
+              </button>
+            </form>
+            <a th:href="@{/bookings/my-bookings}" class="pay-later-link"> Thanh toán sau (Quay lại danh sách chuyến đi của tôi) </a>
+          </div>
+          <!-- Right Column: Reservation Summary & Pricing -->
+          <div class="sidebar-cards-wrap">
+            <!-- Card 1: Reservation Summary (Vehicle + Integrated Timeline, No booking ID displayed) -->
+            <div class="surface-card">
+              <div class="card-header-row bookings-deposit-div-detail-db5f">
+                <h2 class="card-title">Tóm tắt đơn đặt xe</h2>
+              </div>
+              <!-- Vehicle Summary -->
+              <div class="vehicle-summary-top">
+                <img th:src="${booking.imageUrl != null and !booking.imageUrl.isBlank() ? booking.imageUrl : '/images/car-rental-logo.svg'}" th:alt="${booking.vehicleTypeName}" class="sidebar-vehicle-img" data-fallback-src="/images/car-rental-logo.svg" loading="lazy" decoding="async" />
+                <div class="bookings-deposit-div-detail-8006">
+                  <div class="sidebar-car-meta" th:text="${booking.vehicleCategory + ' · ' + (booking.seats != null ? (booking.seats + ' chỗ') : '5 chỗ')}" > Sedan · 5 chỗ </div>
+                  <div class="sidebar-car-name" th:text="${booking.vehicleTypeName}">Accent 2024</div>
+                  <div class="plate-box" th:text="${booking.licensePlate != null ? booking.licensePlate : 'Chưa gán xe cụ thể'}" > Chưa gán xe cụ thể </div>
+                </div>
+              </div>
+              <!-- Timeline in Summary Card -->
+              <div class="sidebar-timeline">
+                <!-- Pickup -->
+                <div class="sb-timeline-item">
+                  <div class="sb-time-col">
+                    <div class="sb-time" th:text="${#temporals.format(booking.pickupTime, 'HH:mm')}" > 02:00 </div>
+                    <div class="sb-date" th:text="${#temporals.format(booking.pickupTime, 'dd/MM/yyyy')}" > 24/10/2026 </div>
+                  </div>
+                  <div class="sb-axis">
+                    <span class="sb-dot-solid">
+                    </span>
+                    <div class="sb-line">
+                    </div>
+                  </div>
+                  <div class="bookings-deposit-div-detail-e99d">
+                    <div class="sb-info-title">Thời gian nhận xe</div>
+                    <div class="sb-info-sub" th:text="${booking.stationAddress != null ? booking.stationAddress : 'Địa chỉ trạm sẽ được xác nhận'}">Địa chỉ trạm</div>
+                  </div>
+                </div>
+                <!-- Return -->
+                <div class="sb-timeline-item bookings-deposit-div-detail-1d32">
+                  <div class="sb-time-col">
+                    <div class="sb-time" th:text="${#temporals.format(booking.scheduledEndTime, 'HH:mm')}" > 11:00 </div>
+                    <div class="sb-date" th:text="${#temporals.format(booking.scheduledEndTime, 'dd/MM/yyyy')}" > 24/10/2026 </div>
+                  </div>
+                  <div class="sb-axis">
+                    <span class="sb-dot-hollow">
+                    </span>
+                  </div>
+                  <div class="bookings-deposit-div-detail-8fe8">
+                    <div class="sb-info-title">Thời gian trả xe</div>
+                    <div class="sb-info-sub" th:with="diffHours=${T(java.time.Duration).between(booking.pickupTime, booking.scheduledEndTime).toHours()}" >
+                      <span th:text="${diffHours + ' giờ thuê'}">9 giờ thuê</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Card 2: Cost Breakdown & Cancellation Terms -->
+            <div class="surface-card mt-3">
+              <!-- Total Rental Fee -->
+              <div class="cost-row bookings-deposit-div-detail-3d14">
+                <span class="cost-label bookings-deposit-span-detail-f88f">Tổng tiền thuê dự kiến</span>
+                <span class="cost-val bookings-deposit-span-detail-78b2" th:text="${#numbers.formatDecimal(booking.totalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'" > 1,440,000 đ </span>
+              </div>
+              <!-- Deposit Highlight Box -->
+              <div class="deposit-highlight-card">
+                <div class="dh-top">
+                  <div class="dh-title-wrap">
+                    <span class="dh-title">Tiền cọc giữ xe cần trả ngay</span>
+                    <span data-policy="deposit" class="badge-pct" th:text="${booking.contract?.terms?.depositPercent} + '%'">50%</span>
+                  </div>
+                  <div class="dh-val" th:text="${#numbers.formatDecimal(booking.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"> 720,000 đ </div>
+                </div>
+                <div class="dh-sub-row">
+                  <span>Tiền thuê còn lại (thanh toán khi nhận xe)</span>
+                  <span class="bookings-deposit-span-detail-94c3" th:text="${#numbers.formatDecimal(booking.totalPrice - booking.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'"> 720,000 đ </span>
+                </div>
+              </div>
+              <!-- Cancellation Policy Note -->
+              <div th:with="terms=${booking.contract?.terms}" th:if="${terms != null and terms.freeCancelAfterDepositHours != null and terms.freeCancelAfterDepositHours > 0}" data-policy="cancelAfterDeposit" class="deposit-policy-note"> Sau khi thanh toán cọc, bạn có <strong th:text="${terms.freeCancelAfterDepositHours} + ' giờ'">1 giờ</strong> để hủy miễn phí (trước giờ nhận xe). Sau thời gian đó, tiền cọc chỉ được hoàn nếu hủy trước giờ nhận xe ít nhất <strong th:text="${terms.freeCancellationHours} + ' giờ'">thời hạn áp dụng</strong> giờ. </div>
+              <!-- Hidden policy field for contract validation -->
+              <input type="hidden" name="freeCancellationHours" th:value="${booking.contract?.terms?.freeCancellationHours}" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

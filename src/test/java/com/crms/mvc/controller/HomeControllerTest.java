@@ -43,7 +43,7 @@ class HomeControllerTest {
                 .andExpect(content().string(containsString("/uploads/promotions/welcome.png")))
                 .andExpect(content().string(containsString("Các chương trình khuyến mãi")))
                 .andExpect(content().string(containsString("aria-label=\"Featured rental cars\"")))
-                .andExpect(content().string(not(containsString("WELCOME10"))))
+                .andExpect(content().string(containsString("WELCOME10")))
                 .andExpect(content().string(not(containsString("images.unsplash.com"))));
     }
 
