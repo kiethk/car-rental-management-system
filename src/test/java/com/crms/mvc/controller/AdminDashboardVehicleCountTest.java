@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -48,6 +49,27 @@ class AdminDashboardVehicleCountTest {
                 .andExpect(model().attribute("totalVehicles", 3L))
                 .andExpect(model().attribute("retiredVehicles", 1L))
                 .andExpect(content().string(containsString("xe ngừng khai thác")));
+    }
+
+    @Test
+    void overdueRentalsAreVisibleOnTheDashboardAndInTheSidebar() throws Exception {
+        when(bookingQueryService.countOverdueRentals()).thenReturn(3L);
+
+        mvc.perform(get("/admin/dashboard").session(admin()))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("overdueRentalCount", 3L))
+                .andExpect(content().string(containsString("xe quá giờ trả")))
+                .andExpect(content().string(containsString("Xem quản lý đơn thuê")))
+                .andExpect(content().string(containsString("Số xe đã quá giờ trả")));
+    }
+
+    @Test
+    void overdueCountEndpointReturnsJsonForEveryAdminPageBadge() throws Exception {
+        when(bookingQueryService.countOverdueRentals()).thenReturn(3L);
+
+        mvc.perform(get("/admin/overdue-rentals/count").session(admin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(3));
     }
 
     @Test

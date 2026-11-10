@@ -65,6 +65,7 @@
                     th:href="@{/admin/bookings}"
                     th:class="'admin-sidebar-link ' + (${active == 'bookings'} ? 'active' : '')"
                     title="Quản lý đơn thuê"
+                    data-overdue-rental-link
                 >
                     <svg
                         class="admin-nav-icon"
@@ -89,6 +90,7 @@
                     >
                     <span
                         class="admin-sidebar-badge-counter admin-sidebar-danger-link"
+                        data-overdue-rental-badge
                         th:if="${overdueRentalCount != null and overdueRentalCount > 0}"
                         th:text="${overdueRentalCount}"
                         title="Số xe đã quá giờ trả"

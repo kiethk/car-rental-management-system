@@ -165,7 +165,6 @@
                   <span class="home-spec"><i data-lucide="settings-2" aria-hidden="true"></i><span th:replace="~{fragments/labels :: transmission(${vt.transmission})}">Số tự động</span></span>
                   <span class="home-spec"><i data-lucide="fuel" aria-hidden="true"></i><span th:replace="~{fragments/labels :: fuel(${vt.fuelType})}">Xăng</span></span>
                 </div>
-                <p class="home-car-desc" th:text="${vt.description != null ? vt.description : 'Xe sạch sẽ, bền bỉ và tiết kiệm, phù hợp cho di chuyển trong phố lẫn những chuyến đi cuối tuần.'}"> Xe sạch sẽ, bền bỉ và tiết kiệm. </p>
                 <div class="home-car-foot">
                   <a th:href="@{/vehicles/{id}(id=${vt.id})}" class="home-car-btn home-car-btn-ghost">Chi tiết</a>
                   <a th:href="@{/search(keyword=${vt.displayName})}" class="home-car-btn home-car-btn-primary">Thuê ngay <i data-lucide="arrow-right" aria-hidden="true"></i></a>

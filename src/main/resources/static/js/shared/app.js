@@ -38,8 +38,33 @@
         });
     };
 
+    const refreshOverdueRentalBadge = () => {
+        if (!document.body.dataset.screen?.startsWith("admin/")) return;
+        const link = document.querySelector("[data-overdue-rental-link]");
+        if (!link) return;
+        fetch("/admin/overdue-rentals/count", { headers: { Accept: "application/json" } })
+            .then((response) => response.ok ? response.json() : null)
+            .then((data) => {
+                if (!data) return;
+                const count = Number(data.count) || 0;
+                let badge = link.querySelector("[data-overdue-rental-badge]");
+                if (!badge && count <= 0) return;
+                if (!badge) {
+                    badge = document.createElement("span");
+                    badge.className = "admin-sidebar-badge-counter admin-sidebar-danger-link";
+                    badge.dataset.overdueRentalBadge = "";
+                    badge.title = "Số xe đã quá giờ trả";
+                    link.appendChild(badge);
+                }
+                badge.textContent = count > 0 ? String(count) : "";
+                badge.hidden = count <= 0;
+            })
+            .catch(() => { /* the server-rendered badge stays if the request fails */ });
+    };
+
     const initialize = () => {
         respectMotionPreference();
+        refreshOverdueRentalBadge();
         try {
             if (localStorage.getItem("crms_admin_sidebar_collapsed") === "true") {
                 document.body.classList.add("sidebar-collapsed");

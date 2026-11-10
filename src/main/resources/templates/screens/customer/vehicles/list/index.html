@@ -133,7 +133,6 @@
                   <span class="vlist-spec"><i data-lucide="settings-2" aria-hidden="true"></i><span th:replace="~{fragments/labels :: transmission(${v.transmission})}">Số tự động</span></span>
                   <span class="vlist-spec"><i data-lucide="fuel" aria-hidden="true"></i><span th:replace="~{fragments/labels :: fuel(${v.fuelType})}">Xăng</span></span>
                 </div>
-                <p class="vlist-desc" th:text="${v.description != null ? v.description : 'Xe sạch sẽ, bền bỉ và tiết kiệm, phù hợp cho di chuyển trong phố lẫn những chuyến đi cuối tuần.'}"> Car description... </p>
                 <div class="vlist-foot">
                   <a th:href="@{/vehicles/{id}(id=${v.id})}" class="vlist-btn vlist-btn-ghost">Chi tiết</a>
                   <a th:href="@{/search(keyword=${v.displayName})}" class="vlist-btn vlist-btn-primary">Thuê ngay <i data-lucide="arrow-right" aria-hidden="true"></i></a>
