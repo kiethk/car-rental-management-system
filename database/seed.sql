@@ -1,6 +1,5 @@
 -- Full Seed Data for CRMS (all 13 tables)
--- Demo password for all seed accounts: 123456
-
+-- Demo password for all seed accounts: 12345
 BEGIN;
 
 -- 1. CUSTOMERS

@@ -68,8 +68,6 @@
                                         <path d="M3 1a.5.5 0 0 1 .5.5V2h9v-.5a.5.5 0 0 1 1 0V2H14a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h.5v-.5A.5.5 0 0 1 3 1zm11 5H2v8h12zM2 5h12V3H2z"/>
                                     </svg>
                                 </span>
-                                <input type="date" class="promotion-date-picker" aria-label="Chọn ngày bắt đầu"
-                                       th:value="${promotionForm.startDate}">
                             </div>
                             <small class="d-block text-danger" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></small>
                         </div>
@@ -86,8 +84,6 @@
                                         <path d="M3 1a.5.5 0 0 1 .5.5V2h9v-.5a.5.5 0 0 1 1 0V2H14a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h.5v-.5A.5.5 0 0 1 3 1zm11 5H2v8h12zM2 5h12V3H2z"/>
                                     </svg>
                                 </span>
-                                <input type="date" class="promotion-date-picker" aria-label="Chọn ngày kết thúc"
-                                       th:value="${promotionForm.endDate}">
                             </div>
                             <small class="d-block text-danger" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></small>
                         </div>
