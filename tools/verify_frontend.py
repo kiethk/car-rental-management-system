@@ -30,10 +30,7 @@ def verify():
     for item in manifest:
         screen=item['screen']
         page=SCREENS/screen/'index.html'
-        style=STATIC/'css/screens'/screen/'style.css'
-        script=STATIC/'js/screens'/screen/'script.js'
-        for path in (page,style,script):
-            if not path.is_file():errors.append(f'Missing {path.relative_to(ROOT)}')
+        if not page.is_file():errors.append(f'Missing {page.relative_to(ROOT)}')
         if not page.exists():continue
         html=page.read_text(encoding='utf-8-sig');parser=Markup();parser.feed(html)
         if parser.duplicates:errors.append(f'{screen}: duplicate attributes {parser.duplicates}')

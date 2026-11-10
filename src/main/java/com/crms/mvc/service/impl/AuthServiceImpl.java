@@ -2,6 +2,7 @@ package com.crms.mvc.service.impl;
 
 import com.crms.mvc.util.EnumTokens;
 import com.crms.mvc.dto.LoginIdentityDTO;
+import com.crms.mvc.exception.AccountLockedException;
 import com.crms.mvc.entity.Customer;
 import com.crms.mvc.entity.Employee;
 import com.crms.mvc.repository.CustomerRepository;
@@ -39,11 +40,17 @@ public class AuthServiceImpl implements AuthService {
             return null;
         }
 
-        if (customer != null && customer.isActive() && passwordEncoder.matches(password, customer.getPasswordHash())) {
+        if (customer != null && passwordEncoder.matches(password, customer.getPasswordHash())) {
+            if (!customer.isActive()) {
+                throw new AccountLockedException();
+            }
             return new LoginIdentityDTO("customer", customer.getId(), customer.getName(), null);
         }
 
-        if (employee != null && employee.isActive() && passwordEncoder.matches(password, employee.getPasswordHash())) {
+        if (employee != null && passwordEncoder.matches(password, employee.getPasswordHash())) {
+            if (!employee.isActive()) {
+                throw new AccountLockedException();
+            }
             return new LoginIdentityDTO("employee", employee.getId(), employee.getName(), EnumTokens.of(employee.getRole()));
         }
 
