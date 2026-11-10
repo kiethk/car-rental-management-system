@@ -61,7 +61,6 @@
 <!-- 3. Status Badge Component (<StatusBadge status="..." label="..." variant="..." />) -->
 <span th:fragment="statusBadge(status, label, variant)" 
       th:class="'admin-badge ' + (${variant != null ? 'admin-badge-' + variant : 'admin-badge-neutral'})">
-    <span class="admin-badge-dot"></span>
     <span th:text="${label != null ? label : status}">Chờ xử lý</span>
 </span>
 

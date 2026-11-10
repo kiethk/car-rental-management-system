@@ -15,7 +15,6 @@
 <th:block th:replace="~{layouts/admin :: shell(~{::screenContent}, 'accounts')}">
     <th:block th:fragment="screenContent">
 <h1 class="h3 fw-bold text-navy mb-1">Tạo nhân viên mới</h1>
-            <p class="text-muted small mb-4">Nhân viên có thể đổi mật khẩu tạm thời này trong mục Cài đặt tài khoản.</p>
 
             <div th:if="${error}" class="alert alert-danger border-0 rounded-lg shadow-sm" role="alert" th:text="${error}"></div>
 

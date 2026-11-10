@@ -18,7 +18,7 @@
 
             <div th:replace="~{fragments/admin-components :: pageHeader(
                 title=${issueId != null ? 'Sửa sự cố #' + issueId : 'Ghi nhận sự cố'},
-                subtitle='Sự cố chỉ ghi nhận trách nhiệm tiền của khách. Mỗi sự cố phải có Phí sự cố lớn hơn 0.',
+                subtitle=null,
                 backUrl=${issueId != null ? '/admin/issues/' + issueId : '/admin/bookings/' + booking.id},
                 backText=${issueId != null ? 'Chi tiết sự cố' : 'Chi tiết đơn thuê'})}"></div>
 

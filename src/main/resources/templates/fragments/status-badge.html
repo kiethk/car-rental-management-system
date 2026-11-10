@@ -6,7 +6,6 @@
     Usage: <div th:replace="~{fragments/status-badge :: booking(status=${b.status})}"></div>
 -->
 <span th:fragment="booking(status)" class="crms-status-pill" th:classappend="'status-' + ${status}">
-    <span class="crms-status-dot"></span>
     <span th:if="${status == 'pending_payment'}">Chờ đặt cọc</span>
     <span th:if="${status == 'confirmed'}">Đã xác nhận cọc</span>
     <span th:if="${status == 'active'}">Đang trong hành trình</span>

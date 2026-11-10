@@ -577,11 +577,6 @@ body[data-screen="customer/home"] .home-car-head h3,
 body[data-screen="customer/home"] .home-hero-float strong,
 body[data-screen="customer/home"] .home-car-price strong { color: var(--color-heading) !important; }
 body[data-screen="customer/home"] .home-hero-title span { color: #B8AF9F; }
-body[data-screen="customer/home"] .home-hero-points li {
-    background: rgba(36, 34, 30, .82);
-    border-color: var(--color-border);
-    color: var(--color-body);
-}
 body[data-screen="customer/home"] .home-btn-ghost {
     color: var(--color-heading);
     background: rgba(36, 34, 30, .86);
@@ -869,6 +864,30 @@ body[data-screen] .ev-price-tag {
 }
 
 /* ---------- Screen-specific dark corrections ---------- */
+/* Schedule pickers and filter fields share the same light border. */
+body[data-screen] form[data-rental-search] :is(
+    [data-rental-role$="-date-trigger"],
+    [data-rental-role$="-hour-trigger"]
+) {
+    color: var(--color-heading) !important;
+    background: var(--color-surface) !important;
+    border-color: var(--color-heading) !important;
+}
+body[data-screen="customer/bookings/search"] .search-filter-panel :is(input:not([type="hidden"]), select),
+body[data-screen="customer/vehicles/list"] .crms-sidebar :is(.form-control, .form-select) {
+    color: var(--color-heading) !important;
+    background: var(--color-surface) !important;
+    border-color: var(--color-heading) !important;
+}
+body[data-screen] [data-rental-role="rental-search-btn"] {
+    white-space: nowrap;
+    min-height: 42px;
+    border: 0 !important;
+    border-radius: 16px !important;
+    appearance: none;
+    -webkit-appearance: none;
+    box-shadow: 0 8px 20px -10px rgba(212, 175, 106, .55) !important;
+}
 body[data-screen="admin/bookings/list"] .bookings-list-div-detail {
     color: var(--fleet-bad-fg) !important;
     border-color: var(--fleet-bad-bd) !important;
@@ -879,7 +898,13 @@ body[data-screen="admin/promotions/form"] .promotion-form-label,
 body[data-screen="admin/promotions/form"] .form-label { color: var(--color-body) !important; }
 body[data-screen="customer/bookings/my-bookings"] .bookings-my-bookings-span-detail { color: var(--fleet-bad-fg) !important; }
 body[data-screen="customer/bookings/search"] .car-card-available-text { color: var(--fleet-ok-fg) !important; }
-body[data-screen="customer/bookings/search"] .price-box { border: 0 !important; }
+body[data-screen="customer/bookings/search"] .price-box {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
 body[data-screen="customer/bookings/search"] .price-box > div:first-child { color: var(--color-body) !important; }
 body[data-screen="customer/bookings/search"] .price-box > div:nth-child(2) { color: var(--color-heading) !important; }
 body[data-screen="customer/bookings/search"] .price-box .text-secondary { color: var(--color-muted) !important; }

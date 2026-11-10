@@ -12,7 +12,6 @@ body[data-screen="customer/vehicles/list"] .vlist-hero {
 body[data-screen="customer/vehicles/list"] .vlist-eyebrow {
     display: inline-flex;
     align-items: center;
-    gap: .55rem;
     margin: 0 0 .6rem;
     color: var(--color-accent-deep);
     font-size: .7rem;
@@ -20,24 +19,12 @@ body[data-screen="customer/vehicles/list"] .vlist-eyebrow {
     letter-spacing: .16em;
     text-transform: uppercase;
 }
-body[data-screen="customer/vehicles/list"] .vlist-eyebrow-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--color-accent);
-    box-shadow: 0 0 0 4px var(--color-accent-soft);
-}
 body[data-screen="customer/vehicles/list"] .vlist-hero h1 {
     margin: 0;
     color: var(--color-heading);
     font-size: clamp(1.75rem, 2.8vw, 2.4rem);
     font-weight: 800;
     letter-spacing: -.035em;
-}
-body[data-screen="customer/vehicles/list"] .vlist-hero-desc {
-    max-width: 44rem;
-    margin: .55rem 0 0;
-    color: var(--color-muted);
-    font-size: .9rem;
-    line-height: 1.65;
 }
 
 /* ---------- Filter sidebar ---------- */
