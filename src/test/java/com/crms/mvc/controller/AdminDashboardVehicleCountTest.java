@@ -1,6 +1,5 @@
 package com.crms.mvc.controller;
 
-import com.crms.mvc.service.LicenseDocumentService;
 import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.support.PassThroughSessionAccountService;
 import org.springframework.context.annotation.Import;
@@ -30,7 +29,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(AdminDashboardController.class)
 @Import(PassThroughSessionAccountService.class)
 class AdminDashboardVehicleCountTest {
-    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private VehicleService vehicleService;
     @MockitoBean private VehicleInspectionService vehicleInspectionService;

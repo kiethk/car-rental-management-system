@@ -91,10 +91,7 @@
     <tr><td class="label">Email</td><td th:text="${doc.customerEmail}">a@example.com</td></tr>
     <tr>
         <td class="label">Giấy phép lái xe</td>
-        <td th:if="${doc.licenseNumber != null}"
-            th:text="'Số ' + ${doc.licenseNumber} + ' - hạng ' + ${doc.licenseClass}
-                     + ' - có giá trị đến ' + ${#temporals.format(doc.licenseExpiry, 'dd/MM/yyyy')}">Số 790123456789 - hạng B</td>
-        <td th:unless="${doc.licenseNumber != null}">Xuất trình bản gốc khi nhận xe</td>
+        <td>Xuất trình bản gốc khi nhận xe</td>
     </tr>
 </table>
 </div>

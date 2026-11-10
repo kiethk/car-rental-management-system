@@ -1,6 +1,5 @@
 package com.crms.mvc.controller;
 
-import com.crms.mvc.service.LicenseDocumentService;
 import com.crms.mvc.dto.AccountQueryDTO;
 import com.crms.mvc.dto.AccountSummaryDTO;
 import com.crms.mvc.dto.SessionAccount;
@@ -32,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(PassThroughSessionAccountService.class)
 @WebMvcTest(AdminAccountController.class)
 class AdminAccountControllerTest {
-    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private AccountManagementService accountManagementService;
 

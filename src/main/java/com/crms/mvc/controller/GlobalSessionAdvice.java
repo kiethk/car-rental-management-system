@@ -1,20 +1,11 @@
 package com.crms.mvc.controller;
 
-import com.crms.mvc.service.LicenseDocumentService;
-import com.crms.mvc.util.CurrentAccount;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 @ControllerAdvice
 public class GlobalSessionAdvice {
-    private final LicenseDocumentService licenseDocumentService;
-
-    public GlobalSessionAdvice(LicenseDocumentService licenseDocumentService) {
-        this.licenseDocumentService = licenseDocumentService;
-    }
-
     @ModelAttribute("isAdminPage")
     public boolean isAdminPage(HttpServletRequest request) {
         if (request == null) return false;
@@ -25,12 +16,5 @@ public class GlobalSessionAdvice {
             uri = uri.substring(contextPath.length());
         }
         return uri.startsWith("/admin");
-    }
-
-    @ModelAttribute
-    public void populateLicenseFlag(HttpServletRequest request, Model model) {
-        CurrentAccount.customerId(request.getSession(false)).ifPresent(customerId ->
-                model.addAttribute("hasLicense",
-                        licenseDocumentService.getCustomerLicense(customerId) != null));
     }
 }

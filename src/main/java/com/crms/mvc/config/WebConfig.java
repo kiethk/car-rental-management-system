@@ -32,7 +32,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/css/**", "/js/**", "/images/**", "/fonts/**", "/uploads/**");
 
         registry.addInterceptor(authInterceptor)
-                .addPathPatterns("/profile/**", "/bookings/**", "/licenses/**");
+                .addPathPatterns("/profile/**", "/bookings/**");
 
         registry.addInterceptor(roleInterceptor)
                 .addPathPatterns("/admin/**");
@@ -40,8 +40,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Only vehicle photos are public. License images and contract PDFs stay private and are
-        // served by controllers that check ownership first.
+        // Only vehicle photos are public. Contract PDFs stay private and are served by
+        // controllers that check ownership first.
         String vehiclePath = Path.of("uploads", "vehicles").toAbsolutePath().normalize().toUri().toString();
         if (!vehiclePath.endsWith("/")) {
             vehiclePath += "/";

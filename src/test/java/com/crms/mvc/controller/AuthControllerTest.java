@@ -1,8 +1,8 @@
 package com.crms.mvc.controller;
 
-import com.crms.mvc.service.LicenseDocumentService;
 import org.springframework.context.annotation.Import;
 import com.crms.mvc.support.PassThroughSessionAccountService;
+import com.crms.mvc.support.TestSessions;
 import com.crms.mvc.dto.LoginIdentityDTO;
 import com.crms.mvc.service.AuthService;
 import com.crms.mvc.service.CustomerService;
@@ -24,7 +24,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(PassThroughSessionAccountService.class)
 @WebMvcTest(AuthController.class)
 class AuthControllerTest {
-    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private AuthService authService;
     @MockitoBean private CustomerService customerService;
@@ -32,6 +31,16 @@ class AuthControllerTest {
     @Test void showsLoginForm() throws Exception {
         mvc.perform(get("/login")).andExpect(status().isOk()).andExpect(view().name("screens/customer/auth/login/index"))
                 .andExpect(content().string(containsString("name=\"email\"")));
+    }
+
+    @Test void loggedInCustomerIsSentHomeFromLoginPage() throws Exception {
+        mvc.perform(get("/login").session(TestSessions.customer(1L)))
+                .andExpect(redirectedUrl("/"));
+    }
+
+    @Test void loggedInEmployeeIsSentToDashboardFromLoginPage() throws Exception {
+        mvc.perform(get("/login").session(TestSessions.staff(2L)))
+                .andExpect(redirectedUrl("/admin/dashboard"));
     }
 
     @Test void blankFieldsShowValidationErrors() throws Exception {
