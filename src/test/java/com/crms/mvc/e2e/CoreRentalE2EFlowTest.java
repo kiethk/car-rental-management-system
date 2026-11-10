@@ -1,11 +1,19 @@
 package com.crms.mvc.e2e;
 
+import com.crms.mvc.enums.PaymentMethod;
+import com.crms.mvc.enums.EmployeeRole;
+import com.crms.mvc.enums.VehicleStatus;
+import com.crms.mvc.enums.BookingStatus;
+import com.crms.mvc.enums.InspectionStatus;
+import com.crms.mvc.enums.FeeType;
+import com.crms.mvc.enums.PaymentStatus;
+import com.crms.mvc.enums.PaymentType;
 import com.crms.mvc.dto.*;
 import com.crms.mvc.entity.*;
+import com.crms.mvc.enums.*;
 import com.crms.mvc.repository.*;
 import com.crms.mvc.service.*;
 import com.crms.mvc.service.impl.*;
-import com.crms.mvc.util.EmployeeRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -98,7 +106,7 @@ class CoreRentalE2EFlowTest {
         booking.setPricePerHour(type.getPricePerHour());
         booking.setTotalPrice(new BigDecimal("1000000")); // 10h * 100k
         booking.setDepositAmount(new BigDecimal("300000")); // 30% cọc
-        booking.setStatus("pending_payment");
+        booking.setStatus(BookingStatus.PENDING_PAYMENT);
 
         when(bookingRepository.findById(501L)).thenReturn(Optional.of(booking));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -107,17 +115,17 @@ class CoreRentalE2EFlowTest {
         Payment depositPayment = new Payment();
         depositPayment.setId(9001L);
         depositPayment.setBooking(booking);
-        depositPayment.setPaymentType("DEPOSIT");
+        depositPayment.setPaymentType(PaymentType.DEPOSIT);
         depositPayment.setAmount(booking.getDepositAmount());
-        depositPayment.setStatus("paid");
-        depositPayment.setPaymentMethod("VNPAY");
+        depositPayment.setStatus(PaymentStatus.PAID);
+        depositPayment.setPaymentMethod(PaymentMethod.VNPAY);
         depositPayment.setPaidAt(OffsetDateTime.now());
 
-        booking.setStatus("confirmed");
+        booking.setStatus(BookingStatus.CONFIRMED);
         bookingRepository.save(booking);
 
         // 3. Assertions cho Luồng 1
-        assertEquals("confirmed", booking.getStatus(), "Booking phải chuyển sang confirmed sau khi cọc thành công");
+        assertEquals(BookingStatus.CONFIRMED, booking.getStatus(), "Booking phải chuyển sang confirmed sau khi cọc thành công");
         assertEquals(new BigDecimal("300000"), booking.getDepositAmount(), "Số tiền cọc phải khớp với điều khoản 30%");
     }
 
@@ -127,19 +135,19 @@ class CoreRentalE2EFlowTest {
         // 1. Dữ liệu xe và nhân viên trạm
         Employee staff = new Employee();
         staff.setId(2L);
-        staff.setRole("staff");
+        staff.setRole(EmployeeRole.STAFF);
         staff.setName("Trần Văn Staff");
 
         Vehicle vehicle = new Vehicle();
         vehicle.setId(77L);
         vehicle.setOdometer(5000);
-        vehicle.setStatus("available");
+        vehicle.setStatus(VehicleStatus.AVAILABLE);
 
         Booking booking = new Booking();
         booking.setId(502L);
         booking.setEmployee(staff);
         booking.setVehicle(vehicle);
-        booking.setStatus("confirmed");
+        booking.setStatus(BookingStatus.CONFIRMED);
         Customer payer = new Customer();
         payer.setId(7L);
         booking.setCustomer(payer);
@@ -164,8 +172,8 @@ class CoreRentalE2EFlowTest {
         handoverService.checkIn(502L, 2L, checkInForm);
 
         // 3. Assertions cho Luồng 2
-        assertEquals("active", booking.getStatus(), "Booking phải chuyển sang ACTIVE sau khi giao chìa khóa");
-        assertEquals("rented", vehicle.getStatus(), "Trạng thái xe phải chuyển sang RENTED");
+        assertEquals(BookingStatus.ACTIVE, booking.getStatus(), "Booking phải chuyển sang ACTIVE sau khi giao chìa khóa");
+        assertEquals(VehicleStatus.RENTED, vehicle.getStatus(), "Trạng thái xe phải chuyển sang RENTED");
         assertEquals(5005, vehicle.getOdometer(), "Số km của xe phải được cập nhật theo số ODO bàn giao");
 
         ArgumentCaptor<Handover> captor = ArgumentCaptor.forClass(Handover.class);
@@ -179,18 +187,18 @@ class CoreRentalE2EFlowTest {
     void testFlow3_StationHandoverDropoffAndSettlementFlow() {
         Employee staff = new Employee();
         staff.setId(2L);
-        staff.setRole("staff");
+        staff.setRole(EmployeeRole.STAFF);
 
         Vehicle vehicle = new Vehicle();
         vehicle.setId(77L);
         vehicle.setOdometer(5005);
-        vehicle.setStatus("rented");
+        vehicle.setStatus(VehicleStatus.RENTED);
 
         Booking booking = new Booking();
         booking.setId(503L);
         booking.setEmployee(staff);
         booking.setVehicle(vehicle);
-        booking.setStatus("active");
+        booking.setStatus(BookingStatus.ACTIVE);
         booking.setTotalPrice(new BigDecimal("1000000")); // Tiền thuê
         booking.setDepositAmount(new BigDecimal("300000")); // Cọc 300k
         booking.setPricePerHour(new BigDecimal("100000"));
@@ -223,8 +231,8 @@ class CoreRentalE2EFlowTest {
         handoverService.checkOut(503L, 2L, checkOutForm);
 
         // 2. Assertions trạng thái xe và booking sau trả xe
-        assertEquals("active", booking.getStatus(), "Booking chờ quyết toán");
-        assertEquals("available", vehicle.getStatus(), "Xe hoàn trả không hư hỏng quay lại AVAILABLE");
+        assertEquals(BookingStatus.ACTIVE, booking.getStatus(), "Booking chờ quyết toán");
+        assertEquals(VehicleStatus.AVAILABLE, vehicle.getStatus(), "Xe hoàn trả không hư hỏng quay lại AVAILABLE");
         assertEquals(5200, vehicle.getOdometer(), "Cập nhật ODO trả xe");
 
         // 3. Thực hiện quyết toán (Settle)
@@ -232,7 +240,7 @@ class CoreRentalE2EFlowTest {
         settlementDTO.setPaymentMethod("BANK_TRANSFER");
 
         handoverService.settle(503L, 2L, settlementDTO);
-        assertEquals("completed", booking.getStatus(), "Booking hoàn tất sau khi quyết toán xong");
+        assertEquals(BookingStatus.COMPLETED, booking.getStatus(), "Booking hoàn tất sau khi quyết toán xong");
     }
 
     @Test
@@ -243,12 +251,12 @@ class CoreRentalE2EFlowTest {
 
         Booking booking = new Booking();
         booking.setId(504L);
-        booking.setStatus("active");
+        booking.setStatus(BookingStatus.ACTIVE);
         booking.setVehicle(vehicle);
 
         Employee staff = new Employee();
         staff.setId(2L);
-        staff.setRole("staff");
+        staff.setRole(EmployeeRole.STAFF);
 
         when(bookingRepository.findById(504L)).thenReturn(Optional.of(booking));
         when(employeeRepository.findById(2L)).thenReturn(Optional.of(staff));
@@ -267,7 +275,7 @@ class CoreRentalE2EFlowTest {
         form.setOccurredAt(LocalDateTime.now().minusHours(1));
         form.setFeeAmount(new BigDecimal("500000")); // Bồi thường 500k
 
-        IssueActor actor = new IssueActor(2L, EmployeeRole.STAFF);
+        IssueActor actor = new IssueActor(2L, "staff");
         Issue createdIssue = issueService.create(form, actor);
 
         // 2. Assertions cho Luồng 4
@@ -279,7 +287,7 @@ class CoreRentalE2EFlowTest {
         BookingFee fee = new BookingFee();
         fee.setBooking(booking);
         fee.setIssue(createdIssue);
-        fee.setFeeType("DAMAGE");
+        fee.setFeeType(FeeType.DAMAGE);
         fee.setAmount(form.getFeeAmount());
 
         assertEquals(new BigDecimal("500000"), fee.getAmount(), "Phí sự cố được ghi nhận vào tổng phụ phí cuốc xe");
@@ -301,7 +309,7 @@ class CoreRentalE2EFlowTest {
         vehicle.setId(99L);
         vehicle.setVehicleType(type);
         vehicle.setCurrentPlate(plate1);
-        vehicle.setStatus("available");
+        vehicle.setStatus(VehicleStatus.AVAILABLE);
 
         when(vehicleRepository.findById(99L)).thenReturn(Optional.of(vehicle));
         when(vehicleRepository.findByIdWithDetails(99L)).thenReturn(Optional.of(vehicle));
@@ -310,20 +318,19 @@ class CoreRentalE2EFlowTest {
         VehicleInspection inspection = new VehicleInspection();
         inspection.setId(1L);
         inspection.setVehicle(vehicle);
-        inspection.setStatus("SCHEDULED");
+        inspection.setStatus(InspectionStatus.SCHEDULED);
         inspection.setScheduledDate(java.time.LocalDate.now().plusDays(1));
 
         when(inspectionRepository.save(any(VehicleInspection.class))).thenAnswer(inv -> inv.getArgument(0));
 
         // Khi bắt đầu đăng kiểm -> Xe chuyển sang bảo trì (maintenance)
-        vehicle.setStatus("maintenance");
-        inspection.setStatus("IN_PROGRESS");
-        assertEquals("maintenance", vehicle.getStatus(), "Xe phải chuyển sang maintenance khi bắt đầu đăng kiểm");
+        vehicle.setStatus(VehicleStatus.MAINTENANCE);
+        assertEquals(VehicleStatus.MAINTENANCE, vehicle.getStatus(), "Xe phải chuyển sang maintenance khi bắt đầu đăng kiểm");
 
         // 3. Hoàn tất đăng kiểm -> Xe quay lại trạng thái sẵn sàng đón khách
-        inspection.setStatus("PASSED");
-        vehicle.setStatus("available");
-        assertEquals("available", vehicle.getStatus(), "Xe hoàn tất bảo dưỡng quay về AVAILABLE");
+        inspection.setStatus(InspectionStatus.PASSED);
+        vehicle.setStatus(VehicleStatus.AVAILABLE);
+        assertEquals(VehicleStatus.AVAILABLE, vehicle.getStatus(), "Xe hoàn tất bảo dưỡng quay về AVAILABLE");
     }
 
     @Test

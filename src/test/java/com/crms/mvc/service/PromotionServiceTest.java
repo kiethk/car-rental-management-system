@@ -1,5 +1,6 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.DiscountType;
 import com.crms.mvc.dto.PromotionFormDTO;
 import com.crms.mvc.entity.Promotion;
 import com.crms.mvc.repository.BookingRepository;
@@ -43,7 +44,7 @@ class PromotionServiceTest {
         Promotion result = service.create(form);
 
         assertEquals("WELCOME10", result.getCode());
-        assertEquals("percent", result.getDiscountType());
+        assertEquals(DiscountType.PERCENT, result.getDiscountType());
         verify(promotionRepository).save(any(Promotion.class));
     }
 

@@ -1,5 +1,6 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.EmployeeRole;
 import com.crms.mvc.dto.EmployeeCreateDTO;
 import com.crms.mvc.dto.LoginIdentityDTO;
 import com.crms.mvc.dto.SessionAccount;
@@ -81,7 +82,7 @@ class AccountManagementServiceTest {
         ArgumentCaptor<Employee> saved = ArgumentCaptor.forClass(Employee.class);
         verify(employeeRepository).save(saved.capture());
         assertEquals("hash", saved.getValue().getPasswordHash());
-        assertEquals("staff", saved.getValue().getRole());
+        assertEquals(EmployeeRole.STAFF, saved.getValue().getRole());
         assertTrue(saved.getValue().isActive());
     }
 

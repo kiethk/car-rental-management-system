@@ -1,5 +1,7 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.dto.AdminVehicleQueryDTO;
 import com.crms.mvc.dto.LicensePlateChangeDTO;
 import com.crms.mvc.dto.VehicleDTO;
@@ -42,11 +44,11 @@ public class VehicleServiceImpl implements VehicleService {
     public void autoUpdateExpiredVehiclesToMaintenance() {
         LocalDate today = LocalDate.now();
         List<Vehicle> expiredVehicles = vehicleRepository.findAll().stream()
-                .filter(v -> Vehicle.STATUS_AVAILABLE.equalsIgnoreCase(v.getStatus()))
+                .filter(v -> v.getStatus() == VehicleStatus.AVAILABLE)
                 .filter(v -> v.getRegistrationExpiry() != null && v.getRegistrationExpiry().isBefore(today))
                 .toList();
         for (Vehicle v : expiredVehicles) {
-            v.setStatus(Vehicle.STATUS_MAINTENANCE);
+            v.setStatus(VehicleStatus.MAINTENANCE);
             vehicleRepository.save(v);
         }
     }
@@ -93,10 +95,10 @@ public class VehicleServiceImpl implements VehicleService {
                             (vt.getName() != null && vt.getName().toLowerCase().contains(keyword)) ||
                             (vt.getBrand() != null && vt.getBrand().toLowerCase().contains(keyword)))
                     .filter(vt -> brand == null || (vt.getBrand() != null && brand.equalsIgnoreCase(vt.getBrand())))
-                    .filter(vt -> category == null || (vt.getCategory() != null && category.equalsIgnoreCase(vt.getCategory())))
+                    .filter(vt -> category == null || EnumTokens.is(vt.getCategory(), category))
                     .filter(vt -> seats == null || (vt.getSeats() != null && vt.getSeats() >= seats))
-                    .filter(vt -> transmission == null || (vt.getTransmission() != null && transmission.equalsIgnoreCase(vt.getTransmission())))
-                    .filter(vt -> fuelType == null || (vt.getFuelType() != null && fuelType.equalsIgnoreCase(vt.getFuelType())))
+                    .filter(vt -> transmission == null || EnumTokens.is(vt.getTransmission(), transmission))
+                    .filter(vt -> fuelType == null || EnumTokens.is(vt.getFuelType(), fuelType))
                     .filter(vt -> minPrice == null || (vt.getPricePerHour() != null && vt.getPricePerHour().compareTo(minPrice) >= 0))
                     .filter(vt -> maxPrice == null || (vt.getPricePerHour() != null && vt.getPricePerHour().compareTo(maxPrice) <= 0))
                     .toList();
@@ -138,11 +140,13 @@ public class VehicleServiceImpl implements VehicleService {
         Sort sort = adminSort(query.getSort());
         String pattern = query.getLikePattern();
 
-        Page<Vehicle> page = vehicleRepository.searchForAdmin(query.getStatus(), pattern,
+        boolean allStatuses = AdminVehicleQueryDTO.STATUS_ALL.equals(query.getStatus());
+        VehicleStatus status = VehicleStatus.from(query.getStatus());
+        Page<Vehicle> page = vehicleRepository.searchForAdmin(allStatuses, status, pattern,
                 PageRequest.of(query.getPageIndex(), query.getSize(), sort));
         if (page.isEmpty() && page.getTotalPages() > 0) {
             // The requested page no longer exists (for example the last car on it was just deleted)
-            page = vehicleRepository.searchForAdmin(query.getStatus(), pattern,
+            page = vehicleRepository.searchForAdmin(allStatuses, status, pattern,
                     PageRequest.of(page.getTotalPages() - 1, query.getSize(), sort));
         }
         return page.map(VehicleDTO::fromEntity);
@@ -152,7 +156,7 @@ public class VehicleServiceImpl implements VehicleService {
     @Transactional(readOnly = true)
     public Map<String, Long> countByStatus() {
         Map<String, Long> counts = new HashMap<>();
-        vehicleRepository.countGroupedByStatus().forEach(row -> counts.put(row.getStatus(), row.getTotal()));
+        vehicleRepository.countGroupedByStatus().forEach(row -> counts.put(EnumTokens.of(row.getStatus()), row.getTotal()));
         return counts;
     }
 
@@ -196,9 +200,9 @@ public class VehicleServiceImpl implements VehicleService {
         vehicle.setYear(dto.getYear());
         vehicle.setOdometer(dto.getOdometer() != null ? dto.getOdometer() : 0);
         vehicle.setRegistrationExpiry(dto.getRegistrationExpiry());
-        String status = dto.getStatus() != null ? dto.getStatus().trim().toLowerCase() : Vehicle.STATUS_AVAILABLE;
-        if (!Vehicle.STATUS_AVAILABLE.equals(status) && !Vehicle.STATUS_MAINTENANCE.equals(status)) {
-            throw new IllegalArgumentException("Trạng thái xe không hợp lệ: " + status + ". Chỉ chấp nhận: sẵn sàng, bảo dưỡng");
+        VehicleStatus status = dto.getStatus() != null ? VehicleStatus.from(dto.getStatus()) : VehicleStatus.AVAILABLE;
+        if (status != VehicleStatus.AVAILABLE && status != VehicleStatus.MAINTENANCE) {
+            throw new IllegalArgumentException("Trạng thái xe không hợp lệ: " + dto.getStatus() + ". Chỉ chấp nhận: sẵn sàng, bảo dưỡng");
         }
         vehicle.setStatus(status);
         Vehicle saved = vehicleRepository.save(vehicle);
@@ -225,15 +229,14 @@ public class VehicleServiceImpl implements VehicleService {
         vehicle.setOdometer(dto.getOdometer() != null ? dto.getOdometer() : 0);
 
         // Don't allow changing status to maintenance/available if vehicle is currently rented
-        if (Vehicle.STATUS_RENTED.equalsIgnoreCase(vehicle.getStatus()) && !vehicle.getStatus().equalsIgnoreCase(dto.getStatus())) {
+        if (vehicle.getStatus() == VehicleStatus.RENTED && !EnumTokens.is(vehicle.getStatus(), dto.getStatus())) {
             throw new IllegalStateException("Không đổi được trạng thái khi xe đang cho thuê!");
         }
         // The form has no "retired" option, so it must not bring a retired vehicle back into service
         if (dto.getStatus() != null && !vehicle.isRetired()) {
-            String newStatus = dto.getStatus().trim().toLowerCase();
-            if (!Vehicle.STATUS_AVAILABLE.equals(newStatus) && !Vehicle.STATUS_MAINTENANCE.equals(newStatus)
-                    && !Vehicle.STATUS_RETIRED.equals(newStatus)) {
-                throw new IllegalArgumentException("Trạng thái xe không hợp lệ: " + newStatus + ". Chỉ chấp nhận: sẵn sàng, bảo dưỡng, ngừng khai thác");
+            VehicleStatus newStatus = VehicleStatus.from(dto.getStatus());
+            if (newStatus == null || newStatus == VehicleStatus.RENTED) {
+                throw new IllegalArgumentException("Trạng thái xe không hợp lệ: " + dto.getStatus() + ". Chỉ chấp nhận: sẵn sàng, bảo dưỡng, ngừng khai thác");
             }
             vehicle.setStatus(newStatus);
         }
@@ -249,7 +252,7 @@ public class VehicleServiceImpl implements VehicleService {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe có mã: " + id));
 
-        if (Vehicle.STATUS_RENTED.equalsIgnoreCase(vehicle.getStatus())) {
+        if (vehicle.getStatus() == VehicleStatus.RENTED) {
             throw new IllegalStateException("Không đổi được trạng thái khi xe đang cho thuê!");
         }
 
@@ -257,13 +260,12 @@ public class VehicleServiceImpl implements VehicleService {
             throw new IllegalStateException("A retired vehicle is out of service for good and cannot change status");
         }
 
-        if (newStatus == null || (!Vehicle.STATUS_AVAILABLE.equalsIgnoreCase(newStatus.trim())
-                && !Vehicle.STATUS_MAINTENANCE.equalsIgnoreCase(newStatus.trim())
-                && !Vehicle.STATUS_RETIRED.equalsIgnoreCase(newStatus.trim()))) {
+        VehicleStatus status = VehicleStatus.from(newStatus);
+        if (status == null || status == VehicleStatus.RENTED) {
             throw new IllegalArgumentException("Trạng thái xe không hợp lệ: " + newStatus + ". Chỉ chấp nhận: sẵn sàng, bảo dưỡng, ngừng khai thác.");
         }
 
-        vehicle.setStatus(newStatus.trim().toLowerCase());
+        vehicle.setStatus(status);
         vehicleRepository.save(vehicle);
     }
 
@@ -286,7 +288,7 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Vehicle> findByStatusWithDetails(String status) {
+    public List<Vehicle> findByStatusWithDetails(VehicleStatus status) {
         return vehicleRepository.findByStatusWithDetails(status);
     }
 
@@ -302,7 +304,7 @@ public class VehicleServiceImpl implements VehicleService {
             throw new IllegalStateException("Không xóa được xe vì có " + inspectionCount + " lịch đăng kiểm liên quan!");
         }
 
-        long issueCount = issueRepository.countByVehicleId(id);
+        long issueCount = issueRepository.countByBookingVehicleId(id);
         if (issueCount > 0) {
             throw new IllegalStateException("Không xóa được xe vì có " + issueCount + " sự cố liên quan!");
         }

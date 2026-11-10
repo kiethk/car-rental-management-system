@@ -1,5 +1,6 @@
 package com.crms.mvc.repository;
 
+import com.crms.mvc.enums.InspectionStatus;
 import com.crms.mvc.entity.VehicleInspection;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -18,7 +19,7 @@ public interface VehicleInspectionRepository extends JpaRepository<VehicleInspec
 
     List<VehicleInspection> findByVehicleIdOrderByScheduledDateDesc(Long vehicleId);
 
-    List<VehicleInspection> findByStatusOrderByScheduledDateDesc(String status);
+    List<VehicleInspection> findByStatusOrderByScheduledDateDesc(InspectionStatus status);
 
     long countByVehicleId(Long vehicleId);
 }

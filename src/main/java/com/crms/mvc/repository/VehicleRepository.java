@@ -1,5 +1,6 @@
 package com.crms.mvc.repository;
 
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.entity.Vehicle;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,19 +28,20 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     Optional<Vehicle> findByIdForUpdate(@Param("id") Long id);
 
     /** Keyword (already a lower-case LIKE pattern) matches model, brand, "brand model" together, current plate or colour. */
-    String ADMIN_SEARCH_FILTER = "WHERE (:status = 'all' OR v.status = :status) AND ("
+    String ADMIN_SEARCH_FILTER = "WHERE (:allStatuses = true OR v.status = :status) AND ("
             + "LOWER(vt.brand) LIKE :keyword ESCAPE '\\' OR LOWER(vt.name) LIKE :keyword ESCAPE '\\' "
             + "OR LOWER(CONCAT(vt.brand, ' ', vt.name)) LIKE :keyword ESCAPE '\\' "
             + "OR LOWER(lp.plate) LIKE :keyword ESCAPE '\\' OR LOWER(v.color) LIKE :keyword ESCAPE '\\')";
 
     @Query(value = "SELECT v FROM Vehicle v JOIN FETCH v.vehicleType vt LEFT JOIN v.currentPlates lp " + ADMIN_SEARCH_FILTER,
             countQuery = "SELECT COUNT(v) FROM Vehicle v JOIN v.vehicleType vt LEFT JOIN v.currentPlates lp " + ADMIN_SEARCH_FILTER)
-    Page<Vehicle> searchForAdmin(@Param("status") String status,
+    Page<Vehicle> searchForAdmin(@Param("allStatuses") boolean allStatuses,
+                                 @Param("status") VehicleStatus status,
                                  @Param("keyword") String keywordPattern,
                                  Pageable pageable);
 
     interface StatusCount {
-        String getStatus();
+        VehicleStatus getStatus();
 
         long getTotal();
     }
@@ -53,12 +55,12 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     long countByVehicleTypeId(Long vehicleTypeId);
 
-    List<Vehicle> findByStatusOrderByIdAsc(String status);
+    List<Vehicle> findByStatusOrderByIdAsc(VehicleStatus status);
 
-    List<Vehicle> findByStatus(String status);
+    List<Vehicle> findByStatus(VehicleStatus status);
 
     @Query("SELECT v FROM Vehicle v JOIN FETCH v.vehicleType vt LEFT JOIN FETCH v.currentPlates lp WHERE v.status = :status")
-    List<Vehicle> findByStatusWithDetails(@Param("status") String status);
+    List<Vehicle> findByStatusWithDetails(@Param("status") VehicleStatus status);
 
     @Query("SELECT v FROM Vehicle v JOIN FETCH v.vehicleType vt LEFT JOIN FETCH v.currentPlates lp WHERE v.id = :id")
     Optional<Vehicle> findByIdWithDetails(@Param("id") Long id);
@@ -70,11 +72,11 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     List<Vehicle> findByVehicleTypeIdWithDetails(@Param("typeId") Long typeId);
 
     /** Inspections of this car that are scheduled and not done yet. */
-    @Query("SELECT i FROM VehicleInspection i WHERE i.vehicle.id = :vehicleId AND i.status = 'scheduled'")
+    @Query("SELECT i FROM VehicleInspection i WHERE i.vehicle.id = :vehicleId AND i.status = com.crms.mvc.enums.InspectionStatus.SCHEDULED")
     List<VehicleInspection> findScheduledInspectionsByVehicleId(@Param("vehicleId") Long vehicleId);
 
     /** Inspections of this vehicle type's cars that are scheduled and not done yet. */
-    @Query("SELECT i FROM VehicleInspection i JOIN FETCH i.vehicle v WHERE v.vehicleType.id = :typeId AND i.status = 'scheduled'")
+    @Query("SELECT i FROM VehicleInspection i JOIN FETCH i.vehicle v WHERE v.vehicleType.id = :typeId AND i.status = com.crms.mvc.enums.InspectionStatus.SCHEDULED")
     List<VehicleInspection> findScheduledInspectionsByVehicleTypeId(@Param("typeId") Long typeId);
 
 }

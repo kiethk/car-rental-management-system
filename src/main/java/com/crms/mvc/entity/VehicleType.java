@@ -1,5 +1,8 @@
 package com.crms.mvc.entity;
 
+import com.crms.mvc.enums.FuelType;
+import com.crms.mvc.enums.Transmission;
+import com.crms.mvc.enums.VehicleCategory;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
@@ -17,17 +20,20 @@ public class VehicleType {
     @Column(name = "brand", nullable = false, length = 100)
     private String brand;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "category", nullable = false, length = 30)
-    private String category;
+    private VehicleCategory category;
 
     @Column(name = "seats", nullable = false)
     private Integer seats;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "transmission", nullable = false, length = 20)
-    private String transmission;
+    private Transmission transmission;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "fuel_type", nullable = false, length = 20)
-    private String fuelType;
+    private FuelType fuelType;
 
     @Column(name = "price_per_hour", nullable = false, precision = 14, scale = 2)
     private BigDecimal pricePerHour;
@@ -47,17 +53,17 @@ public class VehicleType {
     public String getBrand() { return brand; }
     public void setBrand(String brand) { this.brand = brand; }
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    public VehicleCategory getCategory() { return category; }
+    public void setCategory(VehicleCategory category) { this.category = category; }
 
     public Integer getSeats() { return seats; }
     public void setSeats(Integer seats) { this.seats = seats; }
 
-    public String getTransmission() { return transmission; }
-    public void setTransmission(String transmission) { this.transmission = transmission; }
+    public Transmission getTransmission() { return transmission; }
+    public void setTransmission(Transmission transmission) { this.transmission = transmission; }
 
-    public String getFuelType() { return fuelType; }
-    public void setFuelType(String fuelType) { this.fuelType = fuelType; }
+    public FuelType getFuelType() { return fuelType; }
+    public void setFuelType(FuelType fuelType) { this.fuelType = fuelType; }
 
     public BigDecimal getPricePerHour() { return pricePerHour; }
     public void setPricePerHour(BigDecimal pricePerHour) { this.pricePerHour = pricePerHour; }

@@ -1,5 +1,9 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.enums.PaymentMethod;
+import com.crms.mvc.enums.BookingStatus;
+import com.crms.mvc.enums.PaymentStatus;
+import com.crms.mvc.enums.PaymentType;
 import com.crms.mvc.dto.IssueActor;
 import com.crms.mvc.dto.IssueDTO;
 import com.crms.mvc.dto.IssueFormDTO;
@@ -10,9 +14,11 @@ import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Employee;
 import com.crms.mvc.entity.Issue;
 import com.crms.mvc.entity.IssueEvidence;
-import com.crms.mvc.entity.IssueStatus;
-import com.crms.mvc.entity.IssueType;
+import com.crms.mvc.enums.FeeType;
+import com.crms.mvc.enums.IssueStatus;
+import com.crms.mvc.enums.IssueType;
 import com.crms.mvc.entity.LicensePlate;
+import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.event.IssueCancelledEvent;
 import com.crms.mvc.event.IssueFeeDueEvent;
@@ -101,7 +107,6 @@ public class IssueServiceImpl implements IssueService {
 
         Issue issue = new Issue();
         issue.setBooking(booking);
-        issue.setVehicle(booking.getVehicle());
         issue.setEmployee(reporter);
         issue.setStatus(IssueStatus.OPEN);
         issue.setReportedAt(OffsetDateTime.now());
@@ -169,18 +174,20 @@ public class IssueServiceImpl implements IssueService {
 
         invalidatePendingPayments(issue.getBooking().getId());
 
-        String method = (paymentMethod != null && !paymentMethod.isBlank())
-                ? paymentMethod.trim().toUpperCase() : Payment.METHOD_BANK_TRANSFER;
-        if (!Payment.METHOD_BANK_TRANSFER.equals(method) && !"CASH".equals(method)) {
-            method = "CASH";
+        PaymentMethod method = PaymentMethod.from(paymentMethod);
+        if (method == null) {
+            method = PaymentMethod.BANK_TRANSFER;
+        }
+        if (method != PaymentMethod.BANK_TRANSFER && method != PaymentMethod.CASH) {
+            method = PaymentMethod.CASH;
         }
 
         Payment payment = new Payment();
         payment.setBooking(issue.getBooking());
-        payment.setPaymentType(Payment.TYPE_ISSUE_COMPENSATION);
+        payment.setPaymentType(PaymentType.ISSUE_COMPENSATION);
         payment.setPaymentMethod(method);
         payment.setAmount(fee.getAmount());
-        payment.setStatus(Payment.STATUS_PAID);
+        payment.setStatus(PaymentStatus.PAID);
         payment.setPaidAt(OffsetDateTime.now());
         payment.setTransactionCode("DIRECT-" + issue.getId() + "-" + System.currentTimeMillis());
         Payment savedPayment = paymentRepository.save(payment);
@@ -344,9 +351,9 @@ public class IssueServiceImpl implements IssueService {
     private void invalidatePendingPayments(Long bookingId) {
         if (bookingId == null) return;
         paymentRepository.findFirstByBookingIdAndPaymentTypeAndStatus(
-                bookingId, Payment.TYPE_ISSUE_COMPENSATION, Payment.STATUS_PENDING)
+                bookingId, PaymentType.ISSUE_COMPENSATION, PaymentStatus.PENDING)
                 .ifPresent(p -> {
-                    p.setStatus(Payment.STATUS_FAILED);
+                    p.setStatus(PaymentStatus.FAILED);
                     paymentRepository.save(p);
                     bookingFeeRepository.findByPaymentId(p.getId()).forEach(fee -> {
                         fee.setPayment(null);
@@ -404,17 +411,17 @@ public class IssueServiceImpl implements IssueService {
 
     private boolean isTakenByPayment(BookingFee fee) {
         Payment payment = fee.getPayment();
-        if (payment == null || Payment.STATUS_FAILED.equalsIgnoreCase(payment.getStatus())) {
+        if (payment == null || PaymentStatus.FAILED == payment.getStatus()) {
             return false;
         }
-        if (Payment.STATUS_PAID.equalsIgnoreCase(payment.getStatus())) {
+        if (PaymentStatus.PAID == payment.getStatus()) {
             return true;
         }
         return !payment.isExpired();
     }
 
     private boolean isRentalStarted(Booking booking) {
-        return Booking.STATUS_ACTIVE.equalsIgnoreCase(booking.getStatus());
+        return booking.getStatus() == BookingStatus.ACTIVE;
     }
 
     private void applyDetails(Issue issue, IssueFormDTO form) {
@@ -480,7 +487,7 @@ public class IssueServiceImpl implements IssueService {
             BookingFee created = new BookingFee();
             created.setBooking(issue.getBooking());
             created.setIssue(issue);
-            created.setFeeType(BookingFee.FEE_TYPE_ISSUE_COMPENSATION);
+            created.setFeeType(FeeType.ISSUE_COMPENSATION);
             created.setCreatedAt(OffsetDateTime.now());
             return created;
         });
@@ -505,18 +512,17 @@ public class IssueServiceImpl implements IssueService {
         IssueDTO dto = new IssueDTO();
         dto.setId(issue.getId());
         dto.setBookingId(issue.getBooking() != null ? issue.getBooking().getId() : null);
-        dto.setVehicleId(issue.getVehicle() != null ? issue.getVehicle().getId() : null);
+        Vehicle vehicle = issue.getBooking() != null ? issue.getBooking().getVehicle() : null;
+        dto.setVehicleId(vehicle != null ? vehicle.getId() : null);
 
         String plate = null;
-        if (issue.getVehicle() != null) {
-            plate = licensePlateRepository.findCarriedAt(issue.getVehicle().getId(), issue.getOccurredAt())
+        if (vehicle != null) {
+            plate = licensePlateRepository.findCarriedAt(vehicle.getId(), issue.getOccurredAt())
                     .map(LicensePlate::getPlate)
-                    .orElseGet(() -> issue.getVehicle().getLicensePlate() != null
-                            ? issue.getVehicle().getLicensePlate().getPlate() : null);
+                    .orElseGet(() -> vehicle.getLicensePlate() != null ? vehicle.getLicensePlate().getPlate() : null);
         }
         dto.setLicensePlate(plate);
-        dto.setVehicleName(issue.getVehicle() != null && issue.getVehicle().getVehicleType() != null
-                ? issue.getVehicle().getVehicleType().getName() : null);
+        dto.setVehicleName(vehicle != null && vehicle.getVehicleType() != null ? vehicle.getVehicleType().getName() : null);
         dto.setCustomerName(issue.getBooking() != null && issue.getBooking().getCustomer() != null
                 ? issue.getBooking().getCustomer().getName() : null);
         dto.setReporterName(issue.getEmployee() != null ? issue.getEmployee().getName() : null);
@@ -533,7 +539,7 @@ public class IssueServiceImpl implements IssueService {
         if (fee != null) {
             dto.setFeeAmount(fee.getAmount());
             Payment payment = fee.getPayment();
-            dto.setFeePaid(payment != null && Payment.STATUS_PAID.equalsIgnoreCase(payment.getStatus()));
+            dto.setFeePaid(payment != null && PaymentStatus.PAID == payment.getStatus());
             dto.setFeeLocked(isTakenByPayment(fee));
         } else {
             dto.setFeeAmount(null);

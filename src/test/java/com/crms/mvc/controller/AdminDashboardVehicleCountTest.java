@@ -1,5 +1,7 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.service.LicenseDocumentService;
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.support.PassThroughSessionAccountService;
 import org.springframework.context.annotation.Import;
 import com.crms.mvc.support.TestSessions;
@@ -28,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(AdminDashboardController.class)
 @Import(PassThroughSessionAccountService.class)
 class AdminDashboardVehicleCountTest {
+    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private VehicleService vehicleService;
     @MockitoBean private VehicleInspectionService vehicleInspectionService;
@@ -39,8 +42,8 @@ class AdminDashboardVehicleCountTest {
     @Test
     void retiredVehiclesAreCountedSeparatelyFromTheFleetTotal() throws Exception {
         when(vehicleService.findAll()).thenReturn(List.of(
-                vehicle(1L, Vehicle.STATUS_AVAILABLE), vehicle(2L, Vehicle.STATUS_RENTED),
-                vehicle(3L, Vehicle.STATUS_MAINTENANCE), vehicle(4L, Vehicle.STATUS_RETIRED)));
+                vehicle(1L, VehicleStatus.AVAILABLE), vehicle(2L, VehicleStatus.RENTED),
+                vehicle(3L, VehicleStatus.MAINTENANCE), vehicle(4L, VehicleStatus.RETIRED)));
 
         mvc.perform(get("/admin/dashboard").session(admin()))
                 .andExpect(status().isOk())
@@ -78,7 +81,7 @@ class AdminDashboardVehicleCountTest {
         return new com.crms.mvc.dto.LicensePlateOverviewDTO(id, name, status, plate, "TP. Hồ Chí Minh", null, expiry);
     }
 
-    private static Vehicle vehicle(Long id, String status) {
+    private static Vehicle vehicle(Long id, VehicleStatus status) {
         Vehicle vehicle = new Vehicle();
         vehicle.setId(id);
         vehicle.setStatus(status);

@@ -1,5 +1,7 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.BookingStatus;
+import com.crms.mvc.enums.PaymentStatus;
 import com.crms.mvc.dto.ReviewFormDTO;
 import com.crms.mvc.dto.ReviewDTO;
 import com.crms.mvc.dto.VehicleReviewSummaryDTO;
@@ -38,7 +40,7 @@ class ReviewServiceTest {
 
     @Test
     void submitsOneReviewForOwnedCompletedBooking() {
-        Booking booking = booking("completed", 7L, 3L);
+        Booking booking = booking(BookingStatus.COMPLETED, 7L, 3L);
         when(bookingRepository.findById(7L)).thenReturn(Optional.of(booking));
         when(reviewRepository.findByBookingId(7L)).thenReturn(Optional.empty());
         when(reviewRepository.save(any(Review.class))).thenAnswer(call -> call.getArgument(0));
@@ -56,7 +58,7 @@ class ReviewServiceTest {
 
     @Test
     void rejectsReviewBeforeBookingIsCompleted() {
-        when(bookingRepository.findById(7L)).thenReturn(Optional.of(booking("active", 7L, 3L)));
+        when(bookingRepository.findById(7L)).thenReturn(Optional.of(booking(BookingStatus.ACTIVE, 7L, 3L)));
 
         assertThrows(IllegalStateException.class, () -> service.submit(7L, 3L, form(5, null)));
 
@@ -65,8 +67,8 @@ class ReviewServiceTest {
 
     @Test
     void rejectsReviewWhileAnyPaymentIsPending() {
-        when(bookingRepository.findById(7L)).thenReturn(Optional.of(booking("completed", 7L, 3L)));
-        when(paymentRepository.existsByBookingIdAndStatus(7L, "pending")).thenReturn(true);
+        when(bookingRepository.findById(7L)).thenReturn(Optional.of(booking(BookingStatus.COMPLETED, 7L, 3L)));
+        when(paymentRepository.existsByBookingIdAndStatus(7L, PaymentStatus.PENDING)).thenReturn(true);
 
         assertThrows(IllegalStateException.class, () -> service.submit(7L, 3L, form(5, null)));
 
@@ -75,7 +77,7 @@ class ReviewServiceTest {
 
     @Test
     void rejectsReviewWhenBookingBelongsToAnotherCustomer() {
-        when(bookingRepository.findById(7L)).thenReturn(Optional.of(booking("completed", 7L, 4L)));
+        when(bookingRepository.findById(7L)).thenReturn(Optional.of(booking(BookingStatus.COMPLETED, 7L, 4L)));
 
         assertThrows(IllegalArgumentException.class, () -> service.submit(7L, 3L, form(5, null)));
 
@@ -84,7 +86,7 @@ class ReviewServiceTest {
 
     @Test
     void rejectsDuplicateReview() {
-        when(bookingRepository.findById(7L)).thenReturn(Optional.of(booking("completed", 7L, 3L)));
+        when(bookingRepository.findById(7L)).thenReturn(Optional.of(booking(BookingStatus.COMPLETED, 7L, 3L)));
         when(reviewRepository.findByBookingId(7L)).thenReturn(Optional.of(new Review()));
 
         assertThrows(IllegalStateException.class, () -> service.submit(7L, 3L, form(5, null)));
@@ -94,12 +96,12 @@ class ReviewServiceTest {
 
     @Test
     void updatesExistingReviewForItsOwner() {
-        Booking booking = booking("completed", 7L, 3L);
+        Booking booking = booking(BookingStatus.COMPLETED, 7L, 3L);
         Review review = new Review();
         review.setRating(3);
         review.setComment("Okay");
         when(bookingRepository.findById(7L)).thenReturn(Optional.of(booking));
-        when(paymentRepository.existsByBookingIdAndStatus(7L, "pending")).thenReturn(false);
+        when(paymentRepository.existsByBookingIdAndStatus(7L, PaymentStatus.PENDING)).thenReturn(false);
         when(reviewRepository.findByBookingId(7L)).thenReturn(Optional.of(review));
 
         service.update(7L, 3L, form(4, "  Great service.  "));
@@ -111,7 +113,7 @@ class ReviewServiceTest {
 
     @Test
     void rejectsUpdatingReviewForAnotherCustomersBooking() {
-        when(bookingRepository.findById(7L)).thenReturn(Optional.of(booking("completed", 7L, 4L)));
+        when(bookingRepository.findById(7L)).thenReturn(Optional.of(booking(BookingStatus.COMPLETED, 7L, 4L)));
 
         assertThrows(IllegalArgumentException.class, () -> service.update(7L, 3L, form(4, "Good")));
 
@@ -120,18 +122,18 @@ class ReviewServiceTest {
 
     @Test
     void existingReviewCanOnlyBeShownForItsOwnerAfterCompletion() {
-        Booking booking = booking("completed", 7L, 3L);
+        Booking booking = booking(BookingStatus.COMPLETED, 7L, 3L);
         Review review = new Review();
         review.setRating(4);
         review.setComment("Good");
         review.setCreatedAt(OffsetDateTime.now());
         when(bookingRepository.findById(7L)).thenReturn(Optional.of(booking));
-        when(paymentRepository.existsByBookingIdAndStatus(7L, "pending")).thenReturn(false);
+        when(paymentRepository.existsByBookingIdAndStatus(7L, PaymentStatus.PENDING)).thenReturn(false);
         when(reviewRepository.findByBookingId(7L)).thenReturn(Optional.of(review));
 
         assertEquals(4, service.findForCustomer(7L, 3L).getRating());
         assertThrows(IllegalArgumentException.class, () -> service.findForCustomer(7L, 4L));
-        when(bookingRepository.findById(8L)).thenReturn(Optional.of(booking("active", 8L, 3L)));
+        when(bookingRepository.findById(8L)).thenReturn(Optional.of(booking(BookingStatus.ACTIVE, 8L, 3L)));
         assertNull(service.findForCustomer(8L, 3L));
     }
 
@@ -158,7 +160,7 @@ class ReviewServiceTest {
         assertEquals(0, summary.reviewCount());
     }
 
-    private Booking booking(String status, Long bookingId, Long customerId) {
+    private Booking booking(BookingStatus status, Long bookingId, Long customerId) {
         Customer customer = new Customer();
         customer.setId(customerId);
         Booking booking = new Booking();

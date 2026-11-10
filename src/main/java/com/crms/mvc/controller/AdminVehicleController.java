@@ -1,5 +1,7 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.dto.AdminVehicleQueryDTO;
 import com.crms.mvc.dto.PageNavDTO;
 import com.crms.mvc.dto.VehicleDTO;
@@ -174,8 +176,8 @@ public class AdminVehicleController {
 
     /** True when the request would move a vehicle that is not retired yet into the retired status. */
     private boolean isNewRetirement(Long id, String requestedStatus) {
-        return Vehicle.STATUS_RETIRED.equalsIgnoreCase(requestedStatus)
-                && vehicleService.findVehicleById(id).map(v -> !Vehicle.STATUS_RETIRED.equalsIgnoreCase(v.getStatus())).orElse(true);
+        return EnumTokens.is(VehicleStatus.RETIRED, requestedStatus)
+                && vehicleService.findVehicleById(id).map(v -> !EnumTokens.is(VehicleStatus.RETIRED, v.getStatus())).orElse(true);
     }
 
     /**

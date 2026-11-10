@@ -1,5 +1,11 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.EmployeeRole;
+import com.crms.mvc.enums.PaymentMethod;
+import com.crms.mvc.enums.VehicleStatus;
+import com.crms.mvc.enums.BookingStatus;
+import com.crms.mvc.enums.PaymentStatus;
+import com.crms.mvc.enums.PaymentType;
 import com.crms.mvc.dto.CheckInDTO;
 import com.crms.mvc.dto.CheckOutDTO;
 import com.crms.mvc.dto.ContractTemplateDTO;
@@ -11,7 +17,8 @@ import com.crms.mvc.entity.Customer;
 import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Employee;
 import com.crms.mvc.entity.Handover;
-import com.crms.mvc.entity.HandoverType;
+import com.crms.mvc.enums.FeeType;
+import com.crms.mvc.enums.HandoverType;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.repository.BookingRepository;
@@ -70,16 +77,16 @@ class HandoverServiceTest {
 
     @BeforeEach
     void setUp() {
-        assigned = employee(2L, "staff");
-        Employee other = employee(3L, "staff");
-        Employee admin = employee(1L, "admin");
+        assigned = employee(2L, EmployeeRole.STAFF);
+        Employee other = employee(3L, EmployeeRole.STAFF);
+        Employee admin = employee(1L, EmployeeRole.ADMIN);
         when(employeeRepository.findById(2L)).thenReturn(Optional.of(assigned));
         when(employeeRepository.findById(3L)).thenReturn(Optional.of(other));
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(admin));
 
         vehicle = new Vehicle();
         vehicle.setOdometer(1000);
-        vehicle.setStatus("available");
+        vehicle.setStatus(VehicleStatus.AVAILABLE);
 
         Customer customer = new Customer();
         customer.setId(5L);
@@ -89,7 +96,7 @@ class HandoverServiceTest {
         booking.setCustomer(customer);
         booking.setEmployee(assigned);
         booking.setVehicle(vehicle);
-        booking.setStatus("confirmed");
+        booking.setStatus(BookingStatus.CONFIRMED);
         booking.setTotalPrice(new BigDecimal("1000000"));
         booking.setDepositAmount(new BigDecimal("300000"));
         booking.setPricePerHour(new BigDecimal("100000"));
@@ -121,8 +128,8 @@ class HandoverServiceTest {
         assertEquals("clean", saved.getValue().getNotes());
         assertEquals("photo.jpg", saved.getValue().getLicenseImageUrl());
         assertEquals("photo.jpg", saved.getValue().getIdCardImageUrl());
-        assertEquals("active", booking.getStatus());
-        assertEquals("rented", vehicle.getStatus());
+        assertEquals(BookingStatus.ACTIVE, booking.getStatus());
+        assertEquals(VehicleStatus.RENTED, vehicle.getStatus());
         assertEquals(1200, vehicle.getOdometer());
         verify(issueRepository, never()).save(any());
     }
@@ -132,7 +139,7 @@ class HandoverServiceTest {
         handoverService.checkIn(10L, 2L, checkInForm(1200));
 
         // total 1,000,000 minus deposit 300,000
-        verify(paymentService).recordRentalBalancePayment(10L, new BigDecimal("700000"), "CASH");
+        verify(paymentService).recordRentalBalancePayment(10L, new BigDecimal("700000"), PaymentMethod.CASH);
     }
 
     @Test
@@ -144,7 +151,7 @@ class HandoverServiceTest {
 
         verify(handoverRepository, never()).save(any());
         verify(paymentService, never()).recordRentalBalancePayment(any(), any(), any());
-        assertEquals("confirmed", booking.getStatus());
+        assertEquals(BookingStatus.CONFIRMED, booking.getStatus());
     }
 
     @Test
@@ -156,7 +163,7 @@ class HandoverServiceTest {
 
         verify(handoverRepository, never()).save(any());
         verify(paymentService, never()).recordRentalBalancePayment(any(), any(), any());
-        assertEquals("confirmed", booking.getStatus());
+        assertEquals(BookingStatus.CONFIRMED, booking.getStatus());
     }
 
     @Test
@@ -176,7 +183,7 @@ class HandoverServiceTest {
         handoverService.checkIn(10L, 2L, form);
 
         verify(paymentService, never()).recordRentalBalancePayment(any(), any(), any());
-        assertEquals("active", booking.getStatus());
+        assertEquals(BookingStatus.ACTIVE, booking.getStatus());
     }
 
     @Test
@@ -191,7 +198,7 @@ class HandoverServiceTest {
         assertTrue(error.getMessage().contains("#9"));
         verify(handoverRepository, never()).save(any());
         verify(paymentService, never()).recordRentalBalancePayment(any(), any(), any());
-        assertEquals("confirmed", booking.getStatus());
+        assertEquals(BookingStatus.CONFIRMED, booking.getStatus());
     }
 
     @Test
@@ -199,14 +206,14 @@ class HandoverServiceTest {
         handoverService.checkIn(10L, 1L, checkInForm(1200));
 
         assertEquals(assigned, booking.getEmployee());
-        assertEquals("active", booking.getStatus());
+        assertEquals(BookingStatus.ACTIVE, booking.getStatus());
     }
 
     @Test
     void otherStaffCannotCheckIn() {
         assertThrows(IllegalStateException.class, () -> handoverService.checkIn(10L, 3L, checkInForm(1200)));
 
-        assertEquals("confirmed", booking.getStatus());
+        assertEquals(BookingStatus.CONFIRMED, booking.getStatus());
         verify(handoverRepository, never()).save(any());
     }
 
@@ -214,7 +221,7 @@ class HandoverServiceTest {
     void lowerOdometerIsRejectedAtCheckIn() {
         assertThrows(IllegalArgumentException.class, () -> handoverService.checkIn(10L, 2L, checkInForm(999)));
 
-        assertEquals("confirmed", booking.getStatus());
+        assertEquals(BookingStatus.CONFIRMED, booking.getStatus());
     }
 
     @Test
@@ -223,7 +230,7 @@ class HandoverServiceTest {
         form.setIdCardImage(new MockMultipartFile("idCardImage", new byte[0]));
 
         assertThrows(IllegalArgumentException.class, () -> handoverService.checkIn(10L, 2L, form));
-        assertEquals("confirmed", booking.getStatus());
+        assertEquals(BookingStatus.CONFIRMED, booking.getStatus());
     }
 
     @Test
@@ -235,21 +242,21 @@ class HandoverServiceTest {
 
     @Test
     void checkOutRecordsTheLateFeeAgainstTheBookingOnly() {
-        booking.setStatus("active");
+        booking.setStatus(BookingStatus.ACTIVE);
         when(pricingService.calculateLateFee(any(), any(), any(), any())).thenReturn(new BigDecimal("150000"));
         CheckOutDTO form = checkOutForm(1300);
 
         handoverService.checkOut(10L, 2L, form);
 
-        verify(bookingFeeService).recordFee(10L, "LATE_FEE", new BigDecimal("150000"), "Phí trả xe trễ", null);
+        verify(bookingFeeService).recordFee(10L, FeeType.LATE_FEE, new BigDecimal("150000"), "Phí trả xe trễ", null);
         // only the late fee: damage, cleaning and the like are recorded as Issues, never at the return form
-        verify(bookingFeeService, org.mockito.Mockito.times(1)).recordFee(any(), any(), any(), any(), any());
+        verify(bookingFeeService, org.mockito.Mockito.times(1)).recordFee(any(), any(FeeType.class), any(), any(), any());
         ArgumentCaptor<Handover> saved = ArgumentCaptor.forClass(Handover.class);
         verify(handoverRepository).save(saved.capture());
         assertEquals(HandoverType.CHECK_OUT, saved.getValue().getType());
         assertNull(saved.getValue().getFuelPercent());
-        assertEquals("active", booking.getStatus());
-        assertEquals("available", vehicle.getStatus());
+        assertEquals(BookingStatus.ACTIVE, booking.getStatus());
+        assertEquals(VehicleStatus.AVAILABLE, vehicle.getStatus());
         assertEquals(1300, vehicle.getOdometer());
         assertNotNull(booking.getActualReturnTime());
         verify(issueRepository, never()).save(any());
@@ -257,18 +264,18 @@ class HandoverServiceTest {
 
     @Test
     void maintenanceIsWhateverStaffTicked() {
-        booking.setStatus("active");
+        booking.setStatus(BookingStatus.ACTIVE);
         CheckOutDTO form = checkOutForm(1300);
         form.setMoveToMaintenance(true);
 
         handoverService.checkOut(10L, 2L, form);
 
-        assertEquals("maintenance", vehicle.getStatus());
+        assertEquals(VehicleStatus.MAINTENANCE, vehicle.getStatus());
     }
 
     @Test
     void otherStaffCannotCheckOutOrSettle() {
-        booking.setStatus("active");
+        booking.setStatus(BookingStatus.ACTIVE);
 
         assertThrows(IllegalStateException.class, () -> handoverService.checkOut(10L, 3L, checkOutForm(1300)));
         assertThrows(IllegalStateException.class, () -> handoverService.settle(10L, 3L, new SettlementDTO()));
@@ -276,7 +283,7 @@ class HandoverServiceTest {
 
     @Test
     void secondCheckOutIsRejected() {
-        booking.setStatus("active");
+        booking.setStatus(BookingStatus.ACTIVE);
         when(handoverRepository.existsByBookingIdAndType(10L, HandoverType.CHECK_OUT)).thenReturn(true);
 
         assertThrows(IllegalStateException.class, () -> handoverService.checkOut(10L, 2L, checkOutForm(1300)));
@@ -288,14 +295,14 @@ class HandoverServiceTest {
         List<BookingFee> unpaid = List.of(fee("100000"));
         when(bookingFeeService.getUnpaidFees(10L)).thenReturn(unpaid);
         Payment finalPayment = new Payment();
-        when(paymentService.recordFinalPayment(10L, new BigDecimal("100000"), "CASH")).thenReturn(finalPayment);
+        when(paymentService.recordFinalPayment(10L, new BigDecimal("100000"), PaymentMethod.CASH)).thenReturn(finalPayment);
         SettlementDTO form = new SettlementDTO();
         form.setPaymentMethod("CASH");
 
         handoverService.settle(10L, 2L, form);
 
         verify(bookingFeeService).attachPayment(unpaid, finalPayment);
-        assertEquals("completed", booking.getStatus());
+        assertEquals(BookingStatus.COMPLETED, booking.getStatus());
         assertTrue(record.isSettled());
         assertEquals(new BigDecimal("1000000"), booking.getTotalPrice());
     }
@@ -309,7 +316,7 @@ class HandoverServiceTest {
 
         assertThrows(IllegalStateException.class, () -> handoverService.settle(10L, 2L, form));
         verify(paymentService, never()).recordFinalPayment(any(), any(), any());
-        assertEquals("active", booking.getStatus());
+        assertEquals(BookingStatus.ACTIVE, booking.getStatus());
     }
 
     @Test
@@ -318,7 +325,7 @@ class HandoverServiceTest {
         when(bookingFeeService.getUnpaidFees(10L)).thenReturn(List.of(fee("100000")));
 
         assertThrows(IllegalArgumentException.class, () -> handoverService.settle(10L, 2L, new SettlementDTO()));
-        assertEquals("active", booking.getStatus());
+        assertEquals(BookingStatus.ACTIVE, booking.getStatus());
     }
 
     @Test
@@ -330,15 +337,15 @@ class HandoverServiceTest {
         verify(paymentService, never()).recordFinalPayment(any(), any(), any());
         verify(paymentService, never()).createPendingRefund(any(), any(), any(), any(), any());
         verify(bookingFeeService, never()).attachPayment(anyList(), any());
-        assertEquals("completed", booking.getStatus());
+        assertEquals(BookingStatus.COMPLETED, booking.getStatus());
     }
 
     @Test
     void settlementBeforeReturnOrAfterCompletionIsRejected() {
-        booking.setStatus("active");
+        booking.setStatus(BookingStatus.ACTIVE);
         assertThrows(IllegalStateException.class, () -> handoverService.settle(10L, 2L, new SettlementDTO()));
 
-        booking.setStatus("completed");
+        booking.setStatus(BookingStatus.COMPLETED);
         assertThrows(IllegalStateException.class, () -> handoverService.settle(10L, 2L, new SettlementDTO()));
     }
 
@@ -374,7 +381,7 @@ class HandoverServiceTest {
         late.setDescription("Late return fee");
         BookingFee prepaid = fee("500000");
         prepaid.setDescription("Scratch");
-        prepaid.setPayment(payment(Payment.TYPE_ISSUE_COMPENSATION, Payment.STATUS_PAID, "500000", "VNPAY"));
+        prepaid.setPayment(payment(PaymentType.ISSUE_COMPENSATION, PaymentStatus.PAID, "500000", PaymentMethod.VNPAY));
         when(bookingFeeService.getFeesByBooking(10L)).thenReturn(List.of(late, prepaid));
         when(bookingFeeService.getUnpaidFees(10L)).thenReturn(List.of(late));
 
@@ -393,11 +400,11 @@ class HandoverServiceTest {
         Handover record = returnedBooking();
         record.setSettledAt(OffsetDateTime.now());
         BookingFee late = fee("150000");
-        Payment finalPayment = payment(Payment.TYPE_FINAL, Payment.STATUS_PAID, "850000", "CASH");
+        Payment finalPayment = payment(PaymentType.FINAL, PaymentStatus.PAID, "850000", PaymentMethod.CASH);
         late.setPayment(finalPayment);
         when(bookingFeeService.getFeesByBooking(10L)).thenReturn(List.of(late));
         when(paymentService.getPaymentsByBooking(10L)).thenReturn(List.of(
-                payment(Payment.TYPE_DEPOSIT, Payment.STATUS_PAID, "300000", "VNPAY"), finalPayment));
+                payment(PaymentType.DEPOSIT, PaymentStatus.PAID, "300000", PaymentMethod.VNPAY), finalPayment));
 
         ReturnReceiptDTO receipt = handoverService.getReturnReceipt(10L);
 
@@ -423,7 +430,7 @@ class HandoverServiceTest {
 
     @Test
     void lockedEmployeeCannotBeAssigned() {
-        Employee locked = employee(4L, "staff");
+        Employee locked = employee(4L, EmployeeRole.STAFF);
         locked.setActive(false);
         when(employeeRepository.findById(4L)).thenReturn(Optional.of(locked));
 
@@ -439,7 +446,7 @@ class HandoverServiceTest {
     }
 
     private Handover returnedBooking() {
-        booking.setStatus("active");
+        booking.setStatus(BookingStatus.ACTIVE);
         Handover record = new Handover();
         record.setType(HandoverType.CHECK_OUT);
         record.setOdometer(1300);
@@ -456,7 +463,7 @@ class HandoverServiceTest {
         return fee;
     }
 
-    private Payment payment(String type, String status, String amount, String method) {
+    private Payment payment(PaymentType type, PaymentStatus status, String amount, PaymentMethod method) {
         Payment payment = new Payment();
         payment.setPaymentType(type);
         payment.setStatus(status);
@@ -466,7 +473,7 @@ class HandoverServiceTest {
         return payment;
     }
 
-    private Employee employee(Long id, String role) {
+    private Employee employee(Long id, EmployeeRole role) {
         Employee employee = new Employee();
         employee.setId(id);
         employee.setRole(role);

@@ -16,11 +16,11 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             FROM Review r
             JOIN r.booking b
             JOIN b.vehicle v
-            WHERE LOWER(b.status) = 'completed'
+            WHERE b.status = com.crms.mvc.enums.BookingStatus.COMPLETED
               AND v.vehicleType.id = :vehicleTypeId
               AND NOT EXISTS (
                   SELECT p.id FROM Payment p
-                  WHERE p.booking = b AND LOWER(p.status) = 'pending'
+                  WHERE p.booking = b AND p.status = com.crms.mvc.enums.PaymentStatus.PENDING
               )
             ORDER BY r.createdAt DESC
             """)
@@ -32,10 +32,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             FROM Review r
             JOIN r.booking b
             JOIN b.slot s
-            WHERE LOWER(b.status) = 'completed'
+            WHERE b.status = com.crms.mvc.enums.BookingStatus.COMPLETED
               AND NOT EXISTS (
                   SELECT p.id FROM Payment p
-                  WHERE p.booking = b AND LOWER(p.status) = 'pending'
+                  WHERE p.booking = b AND p.status = com.crms.mvc.enums.PaymentStatus.PENDING
               )
             GROUP BY s.vehicleType.id
             """)

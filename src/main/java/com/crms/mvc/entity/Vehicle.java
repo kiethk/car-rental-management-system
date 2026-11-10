@@ -1,5 +1,6 @@
 package com.crms.mvc.entity;
 
+import com.crms.mvc.enums.VehicleStatus;
 import jakarta.persistence.*;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.SQLRestriction;
@@ -11,12 +12,6 @@ import java.util.List;
 @Entity
 @Table(name = "vehicles")
 public class Vehicle {
-    public static final String STATUS_AVAILABLE = "available";
-    public static final String STATUS_RENTED = "rented";
-    public static final String STATUS_MAINTENANCE = "maintenance";
-    /** Permanently out of service (total loss or never recovered); never rented again. */
-    public static final String STATUS_RETIRED = "retired";
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "vehicle_id")
@@ -47,8 +42,9 @@ public class Vehicle {
     @Column(name = "registration_expiry")
     private LocalDate registrationExpiry;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
-    private String status;
+    private VehicleStatus status;
 
     /** The plate currently on the car, or null when it has none (for example while being re-registered). */
     public LicensePlate getLicensePlate() {
@@ -81,8 +77,8 @@ public class Vehicle {
     public LocalDate getRegistrationExpiry() { return registrationExpiry; }
     public void setRegistrationExpiry(LocalDate registrationExpiry) { this.registrationExpiry = registrationExpiry; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public VehicleStatus getStatus() { return status; }
+    public void setStatus(VehicleStatus status) { this.status = status; }
 
-    public boolean isRetired() { return STATUS_RETIRED.equalsIgnoreCase(status); }
+    public boolean isRetired() { return status == VehicleStatus.RETIRED; }
 }

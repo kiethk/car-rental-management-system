@@ -1,5 +1,8 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.BookingStatus;
+import com.crms.mvc.enums.VehicleStatus;
+import com.crms.mvc.enums.InspectionStatus;
 import com.crms.mvc.dto.VehicleScheduleDTO;
 import com.crms.mvc.dto.VehicleScheduleDTO.HourState;
 import com.crms.mvc.entity.Booking;
@@ -41,7 +44,7 @@ class VehicleScheduleTest {
         type.setName("Vios");
         Vehicle car = new Vehicle();
         car.setId(5L);
-        car.setStatus(Vehicle.STATUS_AVAILABLE);
+        car.setStatus(VehicleStatus.AVAILABLE);
         car.setVehicleType(type);
         when(vehicleRepository.findById(5L)).thenReturn(Optional.of(car));
     }
@@ -49,7 +52,7 @@ class VehicleScheduleTest {
     @Test
     void aBookingIsShownWithOneBufferHourOnEachSide() {
         Booking booking = new Booking();
-        booking.setStatus("confirmed");
+        booking.setStatus(BookingStatus.CONFIRMED);
         booking.setPickupTime(day.atTime(10, 0).atOffset(VN));
         booking.setScheduledEndTime(day.atTime(14, 0).atOffset(VN));
         when(bookingRepository.findBookingsHoldingVehicle(eq(5L), any(), any(), any())).thenReturn(List.of(booking));
@@ -86,7 +89,7 @@ class VehicleScheduleTest {
         com.crms.mvc.entity.VehicleInspection inspection = new com.crms.mvc.entity.VehicleInspection();
         inspection.setVehicle(car);
         inspection.setScheduledDate(day.plusDays(1));
-        inspection.setStatus("scheduled");
+        inspection.setStatus(InspectionStatus.SCHEDULED);
         when(vehicleRepository.findScheduledInspectionsByVehicleId(5L)).thenReturn(List.of(inspection));
 
         VehicleScheduleDTO schedule = service.getVehicleSchedule(5L, day, 3);
@@ -103,10 +106,10 @@ class VehicleScheduleTest {
         com.crms.mvc.entity.VehicleInspection inspection = new com.crms.mvc.entity.VehicleInspection();
         inspection.setVehicle(car);
         inspection.setScheduledDate(day);
-        inspection.setStatus("scheduled");
+        inspection.setStatus(InspectionStatus.SCHEDULED);
         when(vehicleRepository.findScheduledInspectionsByVehicleId(5L)).thenReturn(List.of(inspection));
         Booking booking = new Booking();
-        booking.setStatus("confirmed");
+        booking.setStatus(BookingStatus.CONFIRMED);
         booking.setPickupTime(day.atTime(10, 0).atOffset(VN));
         booking.setScheduledEndTime(day.atTime(14, 0).atOffset(VN));
         when(bookingRepository.findBookingsHoldingVehicle(eq(5L), any(), any(), any())).thenReturn(List.of(booking));
@@ -136,7 +139,7 @@ class VehicleScheduleTest {
     @Test
     void aCarNotBackFromAnOverdueRentalStaysBookedUntilNow() {
         Booking overdue = new Booking();
-        overdue.setStatus("active");
+        overdue.setStatus(BookingStatus.ACTIVE);
         overdue.setPickupTime(OffsetDateTime.now().minusHours(6));
         overdue.setScheduledEndTime(OffsetDateTime.now().minusHours(2));
         when(bookingRepository.findBookingsHoldingVehicle(eq(5L), any(), any(), any())).thenReturn(List.of(overdue));

@@ -1,5 +1,6 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.enums.DiscountType;
 import com.crms.mvc.dto.PromotionFormDTO;
 import com.crms.mvc.entity.Promotion;
 import com.crms.mvc.repository.BookingRepository;
@@ -103,7 +104,7 @@ public class PromotionServiceImpl implements PromotionService {
 
     private Promotion toEntity(PromotionFormDTO form, Promotion promotion) {
         promotion.setCode(form.getCode().trim().toUpperCase());
-        promotion.setDiscountType(form.getDiscountType().trim().toLowerCase());
+        promotion.setDiscountType(DiscountType.from(form.getDiscountType()));
         promotion.setDiscountValue(form.getDiscountValue());
         promotion.setStartDate(form.getStartDate());
         promotion.setEndDate(form.getEndDate());

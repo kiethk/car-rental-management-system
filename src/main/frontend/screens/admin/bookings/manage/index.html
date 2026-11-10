@@ -561,7 +561,7 @@
                                             </div>
                                         </div>
                                         <div th:replace="~{fragments/admin-components :: statusBadge(
-                                            status=${issue.status.dbValue()},
+                                            status=${issue.status.name()},
                                             label=${issue.status.label},
                                             variant=${issue.status.name() == 'OPEN' ? 'warning' : (issue.status.name() == 'RESOLVED' ? 'success' : 'neutral')})}"></div>
                                     </div>

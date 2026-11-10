@@ -1,5 +1,6 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.DiscountType;
 import com.crms.mvc.dto.BookingCreateDTO;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.entity.Promotion;
@@ -48,7 +49,7 @@ class BookingQuoteTest {
     @Test
     void previewsRealPromotionAndContractRateWithoutRedeemingOrCreatingBooking() {
         Promotion promotion = new Promotion();
-        promotion.setDiscountType("percent");
+        promotion.setDiscountType(DiscountType.PERCENT);
         promotion.setDiscountValue(new BigDecimal("20"));
         promotion.setQuantity(1);
         promotion.setStartDate(LocalDate.now().minusDays(1));

@@ -1,5 +1,7 @@
 package com.crms.mvc.dto;
 
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.entity.Vehicle;
 
 import java.math.BigDecimal;
@@ -50,14 +52,14 @@ public class VehicleDTO {
         dto.setVehicleTypeId(vt.getId());
         dto.setBrand(vt.getBrand());
         dto.setModel(vt.getName());
-        dto.setCategory(vt.getCategory());
+        dto.setCategory(EnumTokens.of(vt.getCategory()));
         dto.setSeats(vt.getSeats());
-        dto.setTransmission(vt.getTransmission());
-        dto.setFuelType(vt.getFuelType());
+        dto.setTransmission(EnumTokens.of(vt.getTransmission()));
+        dto.setFuelType(EnumTokens.of(vt.getFuelType()));
         dto.setPricePerHour(vt.getPricePerHour());
         dto.setDescription(vt.getDescription());
         dto.setImageUrl(vt.getImageUrl());
-        dto.setStatus(Vehicle.STATUS_AVAILABLE);
+        dto.setStatus(EnumTokens.of(VehicleStatus.AVAILABLE));
         if (vt.getPricePerHour() != null) {
             dto.setEstimatedDeposit(vt.getPricePerHour().multiply(BigDecimal.valueOf(12)));
         }
@@ -70,7 +72,7 @@ public class VehicleDTO {
         dto.setColor(vehicle.getColor());
         dto.setYear(vehicle.getYear());
         dto.setOdometer(vehicle.getOdometer());
-        dto.setStatus(vehicle.getStatus());
+        dto.setStatus(EnumTokens.of(vehicle.getStatus()));
         dto.setRegistrationExpiry(vehicle.getRegistrationExpiry());
 
         if (vehicle.getLicensePlate() != null) {
@@ -84,10 +86,10 @@ public class VehicleDTO {
             dto.setVehicleTypeId(vehicle.getVehicleType().getId());
             dto.setBrand(vehicle.getVehicleType().getBrand());
             dto.setModel(vehicle.getVehicleType().getName());
-            dto.setCategory(vehicle.getVehicleType().getCategory());
+            dto.setCategory(EnumTokens.of(vehicle.getVehicleType().getCategory()));
             dto.setSeats(vehicle.getVehicleType().getSeats());
-            dto.setTransmission(vehicle.getVehicleType().getTransmission());
-            dto.setFuelType(vehicle.getVehicleType().getFuelType());
+            dto.setTransmission(EnumTokens.of(vehicle.getVehicleType().getTransmission()));
+            dto.setFuelType(EnumTokens.of(vehicle.getVehicleType().getFuelType()));
             dto.setPricePerHour(vehicle.getVehicleType().getPricePerHour());
             dto.setDescription(vehicle.getVehicleType().getDescription());
             dto.setImageUrl(vehicle.getVehicleType().getImageUrl());

@@ -1,5 +1,6 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.service.LicenseDocumentService;
 import com.crms.mvc.support.PassThroughSessionAccountService;
 import com.crms.mvc.support.TestSessions;
 import org.springframework.context.annotation.Import;
@@ -7,7 +8,6 @@ import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.Payment;
 import com.crms.mvc.service.BookingService;
 import com.crms.mvc.service.PaymentService;
-import com.crms.mvc.service.VnPayGateway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +33,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(PaymentController.class)
 @Import(PassThroughSessionAccountService.class)
 class PaymentControllerIssueTest {
+    @MockitoBean private LicenseDocumentService licenseDocumentService; // the global advice reads it on every page
     @Autowired private MockMvc mvc;
     @MockitoBean private PaymentService paymentService;
-    @MockitoBean private VnPayGateway gateway;
     @MockitoBean private BookingService bookingService;
 
     private MockHttpSession customer;
@@ -43,7 +43,7 @@ class PaymentControllerIssueTest {
     @BeforeEach
     void setUp() {
         customer = TestSessions.customer(1L, "John Doe");
-        when(gateway.verifySignature(any())).thenReturn(true);
+        when(paymentService.isValidGatewayReturn(any())).thenReturn(true);
     }
 
     @Test
@@ -95,7 +95,7 @@ class PaymentControllerIssueTest {
 
     @Test
     void aReturnWithABadSignatureChangesNothing() throws Exception {
-        when(gateway.verifySignature(any())).thenReturn(false);
+        when(paymentService.isValidGatewayReturn(any())).thenReturn(false);
 
         mvc.perform(get("/payment/vnpay/return")
                         .param("vnp_TxnRef", "I77_1700000000000").param("vnp_ResponseCode", "00")
@@ -120,7 +120,7 @@ class PaymentControllerIssueTest {
 
     @Test
     void depositReturnsStillGoToTheDepositFlow() throws Exception {
-        when(gateway.verifySignature(any())).thenReturn(false);
+        when(paymentService.isValidGatewayReturn(any())).thenReturn(false);
 
         mvc.perform(get("/payment/vnpay/return").param("vnp_TxnRef", "5_1700000000000").param("vnp_ResponseCode", "00"))
                 .andExpect(status().is3xxRedirection())

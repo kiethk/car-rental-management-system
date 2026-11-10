@@ -39,7 +39,7 @@ public final class IssueSpecifications {
                 Subquery<Long> carried = criteria.subquery(Long.class);
                 Root<LicensePlate> plate = carried.from(LicensePlate.class);
                 carried.select(plate.get("id")).where(
-                        cb.equal(plate.get("vehicle"), root.get("vehicle")),
+                        cb.equal(plate.get("vehicle"), root.get("booking").get("vehicle")),
                         cb.like(cb.lower(plate.get("plate")), query.getPlatePattern(), '\\'),
                         cb.lessThanOrEqualTo(plate.get("validFrom"), root.<OffsetDateTime>get("occurredAt")),
                         cb.or(cb.isNull(plate.get("validTo")),

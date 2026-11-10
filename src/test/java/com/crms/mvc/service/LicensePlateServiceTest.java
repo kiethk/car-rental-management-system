@@ -1,5 +1,6 @@
 package com.crms.mvc.service;
 
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.dto.LicensePlateChangeDTO;
 import com.crms.mvc.dto.LicensePlateDTO;
 import com.crms.mvc.dto.LicensePlateOverviewDTO;
@@ -38,7 +39,7 @@ class LicensePlateServiceTest {
 
     @Test
     void changePlateRetiresTheCurrentPlateAndStartsTheNewOneAtTheSameInstant() {
-        Vehicle vehicle = vehicleWithPlate("available", "51A-123.45");
+        Vehicle vehicle = vehicleWithPlate(VehicleStatus.AVAILABLE, "51A-123.45");
         LicensePlate old = vehicle.getLicensePlate();
         when(vehicleRepository.findByIdWithDetails(1L)).thenReturn(Optional.of(vehicle));
         when(licensePlateRepository.existsByPlateIgnoreCase("51K-987.65")).thenReturn(false);
@@ -61,7 +62,7 @@ class LicensePlateServiceTest {
     void firstPlateOfANewVehicleNeedsNoRetirement() {
         Vehicle vehicle = new Vehicle();
         vehicle.setId(2L);
-        vehicle.setStatus("available");
+        vehicle.setStatus(VehicleStatus.AVAILABLE);
         when(vehicleRepository.findByIdWithDetails(2L)).thenReturn(Optional.of(vehicle));
 
         LicensePlateDTO created = service.changePlate(2L, form("30A-111.11", null));
@@ -73,7 +74,7 @@ class LicensePlateServiceTest {
 
     @Test
     void plateCannotBeChangedWhileTheCarIsRentedOut() {
-        when(vehicleRepository.findByIdWithDetails(1L)).thenReturn(Optional.of(vehicleWithPlate("rented", "51A-123.45")));
+        when(vehicleRepository.findByIdWithDetails(1L)).thenReturn(Optional.of(vehicleWithPlate(VehicleStatus.RENTED, "51A-123.45")));
 
         assertThrows(IllegalStateException.class, () -> service.changePlate(1L, form("51K-987.65", null)));
         verify(licensePlateRepository, never()).save(any());
@@ -81,7 +82,7 @@ class LicensePlateServiceTest {
 
     @Test
     void aRetiredPlateCanNeverBeReused() {
-        when(vehicleRepository.findByIdWithDetails(1L)).thenReturn(Optional.of(vehicleWithPlate("available", "51A-123.45")));
+        when(vehicleRepository.findByIdWithDetails(1L)).thenReturn(Optional.of(vehicleWithPlate(VehicleStatus.AVAILABLE, "51A-123.45")));
         when(licensePlateRepository.existsByPlateIgnoreCase("51F-100.01")).thenReturn(true);
 
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
@@ -93,7 +94,7 @@ class LicensePlateServiceTest {
 
     @Test
     void sameAsCurrentPlateIsRejected() {
-        when(vehicleRepository.findByIdWithDetails(1L)).thenReturn(Optional.of(vehicleWithPlate("available", "51A-123.45")));
+        when(vehicleRepository.findByIdWithDetails(1L)).thenReturn(Optional.of(vehicleWithPlate(VehicleStatus.AVAILABLE, "51A-123.45")));
 
         assertThrows(IllegalArgumentException.class, () -> service.changePlate(1L, form("51a-123.45", null)));
     }
@@ -107,11 +108,11 @@ class LicensePlateServiceTest {
 
     @Test
     void overviewHasOneRowPerVehicleEvenWithoutAPlate() {
-        Vehicle withPlate = vehicleWithPlate("available", "51A-123.45");
+        Vehicle withPlate = vehicleWithPlate(VehicleStatus.AVAILABLE, "51A-123.45");
         withPlate.setRegistrationExpiry(LocalDate.now().plusDays(10));
         Vehicle withoutPlate = new Vehicle();
         withoutPlate.setId(3L);
-        withoutPlate.setStatus("maintenance");
+        withoutPlate.setStatus(VehicleStatus.MAINTENANCE);
         withoutPlate.setVehicleType(withPlate.getVehicleType());
         withoutPlate.setRegistrationExpiry(LocalDate.now().minusDays(3));
         when(vehicleRepository.findAllWithDetails()).thenReturn(List.of(withPlate, withoutPlate));
@@ -125,7 +126,7 @@ class LicensePlateServiceTest {
         assertEquals("EXPIRED", rows.get(1).getExpiryStatus());
     }
 
-    private Vehicle vehicleWithPlate(String status, String plateText) {
+    private Vehicle vehicleWithPlate(VehicleStatus status, String plateText) {
         VehicleType type = new VehicleType();
         type.setBrand("Toyota");
         type.setName("Vios");

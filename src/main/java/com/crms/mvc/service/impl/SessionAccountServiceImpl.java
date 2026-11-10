@@ -1,5 +1,6 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.util.EnumTokens;
 import com.crms.mvc.dto.LoginIdentityDTO;
 import com.crms.mvc.dto.SessionAccount;
 import com.crms.mvc.entity.Customer;
@@ -52,7 +53,7 @@ public class SessionAccountServiceImpl implements SessionAccountService {
     @Override
     public SessionAccount fromEmployee(Employee employee) {
         return new SessionAccount(employee.getId(), SessionAccount.EMPLOYEE, employee.getName(),
-                employee.getEmail(), employee.getRole(), stampOf(employee.getPasswordHash()));
+                employee.getEmail(), EnumTokens.of(employee.getRole()), stampOf(employee.getPasswordHash()));
     }
 
     private Optional<SessionAccount> load(SessionAccount account) {

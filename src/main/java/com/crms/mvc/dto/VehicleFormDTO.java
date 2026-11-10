@@ -1,5 +1,7 @@
 package com.crms.mvc.dto;
 
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.VehicleStatus;
 import com.crms.mvc.entity.Vehicle;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -42,7 +44,7 @@ public class VehicleFormDTO {
 
     @NotBlank(message = "Vui lòng chọn trạng thái xe")
     @Pattern(regexp = "^(available|maintenance|retired)$", message = "Trạng thái xe phải là sẵn sàng, bảo dưỡng hoặc ngừng khai thác")
-    private String status = Vehicle.STATUS_AVAILABLE;
+    private String status = EnumTokens.of(VehicleStatus.AVAILABLE);
 
     public VehicleFormDTO() {}
 
@@ -60,7 +62,7 @@ public class VehicleFormDTO {
         dto.setColor(vehicle.getColor());
         dto.setYear(vehicle.getYear());
         dto.setOdometer(vehicle.getOdometer());
-        dto.setStatus(vehicle.getStatus());
+        dto.setStatus(EnumTokens.of(vehicle.getStatus()));
         return dto;
     }
 

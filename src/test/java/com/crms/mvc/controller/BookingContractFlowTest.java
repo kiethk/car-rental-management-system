@@ -1,5 +1,9 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.enums.PaymentMethod;
+import com.crms.mvc.enums.FuelType;
+import com.crms.mvc.enums.Transmission;
+import com.crms.mvc.enums.VehicleCategory;
 import com.crms.mvc.support.TestSessions;
 import org.springframework.context.annotation.Import;
 import com.crms.mvc.support.PassThroughSessionAccountService;
@@ -7,7 +11,7 @@ import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.ContractDTO;
 import com.crms.mvc.dto.ContractTemplateDTO;
 import com.crms.mvc.dto.ReviewDTO;
-import com.crms.mvc.entity.ContractTemplateStatus;
+import com.crms.mvc.enums.ContractTemplateStatus;
 import com.crms.mvc.entity.LicensePlate;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleType;
@@ -90,10 +94,10 @@ class BookingContractFlowTest {
         type.setId(1L);
         type.setName("Vios");
         type.setBrand("Toyota");
-        type.setCategory("sedan");
+        type.setCategory(VehicleCategory.SEDAN);
         type.setSeats(5);
-        type.setTransmission("automatic");
-        type.setFuelType("gasoline");
+        type.setTransmission(Transmission.AUTOMATIC);
+        type.setFuelType(FuelType.GASOLINE);
         type.setPricePerHour(new BigDecimal("100000"));
         LicensePlate plate = new LicensePlate();
         plate.setPlate("51A-123.45");
@@ -292,8 +296,8 @@ class BookingContractFlowTest {
         com.crms.mvc.dto.IssueDTO issue = new com.crms.mvc.dto.IssueDTO();
         issue.setId(7L);
         issue.setBookingId(42L);
-        issue.setIssueType(com.crms.mvc.entity.IssueType.DAMAGE);
-        issue.setStatus(com.crms.mvc.entity.IssueStatus.RESOLVED);
+        issue.setIssueType(com.crms.mvc.enums.IssueType.DAMAGE);
+        issue.setStatus(com.crms.mvc.enums.IssueStatus.RESOLVED);
         issue.setSubject("Scratch on the bumper");
         issue.setDescription("About 15 cm.");
         issue.setFeeAmount(new BigDecimal("200000"));
@@ -441,10 +445,10 @@ class BookingContractFlowTest {
     void aBookingOffersToPayOpenUnpaidIssueFees() throws Exception {
         when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
         when(issueService.findByBookingForCustomer(42L, 1L)).thenReturn(List.of(
-                issueWith(7L, com.crms.mvc.entity.IssueStatus.OPEN, "200000", false),
-                issueWith(8L, com.crms.mvc.entity.IssueStatus.OPEN, "500000", false),
-                issueWith(9L, com.crms.mvc.entity.IssueStatus.RESOLVED, "999000", true),
-                issueWith(10L, com.crms.mvc.entity.IssueStatus.CANCELLED, "300000", false)));
+                issueWith(7L, com.crms.mvc.enums.IssueStatus.OPEN, "200000", false),
+                issueWith(8L, com.crms.mvc.enums.IssueStatus.OPEN, "500000", false),
+                issueWith(9L, com.crms.mvc.enums.IssueStatus.RESOLVED, "999000", true),
+                issueWith(10L, com.crms.mvc.enums.IssueStatus.CANCELLED, "300000", false)));
 
         mvc.perform(get("/bookings/42").session(customerSession))
                 .andExpect(status().isOk())
@@ -458,8 +462,8 @@ class BookingContractFlowTest {
     void nothingIsOfferedToPayWhenEverythingIsPaidOrCancelled() throws Exception {
         when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("completed", true));
         when(issueService.findByBookingForCustomer(42L, 1L)).thenReturn(List.of(
-                issueWith(9L, com.crms.mvc.entity.IssueStatus.CANCELLED, "999000", false),
-                issueWith(10L, com.crms.mvc.entity.IssueStatus.RESOLVED, "300000", true)));
+                issueWith(9L, com.crms.mvc.enums.IssueStatus.CANCELLED, "999000", false),
+                issueWith(10L, com.crms.mvc.enums.IssueStatus.RESOLVED, "300000", true)));
 
         mvc.perform(get("/bookings/42").session(customerSession))
                 .andExpect(status().isOk())
@@ -470,7 +474,7 @@ class BookingContractFlowTest {
     void feesArePayableOnlineDuringActiveRental() throws Exception {
         when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
         when(issueService.findByBookingForCustomer(42L, 1L)).thenReturn(List.of(
-                issueWith(7L, com.crms.mvc.entity.IssueStatus.OPEN, "200000", false)));
+                issueWith(7L, com.crms.mvc.enums.IssueStatus.OPEN, "200000", false)));
 
         mvc.perform(get("/bookings/42").session(customerSession))
                 .andExpect(status().isOk())
@@ -480,7 +484,7 @@ class BookingContractFlowTest {
     @Test
     void aPaymentLeftPendingCanBeRetried() throws Exception {
         when(bookingQueryService.getBookingDetail(42L, 1L)).thenReturn(bookingWithContract("active", true));
-        com.crms.mvc.dto.IssueDTO pending = issueWith(7L, com.crms.mvc.entity.IssueStatus.OPEN, "200000", false);
+        com.crms.mvc.dto.IssueDTO pending = issueWith(7L, com.crms.mvc.enums.IssueStatus.OPEN, "200000", false);
         pending.setFeeLocked(true); // a payment has taken it but has not been paid yet
         when(issueService.findByBookingForCustomer(42L, 1L)).thenReturn(List.of(pending));
 
@@ -488,11 +492,11 @@ class BookingContractFlowTest {
                 .andExpect(content().string(containsString("/bookings/42/pay-issue-fees")));
     }
 
-    private com.crms.mvc.dto.IssueDTO issueWith(Long id, com.crms.mvc.entity.IssueStatus status, String fee, boolean paid) {
+    private com.crms.mvc.dto.IssueDTO issueWith(Long id, com.crms.mvc.enums.IssueStatus status, String fee, boolean paid) {
         com.crms.mvc.dto.IssueDTO issue = new com.crms.mvc.dto.IssueDTO();
         issue.setId(id);
         issue.setBookingId(42L);
-        issue.setIssueType(com.crms.mvc.entity.IssueType.DAMAGE);
+        issue.setIssueType(com.crms.mvc.enums.IssueType.DAMAGE);
         issue.setStatus(status);
         issue.setSubject("Fine " + id);
         issue.setFeeAmount(new BigDecimal(fee));

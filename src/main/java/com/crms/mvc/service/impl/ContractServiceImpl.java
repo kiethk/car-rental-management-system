@@ -1,5 +1,8 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.BookingStatus;
+import com.crms.mvc.enums.PaymentType;
 import com.crms.mvc.dto.ContractDTO;
 import com.crms.mvc.dto.ContractDocumentDTO;
 import com.crms.mvc.dto.ContractTemplateDTO;
@@ -39,7 +42,7 @@ import com.crms.mvc.util.DateTimeUtils;
 public class ContractServiceImpl implements ContractService {
     private static final Logger log = LoggerFactory.getLogger(ContractServiceImpl.class);
     // A contract is only issued once the deposit is paid.
-    private static final Set<String> ISSUABLE_BOOKING_STATUSES = Set.of(Booking.STATUS_CONFIRMED, Booking.STATUS_ACTIVE, Booking.STATUS_COMPLETED);
+    private static final Set<BookingStatus> ISSUABLE_BOOKING_STATUSES = Set.of(BookingStatus.CONFIRMED, BookingStatus.ACTIVE, BookingStatus.COMPLETED);
 
     private final ContractRepository contractRepository;
     private final ContractTemplateRepository contractTemplateRepository;
@@ -183,10 +186,10 @@ public class ContractServiceImpl implements ContractService {
                 .ifPresent(license -> fillLicense(doc, license));
 
         doc.setVehicleName(type.getDisplayName());
-        doc.setVehicleCategory(type.getCategory());
+        doc.setVehicleCategory(EnumTokens.of(type.getCategory()));
         doc.setSeats(type.getSeats());
-        doc.setTransmission(type.getTransmission());
-        doc.setFuelType(type.getFuelType());
+        doc.setTransmission(EnumTokens.of(type.getTransmission()));
+        doc.setFuelType(EnumTokens.of(type.getFuelType()));
         if (vehicle != null) {
             doc.setLicensePlate(vehicle.getLicensePlate() != null ? vehicle.getLicensePlate().getPlate() : null);
             doc.setVehicleColor(vehicle.getColor());
@@ -206,7 +209,7 @@ public class ContractServiceImpl implements ContractService {
         doc.setTotalPrice(booking.getTotalPrice());
         doc.setDepositAmount(booking.getDepositAmount());
         doc.setRemainingAmount(booking.getTotalPrice().subtract(booking.getDepositAmount()));
-        paymentRepository.findByBookingIdAndPaymentType(booking.getId(), "DEPOSIT").ifPresent(payment -> {
+        paymentRepository.findByBookingIdAndPaymentType(booking.getId(), PaymentType.DEPOSIT).ifPresent(payment -> {
             doc.setDepositTransactionCode(payment.getTransactionCode());
             doc.setDepositPaidAt(toVietnamTime(payment.getPaidAt()));
         });

@@ -1,11 +1,15 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.VehicleStatus;
+import com.crms.mvc.enums.BookingStatus;
 import com.crms.mvc.config.StationProperties;
 import com.crms.mvc.dto.BookingDetailDTO;
 import com.crms.mvc.dto.BookingSummaryDTO;
 import com.crms.mvc.entity.Booking;
 import com.crms.mvc.entity.BookingFee;
 import com.crms.mvc.entity.Payment;
+import com.crms.mvc.enums.FeeType;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleType;
 import com.crms.mvc.dto.ContractTemplateDTO;
@@ -53,7 +57,7 @@ public class BookingDetailMapper {
     /** The row of "my bookings" for a customer. */
     public BookingSummaryDTO toSummary(Booking b) {
         BookingSummaryDTO s = baseSummary(b);
-        s.setStatus(b.getStatus());
+        s.setStatus(EnumTokens.of(b.getStatus()));
         return s;
     }
 
@@ -61,7 +65,7 @@ public class BookingDetailMapper {
     public BookingSummaryDTO toAdminSummary(Booking b, Set<Long> pendingRefundBookingIds) {
         BookingSummaryDTO s = baseSummary(b);
         boolean pendingRefund = pendingRefundBookingIds.contains(b.getId());
-        s.setStatus(pendingRefund ? "pending_refund" : b.getStatus());
+        s.setStatus(pendingRefund ? "pending_refund" : EnumTokens.of(b.getStatus()));
         if (pendingRefund) {
             s.setHasPendingRefund(true);
             s.setRefundAmount(b.getDepositAmount());
@@ -75,7 +79,7 @@ public class BookingDetailMapper {
         VehicleType vt = b.getSlot() != null ? b.getSlot().getVehicleType() : null;
         if (vt != null) {
             s.setVehicleTypeName(vt.getName());
-            s.setVehicleCategory(vt.getCategory());
+            s.setVehicleCategory(EnumTokens.of(vt.getCategory()));
             s.setImageUrl(VehicleImages.urlOf(vt));
         } else {
             s.setVehicleTypeName("Phương tiện DriveNow");
@@ -112,15 +116,15 @@ public class BookingDetailMapper {
         VehicleType vt = b.getSlot().getVehicleType();
         d.setVehicleTypeId(vt.getId());
         d.setVehicleTypeName(vt.getName());
-        d.setVehicleCategory(vt.getCategory());
+        d.setVehicleCategory(EnumTokens.of(vt.getCategory()));
         d.setSeats(vt.getSeats());
         d.setImageUrl(VehicleImages.urlOf(vt));
 
         if (b.getVehicle() != null) {
             d.setVehicleId(b.getVehicle().getId());
             d.setVehicleColor(b.getVehicle().getColor());
-            d.setVehicleRetired(Vehicle.STATUS_RETIRED.equalsIgnoreCase(b.getVehicle().getStatus()));
-            d.setVehicleStatus(b.getVehicle().getStatus());
+            d.setVehicleRetired(b.getVehicle().getStatus() == VehicleStatus.RETIRED);
+            d.setVehicleStatus(EnumTokens.of(b.getVehicle().getStatus()));
             d.setVehicleOdometer(b.getVehicle().getOdometer());
         }
         d.setLicensePlate(resolvePlate(b));
@@ -139,7 +143,7 @@ public class BookingDetailMapper {
         d.setTotalPrice(b.getTotalPrice());
         d.setPromotionCode(b.getPromotion() != null ? b.getPromotion().getCode() : null);
 
-        d.setStatus(b.getStatus());
+        d.setStatus(EnumTokens.of(b.getStatus()));
         d.setCreatedAt(DateTimeUtils.toVietnamTime(b.getCreatedAt()));
     }
 
@@ -149,10 +153,10 @@ public class BookingDetailMapper {
             BookingDetailDTO.PaymentDTO pd = new BookingDetailDTO.PaymentDTO();
             pd.setId(p.getId());
             pd.setTransactionCode(p.getTransactionCode());
-            pd.setPaymentType(p.getPaymentType());
+            pd.setPaymentType(p.getPaymentType().name());
             pd.setAmount(p.getAmount());
-            pd.setPaymentMethod(p.getPaymentMethod());
-            pd.setStatus(p.getStatus());
+            pd.setPaymentMethod(EnumTokens.name(p.getPaymentMethod()));
+            pd.setStatus(p.getStatus().name().toLowerCase());
             pd.setPaidAt(DateTimeUtils.toVietnamTime(p.getPaidAt()));
             payments.add(pd);
         }
@@ -176,13 +180,13 @@ public class BookingDetailMapper {
         for (BookingFee fee : bookingFeeService.getFeesByBooking(b.getId())) {
             BookingDetailDTO.BookingFeeDTO fd = new BookingDetailDTO.BookingFeeDTO();
             fd.setId(fee.getId());
-            fd.setFeeType(fee.getFeeType());
+            fd.setFeeType(fee.getFeeType() != null ? fee.getFeeType().name() : null);
             fd.setAmount(fee.getAmount());
             fd.setDescription(fee.getDescription());
             fd.setIssueId(fee.getIssue() != null ? fee.getIssue().getId() : null);
             fd.setCreatedAt(fee.getCreatedAt());
             feeDtos.add(fd);
-            if (LATE_FEE.equalsIgnoreCase(fee.getFeeType())) {
+            if (fee.getFeeType() == FeeType.LATE_FEE) {
                 lateFeeTotal = lateFeeTotal.add(fee.getAmount());
             }
         }
@@ -213,14 +217,14 @@ public class BookingDetailMapper {
 
     /** While a paid booking waits for its customer after the pickup time: when it will be cancelled; else null. */
     private OffsetDateTime awaitingPickupUntil(Booking b, OffsetDateTime now) {
-        if (!Booking.STATUS_CONFIRMED.equalsIgnoreCase(b.getStatus()) || b.getPickupTime() == null || now.isBefore(b.getPickupTime())) {
+        if (b.getStatus() != BookingStatus.CONFIRMED || b.getPickupTime() == null || now.isBefore(b.getPickupTime())) {
             return null;
         }
         return awaitingPickupUntil(b, contractService.getTermsOfBooking(b.getId()), now);
     }
 
     private static OffsetDateTime awaitingPickupUntil(Booking b, ContractTemplateDTO terms, OffsetDateTime now) {
-        if (!Booking.STATUS_CONFIRMED.equalsIgnoreCase(b.getStatus()) || b.getPickupTime() == null || now.isBefore(b.getPickupTime())) {
+        if (b.getStatus() != BookingStatus.CONFIRMED || b.getPickupTime() == null || now.isBefore(b.getPickupTime())) {
             return null;
         }
         return DateTimeUtils.toVietnamTime(terms.pickupDeadline(b.getPickupTime(), b.getScheduledEndTime()));
@@ -228,7 +232,7 @@ public class BookingDetailMapper {
 
     /** An active rental whose car has not come back although its scheduled return time has passed. */
     static boolean isOverdue(Booking b, OffsetDateTime now) {
-        return Booking.STATUS_ACTIVE.equalsIgnoreCase(b.getStatus()) && b.getActualReturnTime() == null
+        return b.getStatus() == BookingStatus.ACTIVE && b.getActualReturnTime() == null
                 && b.getScheduledEndTime() != null && now.isAfter(b.getScheduledEndTime());
     }
 

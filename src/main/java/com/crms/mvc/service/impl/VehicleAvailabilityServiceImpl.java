@@ -1,5 +1,8 @@
 package com.crms.mvc.service.impl;
 
+import com.crms.mvc.util.EnumTokens;
+import com.crms.mvc.enums.VehicleStatus;
+import com.crms.mvc.enums.BookingStatus;
 import com.crms.mvc.dto.PriceQuoteDTO;
 import com.crms.mvc.dto.VehicleScheduleDTO;
 import com.crms.mvc.dto.VehicleTypeSearchResultDTO;
@@ -12,7 +15,7 @@ import com.crms.mvc.repository.BookingRepository;
 import com.crms.mvc.repository.VehicleRepository;
 import com.crms.mvc.repository.VehicleTypeRepository;
 import com.crms.mvc.service.ContractTemplateService;
-import com.crms.mvc.service.InspectionRules;
+import com.crms.mvc.util.InspectionRules;
 import com.crms.mvc.service.PricingService;
 import com.crms.mvc.service.VehicleAvailabilityService;
 import com.crms.mvc.util.DateTimeUtils;
@@ -72,7 +75,7 @@ public class VehicleAvailabilityServiceImpl implements VehicleAvailabilityServic
         }
 
         return allVehiclesOfType.stream()
-                .filter(v -> !Vehicle.STATUS_MAINTENANCE.equalsIgnoreCase(v.getStatus()) && !Vehicle.STATUS_RETIRED.equalsIgnoreCase(v.getStatus()))
+                .filter(v -> v.getStatus() != VehicleStatus.MAINTENANCE && v.getStatus() != VehicleStatus.RETIRED)
                 .filter(v -> !bookedVehicleIds.contains(v.getId()))
                 .filter(v -> !InspectionRules.blocksRental(
                         v.getRegistrationExpiry(), inspectionDays.getOrDefault(v.getId(), List.of()), startDay, endDay))
@@ -125,14 +128,14 @@ public class VehicleAvailabilityServiceImpl implements VehicleAvailabilityServic
         schedule.setLicensePlate(vehicle.getLicensePlate() != null ? vehicle.getLicensePlate().getPlate() : null);
         schedule.setVehicleTypeId(vehicle.getVehicleType().getId());
         schedule.setVehicleTypeName(vehicle.getVehicleType().getDisplayName());
-        schedule.setVehicleStatus(vehicle.getStatus());
+        schedule.setVehicleStatus(EnumTokens.of(vehicle.getStatus()));
         schedule.setDays(scheduleDays);
         return schedule;
     }
 
     /** A car out on a rental that has not come back stays held until it does, even past its scheduled end. */
     private static OffsetDateTime heldUntil(Booking booking, OffsetDateTime now) {
-        boolean notBackYet = Booking.STATUS_ACTIVE.equalsIgnoreCase(booking.getStatus()) && booking.getActualReturnTime() == null;
+        boolean notBackYet = booking.getStatus() == BookingStatus.ACTIVE && booking.getActualReturnTime() == null;
         return notBackYet && now.isAfter(booking.getScheduledEndTime()) ? now : booking.getScheduledEndTime();
     }
 
@@ -167,7 +170,7 @@ public class VehicleAvailabilityServiceImpl implements VehicleAvailabilityServic
 
         for (VehicleType vt : allTypes) {
             if (category != null && !category.trim().isEmpty() && !"all".equalsIgnoreCase(category)) {
-                if (!category.equalsIgnoreCase(vt.getCategory())) {
+                if (!EnumTokens.is(vt.getCategory(), category)) {
                     continue;
                 }
             }
@@ -178,10 +181,10 @@ public class VehicleAvailabilityServiceImpl implements VehicleAvailabilityServic
             dto.setId(vt.getId());
             dto.setName(vt.getName());
             dto.setBrand(vt.getBrand());
-            dto.setCategory(vt.getCategory());
+            dto.setCategory(EnumTokens.of(vt.getCategory()));
             dto.setSeats(vt.getSeats());
-            dto.setTransmission(vt.getTransmission());
-            dto.setFuelType(vt.getFuelType());
+            dto.setTransmission(EnumTokens.of(vt.getTransmission()));
+            dto.setFuelType(EnumTokens.of(vt.getFuelType()));
             dto.setPricePerHour(vt.getPricePerHour());
 
             PriceQuoteDTO quote = pricingService.calculatePrice(startTime, endTime, vt.getPricePerHour(), depositRate, BigDecimal.ZERO);

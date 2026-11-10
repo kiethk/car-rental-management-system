@@ -1,5 +1,7 @@
 package com.crms.mvc.entity;
 
+import com.crms.mvc.enums.InspectionStatus;
+
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -23,8 +25,9 @@ public class VehicleInspection {
     @Column(name = "completed_at")
     private OffsetDateTime completedAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
-    private String status;
+    private InspectionStatus status;
 
     @Column(name = "notes", length = 1000)
     private String notes;
@@ -41,8 +44,8 @@ public class VehicleInspection {
     public OffsetDateTime getCompletedAt() { return completedAt; }
     public void setCompletedAt(OffsetDateTime completedAt) { this.completedAt = completedAt; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public InspectionStatus getStatus() { return status; }
+    public void setStatus(InspectionStatus status) { this.status = status; }
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }

@@ -1,5 +1,6 @@
 package com.crms.mvc.controller;
 
+import com.crms.mvc.enums.InspectionStatus;
 import com.crms.mvc.dto.VehicleInspectionFormDTO;
 import com.crms.mvc.entity.Vehicle;
 import com.crms.mvc.entity.VehicleInspection;
@@ -32,9 +33,9 @@ public class AdminInspectionController {
     @GetMapping
     public String list(Model model) {
         List<VehicleInspection> inspections = vehicleInspectionService.findAll();
-        long scheduledCount = inspections.stream().filter(i -> "scheduled".equalsIgnoreCase(i.getStatus())).count();
-        long passedCount = inspections.stream().filter(i -> "passed".equalsIgnoreCase(i.getStatus())).count();
-        long failedCount = inspections.stream().filter(i -> "failed".equalsIgnoreCase(i.getStatus())).count();
+        long scheduledCount = inspections.stream().filter(i -> i.getStatus() == InspectionStatus.SCHEDULED).count();
+        long passedCount = inspections.stream().filter(i -> i.getStatus() == InspectionStatus.PASSED).count();
+        long failedCount = inspections.stream().filter(i -> i.getStatus() == InspectionStatus.FAILED).count();
 
         model.addAttribute("inspections", inspections);
         model.addAttribute("scheduledCount", scheduledCount);
@@ -110,14 +111,15 @@ public class AdminInspectionController {
 
     @PostMapping("/{id}/result")
     public String saveResult(@PathVariable Long id,
-                             @RequestParam("status") String status,
+                             @RequestParam("status") String statusValue,
                              @RequestParam(value = "notes", required = false) String notes,
                              @RequestParam(value = "newRegistrationExpiry", required = false)
                              @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate newRegistrationExpiry,
                              RedirectAttributes ra) {
         try {
+            InspectionStatus status = InspectionStatus.valueOf(statusValue.toUpperCase());
             vehicleInspectionService.recordResult(id, status, notes, newRegistrationExpiry);
-            if ("passed".equalsIgnoreCase(status)) {
+            if (status == InspectionStatus.PASSED) {
                 ra.addFlashAttribute("success", "Đã ghi nhận đăng kiểm ĐẠT! Xe đã sẵn sàng và hạn đăng kiểm được gia hạn.");
             } else {
                 ra.addFlashAttribute("warning", "Đã ghi nhận đăng kiểm KHÔNG ĐẠT. Xe vẫn ở trạng thái bảo dưỡng để sửa chữa.");
