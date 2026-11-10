@@ -1,6 +1,13 @@
+/* Navy–Orange light retheme — admin bookings list */
+body[data-screen="admin/bookings/list"] { background: var(--color-canvas); color: var(--color-body); }
+body[data-screen="admin/bookings/list"] .card-drivenow {
+    background: var(--color-surface) !important;
+    border: 1px solid var(--color-border) !important;
+}
+
 /* Screen-scoped DriveNow admin workspace */
-[data-screen="admin/bookings/list"] [data-screen-style="01"] { background-color: #dc2626 }
-[data-screen="admin/bookings/list"] [data-screen-style="02"] { background-color: rgba(245, 158, 11, .14); border: 1px solid #fde68a }
+[data-screen="admin/bookings/list"] [data-screen-style="01"] { background-color: var(--fleet-bad-fg, #dc2626) }
+[data-screen="admin/bookings/list"] [data-screen-style="02"] { background-color: var(--fleet-warn-bg, #fef3c7); border: 1px solid var(--fleet-warn-bd, #fde68a) }
 [data-screen="admin/bookings/list"] .bookings-list-span-detail { 
                                         display: inline-flex;
                                         align-items: center;
@@ -8,6 +15,7 @@
                                         width: 38px;
                                         height: 38px;
                                         background-color: var(--fleet-warn-bg);
+                                        border: 1px solid var(--fleet-warn-bd);
                                         border-radius: 50%;
                                         color: var(--fleet-warn-fg);
                                         margin-right: 12px;
@@ -15,14 +23,62 @@
                                         font-size: 18px;
                                      }
 [data-screen="admin/bookings/list"] .bookings-list-a-detail { background-color: var(--color-accent); border-color: var(--color-accent); color: var(--color-accent-ink) }
-[data-screen="admin/bookings/list"] .bookings-list-div-detail { background-color: rgba(244, 63, 94, .13); color: #991b1b; border: 1px solid #fecaca }
+[data-screen="admin/bookings/list"] .bookings-list-a-detail:hover { background-color: var(--color-accent-strong); border-color: var(--color-accent-strong); color: var(--color-accent-ink) }
+[data-screen="admin/bookings/list"] .bookings-list-div-detail { background-color: var(--fleet-bad-bg, #fee2e2); color: var(--fleet-bad-fg, #dc2626); border: 1px solid var(--fleet-bad-bd, #fecaca) }
 [data-screen="admin/bookings/list"] .bookings-list-strong-detail { font-size: 15px }
-[data-screen="admin/bookings/list"] .bookings-list-admin-status-badge { background-color: #dc2626; border-radius: 6px; padding: 4px 8px }
+[data-screen="admin/bookings/list"] .bookings-list-admin-status-badge { background-color: var(--fleet-bad-bg, #fee2e2); color: var(--fleet-bad-fg, #dc2626) !important; border: 1px solid var(--fleet-bad-bd, #fecaca); border-radius: 6px; padding: 4px 8px }
 [data-screen="admin/bookings/list"] .bookings-list-a-detail-1ea5 { 
-                                                    background-color: #dc2626;
-                                                    border-color: #dc2626;
+                                                    background-color: var(--fleet-bad-fg, #dc2626);
+                                                    border-color: var(--fleet-bad-fg, #dc2626);
                                                     padding: 4px 12px;
                                                     border-radius: 6px;
                                                  }
+/* Soft semantic status chips (no solid/dark chips) */
+body[data-screen="admin/bookings/list"] .admin-status-badge.bg-success {
+    color: var(--fleet-ok-fg, #15803d) !important;
+    background: var(--fleet-ok-bg, #dcfce7) !important;
+    border-color: var(--fleet-ok-bd, #86efac) !important;
+}
+body[data-screen="admin/bookings/list"] .admin-status-badge.bg-warning {
+    color: var(--fleet-warn-fg, #b45309) !important;
+    background: var(--fleet-warn-bg, #fef3c7) !important;
+    border-color: var(--fleet-warn-bd, #fde68a) !important;
+}
+body[data-screen="admin/bookings/list"] .admin-status-badge.bg-danger {
+    color: var(--fleet-bad-fg, #dc2626) !important;
+    background: var(--fleet-bad-bg, #fee2e2) !important;
+    border-color: var(--fleet-bad-bd, #fecaca) !important;
+}
+body[data-screen="admin/bookings/list"] .admin-status-badge.bg-info,
+body[data-screen="admin/bookings/list"] .admin-status-badge.bg-primary {
+    color: var(--fleet-info-fg, #0369a1) !important;
+    background: var(--fleet-info-bg, #e0f2fe) !important;
+    border-color: var(--fleet-info-bd, #bae6fd) !important;
+}
+body[data-screen="admin/bookings/list"] .admin-status-badge.bg-secondary {
+    color: var(--color-body, #334155) !important;
+    background: var(--color-surface-2, #eef2f8) !important;
+    border-color: var(--color-border, #dde4ee) !important;
+}
+
+/* Navy–Orange light: table surfaces */
+body[data-screen="admin/bookings/list"] :is(.table-responsive, .admin-table-wrapper) {
+    background: var(--color-surface) !important;
+    border-color: var(--color-border) !important;
+}
+body[data-screen="admin/bookings/list"] :is(.table, .admin-table) thead th {
+    background: var(--color-surface-2) !important;
+    color: var(--color-heading) !important;
+    border-bottom: 1px solid var(--color-border) !important;
+}
+body[data-screen="admin/bookings/list"] :is(.table, .admin-table) tbody td {
+    background: var(--color-surface) !important;
+    color: var(--color-body) !important;
+    border-color: var(--color-border) !important;
+}
+body[data-screen="admin/bookings/list"] :is(.table, .admin-table) tbody tr:hover > td {
+    background: var(--color-surface-3) !important;
+    border-color: var(--color-border-strong) !important;
+}
 
 /* Shared screen behavior hooks */

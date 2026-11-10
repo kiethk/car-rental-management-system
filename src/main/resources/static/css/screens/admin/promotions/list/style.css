@@ -3,3 +3,79 @@
 [data-screen="admin/promotions/list"] .promotions-list-div-detail { gap: 6px; }
 
 /* Shared screen behavior hooks */
+
+/* Navy–Orange light theme */
+body[data-screen="admin/promotions/list"] .card {
+    background: #FFFFFF !important;
+    border: 1px solid #DDE4EE !important;
+}
+body[data-screen="admin/promotions/list"] .admin-table {
+    --bs-table-hover-bg: #F8FAFD;
+}
+body[data-screen="admin/promotions/list"] .admin-table thead th {
+    color: #0A192F !important;
+    background: #EEF2F8 !important;
+    border-bottom-color: #DDE4EE !important;
+}
+body[data-screen="admin/promotions/list"] .admin-table tbody td {
+    color: #334155;
+}
+body[data-screen="admin/promotions/list"] .admin-table tbody tr:hover > td {
+    background: #F8FAFD !important;
+}
+body[data-screen="admin/promotions/list"] .admin-table tbody td.fw-bold {
+    color: #B45309 !important;
+    letter-spacing: .02em;
+}
+body[data-screen="admin/promotions/list"] .admin-table tbody td:nth-child(3) > span:first-child {
+    color: #B45309;
+    font-weight: 700;
+}
+body[data-screen="admin/promotions/list"] .admin-table .badge.bg-light {
+    background: #EEF2F8 !important;
+    border-color: #DDE4EE !important;
+}
+body[data-screen="admin/promotions/list"] .admin-table .badge.bg-light.text-success {
+    color: #15803D !important;
+    background: #DCFCE7 !important;
+    border-color: #BBF7D0 !important;
+}
+body[data-screen="admin/promotions/list"] .admin-table .badge.bg-light.text-danger {
+    color: #DC2626 !important;
+    background: #FEE2E2 !important;
+    border-color: #FECACA !important;
+}
+body[data-screen="admin/promotions/list"] .admin-table .badge.bg-light.text-muted {
+    color: #64748B !important;
+    background: #EEF2F8 !important;
+    border-color: #DDE4EE !important;
+}
+body[data-screen="admin/promotions/list"] .admin-btn.btn-soft-primary {
+    color: #0A192F !important;
+    background: #EEF2F8 !important;
+    border: 1px solid #DDE4EE !important;
+}
+body[data-screen="admin/promotions/list"] .admin-btn.btn-soft-primary:hover {
+    color: #B45309 !important;
+    background: #F8FAFD !important;
+    border-color: #F59E0B !important;
+}
+body[data-screen="admin/promotions/list"] .admin-btn.btn-soft-danger {
+    color: #DC2626 !important;
+    background: #FEE2E2 !important;
+    border: 1px solid #FECACA !important;
+}
+body[data-screen="admin/promotions/list"] .admin-btn.btn-soft-danger:hover {
+    color: #DC2626 !important;
+    background: #FECACA !important;
+    border-color: #FECACA !important;
+}
+body[data-screen="admin/promotions/list"] .btn-navy {
+    color: #FFFFFF !important;
+    background: #0A192F !important;
+    border-color: #0A192F !important;
+}
+body[data-screen="admin/promotions/list"] .btn-navy:hover {
+    background: #132A4A !important;
+    border-color: #132A4A !important;
+}

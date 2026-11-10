@@ -1,0 +1,40 @@
+/* Screen-scoped DriveNow admin workspace */
+
+/* Navy–Orange light theme */
+body[data-screen="admin/inspections/schedule"] .card {
+    background: #FFFFFF !important;
+    border: 1px solid #DDE4EE !important;
+    box-shadow: 0 4px 16px -6px rgba(10, 25, 47, .08) !important;
+}
+body[data-screen="admin/inspections/schedule"] .form-group > label {
+    color: #0A192F !important;
+}
+body[data-screen="admin/inspections/schedule"] .form-control {
+    color: #0A192F;
+    background: #FFFFFF;
+    border-color: #C9D4E2;
+}
+body[data-screen="admin/inspections/schedule"] .form-control:focus {
+    border-color: #0A192F !important;
+    box-shadow: 0 0 0 .22rem rgba(10, 25, 47, .32) !important;
+}
+body[data-screen="admin/inspections/schedule"] .btn-navy {
+    color: #FFFFFF !important;
+    background: #0A192F !important;
+    border-color: #0A192F !important;
+}
+body[data-screen="admin/inspections/schedule"] .btn-navy:hover {
+    background: #132A4A !important;
+    border-color: #132A4A !important;
+}
+body[data-screen="admin/inspections/schedule"] .btn-light,
+body[data-screen="admin/inspections/schedule"] .btn-outline-secondary {
+    color: #0A192F !important;
+    background: #FFFFFF !important;
+    border-color: #C9D4E2 !important;
+}
+body[data-screen="admin/inspections/schedule"] .btn-light:hover,
+body[data-screen="admin/inspections/schedule"] .btn-outline-secondary:hover {
+    background: #EEF2F8 !important;
+    border-color: #C9D4E2 !important;
+}

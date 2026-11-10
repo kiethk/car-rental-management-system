@@ -49,7 +49,7 @@
 }
 
 .review-rating__choice:focus-within {
-    outline: 2px solid #2563eb;
+    outline: 2px solid rgba(10, 25, 47, .32);
     outline-offset: 2px;
 }
 
@@ -80,7 +80,7 @@
 }
 
 .vehicle-review__stars {
-    color: #e2583e;
+    color: #D97706;
     font-size: 22px;
     letter-spacing: 1px;
     line-height: 1.2;

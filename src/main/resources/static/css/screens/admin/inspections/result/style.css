@@ -2,3 +2,60 @@
 [data-screen="admin/inspections/result"] .inspections-result-failed-notice { display: none; }
 
 /* Shared screen behavior hooks */
+
+/* Navy–Orange light theme */
+body[data-screen="admin/inspections/result"] .card {
+    background: #FFFFFF !important;
+    border: 1px solid #DDE4EE !important;
+    box-shadow: 0 4px 16px -6px rgba(10, 25, 47, .08) !important;
+}
+body[data-screen="admin/inspections/result"] .form-group > label {
+    color: #0A192F !important;
+}
+body[data-screen="admin/inspections/result"] .form-control {
+    color: #0A192F;
+    background: #FFFFFF;
+    border-color: #C9D4E2;
+}
+body[data-screen="admin/inspections/result"] .form-control:focus {
+    border-color: #0A192F !important;
+    box-shadow: 0 0 0 .22rem rgba(10, 25, 47, .32) !important;
+}
+body[data-screen="admin/inspections/result"] .bg-surface {
+    background: #F8FAFD !important;
+    border-color: #DDE4EE !important;
+}
+body[data-screen="admin/inspections/result"] #passedSection {
+    background: #DCFCE7 !important;
+    border-color: #BBF7D0 !important;
+}
+body[data-screen="admin/inspections/result"] .alert-warning {
+    color: #B45309 !important;
+    background: #FEF3C7 !important;
+    border-color: #FDE68A !important;
+}
+body[data-screen="admin/inspections/result"] .badge.bg-light {
+    color: #0A192F !important;
+    background: #EEF2F8 !important;
+    border-color: #DDE4EE !important;
+}
+body[data-screen="admin/inspections/result"] .btn-navy {
+    color: #FFFFFF !important;
+    background: #0A192F !important;
+    border-color: #0A192F !important;
+}
+body[data-screen="admin/inspections/result"] .btn-navy:hover {
+    background: #132A4A !important;
+    border-color: #132A4A !important;
+}
+body[data-screen="admin/inspections/result"] .btn-light,
+body[data-screen="admin/inspections/result"] .btn-outline-secondary {
+    color: #0A192F !important;
+    background: #FFFFFF !important;
+    border-color: #C9D4E2 !important;
+}
+body[data-screen="admin/inspections/result"] .btn-light:hover,
+body[data-screen="admin/inspections/result"] .btn-outline-secondary:hover {
+    background: #EEF2F8 !important;
+    border-color: #C9D4E2 !important;
+}

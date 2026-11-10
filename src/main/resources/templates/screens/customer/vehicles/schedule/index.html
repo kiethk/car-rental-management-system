@@ -8,7 +8,6 @@
     <th:block th:replace="~{fragments/assets :: common}">
     </th:block>
     <link rel="stylesheet" th:href="@{/css/screens/customer/vehicles/schedule/style.css}">
-    <link rel="stylesheet" th:href="@{/css/shared/dark.css}">
     <script defer th:src="@{/js/screens/customer/vehicles/schedule/script.js}">
     </script>
   </head>
@@ -35,8 +34,6 @@
               <h1 class="h4 fw-bold text-navy mb-0">Lịch xe</h1>
               <span class="sch-plate" th:text="${schedule.licensePlate}">51A-123.45</span>
             </div>
-            <p class="sch-hint mb-0">
-              <span th:text="${schedule.vehicleTypeName}">Toyota Vios</span> · 30 ngày tới, mỗi ô là một giờ. Hai lượt thuê luôn cách nhau ít nhất 1 giờ để kho chuẩn bị xe. </p>
           </div>
           <div class="d-flex flex-wrap gap-2">
             <span class="sch-chip">
@@ -104,24 +101,26 @@
           <div class="row g-3 align-items-end">
             <div class="col-6 col-md-3">
               <label class="small fw-bold text-navy mb-1" for="sch-start-date">Ngày nhận</label>
-              <input type="date" id="sch-start-date" class="form-control" required>
+              <input type="date" id="sch-start-date" class="form-control sch-picker sch-picker-date"
+                     data-alt-format="D, d/m/Y" placeholder="dd/mm/yyyy" required>
             </div>
             <div class="col-6 col-md-2">
               <label class="small fw-bold text-navy mb-1" for="sch-start-hour">Giờ nhận</label>
-              <select id="sch-start-hour" class="form-control">
+              <select id="sch-start-hour" class="form-control sch-picker sch-picker-time">
               </select>
             </div>
             <div class="col-6 col-md-3">
               <label class="small fw-bold text-navy mb-1" for="sch-end-date">Ngày trả</label>
-              <input type="date" id="sch-end-date" class="form-control" required>
+              <input type="date" id="sch-end-date" class="form-control sch-picker sch-picker-date"
+                     data-alt-format="D, d/m/Y" placeholder="dd/mm/yyyy" required>
             </div>
             <div class="col-6 col-md-2">
               <label class="small fw-bold text-navy mb-1" for="sch-end-hour">Giờ trả</label>
-              <select id="sch-end-hour" class="form-control">
+              <select id="sch-end-hour" class="form-control sch-picker sch-picker-time">
               </select>
             </div>
             <div class="col-12 col-md-2">
-              <button type="submit" class="btn btn-navy w-100 fw-bold">Đặt xe này</button>
+              <button type="submit" class="btn btn-navy w-100 fw-bold sch-submit">Đặt xe này</button>
             </div>
           </div>
           <div class="d-flex flex-wrap justify-content-between gap-2 mt-3">

@@ -1,0 +1,76 @@
+/* Screen-scoped DriveNow admin workspace */
+
+/* Navy–Orange light theme */
+body[data-screen="admin/traffic-fines/list"] .admin-card {
+    background: #FFFFFF !important;
+    border: 1px solid #DDE4EE !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 4px 16px -6px rgba(10, 25, 47, .06) !important;
+}
+body[data-screen="admin/traffic-fines/list"] .bg-slate-50 {
+    background: #F8FAFD !important;
+    border-color: #DDE4EE !important;
+}
+body[data-screen="admin/traffic-fines/list"] .admin-table {
+    --bs-table-hover-bg: #F8FAFD;
+}
+body[data-screen="admin/traffic-fines/list"] .admin-table thead th {
+    color: #0A192F !important;
+    background: #EEF2F8 !important;
+    border-bottom-color: #DDE4EE !important;
+}
+body[data-screen="admin/traffic-fines/list"] .admin-table tbody td {
+    color: #334155;
+}
+body[data-screen="admin/traffic-fines/list"] .admin-table tbody tr:hover > td {
+    background: #F8FAFD !important;
+}
+body[data-screen="admin/traffic-fines/list"] .admin-table a:not(.btn):not(.admin-btn) {
+    color: #0A192F;
+}
+body[data-screen="admin/traffic-fines/list"] .admin-table a:not(.btn):not(.admin-btn):hover {
+    color: #D97706;
+}
+body[data-screen="admin/traffic-fines/list"] .admin-form-label,
+body[data-screen="admin/traffic-fines/list"] label {
+    color: #0A192F !important;
+}
+body[data-screen="admin/traffic-fines/list"] .admin-form-input {
+    color: #0A192F !important;
+    background: #FFFFFF !important;
+    border-color: #C9D4E2 !important;
+}
+body[data-screen="admin/traffic-fines/list"] .admin-form-input:focus {
+    border-color: #0A192F !important;
+    box-shadow: 0 0 0 .22rem rgba(10, 25, 47, .32) !important;
+}
+body[data-screen="admin/traffic-fines/list"] .admin-btn-primary {
+    color: #FFFFFF !important;
+    background: #0A192F !important;
+    border-color: #0A192F !important;
+    box-shadow: none !important;
+}
+body[data-screen="admin/traffic-fines/list"] .admin-btn-primary:hover {
+    background: #132A4A !important;
+    border-color: #132A4A !important;
+}
+body[data-screen="admin/traffic-fines/list"] .admin-btn.btn-soft-primary {
+    color: #0A192F !important;
+    background: #EEF2F8 !important;
+    border: 1px solid #DDE4EE !important;
+}
+body[data-screen="admin/traffic-fines/list"] .admin-btn.btn-soft-primary:hover {
+    color: #B45309 !important;
+    background: #F8FAFD !important;
+    border-color: #F59E0B !important;
+}
+body[data-screen="admin/traffic-fines/list"] .admin-btn.btn-soft-danger {
+    color: #DC2626 !important;
+    background: #FEE2E2 !important;
+    border: 1px solid #FECACA !important;
+}
+body[data-screen="admin/traffic-fines/list"] .admin-btn.btn-soft-danger:hover {
+    color: #DC2626 !important;
+    background: #FECACA !important;
+    border-color: #FECACA !important;
+}

@@ -100,3 +100,70 @@ body[data-screen="customer/bookings/detail"] .bookings-detail-remaining-val {
     white-space: nowrap;
     margin-left: auto;
 }
+
+/* ---------- Navy–Orange light retheme ---------- */
+body[data-screen="customer/bookings/detail"] { background: var(--color-canvas); }
+
+body[data-screen="customer/bookings/detail"] .surface-card,
+body[data-screen="customer/bookings/detail"] .cancel-modal-box {
+    background: var(--color-surface);
+    border-color: var(--color-border);
+    box-shadow: 0 4px 20px -2px rgba(10, 25, 47, .06), 0 2px 6px -1px rgba(10, 25, 47, .04);
+}
+
+/* Primary payment / review actions are navy. */
+body[data-screen="customer/bookings/detail"] .btn-pay-now {
+    color: #FFFFFF !important;
+    background: var(--color-obsidian) !important;
+    border-color: var(--color-obsidian) !important;
+    box-shadow: 0 8px 20px -10px rgba(10, 25, 47, .55);
+}
+body[data-screen="customer/bookings/detail"] .btn-pay-now:hover,
+body[data-screen="customer/bookings/detail"] .btn-pay-now:focus-visible {
+    color: #FFFFFF !important;
+    background: var(--color-obsidian-2) !important;
+    border-color: var(--color-obsidian-2) !important;
+}
+
+body[data-screen="customer/bookings/detail"] .bookings-detail-button-detail {
+    color: #FFFFFF;
+    background: var(--color-obsidian);
+}
+body[data-screen="customer/bookings/detail"] .bookings-detail-button-detail:hover {
+    color: #FFFFFF;
+    background: var(--color-obsidian-2);
+}
+
+/* License plate: ivory frame, navy text/border. */
+body[data-screen="customer/bookings/detail"] .plate-box {
+    color: var(--color-obsidian);
+    background: #F4F1EA;
+    border-color: var(--color-obsidian);
+    box-shadow: inset 0 0 0 2px #FFFFFF, 0 1px 2px rgba(10, 25, 47, .12);
+}
+
+body[data-screen="customer/bookings/detail"] .booking-detail-review-edit > summary { color: var(--color-heading); }
+body[data-screen="customer/bookings/detail"] .booking-detail-review-edit > summary:hover { color: var(--color-accent-deep); }
+
+body[data-screen="customer/bookings/detail"] :is(.form-control-custom, .bookings-detail-review-rating, .bookings-detail-review-comment):focus {
+    outline: 0;
+    border-color: var(--color-obsidian);
+    box-shadow: 0 0 0 .2rem rgba(10, 25, 47, .32);
+}
+
+body[data-screen="customer/bookings/detail"] .modal-btn-confirm {
+    color: #FFFFFF;
+    background: var(--color-obsidian);
+    border-color: var(--color-obsidian);
+}
+body[data-screen="customer/bookings/detail"] .modal-btn-confirm:hover { background: var(--color-obsidian-2); border-color: var(--color-obsidian-2); }
+body[data-screen="customer/bookings/detail"] .modal-btn-dismiss {
+    color: var(--color-heading);
+    background: var(--color-surface);
+    border-color: var(--color-border-strong);
+}
+
+body[data-screen="customer/bookings/detail"] :is(a, button, summary, input, select, textarea):focus-visible {
+    outline: 3px solid rgba(10, 25, 47, .32);
+    outline-offset: 2px;
+}

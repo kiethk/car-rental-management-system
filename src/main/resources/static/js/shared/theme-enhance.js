@@ -121,16 +121,16 @@
         if (typeof window.flatpickr !== 'function') return;
         const locale = window.flatpickr.l10ns && window.flatpickr.l10ns.vn ? 'vn' : 'default';
         root.querySelectorAll('input[type="date"], input[type="datetime-local"]').forEach((input) => {
-            if (input._flatpickr || input.hasAttribute('data-rental-role') || input.hasAttribute('data-native-date')
-                || input.closest('[data-screen="customer/vehicles/schedule"]')) return;
+            if (input._flatpickr || input.hasAttribute('data-rental-role') || input.hasAttribute('data-native-date')) return;
             const withTime = input.type === 'datetime-local';
+            const altFormat = input.dataset.altFormat || (withTime ? 'd/m/Y H:i' : 'd/m/Y');
             window.flatpickr(input, {
                 locale,
                 enableTime: withTime,
                 time_24hr: true,
                 dateFormat: withTime ? 'Y-m-d\\TH:i' : 'Y-m-d',
                 altInput: true,
-                altFormat: withTime ? 'd/m/Y H:i' : 'd/m/Y',
+                altFormat,
                 altInputClass: input.className,
                 minDate: input.min || null,
                 maxDate: input.max || null,
@@ -150,23 +150,23 @@
             chart: { type: 'donut', height: 240, fontFamily: 'Roboto, sans-serif', animations: { easing: 'easeinout', speed: 700 } },
             series,
             labels: ['Sẵn sàng', 'Đang thuê', 'Bảo dưỡng'],
-            colors: ['#34D399', '#D4AF6A', '#FB7185'],
+            colors: ['#16A34A', '#F59E0B', '#DC2626'],
             legend: { show: false },
             dataLabels: { enabled: false },
-            stroke: { width: 3, colors: ['#24221E'] },
+            stroke: { width: 3, colors: ['#FFFFFF'] },
             plotOptions: {
                 pie: {
                     donut: {
                         size: '74%',
                         labels: {
                             show: true,
-                            value: { fontFamily: 'Roboto Mono, monospace', fontWeight: 800, fontSize: '28px', color: '#E9E3D7' },
-                            total: { show: true, label: 'Tổng xe', color: '#A39C8E', fontSize: '12px', formatter: () => String(series.reduce((a, b) => a + b, 0)) },
+                            value: { fontFamily: 'Roboto Mono, monospace', fontWeight: 800, fontSize: '28px', color: '#0A192F' },
+                            total: { show: true, label: 'Tổng xe', color: '#64748B', fontSize: '12px', formatter: () => String(series.reduce((a, b) => a + b, 0)) },
                         },
                     },
                 },
             },
-            tooltip: { theme: 'dark' },
+            tooltip: { theme: 'light' },
         });
         chart.render();
     }

@@ -53,15 +53,15 @@ body[data-screen="customer/bookings/deposit"] .payment-method {
     transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
 }
 body[data-screen="customer/bookings/deposit"] .payment-method:hover {
-    border-color: var(--color-accent);
-    box-shadow: 0 6px 18px -10px rgba(12, 16, 22, .25);
+    border-color: var(--color-border-strong);
+    box-shadow: 0 6px 18px -10px rgba(10, 25, 47, .20);
 }
 body[data-screen="customer/bookings/deposit"] .payment-method:has(.payment-method-input:checked) {
     border-color: var(--color-accent);
     background: var(--color-accent-soft);
     box-shadow: 0 0 0 1px var(--color-accent);
 }
-body[data-screen="customer/bookings/deposit"] .payment-method:focus-within { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+body[data-screen="customer/bookings/deposit"] .payment-method:focus-within { outline: 2px solid rgba(10, 25, 47, .32); outline-offset: 2px; }
 body[data-screen="customer/bookings/deposit"] .payment-method-input {
     position: absolute;
     width: 1px;
@@ -144,4 +144,62 @@ body[data-screen="customer/bookings/deposit"] .payment-method-soon {
     body[data-screen="customer/bookings/deposit"] .payment-method-logo { width: 64px; }
     body[data-screen="customer/bookings/deposit"] .vnpay-wordmark { font-size: 1.05rem; }
     body[data-screen="customer/bookings/deposit"] .payment-method-soon { display: none; }
+}
+
+/* ---------- Navy–Orange light retheme ---------- */
+body[data-screen="customer/bookings/deposit"] { background: var(--color-canvas); }
+
+body[data-screen="customer/bookings/deposit"] .surface-card {
+    background: var(--color-surface);
+    border-color: var(--color-border);
+    box-shadow: 0 4px 20px -2px rgba(10, 25, 47, .06), 0 2px 6px -1px rgba(10, 25, 47, .04);
+}
+
+/* Primary payment action is navy; VNPay keeps its own brand marks. */
+body[data-screen="customer/bookings/deposit"] .btn-submit-vnpay {
+    color: #FFFFFF !important;
+    background: var(--color-obsidian) !important;
+    border-color: var(--color-obsidian) !important;
+    box-shadow: 0 8px 20px -10px rgba(10, 25, 47, .55);
+}
+body[data-screen="customer/bookings/deposit"] .btn-submit-vnpay:hover,
+body[data-screen="customer/bookings/deposit"] .btn-submit-vnpay:focus-visible {
+    color: #FFFFFF !important;
+    background: var(--color-obsidian-2) !important;
+    border-color: var(--color-obsidian-2) !important;
+}
+
+body[data-screen="customer/bookings/deposit"] .breadcrumb-back,
+body[data-screen="customer/bookings/deposit"] .pay-later-link { color: var(--color-heading); }
+body[data-screen="customer/bookings/deposit"] .breadcrumb-back:hover,
+body[data-screen="customer/bookings/deposit"] .pay-later-link:hover { color: var(--color-accent-deep); }
+
+/* Deposit price highlight: amber-soft surface with navy amounts. */
+body[data-screen="customer/bookings/deposit"] .deposit-highlight-card {
+    background: var(--color-accent-soft);
+    border-color: rgba(245, 158, 11, .28);
+}
+body[data-screen="customer/bookings/deposit"] .dh-title { color: var(--color-accent-deep); }
+body[data-screen="customer/bookings/deposit"] .badge-pct {
+    color: var(--color-accent-ink);
+    background: var(--color-accent);
+}
+body[data-screen="customer/bookings/deposit"] .dh-val { color: var(--color-heading); }
+body[data-screen="customer/bookings/deposit"] .dh-sub-row {
+    color: var(--color-body);
+    border-top-color: rgba(245, 158, 11, .28);
+}
+body[data-screen="customer/bookings/deposit"] .dh-sub-row .bookings-deposit-span-detail-94c3 { color: var(--color-heading); }
+
+/* License plate: ivory frame, navy text/border. */
+body[data-screen="customer/bookings/deposit"] .plate-box {
+    color: var(--color-obsidian);
+    background: #F4F1EA;
+    border-color: var(--color-obsidian);
+    box-shadow: inset 0 0 0 2px #FFFFFF, 0 1px 2px rgba(10, 25, 47, .12);
+}
+
+body[data-screen="customer/bookings/deposit"] :is(a, button, input, select, textarea):focus-visible {
+    outline: 3px solid rgba(10, 25, 47, .32);
+    outline-offset: 2px;
 }

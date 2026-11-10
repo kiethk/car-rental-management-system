@@ -2,4 +2,41 @@
 [data-screen="admin/license-plates/history"] .license-plates-history-admin-status-badge { height: 24px !important; min-height: 24px !important; font-size: 10px !important; padding: 0 6px !important; }
 [data-screen="admin/license-plates/history"] .license-plates-history-h2-detail { letter-spacing: 0.05em; }
 
+/* Navy–Orange light: cards, table and plate form */
+body[data-screen="admin/license-plates/history"] { background: var(--color-canvas); color: var(--color-body); }
+body[data-screen="admin/license-plates/history"] .card {
+    background: var(--color-surface) !important;
+    border: 1px solid var(--color-border) !important;
+}
+body[data-screen="admin/license-plates/history"] :is(.table, .admin-table) thead th {
+    background: var(--color-surface-2) !important;
+    color: var(--color-heading) !important;
+    border-bottom: 1px solid var(--color-border) !important;
+}
+body[data-screen="admin/license-plates/history"] :is(.table, .admin-table) tbody td {
+    background: var(--color-surface) !important;
+    color: var(--color-body) !important;
+    border-color: var(--color-border) !important;
+}
+body[data-screen="admin/license-plates/history"] :is(.table, .admin-table) tbody tr:hover > td {
+    background: var(--color-surface-3) !important;
+    border-color: var(--color-border-strong) !important;
+}
+body[data-screen="admin/license-plates/history"] :is(.form-control, .form-select) {
+    color: var(--color-heading) !important;
+    background-color: var(--color-surface) !important;
+    border-color: var(--color-border-strong) !important;
+}
+body[data-screen="admin/license-plates/history"] :is(.form-control, .form-select):focus {
+    border-color: var(--color-heading) !important;
+    box-shadow: 0 0 0 .25rem rgba(10, 25, 47, .32) !important;
+}
+body[data-screen="admin/license-plates/history"] :is(.form-control, .form-select)::placeholder { color: var(--color-muted) !important; }
+body[data-screen="admin/license-plates/history"] :is(label, .form-label, label.fw-bold) { color: var(--color-heading); }
+body[data-screen="admin/license-plates/history"] .admin-status-badge.bg-success {
+    color: var(--fleet-ok-fg, #15803d) !important;
+    background: var(--fleet-ok-bg, #dcfce7) !important;
+    border-color: var(--fleet-ok-bd, #86efac) !important;
+}
+
 /* Shared screen behavior hooks */

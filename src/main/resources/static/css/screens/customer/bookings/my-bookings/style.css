@@ -1,4 +1,4 @@
-body[data-screen="customer/bookings/my-bookings"] .bookings-my-bookings-span-detail {background: rgba(244, 63, 94, .14); color: #b91c1c;}
+body[data-screen="customer/bookings/my-bookings"] .bookings-my-bookings-span-detail {background: var(--fleet-bad-bg); color: var(--fleet-bad-fg);}
 
 /* Card layout mirrors the rental/search result row: full-height media left, compact content right. */
 body[data-screen="customer/bookings/my-bookings"] .customer-stack-4 > div > .customer-sm-flex-row > .flex-fill {
@@ -23,6 +23,49 @@ body[data-screen="customer/bookings/my-bookings"] .customer-sm-w-44 img {
         border-radius: 0;
         align-self: stretch;
     }
+}
+
+/* ---------- Navy–Orange light retheme ---------- */
+body[data-screen="customer/bookings/my-bookings"] { background: var(--color-canvas); }
+
+body[data-screen="customer/bookings/my-bookings"] .customer-stack-4 > div,
+body[data-screen="customer/bookings/my-bookings"] .bg-white.rounded-4 {
+    background: var(--color-surface);
+    border-color: var(--color-border) !important;
+}
+
+/* Booking actions are primary navy; amber remains a price/status accent. */
+body[data-screen="customer/bookings/my-bookings"] .customer-btn-accent {
+    color: #FFFFFF;
+    background: var(--color-obsidian);
+    border-color: var(--color-obsidian);
+    box-shadow: 0 6px 16px -8px rgba(10, 25, 47, .55);
+}
+body[data-screen="customer/bookings/my-bookings"] .customer-btn-accent:hover {
+    color: #FFFFFF;
+    background: var(--color-obsidian-2);
+    border-color: var(--color-obsidian-2);
+    transform: translateY(-1px);
+}
+body[data-screen="customer/bookings/my-bookings"] .customer-btn-ghost {
+    color: var(--color-heading);
+    background: var(--color-surface);
+    border-color: var(--color-border-strong);
+}
+body[data-screen="customer/bookings/my-bookings"] .customer-btn-ghost:hover {
+    color: var(--color-heading);
+    border-color: var(--color-obsidian);
+}
+
+body[data-screen="customer/bookings/my-bookings"] .text-amber { color: var(--color-accent-deep) !important; }
+body[data-screen="customer/bookings/my-bookings"] .bookings-my-bookings-span-detail {
+    background: var(--fleet-bad-bg);
+    color: var(--fleet-bad-fg);
+}
+
+body[data-screen="customer/bookings/my-bookings"] :is(a, button):focus-visible {
+    outline: 3px solid rgba(10, 25, 47, .32);
+    outline-offset: 2px;
 }
 
 

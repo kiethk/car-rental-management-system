@@ -3,3 +3,69 @@
 [data-screen="admin/accounts/list"] .accounts-list-form-detail { gap: 8px; }
 
 /* Shared screen behavior hooks */
+
+/* Navy–Orange light theme */
+body[data-screen="admin/accounts/list"] .nav-pills {
+    background: #FFFFFF !important;
+    border: 1px solid #DDE4EE !important;
+}
+body[data-screen="admin/accounts/list"] .nav-pills .nav-link {
+    color: #0A192F;
+    border-radius: .5rem;
+}
+body[data-screen="admin/accounts/list"] .nav-pills .nav-link:hover {
+    color: #0A192F;
+    background: #F8FAFD;
+}
+body[data-screen="admin/accounts/list"] .nav-pills .nav-link.active {
+    color: #FFFFFF !important;
+    background: #0A192F !important;
+}
+body[data-screen="admin/accounts/list"] .accounts-list-form-detail .form-control {
+    color: #0A192F;
+    background: #FFFFFF;
+    border-color: #C9D4E2;
+}
+body[data-screen="admin/accounts/list"] .accounts-list-form-detail .form-control:focus {
+    border-color: #0A192F;
+    box-shadow: 0 0 0 .22rem rgba(10, 25, 47, .32);
+}
+body[data-screen="admin/accounts/list"] .admin-table {
+    --bs-table-hover-bg: #F8FAFD;
+}
+body[data-screen="admin/accounts/list"] .admin-table thead th {
+    color: #0A192F !important;
+    background: #EEF2F8 !important;
+    border-bottom-color: #DDE4EE !important;
+}
+body[data-screen="admin/accounts/list"] .admin-table tbody td {
+    color: #334155;
+}
+body[data-screen="admin/accounts/list"] .admin-table tbody tr:hover > td {
+    background: #F8FAFD !important;
+}
+body[data-screen="admin/accounts/list"] .admin-table a:not(.btn):not(.admin-btn) {
+    color: #0A192F;
+}
+body[data-screen="admin/accounts/list"] .admin-table a:not(.btn):not(.admin-btn):hover {
+    color: #D97706;
+}
+body[data-screen="admin/accounts/list"] .btn-navy {
+    color: #FFFFFF !important;
+    background: #0A192F !important;
+    border-color: #0A192F !important;
+}
+body[data-screen="admin/accounts/list"] .btn-navy:hover {
+    background: #132A4A !important;
+    border-color: #132A4A !important;
+}
+body[data-screen="admin/accounts/list"] .admin-status-badge.bg-success {
+    color: #15803D !important;
+    background: #DCFCE7 !important;
+    border: 1px solid #BBF7D0 !important;
+}
+body[data-screen="admin/accounts/list"] .admin-status-badge.bg-danger {
+    color: #DC2626 !important;
+    background: #FEE2E2 !important;
+    border: 1px solid #FECACA !important;
+}

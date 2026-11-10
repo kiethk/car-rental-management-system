@@ -1,0 +1,73 @@
+/* ---------- Navy–Orange light retheme: customer profile ---------- */
+body[data-screen="customer/profile/index"] {
+    background: var(--color-canvas);
+}
+
+body[data-screen="customer/profile/index"] main {
+    background: var(--color-canvas);
+}
+
+body[data-screen="customer/profile/index"] .card-drivenow {
+    background: var(--color-surface) !important;
+    border: 1px solid var(--color-border) !important;
+    box-shadow: 0 4px 20px -2px rgba(10, 25, 47, .06), 0 2px 6px -1px rgba(10, 25, 47, .04) !important;
+}
+
+body[data-screen="customer/profile/index"] :is(h1, h2, h3, .text-navy) {
+    color: var(--color-heading) !important;
+}
+
+body[data-screen="customer/profile/index"] .text-muted {
+    color: var(--color-muted) !important;
+}
+
+body[data-screen="customer/profile/index"] .card-drivenow .border-top {
+    border-color: var(--color-border) !important;
+}
+
+body[data-screen="customer/profile/index"] .form-control {
+    color: var(--color-heading);
+    background-color: var(--color-surface);
+    border-color: var(--color-border-strong);
+}
+
+body[data-screen="customer/profile/index"] .form-control[readonly],
+body[data-screen="customer/profile/index"] .bg-light {
+    color: var(--color-body) !important;
+    background-color: var(--color-surface-2) !important;
+    border-color: var(--color-border) !important;
+}
+
+body[data-screen="customer/profile/index"] .form-control:focus {
+    outline: 0;
+    border-color: var(--color-obsidian);
+    box-shadow: 0 0 0 .2rem rgba(10, 25, 47, .32);
+}
+
+body[data-screen="customer/profile/index"] .btn-navy {
+    color: #FFFFFF;
+    background: var(--color-obsidian);
+    border-color: var(--color-obsidian);
+}
+body[data-screen="customer/profile/index"] .btn-navy:hover,
+body[data-screen="customer/profile/index"] .btn-navy:focus {
+    color: #FFFFFF;
+    background: var(--color-obsidian-2);
+    border-color: var(--color-obsidian-2);
+}
+
+body[data-screen="customer/profile/index"] .alert-success {
+    color: var(--fleet-ok-fg);
+    background: var(--fleet-ok-bg);
+    border-color: var(--fleet-ok-bd);
+}
+body[data-screen="customer/profile/index"] .alert-danger {
+    color: var(--fleet-bad-fg);
+    background: var(--fleet-bad-bg);
+    border-color: var(--fleet-bad-bd);
+}
+
+body[data-screen="customer/profile/index"] :is(a, button, input, select, textarea):focus-visible {
+    outline: 3px solid rgba(10, 25, 47, .32);
+    outline-offset: 2px;
+}

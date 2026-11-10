@@ -3,10 +3,64 @@ body[data-screen="admin/promotions/form"] .promotion-date-picker-icon {
         top: 50%;
         right: 0.9rem;
         transform: translateY(-50%);
-        color: #495057;
+        color: #64748B;
         pointer-events: none;
     }
 /* Screen-scoped DriveNow admin workspace */
 [data-screen="admin/promotions/form"] .promotions-form-img-detail { max-height: 120px; max-width: 100%; }
 
 /* Shared screen behavior hooks */
+
+/* Navy–Orange light theme */
+body[data-screen="admin/promotions/form"] .card {
+    background: #FFFFFF !important;
+    border: 1px solid #DDE4EE !important;
+    box-shadow: 0 4px 16px -6px rgba(10, 25, 47, .10) !important;
+}
+body[data-screen="admin/promotions/form"] .form-group > label {
+    color: #0A192F !important;
+}
+body[data-screen="admin/promotions/form"] .form-control {
+    color: #0A192F;
+    background: #FFFFFF;
+    border-color: #C9D4E2;
+}
+body[data-screen="admin/promotions/form"] .form-control:focus {
+    border-color: #0A192F !important;
+    box-shadow: 0 0 0 .22rem rgba(10, 25, 47, .32) !important;
+}
+body[data-screen="admin/promotions/form"] #code {
+    color: #B45309;
+    font-weight: 600;
+    letter-spacing: .02em;
+}
+body[data-screen="admin/promotions/form"] #discountValue {
+    color: #B45309;
+    font-weight: 600;
+}
+body[data-screen="admin/promotions/form"] .btn-navy {
+    color: #FFFFFF !important;
+    background: #0A192F !important;
+    border-color: #0A192F !important;
+}
+body[data-screen="admin/promotions/form"] .btn-navy:hover {
+    background: #132A4A !important;
+    border-color: #132A4A !important;
+}
+body[data-screen="admin/promotions/form"] .btn-light {
+    color: #0A192F !important;
+    background: #FFFFFF !important;
+    border-color: #C9D4E2 !important;
+}
+body[data-screen="admin/promotions/form"] .btn-light:hover {
+    background: #EEF2F8 !important;
+    border-color: #C9D4E2 !important;
+}
+body[data-screen="admin/promotions/form"] .btn-outline-secondary {
+    color: #0A192F !important;
+    border-color: #C9D4E2 !important;
+}
+body[data-screen="admin/promotions/form"] .btn-outline-secondary:hover {
+    background: #EEF2F8 !important;
+    border-color: #C9D4E2 !important;
+}

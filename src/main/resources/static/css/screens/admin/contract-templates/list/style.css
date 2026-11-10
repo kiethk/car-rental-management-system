@@ -1,0 +1,46 @@
+/* Screen-scoped DriveNow admin workspace */
+
+/* Navy–Orange light theme */
+body[data-screen="admin/contract-templates/list"] .card {
+    background: #FFFFFF !important;
+    border: 1px solid #DDE4EE !important;
+}
+body[data-screen="admin/contract-templates/list"] .admin-table {
+    --bs-table-hover-bg: #F8FAFD;
+}
+body[data-screen="admin/contract-templates/list"] .admin-table thead th {
+    color: #0A192F !important;
+    background: #EEF2F8 !important;
+    border-bottom-color: #DDE4EE !important;
+}
+body[data-screen="admin/contract-templates/list"] .admin-table tbody td {
+    color: #334155;
+}
+body[data-screen="admin/contract-templates/list"] .admin-table tbody tr:hover > td {
+    background: #F8FAFD !important;
+}
+body[data-screen="admin/contract-templates/list"] .admin-table a:not(.btn):not(.admin-btn) {
+    color: #0A192F;
+}
+body[data-screen="admin/contract-templates/list"] .admin-table a:not(.btn):not(.admin-btn):hover {
+    color: #D97706;
+}
+body[data-screen="admin/contract-templates/list"] .btn-navy {
+    color: #FFFFFF !important;
+    background: #0A192F !important;
+    border-color: #0A192F !important;
+}
+body[data-screen="admin/contract-templates/list"] .btn-navy:hover {
+    background: #132A4A !important;
+    border-color: #132A4A !important;
+}
+body[data-screen="admin/contract-templates/list"] .btn-outline-secondary {
+    color: #0A192F !important;
+    background: #FFFFFF !important;
+    border-color: #C9D4E2 !important;
+}
+body[data-screen="admin/contract-templates/list"] .btn-outline-secondary:hover {
+    color: #0A192F !important;
+    background: #EEF2F8 !important;
+    border-color: #C9D4E2 !important;
+}
