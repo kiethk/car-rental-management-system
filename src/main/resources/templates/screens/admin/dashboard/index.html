@@ -19,6 +19,14 @@
                 </div>
             </div>
 
+            <div th:if="${overdueRentalCount != null and overdueRentalCount > 0}"
+                 class="admin-alert admin-alert-warning mb-3" role="alert">
+                <div class="admin-alert-content">
+                    <strong>Có <span th:text="${overdueRentalCount}">1</span> xe quá giờ trả.</strong>
+                    <a th:href="@{/admin/bookings}" class="fw-bold ms-1">Xem quản lý đơn thuê →</a>
+                </div>
+            </div>
+
             <!-- Key Metric Cards -->
             <div class="row g-3 mb-4">
                 <div class="col-sm-6 col-xl-3">

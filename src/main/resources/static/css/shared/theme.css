@@ -136,6 +136,22 @@ body[data-screen] .admin-sidebar-link { color: #CBD5E1; font-size: .875rem; font
 body[data-screen] .admin-sidebar-link:hover { color: #fff; background: rgba(245, 158, 11, .10); }
 body[data-screen] .admin-sidebar-link.active { color: #fff; background: rgba(245, 158, 11, .16); box-shadow: inset 3px 0 var(--color-accent); }
 body[data-screen] .admin-sidebar-link.active svg { color: var(--color-accent); }
+body[data-screen^="admin/"] .admin-sidebar-badge-counter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 .35rem;
+    border-radius: 999px;
+    color: #fff;
+    background: var(--fleet-warn-fg, #B45309);
+    font-size: .68rem;
+    font-weight: 700;
+    line-height: 1;
+}
+body[data-screen^="admin/"] .admin-sidebar-danger-link { color: #fff; background: var(--fleet-bad-fg, #B42318); }
+body[data-screen^="admin/"] .admin-sidebar-badge-counter[hidden] { display: none; }
 body[data-screen] .admin-profile-btn { border-color: rgba(255, 255, 255, .14); background: rgba(255, 255, 255, .06); }
 
 /* ---------- Page headers ---------- */
@@ -322,22 +338,22 @@ body[data-screen] :is(.admin-badge, .admin-status-badge, .crms-status-pill, .bad
     letter-spacing: .01em;
 }
 /* Emerald: available / completed / active / paid */
-body[data-screen] :is(.admin-badge-success, .status-completed, .status-confirmed, .status-pill-paid, .badge.bg-success, .badge.text-bg-success, .bg-success-subtle) {
+body[data-screen] :is(.admin-badge-success, .status-completed, .status-confirmed, .status-pill-paid, .badge.bg-success, .badge.badge-success, .badge.text-bg-success, .bg-success-subtle) {
     color: var(--fleet-ok-fg) !important; background: var(--fleet-ok-bg) !important; border-color: var(--fleet-ok-bd) !important;
 }
 /* Amber: pending / deposit / scheduled */
-body[data-screen] :is(.admin-badge-warning, .status-pending_payment, .status-pill-pending, .badge.bg-warning, .badge.text-bg-warning, .bg-warning-subtle) {
+body[data-screen] :is(.admin-badge-warning, .status-pending_payment, .status-pill-pending, .badge.bg-warning, .badge.badge-warning, .badge.text-bg-warning, .bg-warning-subtle) {
     color: var(--fleet-warn-fg) !important; background: var(--fleet-warn-bg) !important; border-color: var(--fleet-warn-bd) !important;
 }
 /* Sky: in progress / handover */
-body[data-screen] :is(.admin-badge-info, .status-active, .badge.bg-info, .badge.text-bg-info, .badge.bg-primary, .badge.text-bg-primary) {
+body[data-screen] :is(.admin-badge-info, .status-active, .badge.bg-info, .badge.badge-info, .badge.text-bg-info, .badge.bg-primary, .badge.badge-primary, .badge.text-bg-primary) {
     color: var(--fleet-info-fg) !important; background: var(--fleet-info-bg) !important; border-color: var(--fleet-info-bd) !important;
 }
 /* Rose: cancelled / overdue / issue / fine */
-body[data-screen] :is(.admin-badge-danger, .status-cancelled, .status-pill-cancelled, .badge.bg-danger, .badge.text-bg-danger, .bg-danger-subtle) {
+body[data-screen] :is(.admin-badge-danger, .status-cancelled, .status-pill-cancelled, .badge.bg-danger, .badge.badge-danger, .badge.text-bg-danger, .bg-danger-subtle) {
     color: var(--fleet-bad-fg) !important; background: var(--fleet-bad-bg) !important; border-color: var(--fleet-bad-bd) !important;
 }
-body[data-screen] :is(.admin-badge-neutral, .badge.bg-secondary, .badge.text-bg-secondary, .badge.bg-light) {
+body[data-screen] :is(.admin-badge-neutral, .badge.bg-secondary, .badge.badge-secondary, .badge.text-bg-secondary, .badge.bg-light, .badge.badge-light, .badge.badge-dark) {
     color: #475569 !important; background: var(--color-surface-2) !important; border-color: var(--fleet-border) !important;
 }
 body[data-screen] :is(.admin-badge-dot, .crms-status-dot) { width: .4rem; height: .4rem; background: currentColor; }

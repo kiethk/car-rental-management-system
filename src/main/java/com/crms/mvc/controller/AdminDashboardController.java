@@ -13,9 +13,11 @@ import com.crms.mvc.service.VehicleService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 import java.util.Comparator;
+import java.util.Map;
 
 @Controller
 public class AdminDashboardController {
@@ -67,6 +69,7 @@ public class AdminDashboardController {
         model.addAttribute("failedInspections", failedInspections);
 
         model.addAttribute("totalBookings", totalBookings);
+        model.addAttribute("overdueRentalCount", bookingQueryService.countOverdueRentals());
         model.addAttribute("expiringSoonCount", expiringSoon.size());
         model.addAttribute("expiredCount", expired.size());
         model.addAttribute("expiringSoonList", expiringSoon);
@@ -75,6 +78,12 @@ public class AdminDashboardController {
         model.addAttribute("activeNav", "dashboard");
 
         return "screens/admin/dashboard/index";
+    }
+
+    @GetMapping("/admin/overdue-rentals/count")
+    @ResponseBody
+    public Map<String, Long> overdueRentalCount() {
+        return Map.of("count", bookingQueryService.countOverdueRentals());
     }
 
     @GetMapping("/admin/ui-kit")
